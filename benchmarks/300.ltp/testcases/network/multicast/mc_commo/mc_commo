@@ -1,0 +1,148 @@
+#!/bin/sh
+unset LIBPATH
+#
+#   Copyright (c) International Business Machines  Corp., 2000
+#
+#   This program is free software;  you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY;  without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
+#   the GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program;  if not, write to the Free Software
+#   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#
+#
+#
+#  FILE             : mc_commo
+#
+#  TEST DESCRIPTION : To verify that IP Multicast can be used to send UDP datagrams
+#                     between two or more nodes on the same subnetwork using
+#                     a specific IP Multicast group and a specific port address.
+#
+#  HISTORY:
+#    03/26/01 Robbie Williamson (robbiew@us.ibm.com)
+#      -Ported
+#    08/01/06 Michael Reed mreedltp@vnet.ibm.com
+#      - The pinging of a specific IP Multicast group has been bypassed
+#        for SLES
+#
+#******************************************************************************
+
+TC=mc_commo
+TTL=10
+PORT=3333
+RHOST=${RHOST:-`hostname`}
+OUTFILE=mc_commo_out
+INTERFACE=${INTERFACE:-$(mc_gethost `hostname` | grep addresses: | \
+			 awk '{print $2}')}
+
+export TCID=$TC
+export TST_TOTAL=1
+export TST_COUNT=1
+
+. test.sh
+
+do_setup()
+{
+	tst_check_cmds rsh netstat
+	if [ -z $INTERFACE ]; then
+		tst_brkm TCONF "$(hostname) is not found in /etc/hosts"
+	fi
+
+	rsh -n -l root $RHOST "pwd > /dev/null"
+	if [ $? -ne 0 ]; then
+		tst_brkm TBROK "rsh $RHOST failed."
+	fi
+
+	OCTET=`ps -ewf | grep [m]c_commo | wc -l | awk '{print $1}'`
+	GROUP_ADDR=224.0.0.$OCTET
+
+	tst_tmpdir
+}
+
+do_test ()
+{
+	tst_resm TINFO "doing test."
+
+	COUNT=1
+	while [ $COUNT -le 2 ]
+	do
+
+		# Run setsockopt/getsockopt test
+		# Start up the recv on local host
+		tst_resm TINFO "Starting mc_recv on $GROUP_ADDR $INTERFACE "\
+			       "$PORT"
+
+		mc_recv $GROUP_ADDR $INTERFACE $PORT >> $OUTFILE &
+		SERVER_PID=$!
+		sleep 5
+		ps -ewf | grep mc_recv | grep -v grep
+		if [ $? -ne 0 ]; then
+			tst_brkm TFAIL "Could NOT start mc_recv on `hostname`"
+		fi
+
+		grep -q "cannot join group" $OUTFILE
+		if [ $? -eq 0 ]; then
+			tst_brkm TFAIL "Membership NOT set"
+		fi
+
+		netstat -ng | grep -q $GROUP_ADDR
+		if [ $? -ne 0 ]; then
+			tst_brkm TFAIL "membership not set for $GROUP_ADDR"
+		fi
+
+		for HOST in $RHOST
+		do
+			tst_resm TINFO "Running on $HOST mc_send $GROUP_ADDR "\
+				       "$HOST $PORT $TTL"
+
+			rsh -n -l root $HOST PATH=$LTPROOT/testcases/bin:$PATH;\
+					     "mc_send" $GROUP_ADDR $HOST $PORT \
+					     $TTL >/dev/null &
+			sleep 10
+			rsh -n -l root $HOST "ps -ewf | grep mc_send | "\
+					     "grep -v grep"
+			if [ $? -ne 0 ]; then
+				tst_brkm TFAIL "Could NOT start mc_send on "\
+					 "$HOST"
+			fi
+		done
+
+		tst_resm TINFO "Waiting for 100 sec.! Do not interrupt."
+		sleep 100  #wait until datagrams are received in $STATUS
+		COUNT=$(( $COUNT + 1 ))
+	done
+
+	#test if datagrams has been sent
+	for HOST in $RHOST
+	do
+		grep -q "$HOST [0-9] [0-9]" $OUTFILE
+		if [ $? -ne 0 ]; then
+			tst_brkm TFAIL "NO Datagrams received from $HOST"
+		fi
+	done
+
+	tst_resm TPASS "Test Successful"
+	tst_exit
+}
+
+do_cleanup()
+{
+	ps -p $SERVER_PID > /dev/null 2>&1
+	if [ $? -eq 0 ]; then
+		kill -9 $SERVER_PID
+	fi
+
+	tst_rmdir
+}
+
+do_setup
+TST_CLEANUP=do_cleanup
+
+do_test

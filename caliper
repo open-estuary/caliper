@@ -1,0 +1,120 @@
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+#
+#   Author  :   wuyanjun 00291783
+#   E-mail  :   wu.wu@hisilicon.com
+#   Date    :   15/01/13 13:53:59
+#   Desc    :  
+#
+import os
+import sys
+import logging
+import pdb
+import shutil
+import datetime
+
+try:
+    import caliper.common as common
+except ImportError:
+    import common
+   
+from caliper.server.build import build
+from caliper.server.run import test_run
+from caliper.server.parser_process import parser
+from caliper.server.parser_process.draw_picture import show_picture
+from caliper.client.shared.settings import settings
+from caliper.client.shared import error
+from caliper.server.hosts import host_factory
+from caliper.client.shared import caliper_path
+from caliper.client.shared import utils
+from caliper.server import summary
+
+logging.basicConfig(level=logging.INFO)
+
+CALIPER_DIR = os.getcwd()
+GEN_DIR = os.path.join(CALIPER_DIR, "gen")
+TEST_CFG_DIR = os.path.join(CALIPER_DIR, "test_cases_cfg")
+
+def build_all_tests(remote_host):
+    try:
+        logging.info("Begining to build Caliper for the remote host")
+        result1 = build.build_for_target(remote_host)
+    except Exception, e:
+        logging.info(e)
+        raise
+    else:
+        return result1
+   
+def run_caliper(remote_host):
+    try:
+        logging.debug("begining to run Caliper")
+        result = test_run.run_caliper_tests(remote_host)
+    except Exception, e:
+        print e
+        logging.info("There is wrong when runnnig Caliper")
+        raise
+    else:
+        return result
+
+def parser_caliper(remote_host):
+    try:
+        logging.debug("begining to parser the result of caliper")
+        parser.parser_caliper(remote_host)
+    except Exception, e:
+        logging.info("There is wrong when parsering the caliper result")
+        print e
+        raise 
+
+def get_remote_host():
+    try:
+        client_ip = settings.get_value('CLIENT', 'ip', type=str)
+    except Exception, e:
+        client_ip = '127.0.0.1'
+    try:
+        port = settings.get_value('CLIENT', 'port', type=int)
+    except Exception, e:
+        port = 22
+    try:
+        user = settings.get_value('CLIENT', 'user', type=str)
+    except Exception, e:
+        user = os.getlogin()
+    try:
+        password = settings.get_value('CLIENT', 'password', type=str)
+    except Exception, e:
+        raise error.ServRunError(e.args[0], e.args[1])
+    
+    remote_host = host_factory.create_host(client_ip, user, password, port)
+    return remote_host
+
+if __name__=="__main__":
+    start_time = datetime.datetime.now() 
+    
+    remote_host = get_remote_host()
+
+    try:
+        result1 = build_all_tests(remote_host)
+        if result1:
+            sys.exit()
+    except Exception, e:
+        raise
+        sys.exit()
+    
+    try:
+        result2 = run_caliper(remote_host)  
+        if result2:
+            sys.exit()
+        parser_caliper(remote_host)
+    except Exception:
+        raise
+        sys.exit() 
+    try:
+        show_picture.show_caliper_result()
+    except Exception, e:
+        raise e
+    end_time = datetime.datetime.now()
+    interval = end_time - start_time
+    try:
+        summary.output_summary_info(remote_host, interval.seconds)
+    except Exception, e:
+        raise e
+

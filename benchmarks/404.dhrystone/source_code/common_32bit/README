@@ -1,0 +1,47 @@
+ Common 32 bit functions
+
+ With Terminal pointing to directory with this source code,
+ assemble cpuida.asm to produce object file cpuida.o using
+ command:
+
+  nasm -f elf cpuida.asm
+
+ Compile cpuidc.c to produce object file cpuidc.o using:
+
+  gcc cpuidc.c -c 
+
+ To produce an execution file to test the other programs use
+
+  gcc test.c cpuidc.o cpuida.o -lrt -lc -lm -o test
+
+ and execute using  ./test
+
+
+ Following is a typical output showing time/date/timer and
+ system details obtained.
+
+   Mon Nov 29 21:28:02 2010
+
+  Time         1.0220646858 secs       0.0854
+
+  Mon Nov 29 21:28:03 2010
+
+  ####################################################
+  getDetails and MHz
+
+
+  Assembler CPUID and RDTSC      
+  CPU GenuineIntel, Features Code BFEBFBFF, Model Code 000006F6
+  Intel(R) Core(TM)2 CPU          6600  @ 2.40GHz
+  Measured - Minimum 2402 MHz, Maximum 2402 MHz
+  Linux Functions
+  get_nprocs() - CPUs 2, Configured CPUs 2
+  get_phys_pages() and size - RAM Size  3.87 GB, Page Size 4096 Bytes
+  uname() - Linux, roy-64Bit, 2.6.35-22-generic
+  #33-Ubuntu SMP Sun Sep 19 20:32:27 UTC 2010, x86_64
+
+  hasMMX hasSSE hasSSE2 hasSSE3
+
+
+
+

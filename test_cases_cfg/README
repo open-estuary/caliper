@@ -1,0 +1,18 @@
+the category divides: Performance and Functional
+
+the 'Performance' includes:
+    cpu; latency(realtime); network; memory; fs; io
+
+And the 'Function'  includes:
+     cpu; commands; memory;  network(may be it need not to test? it relies on so many software);  fs;   dio
+
+For Performance : cpu
+
+
+Then for 'Performance':
+    latency (process and ?)
+    network (latency and bandwidth)
+    memory (bandwidth and latency? not latency, the number of transfered in a period)
+    cpu (mul-core-int, mul-core-float, single-core-int, sigle-core-float)
+    io (bandwidth and iops)
+

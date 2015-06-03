@@ -1,0 +1,29 @@
+
+LINUX BENCHMARKS
+ 
+CONTENTS
+
+bin32 directory - benchmarks compiled as 32-Bits to run via 32-Bit or 64-Bit Linux
+
+bin64 directory - benchmarks compiled as 64-Bits to run via 64-Bit Linux only
+
+source_code directory  - C benchmark code directories with separate README instructions on what to change and how to compile and link. Also common_32bit and common_64bit directories with C and assembly code that identifies configuration details. 
+
+DESCRIPTION
+
+In each of the bin32 and bin64 directories there are optimised and non-optimised compilations of Dhrystone1, of Dhrystone2, Linpack, Whetstone and Livermore Loops benchmarks. For further details, links to more details and  results see:
+
+http://www.roylongbottom.org.uk/#anchorBenchNT
+http://www.roylongbottom.org.uk/linux benchmarks.htm
+
+With Terminal pointing to the directory containing the execution files, each benchmark program can be run using the usual ./program_name command or all of the via ./runall shell script. The latter can also be run (under Ubuntu) by double clicking on it and selecting  Run in Terminal. The benchmarks all run for at least long enough to be noticed with displays including results. The results are also saved in Dhry.txt, Linpack.txt, whets.txt and LLloops.txt.
+
+Please send results on different varieties of Linux and/or hardware (where extrapolation from existing performance tables does not apply, unless it is for an unreported top of the range) to:
+
+roy@roylongbottom.org.uk
+
+Roy Longbottom
+26 November 2010
+
+Recompiled with higher resolution timer
+30 November 2010
