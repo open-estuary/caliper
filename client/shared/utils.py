@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+
 # -*- coding:utf-8 -*-
 #
 #   Date    :   15/01/04 16:32:44
@@ -59,11 +59,11 @@ def read_config_file(filename):
 
 def get_local_ip():
     cmd_output = commands.getoutput('ifconfig')
-    obtain_ip = re.search('\d+\.\d+\.\d+\.\d+', cmd_output).group(0)
+    obtain_ip = re.findall('inet addr:(\d+\.\d+\.\d+\.\d+)', cmd_output)
     if obtain_ip:
         return obtain_ip
     else:
-        return "127.0.1.1"
+        return ['127.0.1.1']
 
 """ For 'android', we read 'common_cases_def.cfg' and 'common_case_def.cfg';
 For 'arm', read the 'common_case_def.cfg' and 'arm_cases_def.cfg';

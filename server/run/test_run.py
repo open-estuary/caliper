@@ -110,7 +110,7 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
         else:
             server_utils.file_copy(logfile, tmp_log_file, 'a+') 
             if flag != 1:
-                logging.debug("There is wrong when running the command \"%s\"" 
+                logging.info("There is wrong when running the command \"%s\"" 
                                 % command)
                 os.remove(tmp_log_file)
 
@@ -183,7 +183,7 @@ def run_commands(exec_dir, kind_bench, commands,
         # the commands is multiple lines, and was included by Quotation
         actual_commands = get_actual_commands(commands, target)
         try:
-            logging.debug("the actual commands running is: %s" 
+            logging.debug("the actual commands running in local is: %s" 
                             % actual_commands)
             result = utils.run(actual_commands, stdout_tee=stdout_tee,
                                 stderr_tee=stderr_tee, verbose=True)
@@ -210,10 +210,11 @@ def get_actual_commands(commands, target):
     if re.findall('(\d+\.\d+\.\d+\.\d+)', commands):
         server_ip = server_utils.get_local_ip()
         last_ip = ""
+
         for each_ip in server_ip:
             items = each_ip.split(".")[0:2]
             pre = '.'.join(items)
-            if each_ip.startswith(pre):
+            if target.ip.startswith(pre):
                 last_ip = each_ip
                 break
         if not last_ip:
@@ -301,9 +302,11 @@ def run_client_command(cmd_sec_name, tmp_logfile, kind_bench, target, command):
         logging.debug("begining to execute the command of %s on the remote host"
                         % command)
         if (is_localhost == 1):
+            logging.debug("client command in localhost is: %s" % command)
             [out, returncode] = run_commands(host_exec_dir, kind_bench,
                                                 command, fp, fp)
         else:
+            logging.debug("client command in localhost is: %s" % command)
             [out, returncode] = run_remote_commands(host_exec_dir, kind_bench, 
                                                     command, target, fp, fp)
     except error.ServRunError, e:
@@ -360,7 +363,7 @@ def run_case(cmd_sec_name, server_command, tmp_logfile, kind_bench,
                 return_code = run_client_command(cmd_sec_name, tmp_logfile, 
                                                     kind_bench,target, command)
             except Exception, e:
-                logging.debug("There is wrong with running the remote host\
+                logging.info("There is wrong with running the remote host\
                                 command of %s" % command)
                 logging.debug(e.args[0], e.args[1])
                 utils.kill_process_tree(newpid)
