@@ -173,7 +173,7 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
         os.remove(pwd_parser+"c")
 
 def run_commands(exec_dir, kind_bench, commands,
-                    stdout_tee=None, stderr_tee=None):
+                    stdout_tee=None, stderr_tee=None, target=None):
     returncode = -1
     output = ''
    
@@ -181,7 +181,7 @@ def run_commands(exec_dir, kind_bench, commands,
     os.chdir(exec_dir)
     try:
         # the commands is multiple lines, and was included by Quotation
-        actual_commands = get_actual_commands(commands)
+        actual_commands = get_actual_commands(commands, target)
         try:
             logging.debug("the actual commands running is: %s" 
                             % actual_commands)
@@ -201,7 +201,7 @@ def run_commands(exec_dir, kind_bench, commands,
     return [output, returncode]
 
 # normalize the commands
-def get_actual_commands(commands):
+def get_actual_commands(commands, target):
     if commands is None or commands=='':
         return None
     
@@ -209,8 +209,24 @@ def get_actual_commands(commands):
 
     if re.findall('(\d+\.\d+\.\d+\.\d+)', commands):
         server_ip = server_utils.get_local_ip()
+        last_ip = ""
+        for each_ip in server_ip:
+            items = each_ip.split(".")[0:2]
+            pre = '.'.join(items)
+            if each_ip.startswith(pre):
+                last_ip = each_ip
+                break
+        if not last_ip:
+            if len(server_ip) > 1:
+                try:
+                    server_ip.remove("127.0.0.1")
+                except Exception:
+                    raise e
+
+            last_ip = server_ip[0]
+
         strinfo = re.compile('\d+\.\d+\.\d+\.\d+')
-        post_commands = strinfo.sub(server_ip, commands)
+        post_commands = strinfo.sub(last_ip, commands)
 
     commands = post_commands
 
@@ -224,8 +240,8 @@ def get_actual_commands(commands):
         return ''
     return actual_commands
 
-def remote_commands_deal(commands, exec_dir):
-    actual_commands = get_actual_commands(commands)
+def remote_commands_deal(commands, exec_dir, target):
+    actual_commands = get_actual_commands(commands, target)
     final_commands = "cd %s; %s" % (exec_dir, actual_commands)
     logging.debug("The final command is %s" % final_commands)
     return final_commands
@@ -236,7 +252,7 @@ def run_remote_commands(exec_dir, kind_bench, commands, target,
     output = ''
     try:
         # the commands is multiple lines, and was included by Quotation
-        final_commands = remote_commands_deal(commands, exec_dir)
+        final_commands = remote_commands_deal(commands, exec_dir, target)
         if final_commands is not None and final_commands != '':
             logging.debug("the actual commands running on the remote host is: %s" 
                             % final_commands)
@@ -263,7 +279,7 @@ def run_client_command(cmd_sec_name, tmp_logfile, kind_bench, target, command):
     fp.write("<<<BEGIN TEST>>>\n")
     tags = "[test: " + cmd_sec_name + "]\n"
     fp.write(tags)
-    logs = "log: " + get_actual_commands(command) + "\n"
+    logs = "log: " + get_actual_commands(command, target) + "\n"
     fp.write(logs)
     start = time.time()
     flag = 0
@@ -271,7 +287,7 @@ def run_client_command(cmd_sec_name, tmp_logfile, kind_bench, target, command):
  
     # get the execution location in the remote host
     is_localhost = 0
-    if server_utils.get_target_ip(target) == server_utils.get_local_ip():
+    if server_utils.get_target_ip(target) in server_utils.get_local_ip():
         is_localhost = 1
     if (is_localhost == 1):
         arch = server_utils.get_local_machine_arch()
@@ -309,13 +325,14 @@ def run_client_command(cmd_sec_name, tmp_logfile, kind_bench, target, command):
     fp.close()
     return flag
 
-def run_server_command(kind_bench, server_command):
+def run_server_command(kind_bench, server_command, target):
     return_code = 0
     try:
         logging.debug("the server running command is %s" % server_command)
         local_arch = server_utils.get_local_machine_arch()
         local_exec_dir = os.path.join(caliper_path.GEN_DIR, local_arch)
-        return_code = run_commands(local_exec_dir, kind_bench, server_command )
+        [output, return_code] = run_commands(local_exec_dir, kind_bench, 
+                                                server_command, target)
     except Exception, e:
         logging.debug("There is wrong with running the server command: %s" 
                         % server_command)
@@ -334,7 +351,7 @@ def run_case(cmd_sec_name, server_command, tmp_logfile, kind_bench,
         newpid = os.fork()
         logging.debug("the pid number is %d" % newpid)
         if newpid == 0:
-            run_server_command(kind_bench, server_command)
+            run_server_command(kind_bench, server_command, target)
         else:
             time.sleep(10)
             logging.debug("the pid number of parent is %d" % os.getpid())
@@ -448,6 +465,8 @@ def compute_perf(result, tmp, score_way, result_yaml, score_yaml):
     score_flag = 2
 
     if type(result) is types.StringType:
+        if re.search('\+', result):
+            result=result.replace('\+', 'e')
         result_fp = string.atof(result)
     elif type(result) is types.FloatType:
         result_fp = result

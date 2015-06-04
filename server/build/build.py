@@ -291,7 +291,7 @@ def build_for_target(target):
         shutil.rmtree(caliper_path.TMP_DIR)
     os.mkdir(caliper_path.TMP_DIR)
 
-    if server_utils.get_target_ip(target) == server_utils.get_local_ip():
+    if server_utils.get_target_ip(target) in server_utils.get_local_ip():
         return build_for_local()
 
     try:
