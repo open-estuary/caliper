@@ -71,11 +71,24 @@ file_vm_dic= {'fs_create_0k': '0k file create', 'fs_create_10k': \
 
 bw_ipc_label = ['bw_pipe', 'bw_unix', 'bw_tcp_local', 'bw_reread',
 		'bw_bcopy_libc', 'bw_bcopy_unrolled', 'bw_mmap',
-		'bw_mem_rdsum' , 'bw_mem_wr']
+		'bw_mem_rdsum' , 'bw_mem_wr', 
+                
+                'bw_reread_open2close',     
+                'bw_mmap_readopen2close', 'bw_bcopy_libc_aligned',  
+                'bw_mem_bzero', 'bw_bcopy_unrolled_partial',  
+                'bw_mem_rdsum_partial', 'bw_mem_wr_partial', 
+                'bw_mem_wr_rd_partial']
 bw_ipc_dic = {'bw_pipe': 'Pipe', 'bw_unix': 'AF Unix', 'bw_tcp_local': 'TCP',
                 'bw_reread': 'File reread','bw_bcopy_libc': 'Bcopy(libc)', 
                 'bw_bcopy_unrolled': 'Bcopy(hand)', 'bw_mem_rdsum':'Mem read', 
-                'bw_mem_wr': 'Mem write', 'bw_mmap': 'Mmap reread'} 
+                'bw_mem_wr': 'Mem write', 'bw_mmap': 'Mmap reread', 
+
+                'bw_reread_open2close': 'Reread O2C', 'bw_mmap_readopen2close': 'Mmap O2C',
+                'bw_bcopy_libc_aligned': 'Bcopy(libc_a)',  'bw_mem_bzero': 'Bzero',
+                'bw_bcopy_unrolled_partial': 'BCopy(hand_par)',  
+                'bw_mem_rdsum_partial': 'Mem read par',
+                'bw_mem_wr_partial': 'Mem write par', 
+                'bw_mem_wr_rd_partial': 'Mem RW par'} 
 
 mem_latency = ['lat_l1', 'lat_l2', 'lat_mem']
 mem_lat_dic = {'lat_l1': 'L1', 'lat_l2': 'L2', 'lat_mem': 'Main memory'}
@@ -94,7 +107,6 @@ def lmbench_lat_parser(content, outfp):
     dic['latency']['ctx']={}
     dic['latency']['file/vm']={}
     #dic['latency']['mem']={}
-    dic['latency']['file/vm'] = {}
     dic['network']={}
     dic['network']['local_lat']={}
     #dic['network']['remote_lat']={}
@@ -406,7 +418,24 @@ def lmbench_bandwidth_parser(content, outfp):
                 dic_mem_speed[bw_ipc_dic['bw_mem_rdsum']] = get_biggest(orig_block)
             if re.search('^Memory write', line):
                 dic_mem_speed[bw_ipc_dic['bw_mem_wr']] = get_biggest(orig_block)
-    
+
+
+            if re.search('^"read open2close bandwidth', line):
+                dic_mem_speed[bw_ipc_dic['bw_reread_open2close']] = get_biggest(orig_block)
+            if re.search('^"Mmap read open2close bandwidth', line):
+                dic_mem_speed[bw_ipc_dic['bw_mmap_readopen2close']] = get_biggest(orig_block) 
+            if re.search('^"libc bcopy aligned', line):
+                dic_mem_speed[bw_ipc_dic['bw_bcopy_libc_aligned']] = get_biggest(orig_block)
+            if re.search('^Memory bzero bandwidth', line):
+                dic_mem_speed[bw_ipc_dic['bw_mem_bzero']] = get_biggest(orig_block)   
+            if re.search('^"unrolled partial bcopy unaligned', line):
+                dic_mem_speed[bw_ipc_dic['bw_bcopy_unrolled_partial']] = get_biggest(orig_block)
+            if re.search('^Memory partial read', line):
+                dic_mem_speed[bw_ipc_dic['bw_mem_rdsum_partial']] = get_biggest(orig_block)
+            if re.search('^Memory partial write', line):
+                dic_mem_speed[bw_ipc_dic['bw_mem_wr_partial']] = get_biggest(orig_block)           
+            if re.search('^Memory partial read/write', line):
+                dic_mem_speed[bw_ipc_dic['bw_mem_wr_rd_partial']] = get_biggest(orig_block)
     if dic_mem_speed:
         dic['memory']['local_speed']= dic_mem_speed
     outfp.write(yaml.dump(dic, default_flow_style=False))
@@ -491,8 +520,9 @@ if __name__ == "__main__":
     #syscall_latency_parser(content, outfp)
     #network_latency_parser(content, outfp)
     #memory_speed_parser(content, outfp)
-    lmbench_lat_parser(content, outfp)
-    #lmbench_bandwidth_parser(content, outfp)
+    pdb.set_trace()
+    #lmbench_lat_parser(content, outfp)
+    lmbench_bandwidth_parser(content, outfp)
     outfp.close()
     infp.close()
 
