@@ -1,7 +1,7 @@
 import re
 import pdb
 
-def parser(content, outfp, option):
+def parser(content, outfp):
     score = 0
     for version in re.findall("(Iozone:.*Version.*?)\s+\n", content, re.DOTALL):
         outfp.write(version)
@@ -11,50 +11,30 @@ def parser(content, outfp, option):
         outfp.write(results)
         outfp.write("\n")
 
-    keywords = ['write', 'rewrite', 'read', 'reread', 'random_read', 'random_write', 'bkwd_read',
-                'recored_rewrite', 'stride_read', 'fwrite', 'frewrite', 'fread', 'freread']
+    keywords = ['write', 'rewrite', 'read', 'reread', 'random_read', 
+            'random_write', 'bkwd_read', 'recored_rewrite', 'stride_read', 
+            'fwrite', 'frewrite', 'fread', 'freread']
+    dic = {'write': 0, 'rewrite': 0, 'read': 0, 'reread':0, 'random_read': 0,
+            'random_write': 0, 'bkwd_read': 0, 'recored_rewrite': 0, 
+            'stride_read': 0, 'fwrite': 0, 'frewrite': 0, 'fread': 0, 
+            'freread': 0}
     #value_loc = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 }
 
     if re.search("iozone\s+test\s+complete", content):
-        #p re.findall("(\d+\s+\d+\s+\d+\s+.*?)\n",content, re.DOTALL)
-        for line in re.findall("(\d\s+\d+\s+\d+\s+.*?)\niozone\s+test",content, re.DOTALL):
+        for line in re.findall("(\d+\s+\d+\s+\d+\s+.*?)\niozone\s+test",content, re.DOTALL):
             fields = line.split()
             for i in range(0, len(keywords)):
-                if option == keywords[i]:
-                    try:
-                        score = fields[i+2]
-                        outfp.write(option + ": "+score+"\n")
-                        break
-                    except Exception, e:
-                        print e
-                        score = 0
-            return score
-
-def iozone_read_parser(content, outfp):
-    score = -1
-    score = parser(content, outfp, "read")
-    return score
-       
-def iozone_write_parser(content, outfp):
-    score = -1
-    score = parser(content, outfp, "write")
-    return score
-
-def iozone_rw_parser(content, outfp):
-    score = -1
-    score = parser(content, outfp, "bkwd_read")
-    return score
+                try:
+                    score = fields[i+2]
+                except Exception, e:
+                    print e
+                    score = 0
+                dic[keywords[i]] = score
+                outfp.write(keywords[i] + ": "+score+"\n")
+    return dic
 
 def iozone_parser(content, outfp):
-    dic = {}
-    dic['iozone_read'] = -1
-    dic['iozone_read'] = iozone_read_parser(content, outfp)
-    dic['iozone_write'] = -1
-    dic['iozone_write'] = iozone_write_parser(content, outfp)
-    dic['iozone_rw'] = -1
-    dic['iozone_rw'] = iozone_rw_parser(content, outfp)
-    print dic
-    return dic
+    return parser(content, outfp)
 
 if __name__=="__main__":
     infp = open("iozone_output.log", "r")
