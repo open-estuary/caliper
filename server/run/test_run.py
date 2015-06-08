@@ -207,27 +207,58 @@ def get_actual_commands(commands, target):
     
     post_commands = commands
 
-    if re.findall('(\d+\.\d+\.\d+\.\d+)', commands):
-        server_ip = server_utils.get_local_ip()
-        last_ip = ""
+    #if re.findall('(\d+\.\d+\.\d+\.\d+)', commands):
+    #    server_ip = server_utils.get_local_ip()
+    #    last_ip = ""
 
-        for each_ip in server_ip:
-            items = each_ip.split(".")[0:2]
-            pre = '.'.join(items)
-            if target.ip.startswith(pre):
-                last_ip = each_ip
-                break
-        if not last_ip:
-            if len(server_ip) > 1:
-                try:
-                    server_ip.remove("127.0.0.1")
-                except Exception:
-                    raise e
+    #    for each_ip in server_ip:
+    #        items = each_ip.split(".")[0:2]
+    #        pre = '.'.join(items)
+    #        if target.ip.startswith(pre):
+    #            last_ip = each_ip
+    #            break
+    #    if not last_ip:
+    #        if len(server_ip) > 1:
+    #            try:
+    #                server_ip.remove("127.0.0.1")
+    #            except Exception:
+    #                raise e
 
-            last_ip = server_ip[0]
+    #        last_ip = server_ip[0]
 
-        strinfo = re.compile('\d+\.\d+\.\d+\.\d+')
-        post_commands = strinfo.sub(last_ip, commands)
+    #    strinfo = re.compile('\d+\.\d+\.\d+\.\d+')
+    #    post_commands = strinfo.sub(last_ip, commands)
+    if re.findall('\$SERVER_IP', commands):
+        try:
+            server_ip = setting.get_value('SERVER', 'ip', type=str)
+        except Exception, e:
+            server_ips = server_utils.get_local_ip()
+            server_ip = ""
+
+            for each_ip in server_ips:
+                items = each_ip.split(".")[0:2]
+                pre = '.'.join(items)
+                if target.ip.startswith(pre):
+                    server_ip = each_ip
+                    break
+            if not server_ip:
+                if len(server_ips) > 1:
+                    try:
+                        server_ips.remove("127.0.0.1")
+                    except Exception:
+                        raise e
+
+                server_ip = server_ips[0]
+        strinfo = re.compile('\$SERVER_IP')
+        post_commands = strinfo.sub(server_ip, commands)
+    
+    if re.findall('\$CLIENT_IP', commands):
+        try:
+            client_ip = setting.get_value('CLIENT', 'ip', type=str)
+        except Exception, e:
+            client_ip = '127.0.0.1'
+        strinfo = re.compile('\$CLIENT_IP')
+        post_commands = strinfo.sub(client_ip, commands)
 
     commands = post_commands
 
