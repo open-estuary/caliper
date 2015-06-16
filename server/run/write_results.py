@@ -180,11 +180,21 @@ def write_multi_dic(result, tmp, score_way, yaml_file, score_yaml_file ):
     flag = 1
     return flag
 
+def round_perf(score):
+    if (score < 0.1):
+        score = round(score, 3)
+    elif (score < 10):
+        score = round(score, 2)
+    else:
+        score = round(score, 1)
+    return score
+
 def write_yaml_perf(yaml_file, tmp, result, kind=1):
     flag = 0
     if not os.path.exists(yaml_file):
         os.mknod(yaml_file)
     fp = open(yaml_file)
+    result = round_perf(result)
     x = yaml.load(fp)
     try:
         RES = 'results'

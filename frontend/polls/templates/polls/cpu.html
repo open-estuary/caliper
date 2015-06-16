@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+
+{% load staticfiles %}
+<html>
+<head>
+    <title>caliper's cpu result</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- CSS dependecies -->
+    <link rel="stylesheet" type="text/css" href="{% static 'polls/js/lib/bootstrap/dist/css/bootstrap.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'polls/js/lib/pickadate/lib/themes/classic.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'polls/js/lib/pickadate/lib/themes/classic.date.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'polls/js/lib/fontawesome/css/font-awesome.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'polls/js/lib/summernote/dist/summernote.css' %}"/>
+
+    <!-- Sensei Grid CSS -->
+    <link rel="stylesheet" type="text/css" href="{% static 'polls/css/sensei-grid.css' %}"/>
+
+    <!-- JS dependencies -->
+    <script src="{% static 'polls/js/lib/jquery/dist/jquery.min.js' %}"></script>
+    <script src="{% static 'polls/js/lib/lodash/dist/lodash.min.js' %}"></script>
+    <script src="{% static 'polls/js/lib/pickadate/lib/picker.js' %}"></script>
+    <script src="{% static 'polls/js/lib/pickadate/lib/picker.date.js' %}"></script>
+    <script src="{% static 'polls/js/lib/bootstrap/dist/js/bootstrap.js' %}"></script>
+    <script src="{% static 'polls/js/lib/summernote/dist/summernote.js' %}"></script>
+
+    <!-- Sensei Grid JS -->
+    <script src="{% static 'polls/js/src/sensei-grid.js' %}"></script>
+    <script src="{% static 'polls/js/src/sensei-editors.js' %}"></script>
+    <script src="{% static 'polls/js/src/sensei-json.js' %}"></script>
+    <script src="{% static 'polls/js/example/cpu/example_cpu.js' %}"></script>
+    <script src="{% static 'polls/js/example/cpu/cpu_integer.js' %}"></script>
+    <script src="{% static 'polls/js/example/cpu/cpu_float.js' %}"></script>
+    <script src="{% static 'polls/js/example/cpu/cpu_double.js' %}"></script>
+	<script src="{% static 'polls/js/example/cpu/cpu_sin_integer.js' %}"></script>
+	<script src="{% static 'polls/js/example/cpu/cpu_sin_float.js' %}"></script>
+    <!-- Custom CSS for this example -->
+    <style type="text/css">
+        .example {
+            width: 940px;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
+        .sensei-grid {
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-weight: bold;
+            line-height: normal;
+        }
+    </style>
+
+</head>
+<body>
+<div class="example">
+    <div><input type="hidden" id="cpu_tst" value="{{ dic_cpu }}"> </div>
+
+    <h1><small>caliper cpu comparison figure</small></h1>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/cpu_sum.png' %}" height="400" width="800" /> </p>
+	</div>
+    
+    <h1><small>caliper cpu comparison detail</small></h1>
+    <div class="sensei-grid"></div>
+	
+    <h1><small>caliper cpu basic integer</small></h1>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/cpu_integer.png' %}" height="400" width="850" /> </p>
+	</div>
+    <div class="sensei-grid"></div>
+	
+    <h1><small>caliper cpu float operation</small></h1>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/cpu_float.png' %}" height="400" width="850" /> </p>
+	</div>
+    <div class="sensei-grid"></div>
+	
+    <h1><small>caliper cpu double operation</small></h1>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/cpu_double.png' %}" height="500" width="850" /> </p>
+	</div>
+    <div class="sensei-grid"></div>
+	
+	<h1><small>caliper cpu sincore integer</small></h1>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/sincore_integer.png' %}" height="400" width="800" /> </p>
+	</div>
+    <div class="sensei-grid"></div>
+	
+    <h1><small>caliper cpu sincore float</small></h1>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/sincore_float.png' %}" height="400" width="850" /> </p>
+	</div>
+    <div class="sensei-grid"></div>
+    
+</div>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html>
+<head>
+    <title>caliper's network result</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- CSS dependecies -->
+    <link rel="stylesheet" type="text/css" href="{% static 'polls/js/lib/bootstrap/dist/css/bootstrap.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'polls/js/lib/pickadate/lib/themes/classic.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'polls/js/lib/pickadate/lib/themes/classic.date.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'polls/js/lib/fontawesome/css/font-awesome.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'polls/js/lib/summernote/dist/summernote.css' %}"/>
+
+    <!-- Sensei Grid CSS -->
+    <link rel="stylesheet" type="text/css" href="{% static 'polls/css/sensei-grid.css' %}"/>
+
+    <!-- JS dependencies -->
+    <script src="{% static 'polls/js/lib/jquery/dist/jquery.min.js' %}"></script>
+    <script src="{% static 'polls/js/lib/lodash/dist/lodash.min.js' %}"></script>
+    <script src="{% static 'polls/js/lib/pickadate/lib/picker.js' %}"></script>
+    <script src="{% static 'polls/js/lib/pickadate/lib/picker.date.js' %}"></script>
+    <script src="{% static 'polls/js/lib/bootstrap/dist/js/bootstrap.js' %}"></script>
+    <script src="{% static 'polls/js/lib/summernote/dist/summernote.js' %}"></script>
+
+    <!-- Sensei Grid JS -->
+    <script src="{% static 'polls/js/src/sensei-grid.js' %}"></script>
+    <script src="{% static 'polls/js/src/sensei-editors.js' %}"></script> 
+    <script src="{% static 'polls/js/src/sensei-json.js' %}"></script>
+    <script src="{% static 'polls/js/examples/network/example_network.js' %}"></script>
+    <script src="{% static 'polls/js/examples/network/network_bandwidth.js' %}"></script>
+    <script src="{% static 'polls/js/examples/network/network_local_lat.js' %}"></script>
+
+    <!-- Custom CSS for this example -->
+    <style type="text/css">
+        .example {
+            width: 940px;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
+        .sensei-grid {
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-weight: bold;
+            line-height: normal;
+        }
+    </style>
+
+</head>
+<body>
+<div class="example">
+    <div><input type="hidden" id="memory_tst" value="{{ dic_mem }}"> </div>
+
+    <h1><small>caliper network comparison figure</small></h1>
+    <p>
+    image
+    </p>
+    
+    <h1><small>caliper network comparison detail</small></h1>
+    <div class="sensei-grid"></div>
+    <h1><small>caliper network bandwidth</small></h1>
+    <div class="sensei-grid"></div>
+    <h1><small>caliper network local latency</small></h1>
+    <div class="sensei-grid"></div>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th colspan="2">Keyboard shortcuts when the editor <strong>is not active</strong></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td style="width:250px"><code>left, right, up, down</code></td>
+            <td>move active cell</td>
+        </tr>
+        <tr>
+            <td><code>esc</code></td>
+            <td>move focus away from grid and remove highlight from active cell and row</td>
+        </tr>
+        <tr>
+            <td><code>enter</code></td>
+            <td>open cell editor</td>
+        </tr>
+        <tr>
+            <td><code>backspace</code></td>
+            <td>clear contents of active cell</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th colspan="2">Keyboard shortcuts when the editor <strong>is active</strong></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td style="width:250px"><code>ctrl + enter</code></td>
+            <td>move editor down</td>
+        </tr>
+        <tr>
+            <td><code>ctrl + shift + enter</code></td>
+            <td>move editor up</td>
+        </tr>
+        <tr>
+            <td><code>enter</code></td>
+            <td>exit editor and save</td>
+        </tr>
+        <tr>
+            <td><code>tab</code></td>
+            <td>move forward</td>
+        </tr>
+        <tr>
+            <td><code>shift + tab</code></td>
+            <td>move backward</td>
+        </tr>
+        <tr>
+            <td><code>esc</code></td>
+            <td>exit editor without saving</td>
+        </tr>
+        </tbody>
+    </table>
+
+</div>
+</body>
+</html>

@@ -25,3 +25,6 @@ YAML_OUTPUT_DIR = os.path.join(CALIPER_DIR, "server", "parser_process", "show_ou
 CALIPER_LOG_FILE = os.path.join(CALIPER_DIR, "caliper_exe.log")
 CALIPER_SUMMARY_FILE = os.path.join(CALIPER_DIR, "results_summary.log")
 TMP_DIR = os.path.join("/tmp", "caliper.tmp")
+
+HTML_DATA_DIR = os.path.join(CALIPER_DIR, "frontend", "frontend", "json_files")
+HTML_PICTURE_DIR = os.path.join(CALIPER_DIR, "frontend", "polls", "static", "polls", "pictures") 

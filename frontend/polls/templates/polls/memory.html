@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html>
+<head>
+    <title>caliper's memory result</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- CSS dependecies -->
+    <link rel="stylesheet" type="text/css" href="{% static 'polls/js/lib/bootstrap/dist/css/bootstrap.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'polls/js/lib/pickadate/lib/themes/classic.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'polls/js/lib/pickadate/lib/themes/classic.date.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'polls/js/lib/fontawesome/css/font-awesome.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'polls/js/lib/summernote/dist/summernote.css' %}"/>
+
+    <!-- Sensei Grid CSS -->
+    <link rel="stylesheet" type="text/css" href="{% static 'polls/css/sensei-grid.css' %}"/>
+
+    <!-- JS dependencies -->
+    <script src="{% static 'polls/js/lib/jquery/dist/jquery.min.js' %}"></script>
+    <script src="{% static 'polls/js/lib/lodash/dist/lodash.min.js' %}"></script>
+    <script src="{% static 'polls/js/lib/pickadate/lib/picker.js' %}"></script>
+    <script src="{% static 'polls/js/lib/pickadate/lib/picker.date.js' %}"></script>
+    <script src="{% static 'polls/js/lib/bootstrap/dist/js/bootstrap.js' %}"></script>
+    <script src="{% static 'polls/js/lib/summernote/dist/summernote.js' %}"></script>
+
+    <!-- Sensei Grid JS -->
+    <script src="{% static 'polls/js/src/sensei-grid.js' %}"></script>
+    <script src="{% static 'polls/js/src/sensei-editors.js' %}"></script> 
+    <script src="{% static 'polls/js/src/sensei-json.js' %}"></script>
+    <script src="{% static 'polls/js/example/memory/example_memory.js' %}"></script>
+    <script src="{% static 'polls/js/example/memory/memory_bandwidth.js' %}"></script>
+    <script src="{% static 'polls/js/example/memory/memory_cachebench.js' %}"></script>
+
+    <!-- Custom CSS for this example -->
+    <style type="text/css">
+        .example {
+            width: 940px;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
+        .sensei-grid {
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-weight: bold;
+            line-height: normal;
+        }
+    </style>
+
+</head>
+<body>
+<div class="example">
+    <div><input type="hidden" id="memory_tst" value="{{ dic_mem }}"> </div>
+
+    <h1><small>caliper memory comparison figure</small></h1>
+   <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/memory_sum.png' %}" height="300" width="800" /> </p>
+	</div>
+    
+    <h1><small>caliper memory comparison detail</small></h1>
+    <div class="sensei-grid"></div>
+	
+    <h1><small>caliper memory bandwidth</small></h1>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/memory_local.png' %}" height="450" width="800" /> </p>
+	</div>
+		   
+    <div class="sensei-grid"></div>
+	
+    <h1><small>caliper memory cachebench</small></h1> 
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/memory_bandwidth.png' %}" height="450" width="800" /> </p>
+	</div>
+    <div class="sensei-grid"></div>
+
+    </div>
+</body>
+</html>

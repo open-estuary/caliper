@@ -54,7 +54,7 @@ def insert_content_to_file(filename, index, value):
     f.write(contents)
     f.close()
 
-def find_benchmark(filename, version):
+def find_benchmark(filename, version, dir_name, build_file):
     """
     check if the benchmarks contained by the benchmarks
 
@@ -67,6 +67,18 @@ def find_benchmark(filename, version):
         flag = 1
     if os.path.exists(os.path.join(CALIPER_DIR, filename)):
         flag = 1
+    if not flag:
+        build_path = os.path.join(TEST_CFG_DIR, dir_name, filename, build_file)
+        fp = open(build_path)
+        content = fp.read()
+        try:
+            filename = re.findall('SrcPath.*}\"(.*)\"')[0]
+        except Exception:
+            filename = ""
+        if os.path.exists(os.path.join(benchs_dir, filename)):
+            flah = 1
+        fp.close()
+
     bench_dir = ''
     if not version:
         # have not information about the version
@@ -99,7 +111,13 @@ def generate_build(config, section_name, dir_name, build_file, flag=0):
     directory of Caliper, we think it is temporarily, after compiling we will 
     delete them."""
 
-    ben_dir, exist = find_benchmark(filename, version)
+    try:
+        tmp_build = config.get(section_name, 'build')
+    except BaseException:
+        tmp_build = ""
+
+    ben_dir, exist = find_benchmark(filename, version, dir_name, tmp_build)
+
     """how to use the ben_dir to build the benchmark"""
     if not exist:
         try:
@@ -113,13 +131,8 @@ def generate_build(config, section_name, dir_name, build_file, flag=0):
             # need to expand here
             exit = git(url_list[1], url_list[2])
             if ( exit != 0 ):
-                print "Download the benchmark of %s failed" % filename
+                logging.info("Download the benchmark of %s failed" % filename)
                 return -2
-
-    try:
-        tmp_build = config.get(section_name, 'build')
-    except BaseException:
-        tmp_build = ""
 
     """add the build file to the build.sh;  if the build option in it, we add it;
     else we give up the build of it."""
@@ -176,7 +189,7 @@ def build_caliper(target_arch, flag=0):
                 result = generate_build(config, sections[i], 
                                         dir_name, des_build_file)
             except Exception, e:
-                print e
+                logging.info(e)
             else:
                 if result:
                     return result
@@ -344,7 +357,7 @@ def copy_gen_to_target(target, target_arch):
             except Exception, e:
                 logging.info("There is error when coping files to remote %s"
                                 % target.ip)
-                print e
+                logging.info( e )
                 raise
         target.send_file(send_gen_files, remote_gen_dir)
         logging.info("finished the scp caliper to the remote host")

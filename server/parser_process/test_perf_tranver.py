@@ -7,6 +7,7 @@ import sys
 import shutil
 import yaml
 import logging
+import json
 import string
 
 try:
@@ -60,6 +61,7 @@ def traverser_perf(target, yaml_file):
             else:
                 try:
                     last_result = geometric_mean(useful_values)
+                    last_result = round(last_result, 2)
                 except TypeError, e:
                     logging.info( e )
                     continue
@@ -78,7 +80,7 @@ def traverser_perf(target, yaml_file):
             else:
                 if 'Total_Scores' not in test_point_dic:
                     test_point_dic['Total_Scores'] = {}
-                test_point_dic['Total_Scores'] = total_sub_items_result
+                test_point_dic['Total_Scores'] = round(total_sub_items_result, 2)
 
     dic_perf['results']['Performance'] = perf_results
     #logging.info(dic_perf)
@@ -89,6 +91,8 @@ def traverser_perf(target, yaml_file):
         outfile.write(yaml.dump(dic_perf, default_flow_style=False))
         flag = 1
     outfile.close()
+    json_file_post = yaml_file[0:-5] + "_post.json"
+    json.dump(dic_perf, open(json_file_post, 'w'))
     return flag
 
 if __name__=="__main__":
