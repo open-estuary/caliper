@@ -14,6 +14,7 @@ import shutil
 import stat
 import logging
 import pdb
+import subprocess
 
 import parser_yaml_result as deal_result
 from caliper.client.shared import caliper_path
@@ -22,21 +23,19 @@ LOCATION = os.path.dirname(sys.modules[__name__].__file__)
 CALIPER_DIR= caliper_path.CALIPER_DIR
 OUT_DIR = os.path.join(CALIPER_DIR, 'results')
 
-def get_targets_data(outdir, flag):
+def get_targets_data(outdir):
     yaml_dir = os.path.join(outdir, 'yaml')
     yaml_files = []
     json_files = []
     for root, dirs, files in os.walk(yaml_dir):
         for i in range(0, len(files)):
-            if (flag == 1):
-                if re.search('_score_post\.yaml', files[i]):
-                    yaml_name = os.path.join(root, files[i])
-                    yaml_files.append(yaml_name)
-                else:
-                    if (flag == 0):
-                        if re.search('.json', files[i]):
-                            json_name = os.path.join(root, files[i])
-                            json_files.append(json_file)
+            if re.search('_score_post\.yaml', files[i]):
+                yaml_name = os.path.join(root, files[i])
+                yaml_files.append(yaml_name)
+            else:
+                if re.search('.json', files[i]):
+                    json_name = os.path.join(root, files[i])
+                    json_files.append(json_name)
     return (yaml_files, json_files)
 
 def show_caliper_result():
@@ -52,7 +51,8 @@ def show_caliper_result():
     except Exception, e:
         logging.info("There is wrong in drawing pictures")
     if json_lists:
-        subprocess.call("mv %s %s" % (json_lists, caliper_path.HTML_DATA_DIR),
-                    shell=True)
-    subprocess.call("mv %s %s" % (picture_location, caliper_path.HTML_PICTURE_DIR), 
+        for json_file in json_lists:
+            subprocess.call("mv %s %s" % (json_file, caliper_path.HTML_DATA_DIR),
+                        shell=True)
+    subprocess.call("cd %s; mv * %s" % (picture_location, caliper_path.HTML_PICTURE_DIR), 
                     shell=True )

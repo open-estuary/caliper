@@ -12,6 +12,7 @@ import logging
 import pdb
 import shutil
 import datetime
+import subprocess
 
 try:
     import caliper.common as common
@@ -98,7 +99,6 @@ if __name__=="__main__":
     except Exception, e:
         raise
         sys.exit()
-    
     try:
         result2 = run_caliper(remote_host)  
         if result2:
@@ -116,5 +116,10 @@ if __name__=="__main__":
     try:
         summary.output_summary_info(remote_host, interval.seconds)
     except Exception, e:
+        raise e
+
+    try:
+        subprocess.call("cd frontend; python manage.py runserver", shell=True)
+    except Exception as e:
         raise e
 
