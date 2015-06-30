@@ -12,7 +12,7 @@ def parser(content, outfp):
     passd = 0
     skipd = 0
     for line in content.splitlines():
-        if re.search("log:\s+", line):
+        if re.search("cd\s+.*echo", line):
             continue
         if re.search(":\s+\[SKIP\]", line) or re.search(":\s+skip", line):
             skipd += 1

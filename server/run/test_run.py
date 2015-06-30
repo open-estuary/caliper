@@ -449,7 +449,7 @@ def parser_case(kind_bench, bench_name, parser, infile, outfile):
             infp = open(infile, "r")
             outfp = open(outfile, 'a+')
             contents = infp.read()
-            for content in re.findall("log:(.*?)\[status\]", contents, re.DOTALL):
+            for content in re.findall("BEGIN TEST(.*?)\[status\]", contents, re.DOTALL):
                 try:
                     # call the parser function to filter the output
                     logging.debug("Begining to parser the result of the case")

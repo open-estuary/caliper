@@ -58,6 +58,7 @@ def write_yaml_func(yaml_file, tmp, result, kind):
         os.mknod(yaml_file)
     fp = open(yaml_file)
     x = yaml.load(fp)
+    result = round_perf(result)
     try:
         RES = 'results'
         if not x:
@@ -71,7 +72,8 @@ def write_yaml_func(yaml_file, tmp, result, kind):
         if tmp[1] not in x[RES][tmp[0]]:
             x[RES][tmp[0]][tmp[1]] = {}
         if tmp[2] not in x[RES][tmp[0]][tmp[1]]:
-            x[RES][tmp[0]][tmp[1]][tmp[2]] = result
+            x[RES][tmp[0]][tmp[1]][tmp[2]] = {}
+        x[RES][tmp[0]][tmp[1]][tmp[2]] = result
     except BaseException, e:
         logging.info( "There is wrong when write the data in file %s." % yaml)
         logging.info( e)
@@ -83,42 +85,6 @@ def write_yaml_func(yaml_file, tmp, result, kind):
             outfile.write(yaml.dump(x, default_flow_style=False))
         outfile.close()
     return flag
-
-#def write_dic(result, tmp, score_way, yaml_file, score_yaml_file ):
-#    flag1 = 0
-#    flag2 = 0 
-#    for key in result.keys():
-#        if type(result[key])==dict:
-#            sub_dic = result[key]
-#            for subkey in sub_dic.keys():
-#                if type(sub_dic[subkey])==list:
-#                    sublist = sub_dic[subkey]
-#                    geo_mean = scores_method.geometric_mean(sublist)
-#                elif type(sub_dic[subkey]) is types.StringType:
-#                    geo_mean = string.atof(sub_dic[subkey])
-#                elif type(sub_dic[subkey]) is types.FloatType:
-#                    geo_mean = sub_dic[subkey]
-#                elif type(sub_dic[subkey]) is types.IntType:
-#                    geo_mean = sub_dic[subkey]
-#                else:
-#                    return -4
-#                tmp.append(key)
-#                tmp.append(subkey)
-#                flag1 = write_yaml_perf(yaml_file, tmp, geo_mean)
-#                result_score = compute_score(score_way, geo_mean)
-#                flag2 = write_yaml_perf(score_yaml_file, tmp, result_score, 2)
-#                tmp.remove(key)
-#                tmp.remove(subkey)
-#                if not flag1 & flag2:
-#                    return flag1 & flag2
-#                else:
-#                    continue
-#        else:
-#            logging.debug("There is wrong with the parser")
-#            flag = -1
-#            return flag
-#    flag = 1
-#    return flag                    
 
 def write_dic(result, tmp, score_way, yaml_file, score_yaml_file ):
     flag = 0 
