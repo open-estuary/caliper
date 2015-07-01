@@ -1,5 +1,5 @@
 #!/bin/bash 
-
+set -x
 detect_inet(){
     IFNUMS=`netstat -i | wc -l`
     IFNUMS=$(( $IFNUMS - 2 ))
@@ -112,35 +112,35 @@ main()
     if [ ! -f tmp.log ]; then
         touch tmp.log
     fi
-    nc -l 1234 > tmp.log
-    cat tmp.log
-    content=$(cat tmp.log)
-    if [ "$content"x != ""x ]; then 
-        rm -fr tmp.log
-    else
-        exit 1
-    fi
+    #nc -l 1234 > tmp.log
+    #cat tmp.log
+    #content=$(cat tmp.log)
+    #if [ "$content"x != ""x ]; then 
+    #    rm -fr tmp.log
+    #else
+    #    exit 1
+    #fi
+    #
+    #echo $SERVER > tmp.log
+    #sleep 20
+    #nc $CLIENT_IP 1234 < tmp.log
 
-    echo $SERVER > tmp.log
-    sleep 20
-    nc $CLIENT_IP 1234 < tmp.log
-
-    eth_addr=$(ifconfig -a | grep eth[0-9] | awk '{print $1}')
-    read -a eths <<< $eth_addr
-    for i in ${eths[@]}
-    do
-        ip=$(ifconfig $i | grep 'inet addr' | awk '{print $2}' | awk -F ':' '{print $2}')
-        if [ "$ip"x = "$SERVER_IP"x ]; then
-            LOCAL=$(ifconfig $i | grep eth[0-9] | awk '{print $5}')
-            echo $LOCAL
-            break
-        fi
-    done
-    
-    echo $LOCAL > tmp.log
-    sleep 30
-    nc $CLIENT_IP 1234 < tmp.log
-    rm -fr tmp.log
+    #eth_addr=$(ifconfig -a | grep eth[0-9] | awk '{print $1}')
+    #read -a eths <<< $eth_addr
+    #for i in ${eths[@]}
+    #do
+    #    ip=$(ifconfig $i | grep 'inet addr' | awk '{print $2}' | awk -F ':' '{print $2}')
+    #    if [ "$ip"x = "$SERVER_IP"x ]; then
+    #        LOCAL=$(ifconfig $i | grep eth[0-9] | awk '{print $5}')
+    #        echo $LOCAL
+    #        break
+    #    fi
+    #done
+    #
+    #echo $LOCAL > tmp.log
+    #sleep 30
+    #nc $CLIENT_IP 1234 < tmp.log
+    #rm -fr tmp.log
 
 }
 

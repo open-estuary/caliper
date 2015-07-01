@@ -1,7 +1,7 @@
 #!/bin/sh 
 echo "**********The check only for suse11 platform***********"
 echo "-----Start to check installation of network service in Client-----" 
-
+set -e
 check_commands="dpkg --list"
 chkconfig_commands="sysv-rc-conf --list"
 
@@ -18,7 +18,7 @@ $chkconfig_commands | grep ssh >/dev/null || { ret=1;echo "Please install ssh se
 
 $chkconfig_commands | grep isc-dhcp >/dev/null || { ret=1;echo "Please install dhcp server";}
 
-$chkconfig_commands | grep ftpd >/dev/null || { ret=1;echo "Please install vsftp server";}
+#$chkconfig_commands | grep ftpd >/dev/null || { ret=1;echo "Please install vsftp server";}
 
 #$chkconfig_commands | grep apache2 >/dev/null || { ret=1;echo "Please install http server";}
 

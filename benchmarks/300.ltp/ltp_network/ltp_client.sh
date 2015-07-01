@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -e
 detect_inet(){
     IFNUMS=`netstat -i | wc -l`
     IFNUMS=$(( $IFNUMS - 2 ))
@@ -153,14 +153,15 @@ main(){
         rm -fr out.log
     fi
     cp ~/.bashrc ~/.bashrc_tmp
-        touch out.log
-    echo "1234" > out.log
-    cat out.log
-    sleep 40
-    nc $SERVER_IP 1234 < out.log
-    sleep 2
-    nc -l 1234 > out.log
-    SERVER=$(cat out.log)
+    #    touch out.log
+    #echo "1234" > out.log
+    #cat out.log
+    #sleep 40
+    #nc $SERVER_IP 1234 < out.log
+    #sleep 2
+    #nc -l 1234 > out.log
+    #SERVER=$(cat out.log)
+    SERVER="ltp-server"
     
     CLIENT=$(cat /etc/hostname)
     echo "Client Name: $CLIENT IP: $CLIENT_IP"
@@ -185,7 +186,7 @@ main(){
     telnet_config
     detect_inet
     ftp_config
-    stress_config
+    #stress_config
 
     #for lib6 testcases
     echo "Use interface $ETH_LIB6 for lib6 testcases"

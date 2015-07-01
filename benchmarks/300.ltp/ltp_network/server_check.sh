@@ -1,7 +1,7 @@
 #!/bin/sh 
 echo "**********The check only for suse11 platform***********"
 echo "-----Start to check installation of network service in Server-----"
-
+set -e
 check_commands="dpkg --list"
 chkconfig_commands="sysv-rc-conf --list"
 
