@@ -14,8 +14,8 @@ def ltpResult(content, outfp):
         sumBrok = sumBrok + len(re.findall("TBROK", content) )
     if len(re.findall("TPASS", content) ):
         sumPass = sumPass + len(re.findall("TPASS", content) )
-    if len(re.findall("TINFO", content) ):
-        sumInfo = sumInfo + len(re.findall("TINFO", content) )
+    #if len(re.findall("TINFO", content) ):
+    #    sumInfo = sumInfo + len(re.findall("TINFO", content) )
 
     outfp.write('the total number of testcases is %d\n'
                     % (sumPass + sumFail + sumInfo + sumBrok))
