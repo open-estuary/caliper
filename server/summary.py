@@ -51,7 +51,7 @@ def get_builded_tools():
     fail_tools = []
     for root, dirs, files in os.walk(despath):
         for i in range(0, len(files)):
-            test_tool_name = files[i].split('_')[0]
+            test_tool_name = '_'.join(files[i].split('_')[0:-2])
             if re.search('.suc', files[i]):
                 if test_tool_name not in fail_tools:
                     if test_tool_name not in suc_tools:

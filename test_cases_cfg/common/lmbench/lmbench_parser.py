@@ -377,7 +377,7 @@ def get_biggest(block):
     lines = block.splitlines()
     value = 0
     for i in range(len(lines)-1, 0, -1):
-        if lines[i]:
+        if lines[i] and re.findall('\d+', lines[i]):
             value = lines[i].split()[1]
             return value
     return value
