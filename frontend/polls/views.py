@@ -1,17 +1,7 @@
 import os
-import logging
-
-logging.basicConfig(level=logging.DEBUG,
-            format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
-            datefmt='%a, %d %b %Y %H:%M:%S', filename='myapp.log', filemode='w')
-
-from django.http import HttpResponse, HttpResponseRedirect
-#try:
-    #import simplejson as json
-    #logging.info("1234")
-#except:
 import json
 
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.views import generic
@@ -24,7 +14,6 @@ def get_files():
         for i in range(0, len(files)):
             if files[i].endswith('.json'):
                 filesname.append( os.path.join(root, files[i]) )
-    logging.info("files: %s" % filesname)
     return filesname
 
 def get_sum_dics(files):
@@ -33,7 +22,6 @@ def get_sum_dics(files):
     dic['test_tools'] = {}
     dic['summary'] = {}
     
-    logging.info(files)
     conf_tmp = {}
     tools_tmp = {}
     summary_tmp = {}
@@ -48,15 +36,12 @@ def get_sum_dics(files):
         for key in perf_dic.keys():
             sum_tmp[key] = perf_dic[key]['Total_Scores']
         summary_tmp[target] = sum_tmp
-    logging.info( "conf_tmp: %s" % conf_tmp)
-    logging.info("summary_tmp: %s" % summary_tmp)
     dic['config'] = conf_tmp
     dic['summary'] = summary_tmp
     return dic
 
 def get_each_sum_item( files, category ):
     dic = {}
-    logging.info("category is %s" % category)
     for filename in files:
         tmp_dic = {}
         target = filename.split('.')[0].split('/')[-1]
@@ -66,16 +51,12 @@ def get_each_sum_item( files, category ):
         fp.close()
         try:
             perf_dic = data['results']['Performance'][category]
-            logging.info("perf_dic: %s" % perf_dic)
             for key in perf_dic.keys():
                 if (key != 'Total_Scores'):
-                    logging.info("%s is %s" %(key, perf_dic[key]['Total_Scores']))
                     tmp_dic[key] = perf_dic[key]['Total_Scores']
         except Exception:
             tmp_dic = {}
-        logging.info("tmp_dic: %s" % tmp_dic)
         dic[target] = tmp_dic
-    logging.info("category dic is: %s" % dic)
     return dic
 
 def get_detail_data( files, category ):
@@ -108,12 +89,10 @@ def get_detail_data( files, category ):
         dic[key] = tmp_dic
     return dic
 
-def index(request):
+def summary(request):
     files = get_files()
     dic_sum = get_sum_dics(files)
-    logging.info( "dic_sum: %s" % dic_sum )
-    logging.info( "dic_sum json: %s" % json.dumps(dic_sum))
-    return render(request, 'polls/index.html', {'dic_sum': json.dumps(dic_sum)})
+    return render(request, 'polls/summary.html', {'dic_sum': json.dumps(dic_sum)})
 
 def algorithm(request):
     files = get_files()

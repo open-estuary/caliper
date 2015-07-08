@@ -32,7 +32,7 @@ build_netperf() {
                 autoconf      
                 autoheader      
                 ac_cv_func_setpgrp_void=yes ac_cv_func_malloc_0_nonnull=yes ./configure      #--host=$ARMCROSS
-           make     
+           make CC=$GCC
            cp src/netperf $myOBJPATH
            cp src/netserver $myOBJPATH
       popd

@@ -3,27 +3,27 @@
 <html>
 <head>
     <title>caliper's latency result</title>
-
+    {% load static %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- CSS dependecies -->
-    <link rel="stylesheet" type="text/css" href="{% static 'polls/js/lib/bootstrap/dist/css/bootstrap.min.css' %}"/>
-    <link rel="stylesheet" type="text/css" href="{% static 'polls/js/lib/pickadate/lib/themes/classic.css' %}"/>
-    <link rel="stylesheet" type="text/css" href="{% static 'polls/js/lib/pickadate/lib/themes/classic.date.css' %}"/>
-    <link rel="stylesheet" type="text/css" href="{% static 'polls/js/lib/fontawesome/css/font-awesome.min.css' %}"/>
-    <link rel="stylesheet" type="text/css" href="{% static 'polls/js/lib/summernote/dist/summernote.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% get_static_prefix %}js/lib/bootstrap/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" type="text/css" href="{% get_static_prefix %}js/lib/pickadate/lib/themes/classic.css"/>
+    <link rel="stylesheet" type="text/css" href="{% get_static_prefix %}js/lib/pickadate/lib/themes/classic.date.css"/>
+    <link rel="stylesheet" type="text/css" href="{% get_static_prefix %}js/lib/fontawesome/css/font-awesome.min.css"/>
+    <link rel="stylesheet" type="text/css" href="{% get_static_prefix %}js/lib/summernote/dist/summernote.css"/>
 
     <!-- Sensei Grid CSS -->
     <link rel="stylesheet" type="text/css" href="{% static 'polls/css/sensei-grid.css' %}"/>
 
     <!-- JS dependencies -->
-    <script src="{% static 'polls/js/lib/jquery/dist/jquery.min.js' %}"></script>
-    <script src="{% static 'polls/js/lib/lodash/dist/lodash.min.js' %}"></script>
-    <script src="{% static 'polls/js/lib/pickadate/lib/picker.js' %}"></script>
-    <script src="{% static 'polls/js/lib/pickadate/lib/picker.date.js' %}"></script>
-    <script src="{% static 'polls/js/lib/bootstrap/dist/js/bootstrap.js' %}"></script>
-    <script src="{% static 'polls/js/lib/summernote/dist/summernote.js' %}"></script>
+    <script src="{% get_static_prefix %}js/lib/jquery/dist/jquery.min.js"></script>
+    <script src="{% get_static_prefix %}js/lib/lodash/dist/lodash.min.js"></script>
+    <script src="{% get_static_prefix %}js/lib/pickadate/lib/picker.js"></script>
+    <script src="{% get_static_prefix %}js/lib/pickadate/lib/picker.date.js"></script>
+    <script src="{% get_static_prefix %}js/lib/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="{% get_static_prefix %}js/lib/summernote/dist/summernote.js"></script>
 
     <!-- Sensei Grid JS -->
     <script src="{% static 'polls/js/src/sensei-grid.js' %}"></script>

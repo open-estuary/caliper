@@ -12,7 +12,7 @@ from . import views
 
 urlpatterns = [
         # ex:  /polls/
-        url(r'^$', views.index, name='index'),
+        url(r'^$', views.summary, name='summary'),
         url(r'algorithm/$', views.algorithm, name='algorithm' ),
         url(r'cpu/$', views.cpu, name='cpu'),
         url(r'disk/$', views.disk, name='disk'),
@@ -20,5 +20,5 @@ urlpatterns = [
         url(r'memory/$', views.memory, name='memory'),
         url(r'static/(?P<path>.*)$', 'django.views.static.serve', 
             {'document_root': settings.STATIC_ROOT}, name='static'),
-        ]
+]
 

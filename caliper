@@ -118,8 +118,3 @@ if __name__=="__main__":
     except Exception, e:
         raise e
 
-    try:
-        subprocess.call("cd frontend; python manage.py runserver", shell=True)
-    except Exception as e:
-        raise e
-

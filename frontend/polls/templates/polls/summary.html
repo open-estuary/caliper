@@ -1,0 +1,86 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>caliper's result</title>
+    {% load static %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- CSS dependecies -->
+    <link rel="stylesheet" type="text/css" href="{% get_static_prefix %}js/lib/bootstrap/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" type="text/css" href="{% get_static_prefix %}js/lib/pickadate/lib/themes/classic.css"/>
+    <link rel="stylesheet" type="text/css" href="{% get_static_prefix %}js/lib/pickadate/lib/themes/classic.date.css"/>
+    <link rel="stylesheet" type="text/css" href="{% get_static_prefix %}js/lib/fontawesome/css/font-awesome.min.css"/>
+    <link rel="stylesheet" type="text/css" href="{% get_static_prefix %}js/lib/summernote/dist/summernote.css"/>
+
+    <!-- Sensei Grid CSS -->
+    <link rel="stylesheet" type="text/css" href="{% static 'polls/css/sensei-grid.css' %}"/>
+
+    <!-- JS dependencies -->
+    <script src="{% get_static_prefix %}js/lib/jquery/dist/jquery.min.js"></script>
+    <script src="{% get_static_prefix %}js/lib/lodash/dist/lodash.min.js"></script>
+    <script src="{% get_static_prefix %}js/lib/pickadate/lib/picker.js"></script>
+    <script src="{% get_static_prefix %}js/lib/pickadate/lib/picker.date.js"></script>
+    <script src="{% get_static_prefix %}js/lib/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="{% get_static_prefix %}js/lib/summernote/dist/summernote.js"></script>
+
+    <!-- Sensei Grid JS -->
+    <script src="{% static 'polls/js/src/sensei-grid.js' %}"></script>
+    <script src="{% static 'polls/js/src/sensei-editors.js' %}"></script>
+    <script src="{% static 'polls/js/src/sensei-json.js' %}"></script>
+    <script src="{% static 'polls/js/example/example_test.js' %}"></script>
+    <script src="{% static 'polls/js/example/test_tool.js' %}"></script>
+    <script src="{% static 'polls/js/example/test_execution.js' %}"></script>
+    <script src="{% static 'polls/js/example/test_sum_result.js' %}"></script>
+    <!-- Custom CSS for this example -->
+    <style type="text/css">
+        .example {
+            width: 940px;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
+        .sensei-grid {
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-weight: bold;
+            line-height: normal;
+        }
+    </style>
+</head>
+<body>
+<div class="example">
+    <div><input type="hidden" id="example_tst" value="{{ dic_sum }}"> </div>
+
+    <div class="page-header">
+    </div>
+    
+    <h1><small>Comparision platforms and configuration</small></h1>
+    <div id="platform_configuration" class="sensei-grid"></div>
+    
+    <h1><small>Test tool used</small></h1>
+    <div id="tools_info" class="sensei-grid"></div>
+
+    <h1><small>Test execution details</small></h1>
+    <div id="exec_info" class="sensei-grid"></div>
+
+    <h1><small>Result Summary</small></h1>
+
+    <p>This is the test summary result of D02, pc and our team's server. 
+    More detail information about <a href="/polls/algorithm">ALGORITHM</a>;
+    More detail information about <a href="/polls/cpu">CPU</a>;
+    More detail information about <a href="/polls/disk">DISK</a>;
+    More detail information about <a href="/polls/latency">LATENCY</a>;
+    More detail information about <a href="/polls/memory">MEMORY</a>.
+ </p>
+	<!--div style="text-align: center;">
+        <p> <img src="{% static 'polls/pictures/sum.png' %}" height="400" width="700" /> </p>
+	</div-->
+    
+    <div id="sum_result_info" class="sensei-grid"></div>
+
+    </div>
+</body>
+</html>
