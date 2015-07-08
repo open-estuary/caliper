@@ -72,6 +72,17 @@ def get_host_hardware_info(host):
         logic_cpu = host.run("grep 'processor' /proc/cpuinfo |sort |uniq |wc -l")
         memory = host.run("free -m |grep 'Mem:' |awk -F : '{print $2}' |awk '{print $1}'")
         os_version = host.run("uname -s -r -m")
+
+#SPV - Fetch Cache configuration details
+	l1d_cache = host.run("lscpu |grep 'L1d cache' |awk -F : '{print $2}' |awk '{print $1}'")
+	l1i_cache = host.run("lscpu |grep 'L1i cache' |awk -F : '{print $2}' |awk '{print $1}'")
+	pdb.set_trace()	
+	l2_cache = host.run("lscpu |grep 'L2 cache' |awk -F : '{print $2}' |awk '{print $1}'")
+	l3_cache = host.run("lscpu |grep 'L3 cache' |awk -F : '{print $2}' |awk '{print $1}'")
+	byte_order = host.run("lscpu |grep 'Byte Order' |awk -F : '{print $2}' |awk '{print $1,$2}'")
+# More options can be added as per the requirement
+# Currently lscpu is not providing the cache related information on ARM platform. A bug has been logged.    
+
     except error.CmdError, e:
         logging.info(e.args[0], e.args[1])
         return None
@@ -86,6 +97,17 @@ def get_host_hardware_info(host):
             hardware_info['Memory'] = memory.stdout.split("\n")[0]+'MB'
         if not os_version.exit_status:
             hardware_info['OS Version'] = os_version.stdout.split("\n")[0]
+
+        if not l1d_cache.exit_status:
+       	    hardware_info['l1d_cache'] = l1d_cache.stdout.split("\n")[0]
+        if not l1i_cache.exit_status:
+       	    hardware_info['l1i_cache'] = l1i_cache.stdout.split("\n")[0]
+        if not l2_cache.exit_status:
+       	    hardware_info['l2_cache'] = l2_cache.stdout.split("\n")[0]
+        if not l2_cache.exit_status:
+       	    hardware_info['l3_cache'] = l3_cache.stdout.split("\n")[0]
+        if not byte_order.exit_status:
+       	    hardware_info['byte_order'] = byte_order.stdout.split("\n")[0]
         return hardware_info
 
 def get_local_machine_arch():
