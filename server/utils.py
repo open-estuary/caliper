@@ -76,7 +76,6 @@ def get_host_hardware_info(host):
 #SPV - Fetch Cache configuration details
 	l1d_cache = host.run("lscpu |grep 'L1d cache' |awk -F : '{print $2}' |awk '{print $1}'")
 	l1i_cache = host.run("lscpu |grep 'L1i cache' |awk -F : '{print $2}' |awk '{print $1}'")
-	pdb.set_trace()	
 	l2_cache = host.run("lscpu |grep 'L2 cache' |awk -F : '{print $2}' |awk '{print $1}'")
 	l3_cache = host.run("lscpu |grep 'L3 cache' |awk -F : '{print $2}' |awk '{print $1}'")
 	byte_order = host.run("lscpu |grep 'Byte Order' |awk -F : '{print $2}' |awk '{print $1,$2}'")
