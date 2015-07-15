@@ -75,10 +75,14 @@
     More detail information about <a href="/polls/latency">LATENCY</a>;
     More detail information about <a href="/polls/memory">MEMORY</a>.
  </p>
-	<!--div style="text-align: center;">
-        <p> <img src="{% static 'polls/pictures/sum.png' %}" height="400" width="700" /> </p>
-	</div-->
-    
+
+    {% if dic_sum %}
+	<div style="text-align: center;">
+        <p> <img src="{% static 'polls/pictures/test.png' %}" height="600"
+        width="600" /> </p>
+	</div>
+    {% endif %}
+
     <div id="sum_result_info" class="sensei-grid"></div>
 
     </div>

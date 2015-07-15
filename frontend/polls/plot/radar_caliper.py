@@ -197,7 +197,7 @@ def draw_radar(file_lists, store_folder):
     colors = ['b','r', 'g', 'm', 'y']
     if len(file_lists) < len(colors):
         colors = colors[0:len(file_lists)]
-    title = 'Test Radar Diagram'
+    title = 'Radar Diagram'
 
     fig = plt.figure(figsize=(9, 9))
     fig.subplots_adjust(wspace=0.25, hspace=0.20, top=0.85, bottom=0.05)
@@ -226,7 +226,7 @@ def draw_radar(file_lists, store_folder):
     legend = plt.legend(labels, loc=(0.9, 0.95), labelspacing=0.1)
    
     plt.setp(legend.get_texts(), fontsize='small')
-    plt.figtext(0.5, 0.965, 'Test of Drawing Radar Diagram for Caliper',
+    plt.figtext(0.5, 0.965, 'rawing Radar Diagram for Caliper',
                 ha='center', color='black', weight='bold', size='large')
 
     path_name = os.path.join(store_folder, "test.png")

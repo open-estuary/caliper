@@ -40,7 +40,7 @@ CHARTIT_JS_REL_PATH = '/chartit/js/'
 ADMIN_MEDIA_PREFIX = '/static/admin/'
 
 STATICFILES_DIRS = (os.path.join(PROJECT_ROOT, 'projectstatic'), )
-DATAFILES_FOLDER = os.path.join(PROJECT_ROOT, 'json_files/')
+DATAFILES_FOLDER = os.path.join(PROJECT_ROOT, 'data_files/')
 # Application definition
 
 STATICFILES_FINDERS = (

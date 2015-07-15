@@ -54,26 +54,33 @@
 <div class="example">
     <div><input type="hidden" id="memory_tst" value="{{ dic_mem }}"> </div>
 
+    {% if sum %}
     <h1><small>caliper memory comparison figure</small></h1>
-   <!--div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/memory_sum.png' %}" height="300" width="800" /> </p>
-	</div-->
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/memory_summary.png' %}" height="300"
+    width="600" /> </p>
+	</div>
     
     <h1><small>caliper memory comparison detail</small></h1>
     <div class="sensei-grid"></div>
+    {% endif %}
 	
+    {% if local_speed %}
     <h1><small>caliper memory bandwidth</small></h1>
-	<!--div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/memory_local.png' %}" height="450" width="800" /> </p>
-	</div-->
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/memory_local_speed.png' %}" height="450" width="800" /> </p>
+	</div>
 		   
     <div class="sensei-grid"></div>
+    {% endif %}
 	
+    {% if bandwidth %}
     <h1><small>caliper memory cachebench</small></h1> 
-	<!--div style="text-align: center;">
+	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/memory_bandwidth.png' %}" height="450" width="800" /> </p>
-	</div-->
+	</div>
     <div class="sensei-grid"></div>
+    {% endif %}
 
     </div>
 </body>

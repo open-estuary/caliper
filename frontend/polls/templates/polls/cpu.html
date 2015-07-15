@@ -56,44 +56,56 @@
 <body>
 <div class="example">
     <div><input type="hidden" id="cpu_tst" value="{{ dic_cpu }}"> </div>
-
-    <!--h1><small>caliper cpu comparison figure</small></h1>
+    
+    {% if sum %}
+    <h1><small>caliper cpu comparison figure</small></h1>
 	<div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/cpu_sum.png' %}" height="400" width="800" /> </p>
-	</div!-->
+    <p> <img src="{% static 'polls/pictures/cpu_summary.png' %}" height="400" width="700" /> </p>
+	</div>
     
     <h1><small>caliper cpu comparison detail</small></h1>
     <div class="sensei-grid"></div>
+    {% endif %}
 	
+    {% if multicore_int %}
     <h1><small>caliper cpu basic integer</small></h1>
-	<!--div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/cpu_integer.png' %}" height="400" width="850" /> </p>
-	</div-->
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/cpu_multicore_int.png' %}" height="400" width="850" /> </p>
+	</div>
     <div class="sensei-grid"></div>
+    {% endif %}
 	
+    {% if multicore_float %}
     <h1><small>caliper cpu float operation</small></h1>
-	<!--div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/cpu_float.png' %}" height="400" width="850" /> </p>
-	</div-->
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/cpu_multicore_float.png' %}" height="400" width="850" /> </p>
+	</div>
     <div class="sensei-grid"></div>
+    {% endif %}
 	
+    {% if multicore_double %}
     <h1><small>caliper cpu double operation</small></h1>
-	<!--div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/cpu_double.png' %}" height="500" width="850" /> </p>
-	</div-->
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/cpu_multicore_double.png' %}" height="500" width="850" /> </p>
+	</div>
     <div class="sensei-grid"></div>
+    {% endif %}
 	
+    {% if sincore_int %}
 	<h1><small>caliper cpu sincore integer</small></h1>
-	<!--div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/sincore_integer.png' %}" height="400" width="800" /> </p>
-	</div-->
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/cpu_sincore_int.png' %}" height="400" width="800" /> </p>
+	</div>
     <div class="sensei-grid"></div>
+    {% endif %}
 	
+    {% if sincore_float %}
     <h1><small>caliper cpu sincore float</small></h1>
-	<!--div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/sincore_float.png' %}" height="400" width="850" /> </p>
-	</div-->
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/cpu_sincore_float.png' %}" height="400" width="850" /> </p>
+	</div>
     <div class="sensei-grid"></div>
+    {% endif %}
     
 </div>
 </body>

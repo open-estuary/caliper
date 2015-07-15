@@ -58,6 +58,16 @@ def get_cases_union(file_lists, subItem, subPoint):
         union_cases = list(set(union_cases) & set(test_cases))
     return union_cases
 
+def _get_labels(files):
+    label_total = []
+    for i in range(0, len(files)):
+        fpi = open(files[i])
+        results_i = yaml.load(fpi)
+        fpi.close()
+        label = results_i['name']
+        label_total.append(label)
+    return label_total
+
 class DrawPicture:
 
     @staticmethod
@@ -79,7 +89,7 @@ class DrawPicture:
                 ## get the keys of the Test Points, namely the Test Cases
                 label = get_cases_union(file_names, subItem, point)
                 if not label:
-                    return 
+                    continue 
                 # set the length of x axis
                 x1 = na.array(range(len(label))) + 0.5
                 fig, ax = plt.subplots()
@@ -133,12 +143,92 @@ class DrawPicture:
                 plt.grid(True)
                 if re.search('/', point):
                     point=point.replace('/', '_')
-                png_name = os.path.join(folder,subItem + '_' + point + '.png')
+                point = '_'.join(point.split(" "))
+                png_name = os.path.join(folder, subItem + '_' + point + '.png')
                 plt.savefig( png_name, dit=150 )
+    
+    @staticmethod
+    def draw_testCase_picture( file_names, test_subItems, folder ):
+        if not len(test_subItems):
+            return
+        label_total = _get_labels(file_names)
+        color_total = ['r', 'y', 'b', 'g', 'k', 'm', 'c', 'w']
+
+        for item in test_subItems:
+            key_points = get_points_union(file_names, item)
+            key_length = len(key_points)
+            if not key_points:
+                continue
+            data_total = []
+            y_max = 0
+            rects = []
+            ind = 0
+            width = 0.35
+            avialabel_points = []
+            error_flag = 0
+
+            fig, ax = plt.subplots()
+            # get the lists of each Test SubItems from different targets
+            for i in range(0, len(file_names)):
+                fpi = open(file_names[i])
+                results_i = yaml.load(fpi)
+                fpi.close()
+               
+                try:
+                    test_resultsi = results_i['results']['Performance']
+                except Exception:
+                    print e
+                    print "Error: %s"  % file_names[i]
+                    continue
+
+                #calculate the total score of each point in the subitem
+                data = []
+                for key in key_points:
+                    test_key = test_resultsi[item][key]
+                    data.append(test_key['Total_Scores'])
+           
+                    y_value = test_key['Total_Scores']
+                    if(y_value > y_max):
+                        y_max = y_value
+                
+                if data:
+                    data_total.append(data)
+                else:
+                    key_length = key_length - 1
+                    error_falg = 1
+
+            if error_flag == 1:
+                continue
+            # compute the length of the x axis
+            for i in range(0, len(label_total)):
+                ind = na.array(range(key_length))+0.5
+                width = 0.20
+                rect_item = ax.bar(ind+i*width, data_total[i], width, color=color_total[i])
+                rects.append(rect_item)
+
+            ax.set_ylabel('Scores')
+            ax.set_title('Total Score of Item %s' % item )
+            ax.set_xticks(ind+width*len(rects)/2)
+            ax.set_xticklabels( tuple(key_points) )
+            
+            ax.legend(tuple(rects), tuple(label_total),  loc="upper right" )
+            leg = plt.gca().get_legend()
+            ltext = leg.get_texts()
+            plt.setp(ltext, fontsize='small')
+            plt.ylim(0, y_max*1.20)
+            # show the value of the bar
+            def autolabel(rectsi):
+                for rect in rectsi:
+                    height = rect.get_height()
+                    ax.text(rect.get_x()+rect.get_width()/2., 1.02*height, '%.2f'%float(height),
+                            ha='center', va='bottom')
+            #for i in range(0, len(rects)):
+                #autolabel(rects[i])
+            png_name = os.path.join(folder, item + '_summary.png')
+            plt.savefig( png_name, dit=512 )
 
     @staticmethod
     def draw_testSubItem_picture( file_names, test_subItems, folder ):
-        items_Scores = []
         y_max = 0
         data_total = []
         label_total = []
@@ -147,7 +237,8 @@ class DrawPicture:
         ind = 0
         width = 0.35
         rcParams['figure.figsize'] = 9, 6
-        fig, ax = plt.subplots()   
+        fig, ax = plt.subplots()
+        label_total = _get_labels(file_names)
         
         if not len(test_subItems):
             return 
@@ -158,8 +249,6 @@ class DrawPicture:
             fpi.close()
            
             try:
-                label = results_i['name']
-                label_total.append(label)
                 test_resultsi = results_i['results']['Performance']
             except Exception:
                 print e
@@ -190,19 +279,20 @@ class DrawPicture:
         ax.set_xticklabels( tuple(test_subItems) )
 
         ax.legend(tuple(rects), tuple(label_total),  loc="upper left" )
+        # set the fonts in the plotting
         leg = plt.gca().get_legend()
         ltext = leg.get_texts()
         plt.setp(ltext, fontsize='small')
 
         plt.ylim(0, y_max*1.08)
-        # set the label for the labelling
+        # show the value of the bar
         def autolabel(rectsi):
             for rect in rectsi:
                 height = rect.get_height()
                 ax.text(rect.get_x()+rect.get_width()/2., 1.02*height, '%.2f'%float(height),
                         ha='center', va='bottom')
-        for i in range(0, len(rects)):
-            autolabel(rects[i])
+        #for i in range(0, len(rects)):
+        #    autolabel(rects[i])
         png_name = os.path.join(folder, 'Total_Scores.png')
         plt.savefig( png_name, dit=512 )
 
@@ -229,6 +319,7 @@ def draw_picture(file_lists, picture_location):
 
     union_Items = get_files_union(file_lists)
     DrawPicture.draw_testpoint_picture(file_lists, union_Items, picture_location )
+    DrawPicture.draw_testCase_picture( file_lists, union_Items, picture_location )
     DrawPicture.draw_testSubItem_picture( file_lists, union_Items, picture_location )
     if (len(file_lists) >= 3):
         radar.draw_radar(file_lists, picture_location)

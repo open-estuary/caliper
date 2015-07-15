@@ -26,5 +26,5 @@ CALIPER_LOG_FILE = os.path.join(CALIPER_DIR, "caliper_exe.log")
 CALIPER_SUMMARY_FILE = os.path.join(CALIPER_DIR, "results_summary.log")
 TMP_DIR = os.path.join("/tmp", "caliper.tmp")
 
-HTML_DATA_DIR = os.path.join(CALIPER_DIR, "frontend", "frontend", "json_files")
+HTML_DATA_DIR = os.path.join(CALIPER_DIR, "frontend", "frontend", "data_files")
 HTML_PICTURE_DIR = os.path.join(CALIPER_DIR, "frontend", "polls", "static", "polls", "pictures") 
