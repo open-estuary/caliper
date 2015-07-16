@@ -8,21 +8,25 @@
 #
 import os
 import sys
+import time
 import logging
 import pdb
 import shutil
+import signal
 import datetime
+import commands
 import subprocess
+from optparse import OptionParser
 
 try:
     import caliper.common as common
 except ImportError:
     import common
-   
+
 from caliper.server.build import build
 from caliper.server.run import test_run
-from caliper.server.parser_process import parser
-from caliper.server.parser_process.draw_picture import show_picture
+from caliper.server.parser_process import parser as parser_engine
+#from caliper.server.parser_process.draw_picture import show_picture
 from caliper.client.shared.settings import settings
 from caliper.client.shared import error
 from caliper.server.hosts import host_factory
@@ -45,7 +49,7 @@ def build_all_tests(remote_host):
         raise
     else:
         return result1
-   
+
 def run_caliper(remote_host):
     try:
         logging.debug("begining to run Caliper")
@@ -60,7 +64,7 @@ def run_caliper(remote_host):
 def parser_caliper(remote_host):
     try:
         logging.debug("begining to parser the result of caliper")
-        parser.parser_caliper(remote_host)
+        parser_engine.parser_caliper(remote_host)
     except Exception, e:
         logging.info("There is wrong when parsering the caliper result")
         print e
@@ -83,34 +87,85 @@ def get_remote_host():
         password = settings.get_value('CLIENT', 'password', type=str)
     except Exception, e:
         raise error.ServRunError(e.args[0], e.args[1])
-    
+
     remote_host = host_factory.create_host(client_ip, user, password, port)
     return remote_host
 
+def kill_django(pid):
+    children = commands.getoutput("ps --ppid=%d -o pid=" % pid).split()
+    for child in children:
+        children1 = commands.getoutput("ps --ppid=%d -o pid=" % 
+                int(child)).split()
+        for child1 in children1:
+            utils.safe_kill(child1, signal.SIGINT)
+        utils.safe_kill(child, signal.SIGSTOP)
+    utils.kill_process_tree(pid)
+
+def generate_web_tar():
+    newpid = os.fork()
+    logging.debug("the pid number is %d" % newpid)
+    if newpid == 0: #child process
+        return_code = 0
+        try:
+            return_code = subprocess.call("cd frontend; python\
+                    manage.py runserver --noreload 1>/dev/null 2>&1 & ", shell=True)
+        except Exception as e:
+            raise e
+        else:
+            os._exit(return_code)
+    else: # parent process
+        time.sleep(10)
+        logging.debug("the parent pid of parent is %d" % os.getpid())
+        try:
+            logging.info("Generating the webpages which are test results")
+            subprocess.call("wget -r -p -k -np\
+                    http://127.0.0.1:8000 -P results -q" , shell=True)
+            subprocess.call("cd results; mv 127.0.0.1:8000 test_results; tar\
+                    czf test_results.tar.gz test_results; rm -fr\
+                    test_results", shell=True)
+        except Exception as e:
+            logging.info("There is wrong with generating the test result webpage")
+            kill_django(newpid)
+        else:
+            logging.info("Finishing generating the test result webpage")
+            kill_django(newpid)
+
 if __name__=="__main__":
+    parser = OptionParser()
+    parser.add_option("-b", "--build", action="store_true", dest="build", default=True,
+            help="select to build the selected test tools")
+    parser.add_option("-B", "--nobuild", action="store_false", dest="build", help=
+            "select not to build process of test tools")
+    parser.add_option("-r", "--run", action="store_true", dest="run", default=True,
+            help="select to run the selected test tools")
+    parser.add_option("-R", "--norun", action="store_false", dest="run", help=
+            "not to execute the process of running test tools")
+    parser.add_option("-w", "--webpage", action="store_true", dest="webpage", default=False,
+            help="select to generate the webpage test report")
+    (options, args) = parser.parse_args()
+
     start_time = datetime.datetime.now() 
-    
     remote_host = get_remote_host()
 
-    try:
-        result1 = build_all_tests(remote_host)
-        if result1:
+    if options.build:
+        try:
+            result1 = build_all_tests(remote_host)
+            if result1:
+                sys.exit()
+        except Exception, e:
+            raise
             sys.exit()
-    except Exception, e:
-        raise
-        sys.exit()
-    try:
-        result2 = run_caliper(remote_host)  
-        if result2:
-            sys.exit()
-        parser_caliper(remote_host)
-    except Exception:
-        raise
-        sys.exit() 
-    try:
-        show_picture.show_caliper_result()
-    except Exception, e:
-        raise e
+
+    if options.run: 
+        try:
+            result2 = run_caliper(remote_host)  
+            if result2:
+                sys.exit()
+            parser_caliper(remote_host)
+        except Exception:
+            raise
+            sys.exit() 
+
     end_time = datetime.datetime.now()
     interval = end_time - start_time
     try:
@@ -118,3 +173,5 @@ if __name__=="__main__":
     except Exception, e:
         raise e
 
+    if options.webpage:
+        generate_web_tar()

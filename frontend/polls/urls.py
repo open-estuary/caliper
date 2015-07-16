@@ -12,7 +12,7 @@ from . import views
 
 urlpatterns = [
         # ex:  /polls/
-        url(r'^$', views.summary, name='summary'),
+        url(r'^index/$', views.index, name='index'),
         url(r'algorithm/$', views.algorithm, name='algorithm' ),
         url(r'cpu/$', views.cpu, name='cpu'),
         url(r'disk/$', views.disk, name='disk'),

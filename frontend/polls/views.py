@@ -91,11 +91,11 @@ def get_detail_data( files, category ):
         dic[key] = tmp_dic
     return dic
 
-def summary(request):
+def index(request):
     show_picture.show_caliper_result()
     files = get_files()
     dic_sum = get_sum_dics(files)
-    return render(request, 'polls/summary.html', {'dic_sum': json.dumps(dic_sum)})
+    return render(request, 'polls/index.html', {'dic_sum': json.dumps(dic_sum)})
 
 def algorithm(request):
     files = get_files()
