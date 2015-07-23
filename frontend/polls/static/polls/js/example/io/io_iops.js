@@ -1,17 +1,16 @@
 
 $(function () {
-	var test = document.getElementById("cpu_tst").value;  
+    var test = document.getElementById("io_tst").value;  
     
-    var mul_int_dic = getJson(test, 'multicore_int')
-    var columns = getHoriColumn(mul_int_dic);
-    var data = getHoriData(mul_int_dic, columns);
-
+    var local_lat_dic = getJson(test, 'iops')
+    var columns = getHoriColumn(local_lat_dic);
+    var data = getHoriData(local_lat_dic, columns);   
+   	
     // initialize grid
     var options = {emptyRow: true, sortable: false};
-	var grid = $(document.getElementById("multi-int")).grid(data, columns, options);
-
+	var grid = $(document.getElementById("io-iops")).grid(data, columns, options);
     draw_grid(grid);
-
+    
     // api examples
     var $row = grid.getRowByIndex(5);
     console.group("data api examples");

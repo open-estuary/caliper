@@ -120,6 +120,12 @@ def generate_web_tar():
             logging.info("Generating the webpages which are test results")
             subprocess.call("wget -r -p -k -np\
                     http://127.0.0.1:8000 -P results -q" , shell=True)
+            test_dir = os.path.join('results', 'test_results')
+            if os.path.exists( test_dir ):
+                shutil.rmtree(test_dir)
+            test_dir = os.path.join('results', 'test_results.tar.gz')
+            if os.path.exists( test_dir ):
+                shutil.rmtree(test_dir)
             subprocess.call("cd results; mv 127.0.0.1:8000 test_results; tar\
                     czf test_results.tar.gz test_results; rm -fr\
                     test_results", shell=True)
@@ -172,6 +178,5 @@ if __name__=="__main__":
         summary.output_summary_info(remote_host, interval.seconds)
     except Exception, e:
         raise e
-
     if options.webpage:
         generate_web_tar()

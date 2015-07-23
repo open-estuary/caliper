@@ -18,6 +18,8 @@ urlpatterns = [
         url(r'disk/$', views.disk, name='disk'),
         url(r'latency/$', views.latency, name='latency'),
         url(r'memory/$', views.memory, name='memory'),
+        url(r'network/$', views.network, name='network'),
+        url(r'io/$', views.io, name='io'),
         url(r'static/(?P<path>.*)$', 'django.views.static.serve', 
             {'document_root': settings.STATIC_ROOT}, name='static'),
 ]

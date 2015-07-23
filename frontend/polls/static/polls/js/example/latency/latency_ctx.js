@@ -7,7 +7,7 @@ $(function () {
     var data = getHoriData(ctx_dic, columns);
     // initialize grid
     var options = {emptyRow: true, sortable: false};
-	var grid = $(".sensei-grid:eq(1)").grid(data, columns, options);
+	var grid = $(document.getElementById("lat-ctx")).grid(data, columns, options);
 
     draw_grid(grid);
 

@@ -8,7 +8,7 @@ $(function () {
 
     // initialize grid
     var options = {emptyRow: true, sortable: false};
-	var grid = $(".sensei-grid:eq(5)").grid(data, columns, options);
+	var grid = $(document.getElementById("lat-real-time")).grid(data, columns, options);
     draw_grid(grid);
 
     // api examples

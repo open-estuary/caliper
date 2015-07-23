@@ -32,7 +32,7 @@ def get_sum_dics(files):
         with open(filename) as fp:
             data = json.load(fp)
         fp.close()
-        target = filename.split('.')[0].split('/')[-1]
+        target = '_'.join(filename.split('/')[-1].split('_')[:-2])
         conf_tmp[target] = data['Configuration']
         sum_tmp = {}
         perf_dic = data['results']['Performance']
@@ -47,7 +47,7 @@ def get_each_sum_item( files, category ):
     dic = {}
     for filename in files:
         tmp_dic = {}
-        target = filename.split('.')[0].split('/')[-1]
+        target = '_'.join(filename.split('/')[-1].split('_')[:-2])
         dic[target] = {}
         with open(filename) as fp:
             data = json.load(fp)
@@ -85,17 +85,27 @@ def get_detail_data( files, category ):
             with open(filename) as fp:
                 data = json.load(fp)
             fp.close()
-            target = filename.split('.')[0].split('/')[-1]
+            target = '_'.join(filename.split('/')[-1].split('_')[:-2])
             test_points = data['results']['Performance'][category][key]
             tmp_dic[target] = test_points['Point_Scores']
         dic[key] = tmp_dic
     return dic
 
+def _deal_keyword(string):
+    new_str = '_'.join(string.split('/'))
+    new_str = '_'.join(new_str.split(" "))
+    return new_str
+
 def index(request):
     show_picture.show_caliper_result()
     files = get_files()
+    dic_total = {}
     dic_sum = get_sum_dics(files)
-    return render(request, 'polls/index.html', {'dic_sum': json.dumps(dic_sum)})
+    dic_total['dic_sum'] = json.dumps(dic_sum)
+    for key in dic_sum.keys():
+        key = _deal_keyword(key)
+        dic_total[key] = True
+    return render(request, 'polls/index.html', dic_total)
 
 def algorithm(request):
     files = get_files()
@@ -103,7 +113,7 @@ def algorithm(request):
     dic_alg = get_detail_data(files, 'algorithm')
     dic_total['dic_alg'] = json.dumps(dic_alg)
     for key in dic_alg.keys():
-        key_name = '_'.join(key.split(" "))
+        key_name = _deal_keyword(key)
         dic_total[key_name] = True
     return render(request, 'polls/algorithm.html', dic_total)
 
@@ -113,7 +123,7 @@ def cpu(request):
     dic_cpu = get_detail_data(files, 'cpu')
     dic_total['dic_cpu'] = json.dumps(dic_cpu)
     for key in dic_cpu.keys():
-        key_name = '_'.join(key.split(" "))
+        key_name = _deal_keyword(key)
         dic_total[key_name] = True
     return render(request, 'polls/cpu.html', dic_total)
 
@@ -123,7 +133,7 @@ def disk(request):
     dic_disk = get_detail_data(files, 'disk')
     dic_total['dic_disk'] = json.dumps(dic_disk)
     for key in dic_disk.keys():
-        key_name = '_'.join(key.split(" "))
+        key_name = _deal_keyword(key)
         dic_total[key_name] = True
     return render(request, 'polls/disk.html', dic_total)
 
@@ -133,7 +143,7 @@ def latency(request):
     dic_lat = get_detail_data(files, 'latency')
     dic_total['dic_lat'] = json.dumps(dic_lat)
     for key in dic_lat.keys():
-        key_name = '_'.join(key.split(" "))
+        key_name = _deal_keyword(key)
         dic_total[key_name] = True
     return render(request, 'polls/latency.html', dic_total)
 
@@ -143,7 +153,27 @@ def memory(request):
     dic_mem = get_detail_data(files, 'memory')
     dic_total['dic_mem'] = json.dumps(dic_mem)
     for key in dic_mem.keys():
-        key_name = '_'.join(key.split(" "))
+        key_name = _deal_keyword(key)
         dic_total[key_name] = True
     return render(request, 'polls/memory.html', dic_total)
+
+def io(request):
+    files = get_files()
+    dic_total = {}
+    dic_io = get_detail_data(files, 'io')
+    dic_total['dic_io'] = json.dumps(dic_io)
+    for key in dic_io.keys():
+        key_name = _deal_keyword(key)
+        dic_total[key_name] = True
+    return render(request, 'polls/io.html', dic_total)
+
+def network(request):
+    files = get_files()
+    dic_total = {}
+    dic_net = get_detail_data(files, 'network')
+    dic_total['dic_net'] = json.dumps(dic_net)
+    for key in dic_net.keys():
+        key_name = _deal_keyword(key)
+        dic_total[key_name] = True
+    return render(request, 'polls/network.html', dic_total)
 

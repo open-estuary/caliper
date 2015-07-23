@@ -8,7 +8,7 @@ $(function () {
    	
     // initialize grid
     var options = {emptyRow: true, sortable: false};
-	var grid = $(".sensei-grid:eq(2)").grid(data, columns, options);
+	var grid = $(document.getElementById("network-lat")).grid(data, columns, options);
     draw_grid(grid);
     
     // api examples

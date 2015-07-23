@@ -1,7 +1,7 @@
 
 $(function () {
 
-    var test = document.getElementById("example_tst").value;  
+    var test = document.getElementById("example_tst").value;
     var sum_dic = getJson(test, 'summary');
     var columns = getVertColumn(sum_dic);
     var data = getVertData(sum_dic, columns);
@@ -12,7 +12,7 @@ $(function () {
     draw_grid(grid);
 
     // api examples
-    var $row = grid.getRowByIndex(1);
+    var $row = grid.getRowByIndex(0);
     console.group("data api examples");
     console.log("grid.getRowDataByIndex(0):", grid.getRowDataByIndex(0));
     console.log("grid.getRowData($row):", grid.getRowData($row));

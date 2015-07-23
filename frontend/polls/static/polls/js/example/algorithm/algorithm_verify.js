@@ -7,7 +7,7 @@ $(function () {
     var data = getHoriData(verify_dic, columns);   
     // initialize grid
     var options = {emptyRow: true, sortable: false};
-	var grid = $(".sensei-grid:eq(1)").grid(data, columns, options);
+	var grid = $(document.getElementById("alg_verify")).grid(data, columns, options);
 
     draw_grid(grid);
 

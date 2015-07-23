@@ -1,15 +1,14 @@
 
 $(function () {
-	var test = document.getElementById("cpu_tst").value;  
+    var test = document.getElementById("io_tst").value;  
     
-    var mul_int_dic = getJson(test, 'multicore_int')
-    var columns = getHoriColumn(mul_int_dic);
-    var data = getHoriData(mul_int_dic, columns);
+    var bandwidth_dic = getJson(test, 'bandwidth')
+    var columns = getHoriColumn(bandwidth_dic);
+    var data = getHoriData(bandwidth_dic, columns);     
 
     // initialize grid
     var options = {emptyRow: true, sortable: false};
-	var grid = $(document.getElementById("multi-int")).grid(data, columns, options);
-
+	var grid = $(document.getElementById("io-bandwidth")).grid(data, columns, options);
     draw_grid(grid);
 
     // api examples

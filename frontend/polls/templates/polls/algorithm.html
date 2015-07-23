@@ -29,11 +29,21 @@
     <script src="{% static 'polls/js/src/sensei-grid.js' %}"></script>
     <script src="{% static 'polls/js/src/sensei-editors.js' %}"></script>
     <script src="{% static 'polls/js/src/sensei-json.js' %}"></script> 
+    {% if sum %}
     <script src="{% static 'polls/js/example/algorithm/example_algorithm.js' %}"></script>
+    {% endif %}
+    {% if digital_sign %}
     <script src="{% static 'polls/js/example/algorithm/algorithm_sign.js' %}"></script>
+    {% endif %}
+    {% if digital_verify  %}
     <script src="{% static 'polls/js/example/algorithm/algorithm_verify.js' %}"></script>
+    {% endif %}
+    {% if hash_algorithm %}
     <script src="{% static 'polls/js/example/algorithm/algorithm_hash.js' %}"></script>
+    {% endif %}
+    {% if symmetric_cyphers %}
     <script src="{% static 'polls/js/example/algorithm/algorithm_symm.js' %}"></script>
+    {% endif %}
 
     <!-- Custom CSS for this example -->
     <style type="text/css">
@@ -62,7 +72,7 @@
     <p> <img src="{% static 'polls/pictures/algorithm_summary.png' %}" height="400" width="700" /> </p>
 	</div>
     <h1><small>caliper algorithm comparison detail</small></h1>
-    <div class="sensei-grid"></div>
+    <div id="alg_comparison" class="sensei-grid"></div>
     {% endif %}
 	
     {% if digital_verify  %}
@@ -70,15 +80,15 @@
 	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/algorithm_digital_verify.png' %}" height="400" width="800" /> </p>
 	</div>
-    <div class="sensei-grid"></div>
+    <div id="alg_verify" class="sensei-grid"></div>
     {% endif %}
 	
-    {% if digital_hash %}
+    {% if hash_algorithm %}
     <h1><small>caliper algorithm hash</small></h1>
 	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/algorithm_hash_algorithm.png' %}" height="400" width="850" /> </p>
 	</div>
-    <div class="sensei-grid"></div>
+    <div id="alg_hash" class="sensei-grid"></div>
     {% endif %}
 	
     {% if digital_sign %}
@@ -86,7 +96,7 @@
 	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/algorithm_digital_sign.png' %}" height="400" width="800" /> </p>
 	</div>
-    <div class="sensei-grid"></div>
+    <div id="alg_sign" class="sensei-grid"></div>
     {% endif %}
 	
     {% if symmetric_cyphers %}
@@ -94,7 +104,7 @@
 	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/algorithm_symmetric_cyphers.png' %}" height="400" width="900" /> </p>
 	</div>
-    <div class="sensei-grid"></div>
+    <div id="alg_symmetric" class="sensei-grid"></div>
     {% endif %}
 
    </div>

@@ -2,7 +2,7 @@
 {% load staticfiles %}
 <html>
 <head>
-    <title>caliper's memory result</title>
+    <title>caliper's cpu result</title>
     {% load static %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,17 +27,17 @@
 
     <!-- Sensei Grid JS -->
     <script src="{% static 'polls/js/src/sensei-grid.js' %}"></script>
-    <script src="{% static 'polls/js/src/sensei-editors.js' %}"></script> 
+    <script src="{% static 'polls/js/src/sensei-editors.js' %}"></script>
     <script src="{% static 'polls/js/src/sensei-json.js' %}"></script>
     {% if sum %}
-    <script src="{% static 'polls/js/example/memory/example_memory.js' %}"></script>
-    {% endif %}
-    {% if local_speed %}
-    <script src="{% static 'polls/js/example/memory/memory_bandwidth.js' %}"></script>
-    {% endif %}
+    <script src="{% static 'polls/js/example/io/example_io.js' %}"></script>
+    {% endif %}    
     {% if bandwidth %}
-    <script src="{% static 'polls/js/example/memory/memory_cachebench.js' %}"></script>
-    {% endif %}
+    <script src="{% static 'polls/js/example/io/io_bandwidth.js' %}"></script>
+    {% endif %}    
+    {% if iops %}
+    <script src="{% static 'polls/js/example/io/io_iops.js' %}"></script>
+    {% endif %}    
 
     <!-- Custom CSS for this example -->
     <style type="text/css">
@@ -58,34 +58,35 @@
 </head>
 <body>
 <div class="example">
-    <div><input type="hidden" id="memory_tst" value="{{ dic_mem }}"> </div>
-
+    <div><input type="hidden" id="io_tst" value="{{ dic_io }}"> </div>
     {% if sum %}
-    <h1><small>caliper memory comparison figure</small></h1>
+    <h1><small>caliper io comparison figure</small></h1>
     <div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/memory_summary.png' %}" height="300"
-    width="600" /> </p>
+    <p> <img src="{% static 'polls/pictures/io_summary.png' %}" height="500"
+    width="700" /> </p>
 	</div>
     
-    <h1><small>caliper memory comparison detail</small></h1>
-    <div id="memory-summary" class="sensei-grid"></div>
-    {% endif %}
-	
-    {% if local_speed %}
-    <h1><small>caliper memory bandwidth</small></h1>
-	<div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/memory_local_speed.png' %}" height="450" width="800" /> </p>
-	</div>
-		   
-    <div id="memory-bandwidth" class="sensei-grid"></div>
-    {% endif %}
-	
+    <h1><small>caliper io comparison detail</small></h1>
+    <div id="io-summary" class="sensei-grid"></div>
+    {% endif %}    
+    
     {% if bandwidth %}
-    <h1><small>caliper memory cachebench</small></h1> 
-	<div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/memory_bandwidth.png' %}" height="450" width="800" /> </p>
+    <h1><small>caliper io bandwidth</small></h1>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/io_bandwidth.png' %}" height="500"
+    width="700" /> </p>
 	</div>
-    <div id="memory-cachebench" class="sensei-grid"></div>
+
+    <div id="io-bandwidth" class="sensei-grid"></div>
+    {% endif %}
+    
+    {% if iops %}
+    <h1><small>caliper io iops</small></h1>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/io_iops.png' %}" height="500"
+    width="700" /> </p>
+	</div>
+    <div id="io-iops" class="sensei-grid"></div>
     {% endif %}
 
     </div>
