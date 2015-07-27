@@ -29,23 +29,27 @@ div.projectImage {
 }
 
 div.projectDescription {
-    float: left;
+    /*float: left;*/
+    float: middle;
     margin: 0 0 0 15px;
-    width: 370px;
+    /*width: 370px;*/
+    width: 750px;
 }
 
 div.projectDescription h1 {
     font-family: Georgia, "Times New Roman", Times, serif;
-    font-size: 12px;
+    font-size: 13px;
     background-color:#000;
     color: #f2f2f2;
     font-weight: bold;
     margin: 0; padding: 4px;
+    /* new add */
+    width: 370px;
 }
 
 div.projectDescription p {
     font-family: Georgia;
-    font-size: 13px; color: #000;
+    font-size: 14px; color: #000;
     line-height: 22px;
     margin-top: 10px;
     text-align: left;
