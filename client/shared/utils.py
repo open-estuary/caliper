@@ -86,6 +86,16 @@ def get_cases_def_files( option ):
     cfg_files.append(other_cfg_path)
     return cfg_files
 
+def get_config_value(config_name, section, key):
+    cfg_file = os.path.join(caliper_path.CONFIG_DIR, config_name)
+    try:
+        cfg = BaseCfg(cfg_file)
+        value = cfg.get_value(section, key)
+    except Exception, e:
+        raise
+    else:
+        return value
+
 def get_fault_tolerance_config(section, key):
     flag = 0
     cfg_file = os.path.join(caliper_path.CONFIG_DIR, 'execution_contl.cfg')

@@ -16,7 +16,7 @@ import signal
 import datetime
 import commands
 import subprocess
-from optparse import OptionParser
+from argparse import ArgumentParser
 
 try:
     import caliper.common as common
@@ -25,14 +25,14 @@ except ImportError:
 
 from caliper.server.build import build
 from caliper.server.run import test_run
-from caliper.server.parser_process import parser as parser_engine
-#from caliper.server.parser_process.draw_picture import show_picture
 from caliper.client.shared.settings import settings
 from caliper.client.shared import error
 from caliper.server.hosts import host_factory
 from caliper.client.shared import caliper_path
 from caliper.client.shared import utils
+from caliper.client.shared import send_mails
 from caliper.server import summary
+from caliper.server.parser_process import parser as parser_engine
 
 logging.basicConfig(level=logging.INFO)
 
@@ -134,28 +134,32 @@ def generate_web_tar():
         except Exception as e:
             logging.info("There is wrong with generating the test result webpage")
             kill_django(newpid)
+            return 0
         else:
             logging.info("Finishing generating the test result webpage")
             kill_django(newpid)
+            return 1
 
 if __name__=="__main__":
-    parser = OptionParser()
-    parser.add_option("-b", "--build", action="store_true", dest="build", default=True,
+    parser = ArgumentParser()
+    parser.add_argument("-b", "--build", action="store_true",
+            dest="build", default=True,
             help="select to build the selected test tools")
-    parser.add_option("-B", "--nobuild", action="store_false", dest="build", help=
-            "select not to build process of test tools")
-    parser.add_option("-r", "--run", action="store_true", dest="run", default=True,
+    parser.add_argument("-B", "--nobuild", action="store_false",
+            dest="build", help="select not to build process of test tools")
+    parser.add_argument("-r", "--run", action="store_true", dest="run", default=True,
             help="select to run the selected test tools")
-    parser.add_option("-R", "--norun", action="store_false", dest="run", help=
+    parser.add_argument("-R", "--norun", action="store_false", dest="run", help=
             "not to execute the process of running test tools")
-    parser.add_option("-w", "--webpage", action="store_true", dest="webpage", default=False,
+    parser.add_argument("-w", "--webpage", action="store_true", dest="webpage", default=False,
             help="select to generate the webpage test report")
-    (options, args) = parser.parse_args()
-
+    parser.add_argument("-e", "--email", action="store_true", dest="send_email",
+            default=False, help="Select to send mail to the receivers or not")
+    args = parser.parse_args()
     start_time = datetime.datetime.now() 
     remote_host = get_remote_host()
 
-    if options.build:
+    if args.build:
         try:
             result1 = build_all_tests(remote_host)
             if result1:
@@ -164,7 +168,7 @@ if __name__=="__main__":
             raise
             sys.exit()
 
-    if options.run: 
+    if args.run: 
         try:
             result2 = run_caliper(remote_host)  
             if result2:
@@ -180,5 +184,9 @@ if __name__=="__main__":
         summary.output_summary_info(remote_host, interval.seconds)
     except Exception, e:
         raise e
-    if options.webpage:
-        generate_web_tar()
+    if args.webpage:
+        flag = generate_web_tar()
+    if args.send_email:
+        if os.path.exists(os.path.join('results', 'test_results.tar.gz')):
+            send_mails.send_mails()
+
