@@ -9,6 +9,7 @@ import sys
 import logging
 import pdb
 import re
+import shutil
 import subprocess
 
 import test_perf_tranver as traverse
@@ -59,15 +60,17 @@ def parser_caliper(host):
     file_lists = []
     (file_lists, json_files) = get_targets_data(OUT_DIR)
 
+    if caliper_path.judge_caliper_installed():
+        if not os.path.exists(caliper_path.FRONT_END_DIR):
+            shutil.copytree(caliper_path.FRONT_TMP_DIR, caliper_path.FRONT_END_DIR)
+
     if not os.path.exists(caliper_path.HTML_DATA_DIR):
         os.makedirs(caliper_path.HTML_DATA_DIR)
 
     if file_lists:
         for yaml_file in file_lists:
-            subprocess.call("cp %s %s" % (yaml_file, caliper_path.HTML_DATA_DIR),
-                        shell=True)
+            shutil.copy(yaml_file, caliper_path.HTML_DATA_DIR)
 
     if json_files:
         for json_file in json_files:
-            subprocess.call("mv %s %s" % (json_file, caliper_path.HTML_DATA_DIR),
-                        shell=True)
+            shutil.copy(json_file, caliper_path.HTML_DATA_DIR)

@@ -1,7 +1,7 @@
 build_linpack() {
     set -e
 
-        SrcPath="benchmarks/401.linpack"
+        SrcPath=$BENCH_PATH"401.linpack"
    myOBJPATH=${INSTALL_DIR}/bin
         pushd $SrcPath
         if [ $ARCH = "android" ]; then

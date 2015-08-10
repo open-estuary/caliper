@@ -1,7 +1,7 @@
 build_coremark() {
    set -e
 
-   CoreMarkPath="benchmarks/400.coremark"
+   CoreMarkPath=$BENCH_PATH"400.coremark"
    myOBJPATH=${INSTALL_DIR}/bin
    pushd $CoreMarkPath
    if [ $ARCH = "x86_64" -o $ARCH = "x86_32" ]; then

@@ -12,7 +12,6 @@ import yaml
 import types
 import string
 import re
-import pdb
 import logging
 import datetime
 import subprocess
@@ -166,12 +165,6 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
     result = subprocess.call("echo '$$ %s EXECUTION DURATION %s Seconds'>>%s" 
                                 % (sections_run[i], (endtime-starttime).seconds, 
                                     caliper_log_file), shell=True)
-    pwd_parser = bench_name + "_parser.py"
-    pwd_parserc= pwd_parser + 'c'
-    if os.path.exists(pwd_parser):
-        os.remove(pwd_parser)
-    if os.path.exists(pwd_parserc):
-        os.remove(pwd_parser+"c")
 
 def run_commands(exec_dir, kind_bench, commands,
                     stdout_tee=None, stderr_tee=None, target=None):
@@ -405,19 +398,19 @@ def parser_case(kind_bench, bench_name, parser, infile, outfile):
     #the parser function defined in the config file is to filter the output.
     # get the abspth of the parser.py which is defined in the config files.
     pwd_file = bench_name + "_parser.py"
-    parser_file = os.path.join(caliper_path.TESTS_CFG_DIR, kind_bench, pwd_file)
-    if not os.path.exists(parser_file):
-        fp.write("There is no such a file %s \n" % parser_file)
-        sys.stdout.write("There is no such a file %s \n" % parser_file)
-        return -2
-    # copy the parser files to the cwd path to import it.
-    pwd_parser = pwd_file.split(".")[0]
-    shutil.copyfile(parser_file, pwd_file)
+
+    ##changed by Elaine Aug 8-10
+    parser_file = os.path.join(caliper_path.PARSER_DIR, pwd_file)
+    rel_path = os.path.relpath(parser_file,
+            os.path.dirname(caliper_path.CALIPER_DIR))
+    parser_path = rel_path.split(".")[0]
+    parser_name = parser_path.replace(os.sep, '.')
+
     result = 0 
     if os.path.isfile(parser_file):
         try:
             # import the parser module import_module
-            parser_module = importlib.import_module(pwd_parser)
+            parser_module = importlib.import_module(parser_name)
         except ImportError, e:
             logging.info( e )
             return -3
@@ -441,13 +434,6 @@ def parser_case(kind_bench, bench_name, parser, infile, outfile):
             outfp.close()
             infp.close()
     fp.close()
-    # remove the parser file
-    pwd_parser = bench_name + "_parser.py"
-    pwd_parserc= pwd_parser + 'c'
-    if os.path.exists(pwd_parser):
-        os.remove(pwd_parser)
-    if os.path.exists(pwd_parserc):
-        os.remove(pwd_parser+"c")
     return result
 
 def compute_case_score(result, category, score_way, target):

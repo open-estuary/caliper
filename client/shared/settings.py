@@ -21,24 +21,13 @@ class SettingsValueError(SettingsError):
 settings_filename = 'client_config.cfg'
 shadow_config_filename = 'shadow_config.cfg'
 
-shared_dir = os.path.dirname(sys.modules[__name__].__file__)
-client_dir = os.path.dirname(shared_dir)
-root_dir = caliper_path.CALIPER_DIR
-
-settings_path_root = os.path.join(root_dir, 'config', settings_filename)
+settings_path_root = os.path.join(caliper_path.CONFIG_DIR, settings_filename)
 config_in_root = os.path.exists(settings_path_root)
-
-# Check if the config files are at the client dir
-settings_path_client = os.path.join(client_dir, 'remote_ssh.ini')
-config_in_client = os.path.exists(settings_path_client)
 
 # need to change
 if config_in_root:
     DEFAULT_CONFIG_FILE = settings_path_root
     RUNNING_STAND_ALONE_CLIENT = False
-elif config_in_client:
-    DEFAULT_CONFIG_FILE = settings_path_client
-    RUNNING_STAND_ALONE_CLIENT = True
 else:
     DEFAULT_CONFIG_FILE = None
     RUNNING_STAND_ALONE_CLIENT = False

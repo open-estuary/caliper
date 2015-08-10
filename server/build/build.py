@@ -293,6 +293,14 @@ def record_log(log_file, arch, succeed_flag):
         raise e
 
 def build_for_target(target):
+    if caliper_path.judge_caliper_installed:
+        if not os.path.exists(os.path.join('/tmp', 'caliper_build')):
+            os.mkdir(os.path.join('/tmp', 'caliper_build'))
+        benchs_dir = os.path.join('/tmp', 'caliper_build', 'benchmarks')
+        if os.path.exists(benchs_dir):
+            shutil.rmtree(benchs_dir)
+        shutil.copytree(caliper_path.BENCHS_DIR, benchs_dir)
+
     if os.path.exists(caliper_path.CALIPER_LOG_FILE):
         os.remove(caliper_path.CALIPER_LOG_FILE)
     if os.path.exists(caliper_path.CALIPER_LOG_FILE):
@@ -343,13 +351,14 @@ def copy_gen_to_target(target, target_arch):
         else:
             target.run("mkdir caliper")
         target.run("cd caliper;  mkdir -p binary")
-
         remote_pwd = target.run("pwd").stdout
         remote_pwd = remote_pwd.split("\n")[0]
         remote_caliper_dir = os.path.join(remote_pwd, "caliper")
         remote_gen_dir = os.path.join(remote_caliper_dir, "binary", target_arch)
-        send_files = ['client', 'common.py',  '__init__.py']
-        send_gen_files= 'binary/%s' % target_arch
+        send_file_relative = ['client', 'common.py',  '__init__.py']
+        send_files = [ os.path.join(caliper_path.CALIPER_DIR, i) for i in
+                send_file_relative]
+        send_gen_files= os.path.join( caliper_path.GEN_DIR, target_arch)
        
         for i in range(0, len(send_files)):
             try:

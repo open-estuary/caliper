@@ -19,53 +19,34 @@ do_msg_end()
 }
 
 build_prepare() {
-   OBJPATH=$OBJDIR/$ARCH
-    if [ ! -d $OBJPATH/bin ]; then
-       mkdir -p $OBJPATH/bin
+    OBJPATH=$OBJDIR/$ARCH
+       BENCH_PATH="benchmarks/"
+    caliper_exists=$(which caliper)
+
+    if [ "$caliper_exists"x != ""x ]; then
+        INSTALL_DIR="/home/$(whoami)/.caliper/$OBJPATH"
+        OBJPATH=/tmp/caliper_build/$OBJPATH
+        BENCH_PATH=/tmp/caliper_build/$BENCH_PATH
+    else
+        INSTALL_DIR="$MYPWD/$OBJPATH"
     fi
-    #if [! -d $OBJDIR/output ]; then
-    #    mkdir -p $OBJDIR/output
-    #    cp -r server/parser_process/show_output/output/ $OBJPATH
-    #fi
-   
+        if [ ! -d $OBJPATH/bin ]; then
+            mkdir -p $OBJPATH/bin
+        fi
+        if [ ! -d $INSTALL_DIR ]; then
+            mkdir -p $INSTALL_DIR
+            mkdir -p $INSTALL_DIR/bin
+        fi
+
 # SPV - for adding time stamp to the temp folder so that caliper can run on multiple board simultaneously
     NOW=$(date +"%Y-%m-%d_%H-%M-%S") 
     CALIPER_TMP="/tmp/caliper_$NOW.tmp"
     if [ ! -d $CALIPER_TMP ]; then
         mkdir -p $CALIPER_TMP
     fi
-    
-    INSTALL_DIR="$MYPWD/$OBJPATH"
-    LOG_FILE="$CALIPER_BUILD/build.log"
-}
 
-#build_bench_cleanup()
-#{
-#    bench_name=$1
-#    bench_name=$(echo $bench_name | awk -F '_' '{print $2}')
-#    build_result=$2
-#
-#    end=$(date +%s)
-#
-#    interval=$(( $end - $start ))
-#
-#    if [ $build_result -eq 0 ]
-#    then
-#        do_msg_end "$bench_name build successfully"
-#        if [ ! -d $CALIPER_BUILD ]; then
-#            mkdir -p $CALIPER_BUILD
-#        fi
-#        success_file="$CALIPER_BUILD/${bench_name}_${ARCH}.successfully"
-#        mv $LOG_FILE $success_file
-#    else
-#        do_msg_end "$bench_name build failed"
-#        if [ -d $CALIPER_BUILD ]; then
-#            mkdir -p $CALIPER_BUILD
-#        fi
-#        failed_file="$CALIPER_BUILD/${bench_name}_${ARCH}.failed"
-#        mv $LOG_FILE $failed_file
-#    fi
-#}
+    #LOG_FILE="$CALIPER_BUILD/build.log"
+}
 
 build_cleanup()
 {
@@ -109,8 +90,6 @@ MYPWD=$2
 
 build_prepare
 
-BENCH_PATH="benchmarks/"
 
 start=$(date +%s)
 
-#build_cleanup

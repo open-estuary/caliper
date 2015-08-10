@@ -107,10 +107,11 @@ def generate_web_tar():
     if newpid == 0: #child process
         return_code = 0
         try:
-            subprocess.call( "cd frontend; python managy.gy migrate; cd -",
-                    shell=True )
-            return_code = subprocess.call("cd frontend; python\
-                    manage.py runserver --noreload 1>/dev/null 2>&1 & ", shell=True)
+            subprocess.call( "cd %s; python manage.py migrate; cd -" %
+                    caliper_path.FRONT_END_DIR, shell=True )
+            return_code = subprocess.call("cd %s; python\
+                    manage.py runserver --noreload 1>/dev/null 2>&1 & " %
+                    caliper_path.FRONT_END_DIR, shell=True)
         except Exception as e:
             raise e
         else:
@@ -121,16 +122,17 @@ def generate_web_tar():
         try:
             logging.info("Generating the webpages which are test results")
             subprocess.call("wget -r -p -k -np\
-                    http://127.0.0.1:8000 -P results -q" , shell=True)
-            test_dir = os.path.join('results', 'test_results')
+                    http://127.0.0.1:8000 -P %s -q" % caliper_path.RESULTS_DIR, 
+                    shell=True)
+            test_dir = os.path.join(caliper_path.RESULTS_DIR, 'test_results')
             if os.path.exists( test_dir ):
                 shutil.rmtree(test_dir)
-            test_dir = os.path.join('results', 'test_results.tar.gz')
+            test_dir = os.path.join(caliper_path.RESULTS_DIR, 'test_results.tar.gz')
             if os.path.exists( test_dir ):
                 shutil.rmtree(test_dir)
-            subprocess.call("cd results; mv 127.0.0.1:8000 test_results; tar\
+            subprocess.call("cd %s; mv 127.0.0.1:8000 test_results; tar\
                     czf test_results.tar.gz test_results; rm -fr\
-                    test_results", shell=True)
+                    test_results" % caliper_path.RESULTS_DIR, shell=True)
         except Exception as e:
             logging.info("There is wrong with generating the test result webpage")
             kill_django(newpid)

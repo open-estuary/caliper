@@ -1,7 +1,7 @@
 build_kselftest() {
     set -e
 
-    SrcPath="benchmarks/301.kselftest"
+    SrcPath=$BENCH_PATH"301.kselftest"
     myOBJPATH=${INSTALL_DIR}/kselftest
     mkdir -p $myOBJPATH
 

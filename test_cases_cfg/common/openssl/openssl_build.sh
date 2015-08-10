@@ -1,6 +1,6 @@
 build_openssl() {
     set -e
-        SrcPath="benchmarks/403.openssl"
+        SrcPath=$BENCH_PATH"403.openssl"
    myOBJPATH=${INSTALL_DIR}/bin
         BuildPATH="$CALIPER_TMP/build.openssl"
         TOP_SRCDIR="$MYPWD/$SrcPath"

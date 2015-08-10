@@ -1,6 +1,6 @@
 build_v8() {
     set -e
-   SrcPath="benchmarks/440.v8"
+   SrcPath=$BENCH_PATH"440.v8"
    myOBJPATH="${INSTALL_DIR}/browser"
     BROWSER=${BENCH_PATH}/441.browser
    rm -rf   $myOBJPATH

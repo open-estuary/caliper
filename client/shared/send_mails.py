@@ -97,17 +97,17 @@ class EmailSender(object):
         return 
 
 def send_mails():
-    server = utils.get_config_value('email_config.log', 'login_info', 'server')
-    user = utils.get_config_value('email_config.log', 'login_info', 'user')
-    password = utils.get_config_value('email_config.log', 'login_info',
+    server = utils.get_config_value('email_config.cfg', 'login_info', 'server')
+    user = utils.get_config_value('email_config.cfg', 'login_info', 'user')
+    password = utils.get_config_value('email_config.cfg', 'login_info',
             'password')
     auth_info = AuthInfo(server, user, password)
     
-    fro = utils.get_config_value('email_config.log', 'email_info', 'from')
-    to = utils.get_config_value('email_config.log', 'email_info', 'to')
-    subject = utils.get_config_value('email_config.log', 'email_info', 'subject')
-    plain = utils.get_config_value('email_config.log', 'email_info', 'plaintext')
-    html = utils.get_config_value('email_config.log', 'email_info', 'htmltext')
+    fro = utils.get_config_value('email_config.cfg', 'email_info', 'from')
+    to = utils.get_config_value('email_config.cfg', 'email_info', 'to')
+    subject = utils.get_config_value('email_config.cfg', 'email_info', 'subject')
+    plain = utils.get_config_value('email_config.cfg', 'email_info', 'plaintext')
+    html = utils.get_config_value('email_config.cfg', 'email_info', 'htmltext')
     emailTo = [item for item in to.split(",")]
     email = EmailContext(fro, emailTo, subject, plain, html, ATTACHFILES)
 

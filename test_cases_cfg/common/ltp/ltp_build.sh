@@ -1,6 +1,6 @@
 build_ltp() {
     set -e
-       SrcPath="benchmarks/300.ltp"
+       SrcPath=$BENCH_PATH"300.ltp"
    BuildPATH="$CALIPER_TMP/build.ltp"
    echo $BuildPATH
    TOP_SRCDIR="$MYPWD/$SrcPath"
