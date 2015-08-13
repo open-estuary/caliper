@@ -22,7 +22,7 @@ def ltpResult(content, outfp):
     outfp.write('the tesecases passed are %d, failed are %d\n' 
                     % (sumPass, sumFail))
     try:
-        score = (0.0+sumPass)/(sumPass + sumFail + sumInfo + sumBrok) * 100
+        score = (0.0+sumPass)/(sumPass + sumFail + sumInfo + sumBrok)
     except Exception, e:
         score = 0.0
     return score

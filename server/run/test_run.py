@@ -154,7 +154,7 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
             logging.info(e)
             continue
         else:
-            if not flag_compute:
+            if not flag_compute and parser_result:
                 logging.info( "There is wrong when computing the result\
                                 of \"%s\"" % command)
     # remove the parser file
@@ -446,7 +446,7 @@ def compute_case_score(result, category, score_way, target):
     score_yaml_name = target_name + '_score.yaml'
     result_yaml = os.path.join(yaml_dir, result_yaml_name)
     score_yaml = os.path.join(yaml_dir, score_yaml_name)
-    if (length==3 and tmp[0]=='Functional'):
+    if (length==4 and tmp[0]=='Functional'):
         return compute_func(result, tmp, score_way, result_yaml, score_yaml)
     elif ((length != 0 and length <=4) and tmp[0]=='Performance'):
         return compute_perf(result, tmp, score_way, result_yaml, score_yaml)
@@ -455,11 +455,18 @@ def compute_case_score(result, category, score_way, target):
 
 def compute_func(result, tmp, score_way, result_yaml, score_yaml):
     flag = 0
+    result_flag = 1
+    score_flag = 2
+
+    result_score = result * 100
     try:
-        flag = write_results.write_yaml_func(result_yaml, tmp, result, 0)
+        flag1 = write_results.write_yaml_func(result_yaml, tmp, result,
+                result_flag)
+        flag2 = write_results.write_yaml_func(score_yaml, tmp, result_score,
+                score_flag)
     except BaseException:
         logging.debug("There is wrong when computing the score")
-    return flag
+    return flag1 & flag2
 
 def compute_perf(result, tmp, score_way, result_yaml, score_yaml):
     result_flag = 1

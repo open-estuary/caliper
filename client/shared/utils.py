@@ -98,7 +98,7 @@ def get_config_value(config_name, section, key):
 
 def get_fault_tolerance_config(section, key):
     flag = 0
-    logging.info(caliper_path.CONFIG_DIR)
+    logging.debug(caliper_path.CONFIG_DIR)
     if caliper_path.judge_caliper_installed():
         cfg_file = os.path.join('/etc', 'caliper', 'config',
                 'execution_contl.cfg')
