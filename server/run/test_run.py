@@ -143,9 +143,8 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
                 if not parser_result:
                     continue
 
-        # to compute the score    
+        ## according the method in the config file, compute the score
         try:
-            ## according the method in the config file, compute the score
             logging.debug("Computing the score of the result of command: %s" 
                             % command)
             flag_compute = compute_case_score(parser_result, category,
@@ -157,7 +156,6 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
             if not flag_compute and parser_result:
                 logging.info( "There is wrong when computing the result\
                                 of \"%s\"" % command)
-    # remove the parser file
     endtime = datetime.datetime.now()
     result = subprocess.call("echo '$$ %s EXECUTION STOP: %s' >> %s" 
                                 % (sections_run[i], str(endtime)[:19], 
@@ -271,7 +269,10 @@ def run_remote_commands(exec_dir, kind_bench, commands, target,
     except Exception, e:
         logging.debug( e )
     else:
-        returncode = result.exit_status
+        if result.exit_status and result.stderr:
+            returncode = result.exit_status
+        else:
+            returncode = 0
         try:
             output = result.stdout
         except Exception:

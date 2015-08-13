@@ -17,12 +17,19 @@ import radar_caliper as radar
 
 PLOT_COLOR = ['ro-', 'yo-', 'bo-', 'go-', 'do-']
 
+def get_category(num):
+    if num == 1:
+        return 'Performance'
+    else:
+        return 'Functional'
+
 # for each subItem get the union points
-def get_points_union(file_lists, subItem):
+def get_points_union(file_lists, subItem, category=1):
+    classify = get_category(category)
     fp = open(file_lists[0], 'r')
     results = yaml.load(fp)
     fp.close()
-    test_results = results['results']['Performance']
+    test_results = results['results'][classify]
     test_points = test_results[subItem].keys()
     key_test_points = [x for x in test_points if x != 'Total_Scores']
     union_points = key_test_points
@@ -31,18 +38,19 @@ def get_points_union(file_lists, subItem):
         fp = open(file_lists[i], 'r')
         results = yaml.load(fp)
         fp.close()
-        test_results = results['results']['Performance']
+        test_results = results['results'][classify]
         test_points = test_results[subItem].keys()
         key_test_points = [x for x in test_points if x != 'Total_Scores']
         union_points = list(set(union_points) & set(key_test_points))
     return union_points
 
 # for each test point getting test cases
-def get_cases_union(file_lists, subItem, subPoint):
+def get_cases_union(file_lists, subItem, subPoint, category=1):
+    classify = get_category(category)
     fp = open(file_lists[0], 'r')
     results = yaml.load(fp)
     fp.close()
-    test_results = results['results']['Performance']
+    test_results = results['results'][classify]
     test_points = test_results[subItem].keys()
     test_points = [x for x in test_points if x != 'Total_Scores']
     test_cases = test_results[subItem][subPoint]['Point_Scores'].keys()
@@ -52,7 +60,7 @@ def get_cases_union(file_lists, subItem, subPoint):
         fp = open(file_lists[i], 'r')
         results = yaml.load(fp)
         fp.close()
-        test_results = results['results']['Performance']
+        test_results = results['results'][classify]
         test_points = test_results[subItem].keys()
         test_cases = test_results[subItem][subPoint]['Point_Scores'].keys()
         union_cases = list(set(union_cases) & set(test_cases))
@@ -71,7 +79,7 @@ def _get_labels(files):
 class DrawPicture:
 
     @staticmethod
-    def draw_testpoint_picture( file_names, test_sub_items, folder ):
+    def draw_testpoint_picture( file_names, test_sub_items, folder, category = 1 ):
         """
         This function is used to draw the comparion histogram for the subItem
 
@@ -80,19 +88,22 @@ class DrawPicture:
         :Param test_sub_items: the Test Cases need to be draw, each Test Case means a picture
         :Param folder: the location will store the picture
         """
+        classify = get_category(category)
+
         for subItem in test_sub_items:
             ## get the Test Points in each Test SubItem
-            key_points = get_points_union(file_names, subItem)
+            key_points = get_points_union(file_names, subItem, category)
             
             rcParams['figure.figsize'] = 9, 6
             for point in key_points:
                 ## get the keys of the Test Points, namely the Test Cases
-                label = get_cases_union(file_names, subItem, point)
+                label = get_cases_union(file_names, subItem, point, category)
                 if not label:
                     continue 
                 # set the length of x axis
                 x1 = na.array(range(len(label))) + 0.5
                 fig, ax = plt.subplots()
+                fig.set_size_inches(18.5, 10.5)
                 y_max = 0
 
                 # draw the dot line for each file, namely, draw the target's content one by one
@@ -104,7 +115,7 @@ class DrawPicture:
 
                     try:
                         labeli = resultsi['name']
-                        test_resultsi = resultsi['results']['Performance']
+                        test_resultsi = resultsi['results'][classify]
                         test_data = test_resultsi[subItem][point]['Point_Scores']
                     except Exception, e:
                         print e
@@ -145,17 +156,19 @@ class DrawPicture:
                     point=point.replace('/', '_')
                 point = '_'.join(point.split(" "))
                 png_name = os.path.join(folder, subItem + '_' + point + '.png')
-                plt.savefig( png_name, dit=150 )
-    
+                plt.savefig( png_name)
+
     @staticmethod
-    def draw_testCase_picture( file_names, test_subItems, folder ):
+    def draw_testCase_picture( file_names, test_subItems, folder, category=1 ):
+        classify = get_category(category)
+
         if not len(test_subItems):
             return
         label_total = _get_labels(file_names)
         color_total = ['r', 'y', 'b', 'g', 'k', 'm', 'c', 'w']
 
         for item in test_subItems:
-            key_points = get_points_union(file_names, item)
+            key_points = get_points_union(file_names, item, category)
             key_length = len(key_points)
             if not key_points:
                 continue
@@ -168,6 +181,7 @@ class DrawPicture:
             error_flag = 0
 
             fig, ax = plt.subplots()
+            fig.set_size_inches(18.5, 10.5)
             # get the lists of each Test SubItems from different targets
             for i in range(0, len(file_names)):
                 fpi = open(file_names[i])
@@ -175,7 +189,7 @@ class DrawPicture:
                 fpi.close()
                
                 try:
-                    test_resultsi = results_i['results']['Performance']
+                    test_resultsi = results_i['results'][classify]
                 except Exception:
                     print e
                     print "Error: %s"  % file_names[i]
@@ -225,10 +239,10 @@ class DrawPicture:
             #for i in range(0, len(rects)):
                 #autolabel(rects[i])
             png_name = os.path.join(folder, item + '_summary.png')
-            plt.savefig( png_name, dit=512 )
+            plt.savefig( png_name )
 
     @staticmethod
-    def draw_testSubItem_picture( file_names, test_subItems, folder ):
+    def draw_testSubItem_picture(file_names, test_subItems, folder, category=1 ):
         y_max = 0
         data_total = []
         label_total = []
@@ -238,7 +252,9 @@ class DrawPicture:
         width = 0.35
         rcParams['figure.figsize'] = 9, 6
         fig, ax = plt.subplots()
+        fig.set_size_inches(18.5, 10.5)
         label_total = _get_labels(file_names)
+        classify = get_category(category)
         
         if not len(test_subItems):
             return 
@@ -249,7 +265,7 @@ class DrawPicture:
             fpi.close()
            
             try:
-                test_resultsi = results_i['results']['Performance']
+                test_resultsi = results_i['results'][classify]
             except Exception:
                 print e
                 print "Error: %s"  % file_names[i]
@@ -294,13 +310,16 @@ class DrawPicture:
         #for i in range(0, len(rects)):
         #    autolabel(rects[i])
         png_name = os.path.join(folder, 'Total_Scores.png')
-        plt.savefig( png_name, dit=512 )
+        plt.savefig( png_name)
 
-def get_files_union(file_lists):
+def get_files_union(file_lists, category=1):
     fp = open(file_lists[0], 'r')
     results = yaml.load(fp)
     fp.close()
-    test_results = results['results']['Performance']
+
+    classify = get_category(category)
+
+    test_results = results['results'][classify]
     test_subItems = test_results.keys()
     union_items = test_subItems
 
@@ -323,14 +342,3 @@ def draw_picture(file_lists, picture_location):
     DrawPicture.draw_testSubItem_picture( file_lists, union_Items, picture_location )
     if (len(file_lists) >= 3):
         radar.draw_radar(file_lists, picture_location)
-
-#
-#if __name__ == "__main__":
-#    file_lists = ['D01_16_result.yaml', 'D01_1_result.yaml', 'Server_result.yaml',
-#                    'TV_result.yaml']
-#    picture_location = "/home/wuyanjun/caliper/gen/output/html"
-#    try:
-#        draw_picture(file_lists, picture_location)
-#    except Exception, e:
-#        raise e
-# 

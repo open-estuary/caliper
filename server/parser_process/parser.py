@@ -42,7 +42,7 @@ def traverse_caliper_output(hosts):
     host_yaml_name = host_name + '_score.yaml'
     host_yaml_file = os.path.join(YAML_DIR, host_yaml_name)
     try:
-        return_code = traverse.traverser_perf(hosts, host_yaml_file)
+        return_code = traverse.traverser_results(hosts, host_yaml_file)
     except Exception, e:
         logging.info(e)
         raise

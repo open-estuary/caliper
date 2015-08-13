@@ -1,6 +1,68 @@
 #!/bin/bash
 #please run as root
 
+test_hugepage_mmap()
+{
+    echo "--------------------"
+    echo "running hugepage-mmap"
+    echo "--------------------"
+    ./hugepage-mmap
+    if [ $? -ne 0 ]; then
+        echo "[FAIL]"
+        exitcode=1
+    else
+        echo "[PASS]"
+    fi
+}
+
+test_hugepage_shm()
+{
+    shmmax=`cat /proc/sys/kernel/shmmax`
+    shmall=`cat /proc/sys/kernel/shmall`
+    echo 268435456 > /proc/sys/kernel/shmmax
+    echo 4194304 > /proc/sys/kernel/shmall
+    echo "--------------------"
+    echo "running hugepage-shm"
+    echo "--------------------"
+    ./hugepage-shm
+    if [ $? -ne 0 ]; then
+        echo "[FAIL]"
+        exitcode=1
+    else
+        echo "[PASS]"
+    fi
+    echo $shmmax > /proc/sys/kernel/shmmax
+    echo $shmall > /proc/sys/kernel/shmall
+}
+
+test_hugetlb_map()
+{
+    echo "--------------------"
+    echo "running map_hugetlb"
+    echo "--------------------"
+    ./map_hugetlb
+    if [ $? -ne 0 ]; then
+        echo "[FAIL]"
+        exitcode=1
+    else
+        echo "[PASS]"
+    fi
+}
+
+test_hugetbltest()
+{
+    echo "--------------------"
+    echo "running hugetlbfstest"
+    echo "--------------------"
+    ./hugetlbfstest
+    if [ $? -ne 0 ]; then
+        echo "[FAIL]"
+        exitcode=1
+    else
+        echo "[PASS]"
+    fi
+}
+
 #we need 256M, below is the size in kB
 needmem=262144
 mnt=./huge
@@ -36,56 +98,20 @@ fi
 mkdir $mnt
 mount -t hugetlbfs none $mnt
 
-echo "--------------------"
-echo "running hugepage-mmap"
-echo "--------------------"
-./hugepage-mmap
-if [ $? -ne 0 ]; then
-	echo "[FAIL]"
-	exitcode=1
-else
-	echo "[PASS]"
-fi
-
-shmmax=`cat /proc/sys/kernel/shmmax`
-shmall=`cat /proc/sys/kernel/shmall`
-echo 268435456 > /proc/sys/kernel/shmmax
-echo 4194304 > /proc/sys/kernel/shmall
-echo "--------------------"
-echo "running hugepage-shm"
-echo "--------------------"
-./hugepage-shm
-if [ $? -ne 0 ]; then
-	echo "[FAIL]"
-	exitcode=1
-else
-	echo "[PASS]"
-fi
-echo $shmmax > /proc/sys/kernel/shmmax
-echo $shmall > /proc/sys/kernel/shmall
-
-echo "--------------------"
-echo "running map_hugetlb"
-echo "--------------------"
-./map_hugetlb
-if [ $? -ne 0 ]; then
-	echo "[FAIL]"
-	exitcode=1
-else
-	echo "[PASS]"
-fi
-
-echo "--------------------"
-echo "running hugetlbfstest"
-echo "--------------------"
-./hugetlbfstest
-if [ $? -ne 0 ]; then
-	echo "[FAIL]"
-	exitcode=1
-else
-	echo "[PASS]"
-fi
-
+case $1 in 
+    "1" )
+        test_hugepage_mmap
+        ;;
+    "2" )
+        test_hugepage_shm
+        ;;
+    "3" )
+        test_hugetlb_map
+        ;;
+    "4" )
+        test_hugetbltest
+        ;;
+esac
 #cleanup
 umount $mnt
 rm -rf $mnt
