@@ -2,7 +2,7 @@ build_rttest()
 {
     set -e
        SrcPath=${BENCH_PATH}"303.RTtest"
-   myOBJPATH=$MYPWD/${OBJPATH}/rttest
+   myOBJPATH=${INSTALL_DIR}/rttest
    mkdir -p $myOBJPATH
         if [ $ARCH = "x86_64" -o $ARCH = "x86_32" ]
             then

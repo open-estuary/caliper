@@ -2,7 +2,7 @@ build_netperf() {
     set -e
         SrcPath=${BENCH_PATH}"421.netperf"
         BuildPATH="$CALIPER_TMP/build.netperf"
-        TOP_SRCDIR="$MYPWD/$SrcPath"
+        TOP_SRCDIR="$CURRENT_PATH/$SrcPath"
         myOBJPATH=${INSTALL_DIR}/bin
 
         if [ $ARCH = "x86_64" -o  $ARCH = "x86_32" ]

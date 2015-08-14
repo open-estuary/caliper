@@ -3,8 +3,7 @@ build_ltp() {
        SrcPath=$BENCH_PATH"300.ltp"
    BuildPATH="$CALIPER_TMP/build.ltp"
    echo $BuildPATH
-   TOP_SRCDIR="$MYPWD/$SrcPath"
-   INSTALL_DIR="$MYPWD/$OBJPATH"
+   TOP_SRCDIR="$CURRENT_PATH/$SrcPath"
    mkdir -p $BuildPATH
     
    if [ ! -d $INSTALL_DIR/ltp  ]; then 

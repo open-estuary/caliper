@@ -3,8 +3,7 @@ build_dbench()
     set -e
        SrcPath=${BENCH_PATH}"431.dbench"
         BuildPATH="$CALIPER_TMP/build.dbench"
-        TOP_SRCDIR="$MYPWD/$SrcPath"
-        INSTALL_DIR="$MYPWD/$OBJPATH"
+        TOP_SRCDIR="$CURRENT_PATH/$SrcPath"
         mkdir -p $BuildPATH
         if [ $ARCH = "x86_64" -o $ARCH = "x86_32" ]
         then

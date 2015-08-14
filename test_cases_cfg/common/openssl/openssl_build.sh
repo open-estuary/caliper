@@ -3,7 +3,7 @@ build_openssl() {
         SrcPath=$BENCH_PATH"403.openssl"
    myOBJPATH=${INSTALL_DIR}/bin
         BuildPATH="$CALIPER_TMP/build.openssl"
-        TOP_SRCDIR="$MYPWD/$SrcPath"
+        TOP_SRCDIR="$CURRENT_PATH/$SrcPath"
    mkdir -p $BuildPATH
 
         if [ $ARCH = "x86_64" -o $ARCH = "x86_32" ]; then

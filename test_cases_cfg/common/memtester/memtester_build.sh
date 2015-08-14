@@ -4,7 +4,7 @@ build_memtester()
     set -x
 
         SrcPath=${BENCH_PATH}"415.memtester"
-   myOBJPATH=$MYPWD/${OBJPATH}/bin
+   myOBJPATH=${INSTALL_DIR}/bin
    mkdir -p $myOBJPATH
         if [ $ARCH = "x86_64" -o $ARCH = "x86_32" ]
             then

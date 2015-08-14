@@ -2,7 +2,7 @@ build_ethtool() {
     set -e
         SrcPath=${BENCH_PATH}"422.ethtool"
         BuildPATH="$CALIPER_TMP/build.ethtool"
-        TOP_SRCDIR="$MYPWD/$SrcPath"
+        TOP_SRCDIR="$CURRENT_PATH/$SrcPath"
         myOBJPATH=${INSTALL_DIR}/bin
 
         if [ $ARCH = "arm_64" -o $ARCH = "arm_32" ]

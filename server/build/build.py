@@ -293,7 +293,7 @@ def record_log(log_file, arch, succeed_flag):
         raise e
 
 def build_for_target(target):
-    if caliper_path.judge_caliper_installed:
+    if caliper_path.judge_caliper_installed():
         if not os.path.exists(os.path.join('/tmp', 'caliper_build')):
             os.mkdir(os.path.join('/tmp', 'caliper_build'))
         benchs_dir = os.path.join('/tmp', 'caliper_build', 'benchmarks')

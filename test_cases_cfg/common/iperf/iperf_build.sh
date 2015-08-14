@@ -2,7 +2,7 @@ build_iperf() {
     set -e
        SrcPath=${BENCH_PATH}"420.iperf"
         BuildPATH="$CALIPER_TMP/build.iperf"
-        TOP_SRCDIR="$MYPWD/$SrcPath"
+        TOP_SRCDIR="$CURRENT_PATH/$SrcPath"
    myOBJPATH=${INSTALL_DIR}/bin
    mkdir -p $BuildPATH
 
