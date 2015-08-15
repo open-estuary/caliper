@@ -1,7 +1,7 @@
 build_perf() {
    set -e
 
-   Path="benchmarks/304.perf"
+   Path=$BENCH_PATH"benchmarks/304.perf"
    myOBJPATH=${INSTALL_DIR}/bin
    pushd $Path
     cp * $myOBJPATH
