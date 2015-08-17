@@ -20,13 +20,14 @@
 
 test_perf_record()
 {
+    TCID="perf record test"
     test_prequisite
     if [ $? -eq 0 ]; then
-        return -1
+        echo "$TCID : fail"
+        return 
     fi
     # Test 'perf record'
     echo "Performing perf record test..."
-    TCID="perf record test"
     perf record -e cycles -o perf-lava-test.data stress -c 4 -t 10  2>&1 | tee perf-record.log
     samples=`grep -ao "[0-9]\+[ ]\+samples" perf-record.log| cut -f 1 -d' '`
     if [ $samples -gt 1 ]; then
@@ -42,24 +43,25 @@ test_prequisite()
     output=$(stress|grep 'Usage')
     if [ "$output"x = ""x ]; then 
         echo "you need to install stress first"
-        return -1
+        echo '-1'
     fi
     output=$(perf | grep 'usage')
     if [ "$output"x = ""x ]; then
         echo "you need to install perf first"
-        return -1
+        echo '-1'
     fi
 }
 
 test_perf_report()
 {
+    TCID="perf report test"
     test_prequisite
     if [ $? -eq 0 ]; then
-        return -1
+        echo "$TCID : fail"
+        return 
     fi
     # Test 'perf report'
     echo "Performing perf report test..."
-    TCID="perf report test"
     if [ ! -f perf-lava-test.data ]; then
         perf record -e cycles -o perf-lava-test.data stress -c 4 -t 10  2>&1 | tee perf-record.log
     fi
@@ -75,13 +77,14 @@ test_perf_report()
 
 test_perf_stat()
 {
+    TCID="perf stat test"
     test_prequisite
     if [ $? -eq 0 ]; then
-        return -1
+        echo "$TCID : fail"
+        return 
     fi
     # Test 'perf stat'
     echo "Performing perf stat test..."
-    TCID="perf stat test"
     perf stat -e cycles stress -c 4 -t 10 2>&1 | tee perf-stat.log
     cycles=`grep -o "[0-9,]\+[ ]\+cycles" perf-stat.log | sed 's/,//g' | cut -f 1 -d' '`
     if [ -z "$cycles" ]; then
@@ -100,7 +103,8 @@ test_perf_test()
 {
     test_prequisite
     if [ $? -eq 0 ]; then
-        return -1
+        echo "perf test : fail"
+        echo "-1"
     fi
     # Test 'perf test'
     echo "Performing 'perf test'..."

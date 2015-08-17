@@ -1,6 +1,6 @@
 
 $(function () {
-    var test = document.getElementById("example_tst").value;  
+    var test = document.getElementById("example_tst").value;
     var config_dic = getJson(test, 'config');
     var columns = getVertColumn(config_dic);
     var data = getVertData(config_dic, columns);
@@ -13,8 +13,8 @@ $(function () {
 
     // api examples
     var $row = grid.getRowByIndex(0);
-    console.group("data api examples");
-    //console.groupEnd();
+    //console.group("data api examples");
+    console.groupEnd();
     window.grid = grid;
 });
 

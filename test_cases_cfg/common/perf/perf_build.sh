@@ -1,3 +1,5 @@
+#!/bin/bash
+
 build_perf() {
    set -e
 
