@@ -3,7 +3,7 @@ build_busybox()
 {
     set -e
         SrcPath=${BENCH_PATH}"491.busybox"
-   myOBJPATH=$MYPWD/${OBJPATH}/bin
+   myOBJPATH=${INSTALL_DIR}/bin
    mkdir -p $myOBJPATH
         if [ $ARCH = "x86_64" -o $ARCH = "x86_32" ]
             then

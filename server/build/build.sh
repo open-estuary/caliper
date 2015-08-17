@@ -27,8 +27,10 @@ build_prepare() {
         INSTALL_DIR="/home/$(whoami)/.caliper/$OBJPATH"
         OBJPATH=/tmp/caliper_build/$OBJPATH
         BENCH_PATH=/tmp/caliper_build/$BENCH_PATH
+        CURRENT_PATH=""
     else
         INSTALL_DIR="$MYPWD/$OBJPATH"
+        CURRENT_PATH=$MYPWD
     fi
         if [ ! -d $OBJPATH/bin ]; then
             mkdir -p $OBJPATH/bin

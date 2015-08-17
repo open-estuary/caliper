@@ -1,7 +1,7 @@
 build_glmark2() {
     set -e
    SrcPath=${BENCH_PATH}"442.glmark2"
-   myOBJPATH=${OBJPATH}/bin
+   myOBJPATH=${INSTALL_DIR}/bin
 
    if [ $ARCH = "android" ]
    then

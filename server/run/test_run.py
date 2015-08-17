@@ -184,7 +184,10 @@ def run_commands(exec_dir, kind_bench, commands,
     except Exception, e:
         logging.debug( e )
     else:
-        returncode = result.exit_status
+        if result.exit_status and result.stderr and not result.stdout:
+            returncode = result.exit_status
+        else:
+            returncode = 0
         try:
             output = result.stdout
         except Exception:
@@ -269,7 +272,7 @@ def run_remote_commands(exec_dir, kind_bench, commands, target,
     except Exception, e:
         logging.debug( e )
     else:
-        if result.exit_status and result.stderr:
+        if result.exit_status and result.stderr and not result.stdout:
             returncode = result.exit_status
         else:
             returncode = 0

@@ -2,7 +2,7 @@ build_ffmpeg() {
     set -e
         SrcPath=${BENCH_PATH}"443.ffmpeg"
         BuildPATH="$CALIPER_TMP/build.ffmpeg"
-        TOP_SRCDIR="$MYPWD/$SrcPath"
+        TOP_SRCDIR="$CURRENT_PATH/$SrcPath"
    myOBJPATH=${INSTALL_DIR}/bin
 
    rm -rf $BuildPATH

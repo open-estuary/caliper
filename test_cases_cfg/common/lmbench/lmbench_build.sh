@@ -4,7 +4,7 @@ build_lmbench() {
         SrcPath="${BENCH_PATH}490.lmbench"
         pushd $SrcPath
 
-        myOBJPATH="${MYPWD}/${OBJPATH}/lmbench"
+        myOBJPATH="${INSTALL_DIR}/lmbench"
         mkdir -p $myOBJPATH
         mkdir -p $myOBJPATH/src
         mkdir -p $myOBJPATH/results
