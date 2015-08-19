@@ -6,7 +6,6 @@ from django.shortcuts import render, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.views import generic
 from django.conf import settings
-
 from plot import show_picture
 
 CONFIG_STR = 'Configuration'
@@ -113,7 +112,8 @@ def get_detail_data( files, testItem, category ):
 
 def _deal_keyword(string):
     new_str = '_'.join(string.split('/'))
-    new_str = '_'.join(new_str.split(" "))
+    new_str = '_'.join(new_str.split(' '))
+    new_str = '_'.join(new_str.split('-'))
     return new_str
 
 def index(request):
@@ -227,5 +227,15 @@ def peripheral(request):
         key_name = _deal_keyword(key)
         dic_total[key_name] = True
     return render(request, 'polls/peripheral.html', dic_total)
+
+def application(request):
+    files = get_files()
+    dic_total = {}
+    dic_application = get_detail_data(files, PERF_STR, 'application')
+    dic_total['dic_application'] = json.dumps(dic_application)
+    for key in dic_application.keys():
+        key_name = _deal_keyword(key)
+        dic_total[key_name] = True
+    return render(request, 'polls/application.html', dic_total)
 
 
