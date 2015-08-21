@@ -1,8 +1,8 @@
 
 $(function () {
     var test = document.getElementById("disk_tst").value;
-
     var directIO_dic = getJson(test, 'Iozone-DirectIO')
+    console.log(directIO_dic)
     var columns = getHoriColumn( directIO_dic );
     var data = getHoriData( directIO_dic, columns );
 
@@ -12,10 +12,8 @@ $(function () {
     draw_grid(grid);
     
     // api examples
-    var $row = grid.getRowByIndex(5);
+    var $row = grid.getRowByIndex(0);
     console.group("data api examples");
-    console.log("grid.getRowDataByIndex(0):", grid.getRowDataByIndex(0));
-    console.log("grid.getRowData($row):", grid.getRowData($row));
     console.log("grid.getGridData():", grid.getGridData());
     console.groupEnd();
 
