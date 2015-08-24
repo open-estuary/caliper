@@ -48,7 +48,7 @@ def get_server_command(kind_bench, section_name):
         return None
 
 def run_all_cases(target_exec_dir, target, kind_bench, bench_name, 
-                    run_file, parser):
+                    run_file, parser_file):
     """
     function: run one benchmark which was selected in the configuration files
     """
@@ -124,7 +124,7 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
         #running the command
         try:
             logging.debug("Parsering the result of command: %s" % command)
-            parser_result = parser_case(kind_bench, bench_name, parser,
+            parser_result = parser_case(kind_bench, bench_name, parser_file, parser,
                                         tmp_log_file, tmp_parser_file)
         except Exception, e:
             logging.info("There is wrong when parsering the result of \" %s \"" 
@@ -394,17 +394,19 @@ def run_kinds_commands(cmd_sec_name, server_run_command, tmp_logfile, kind_bench
                                     target, command)
     return flag
 
-def parser_case(kind_bench, bench_name, parser, infile, outfile):
+def parser_case(kind_bench, bench_name, parser_file, parser, infile, outfile):
     if not os.path.exists(infile):
         return -1
     result = 0
     fp = open(outfile, "w")
     #the parser function defined in the config file is to filter the output.
     # get the abspth of the parser.py which is defined in the config files.
-    pwd_file = bench_name + "_parser.py"
-
     ##changed by Elaine Aug 8-10
-    parser_file = os.path.join(caliper_path.PARSER_DIR, pwd_file)
+    if not parser_file:
+        pwd_file = bench_name + "_parser.py"
+        parser_file = os.path.join(caliper_path.PARSER_DIR, pwd_file)
+    else:
+        parser_file = os.path.join(caliper_path.PARSER_DIR, parser_file)
     rel_path = os.path.relpath(parser_file,
             os.path.dirname(caliper_path.CALIPER_DIR))
     parser_path = rel_path.split(".")[0]
