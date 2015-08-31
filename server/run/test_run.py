@@ -30,8 +30,7 @@ from caliper.client.shared import caliper_path
 from caliper.client.shared.settings import settings
 from caliper.server.run import write_results
 from caliper.server.compute_model.scores_method import Scores_method
-
-caliper_log_file = caliper_path.CALIPER_LOG_FILE
+from caliper.client.shared.caliper_path import folder_ope as Folder
 
 def get_server_command(kind_bench, section_name):
     server_config_file = ''
@@ -60,9 +59,9 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
     #get the config sections for the benchmrk
     configRun, sections_run = server_utils.read_config_file(bench_conf_file)
     logging.debug("the sections to run are: %s" % sections_run)
-    if not os.path.exists(caliper_path.EXEC_LOG_DIR):
-        os.mkdir(caliper_path.EXEC_LOG_DIR)
-    log_bench = os.path.join(caliper_path.EXEC_LOG_DIR, bench_name)
+    if not os.path.exists(Folder.exec_dir):
+        os.mkdir(Folder.exec_dir)
+    log_bench = os.path.join(Folder.exec_dir, bench_name)
     logfile = log_bench + "_output.log"
     tmp_log_file = log_bench + "_output_tmp.log"
     parser_result_file = log_bench + "_parser.log"
@@ -74,7 +73,8 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
 
     starttime = datetime.datetime.now()
     result = subprocess.call("echo '$$ %s EXECUTION START: %s' >> %s"
-                            % (bench_name, str(starttime)[:19],caliper_log_file),
+                            % (bench_name,
+                                str(starttime)[:19], Folder.caliper_log_file),
                             shell=True)
     #for each command in run config file, read the config for the benchmark
     for i in range(0, len(sections_run)):
@@ -163,10 +163,10 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
     endtime = datetime.datetime.now()
     result = subprocess.call("echo '$$ %s EXECUTION STOP: %s' >> %s"
                                 % (sections_run[i], str(endtime)[:19],
-                                    caliper_log_file), shell=True)
+                                    Folder.caliper_log_file), shell=True)
     result = subprocess.call("echo '$$ %s EXECUTION DURATION %s Seconds'>>%s"
                                 % (sections_run[i], (endtime-starttime).seconds,
-                                    caliper_log_file), shell=True)
+                                    Folder.caliper_log_file), shell=True)
 
 def run_commands(exec_dir, kind_bench, commands,
                     stdout_tee=None, stderr_tee=None, target=None):
@@ -451,7 +451,7 @@ def compute_case_score(result, category, score_way, target):
     length = len(tmp)
     # write the result and the corresponding score to files
     target_name = server_utils.get_host_name(target)
-    yaml_dir = os.path.join(caliper_path.RESULTS_DIR, 'yaml')
+    yaml_dir = os.path.join(Folder.results_dir, 'yaml')
     result_yaml_name = target_name + '.yaml'
     score_yaml_name = target_name + '_score.yaml'
     result_yaml = os.path.join(yaml_dir, result_yaml_name)
@@ -538,7 +538,7 @@ def caliper_run( target_exec_dir, target):
             # run for each benchmark
             target_arch = server_utils.get_host_arch(target)
             build_name = sections[i]+'_'+target_arch+'.suc'
-            build_suc = os.path.join(caliper_path.BUILD_LOG_DIR, build_name)
+            build_suc = os.path.join(Folder.build_dir, build_name)
             if not os.path.exists(build_suc):
                 continue
             build_host_name = sections[i] + '_' + \
@@ -578,15 +578,15 @@ def print_format():
     logging.info("="*55)
 
 def run_caliper_tests(target):
-    if os.path.exists(caliper_path.EXEC_LOG_DIR):
-        shutil.rmtree(caliper_path.EXEC_LOG_DIR)
-    os.mkdir(caliper_path.EXEC_LOG_DIR)
-    if not os.path.exists(caliper_path.RESULTS_DIR):
-        os.mkdir(caliper_path.RESULTS_DIR)
-    if not os.path.exists(caliper_path.YAML_DIR):
-        os.mkdir(caliper_path.YAML_DIR)
-    if not os.path.exists(caliper_path.HTML_DIR):
-        os.mkdir(caliper_path.HTML_DIR)
+    if os.path.exists(Folder.exec_dir):
+        shutil.rmtree(Folder.exec_dir)
+    os.mkdir(Folder.exec_dir)
+    if not os.path.exists(Folder.results_dir):
+        os.mkdir(Folder.results_dir)
+    if not os.path.exists(Folder.yaml_dir):
+        os.mkdir(Folder.yaml_dir)
+    if not os.path.exists(Folder.html_dir):
+        os.mkdir(Folder.html_dir)
 
     flag = 0
     target_execution_dir = server_utils.get_target_exec_dir(target)

@@ -4,13 +4,14 @@
 #   Author  :   wuyanjun 00291783
 #   E-mail  :   wu.wu@hisilicon.com
 #   Date    :   15/01/13 13:53:59
-#   Desc    :  
+#   Desc    :
 #
+import pdb
 import os
+import re
 import sys
 import time
 import logging
-import pdb
 import shutil
 import signal
 import datetime
@@ -35,10 +36,6 @@ from caliper.server import summary
 from caliper.server.parser_process import parser as parser_engine
 
 logging.basicConfig(level=logging.INFO)
-
-CALIPER_DIR = os.getcwd()
-GEN_DIR = os.path.join(CALIPER_DIR, "gen")
-TEST_CFG_DIR = os.path.join(CALIPER_DIR, "test_cases_cfg")
 
 def build_all_tests(remote_host):
     try:
@@ -67,7 +64,6 @@ def parser_caliper(remote_host):
         parser_engine.parser_caliper(remote_host)
     except Exception, e:
         logging.info("There is wrong when parsering the caliper result")
-        print e
         raise 
 
 def get_remote_host():
@@ -94,17 +90,20 @@ def get_remote_host():
 def kill_django(pid):
     children = commands.getoutput("ps --ppid=%d -o pid=" % pid).split()
     for child in children:
-        children1 = commands.getoutput("ps --ppid=%d -o pid=" % 
+        children1 = commands.getoutput("ps --ppid=%d -o pid=" %
                 int(child)).split()
         for child1 in children1:
             utils.safe_kill(child1, signal.SIGINT)
         utils.safe_kill(child, signal.SIGSTOP)
     utils.kill_process_tree(pid)
 
+RESULT_DIR = caliper_path.folder_ope.results_dir
+
 def generate_web_tar():
     newpid = os.fork()
     logging.debug("the pid number is %d" % newpid)
-    if newpid == 0: #child process
+    #child process
+    if newpid == 0:
         return_code = 0
         try:
             subprocess.call( "cd %s; python manage.py migrate; cd -" %
@@ -122,17 +121,17 @@ def generate_web_tar():
         try:
             logging.info("Generating the webpages which are test results")
             subprocess.call("wget -r -p -k -np\
-                    http://127.0.0.1:8000 -P %s -q" % caliper_path.RESULTS_DIR, 
+                    http://127.0.0.1:8000 -P %s -q" % RESULT_DIR,
                     shell=True)
-            test_dir = os.path.join(caliper_path.RESULTS_DIR, 'test_results')
+            test_dir = os.path.join(RESULT_DIR, 'test_results')
             if os.path.exists( test_dir ):
                 shutil.rmtree(test_dir)
-            test_dir = os.path.join(caliper_path.RESULTS_DIR, 'test_results.tar.gz')
+            test_dir = os.path.join(RESULT_DIR, 'test_results.tar.gz')
             if os.path.exists( test_dir ):
                 shutil.rmtree(test_dir)
             subprocess.call("cd %s; mv 127.0.0.1:8000 test_results; tar\
                     czf test_results.tar.gz test_results; rm -fr\
-                    test_results" % caliper_path.RESULTS_DIR, shell=True)
+                    test_results" % RESULT_DIR, shell=True)
         except Exception as e:
             logging.info("There is wrong with generating the test result webpage")
             kill_django(newpid)
@@ -157,11 +156,20 @@ if __name__=="__main__":
             help="select to generate the webpage test report")
     parser.add_argument("-e", "--email", action="store_true", dest="send_email",
             default=False, help="Select to send mail to the receivers or not")
+    parser.add_argument( "-f", "--folder", action="store", dest="folder",
+            default="", help="assign a folder to store the results")
+
     args = parser.parse_args()
-    start_time = datetime.datetime.now() 
+    start_time = datetime.datetime.now()
     remote_host = get_remote_host()
 
+
     if args.build:
+        if args.folder:
+            caliper_path.folder_ope.name = args.folder
+            caliper_path.folder_ope.set_up_path()
+        if not os.path.exists(caliper_path.folder_ope.name):
+            os.makedirs(caliper_path.folder_ope.name)
         try:
             result1 = build_all_tests(remote_host)
             if result1:
@@ -172,23 +180,44 @@ if __name__=="__main__":
 
     if args.run: 
         try:
-            result2 = run_caliper(remote_host)  
+            result2 = run_caliper(remote_host)
             if result2:
                 sys.exit()
             parser_caliper(remote_host)
         except Exception:
             raise
-            sys.exit() 
+            sys.exit()
 
     end_time = datetime.datetime.now()
     interval = end_time - start_time
-    try:
-        summary.output_summary_info(remote_host, interval.seconds)
-    except Exception, e:
-        raise e
-    if args.webpage:
+
+    if args.run:
+        try:
+            summary.output_summary_info(remote_host, interval.seconds)
+        except Exception, e:
+            raise e
+
+    if args.webpage and not args.send_email:
         flag = generate_web_tar()
-    if args.send_email:
-        if os.path.exists(os.path.join('results', 'test_results.tar.gz')):
-            send_mails.send_mails()
+
+    if args.webpage and args.send_email:
+        flag = generate_web_tar()
+        result_path = os.path.join(caliper_path.folder_ope.results_dir,
+                'test_results.tar.gz')
+        if os.path.exists(result_path):
+            send_mails.send_mails(result_path)
+
+    if not args.webpage and args.send_email:
+        current_path = os.getcwd()
+        flag = 0
+        for root, _, files in sorted(os.walk(current_path)):
+            for name in files:
+                if re.search('test_results.tar.gz', name):
+                    result_path = os.path.join(root, name)
+                    flag = 1
+                    break
+            if flag == 1:
+                break
+        if os.path.exists(result_path):
+            send_mails.send_mails(result_path)
 

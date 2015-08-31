@@ -46,7 +46,7 @@ def get_selected_tools(summary_file, target):
     return selected_tools
 
 def get_builded_tools():
-    despath = caliper_path.BUILD_LOG_DIR
+    despath = caliper_path.folder_ope.build_dir
     suc_tools = []
     fail_tools = []
     for root, dirs, files in os.walk(despath):
@@ -64,7 +64,7 @@ def get_builded_tools():
     return [suc_tools, fail_tools]
 
 def get_exec_tools():
-    despath = caliper_path.EXEC_LOG_DIR
+    despath = caliper_path.folder_ope.exec_dir
     pass_tools = []
     partial_tools = []
     failed_tools = []
@@ -74,26 +74,29 @@ def get_exec_tools():
     num = 0
 
     [suc_build_tools, fail_build_tools] = get_builded_tools()
-    for file_name in os.listdir(despath):
-        num += 1
-        tool_name = file_name.split("_")[0]
-        file_path = os.path.join(despath, file_name)
-        fp = open(file_path, 'r')
-        contents = fp.read()
+    if os.path.exists(despath):
+        for file_name in os.listdir(despath):
+            num += 1
+            tool_name = file_name.split("_")[0]
+            file_path = os.path.join(despath, file_name)
+            fp = open(file_path, 'r')
+            contents = fp.read()
 
-        if re.search(fail_flag, contents):
-            if re.search(suc_flag, contents):
-                partial_tools.append(tool_name)
+            if re.search(fail_flag, contents):
+                if re.search(suc_flag, contents):
+                    partial_tools.append(tool_name)
+                else:
+                    failed_tools.append(tool_name)
             else:
-                failed_tools.append(tool_name)
-        else:
-            if re.search(suc_flag, contents):
-                pass_tools.append(tool_name)
-        for tool in fail_build_tools:
-            try:
-                failed_tools.remove(tool)
-            except Exception:
-                continue
+                if re.search(suc_flag, contents):
+                    pass_tools.append(tool_name)
+            for tool in fail_build_tools:
+                try:
+                    failed_tools.remove(tool)
+                except Exception:
+                    continue
+    else:
+        return (0, 0, 0)
     return (pass_tools, partial_tools, failed_tools)
 
 def write_summary_tools(summary_file, target):
@@ -154,7 +157,7 @@ def write_info_for_tools(filename, target):
         write_file(filename, exec_info)
 
 def output_summary_info(target, interval):
-    summary_file = caliper_path.CALIPER_SUMMARY_FILE
+    summary_file = caliper_path.folder_ope.summary_file
     if os.path.exists(summary_file):
         os.remove(summary_file)
 

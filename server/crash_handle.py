@@ -95,5 +95,5 @@ def main():
     if judge_target_crash():
         bmcer = RemoteBMCer()
         bmcer.remote_BMC_operate()
-        time.sleep(100)
+        time.sleep(200)
 

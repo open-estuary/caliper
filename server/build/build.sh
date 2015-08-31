@@ -24,7 +24,7 @@ build_prepare() {
     caliper_exists=$(which caliper)
 
     if [ "$caliper_exists"x != ""x ]; then
-        INSTALL_DIR="/home/$(whoami)/.caliper/$OBJPATH"
+        INSTALL_DIR="/home/$(whoami)/caliper_workspace/$OBJPATH"
         OBJPATH=/tmp/caliper_build/$OBJPATH
         BENCH_PATH=/tmp/caliper_build/$BENCH_PATH
         CURRENT_PATH=""
