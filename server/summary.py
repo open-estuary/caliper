@@ -39,7 +39,7 @@ def get_selected_tools(summary_file, target):
     config_files = server_utils.get_cases_def_files(target)
 
     for i in range(0, len(config_files)):
-        config_file = os.path.join(caliper_path.CALIPER_DIR, config_files[i])
+        config_file = os.path.join( config_files[i] )
         config, sections = server_utils.read_config_file(config_file)
         if len(sections):
             selected_tools.extend(sections)

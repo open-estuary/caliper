@@ -34,7 +34,7 @@ from caliper.client.shared.caliper_path import folder_ope as Folder
 
 def get_server_command(kind_bench, section_name):
     server_config_file = ''
-    bench_conf_dir = os.path.join(caliper_path.TESTS_CFG_DIR, kind_bench)
+    bench_conf_dir = os.path.join(caliper_path.config_files.tests_cfg_dir, kind_bench)
 
     server_config_file = server_utils.get_server_cfg_path(kind_bench)
     if server_config_file != '':
@@ -53,11 +53,16 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
     """
     function: run one benchmark which was selected in the configuration files
     """
-    #get the abspath, which is the file name of run config for the benchmark
-    bench_conf_file = os.path.join(caliper_path.TESTS_CFG_DIR,
+    try:
+        #get the abspath, which is the file name of run config for the benchmark
+        bench_conf_file = os.path.join(caliper_path.config_files.tests_cfg_dir,
                                     kind_bench, run_file)
-    #get the config sections for the benchmrk
-    configRun, sections_run = server_utils.read_config_file(bench_conf_file)
+        #get the config sections for the benchmrk
+        configRun, sections_run = server_utils.read_config_file(bench_conf_file)
+    except AttributeError as e:
+        raise AttributeError
+    except Exception:
+        raise
     logging.debug("the sections to run are: %s" % sections_run)
     if not os.path.exists(Folder.exec_dir):
         os.mkdir(Folder.exec_dir)
@@ -526,7 +531,8 @@ def caliper_run( target_exec_dir, target):
 
     for i in range(0, len(config_files)):
         # run benchmarks selected in each configuration file
-        config_file = os.path.join(caliper_path.CALIPER_DIR, config_files[i])
+        #config_file = os.path.join(caliper_path.CALIPER_PRE, config_files[i])
+        config_file = os.path.join( config_files[i] )
         config, sections = server_utils.read_config_file(config_file)
         logging.debug(sections)
 

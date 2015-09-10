@@ -16,7 +16,6 @@ import test_perf_tranver as traverse
 import caliper.server.utils as server_utils
 from caliper.client.shared import caliper_path
 
-CALIPER_DIR = caliper_path.CALIPER_DIR
 LOCATION = os.path.dirname(sys.modules[__name__].__file__)
 
 def get_targets_data(outdir):

@@ -21,7 +21,7 @@ class SettingsValueError(SettingsError):
 settings_filename = 'client_config.cfg'
 shadow_config_filename = 'shadow_config.cfg'
 
-settings_path_root = os.path.join(caliper_path.CONFIG_DIR, settings_filename)
+settings_path_root = os.path.join(caliper_path.config_files.config_dir, settings_filename)
 config_in_root = os.path.exists(settings_path_root)
 
 # need to change

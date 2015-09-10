@@ -27,7 +27,7 @@ from caliper.client.shared.caliper_path import folder_ope as FOLDER
 
 CALIPER_DIR = caliper_path.CALIPER_DIR
 GEN_DIR = caliper_path.GEN_DIR
-TEST_CFG_DIR = caliper_path.TESTS_CFG_DIR
+TEST_CFG_DIR = caliper_path.config_files.tests_cfg_dir
 TMP_DIR = caliper_path.TMP_DIR
 
 def git(*args):

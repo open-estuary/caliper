@@ -72,7 +72,7 @@ def get_cases_def_files( option ):
     cfg_files = []
     cases_tail = "_cases_def.cfg"
     common_cfg = "common" + cases_tail
-    common_cfg_path = os.path.join(caliper_path.TESTS_CFG_DIR, common_cfg)
+    common_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir, common_cfg)
     cfg_files.append(common_cfg_path)
     if (option == 'arm_32' ):
         other_cfg = "arm" + cases_tail
@@ -82,12 +82,12 @@ def get_cases_def_files( option ):
         other_cfg = "server" + cases_tail
     else:
         other_cfg =  'server' + cases_tail
-    other_cfg_path = os.path.join(caliper_path.TESTS_CFG_DIR, other_cfg)
+    other_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir, other_cfg)
     cfg_files.append(other_cfg_path)
     return cfg_files
 
 def get_config_value(config_name, section, key):
-    cfg_file = os.path.join(caliper_path.CONFIG_DIR, config_name)
+    cfg_file = os.path.join(caliper_path.config_files.config_dir, config_name)
     try:
         cfg = BaseCfg(cfg_file)
         value = cfg.get_value(section, key)
@@ -98,12 +98,12 @@ def get_config_value(config_name, section, key):
 
 def get_fault_tolerance_config(section, key):
     flag = 0
-    logging.debug(caliper_path.CONFIG_DIR)
+    logging.debug(caliper_path.config_files.config_dir)
     if caliper_path.judge_caliper_installed():
         cfg_file = os.path.join('/etc', 'caliper', 'config',
                 'execution_contl.cfg')
     else:
-        cfg_file = os.path.join(caliper_path.CONFIG_DIR, 'execution_contl.cfg')
+        cfg_file = os.path.join(caliper_path.config_files.config_dir, 'execution_contl.cfg')
     try:
         tolerence_cfg = BaseCfg(cfg_file)
         value = tolerence_cfg.get_value(section, key)
@@ -122,7 +122,7 @@ def get_fault_tolerance_config(section, key):
         return flag
 
 def get_server_cfg_path(bench_name):
-    bench_cfg_location = os.path.join(caliper_path.TESTS_CFG_DIR, 
+    bench_cfg_location = os.path.join(caliper_path.config_files.tests_cfg_dir, 
                                         bench_name)
     server_config_file = ''
     for root, dirs, files in os.walk(os.path.abspath(bench_cfg_location)):

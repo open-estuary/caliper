@@ -8,6 +8,7 @@
 import re
 import os
 import sys
+import pdb
 import subprocess
 
 def judge_caliper_installed():
@@ -32,13 +33,9 @@ if judge_caliper_installed():
         os.mkdir(CALIPER_TMP_DIR)
 
 if not judge_caliper_installed():
-    TESTS_CFG_DIR = os.path.join(CALIPER_DIR, 'test_cases_cfg')
     CALIPER_PRE = CALIPER_DIR
-    CONFIG_DIR = os.path.join(CALIPER_DIR, 'config')
 else:
-    TESTS_CFG_DIR = os.path.join('/etc', 'caliper', 'test_cases_cfg')
     CALIPER_PRE = CALIPER_TMP_DIR
-    CONFIG_DIR = os.path.join('/etc','caliper', 'config')
 
 BUILD_FILE = 'build.sh'
 BENCHS_DIR = os.path.join(CALIPER_DIR, 'benchmarks')
@@ -50,11 +47,12 @@ FRONT_END_DIR = os.path.join(CALIPER_PRE, 'frontend')
 HTML_DATA_DIR = os.path.join(FRONT_END_DIR, 'frontend', 'data_files')
 HTML_PICTURE_DIR = os.path.join(FRONT_END_DIR, 'polls', 'static', 'polls', 'pictures')
 
+
 def get_caliper_num():
     number = 0
     files = os.listdir(CALIPER_PRE)
     for name in files:
-        if re.search('output', name) and re.search('\d+', name):
+        if re.search('^output', name) and re.search('\d+', name):
             num_tmp = re.search('(\d+)', name).group(1)
             if num_tmp > number:
                 number = num_tmp
@@ -95,6 +93,28 @@ class Folder(Singleton):
         self.summary_file = os.path.join(CALIPER_PRE, self.name, 'results_summary.log')
         self.yaml_dir = os.path.join(self.results_dir, 'yaml')
         self.html_dir = os.path.join(self.results_dir, 'html')
+        self.name = os.path.join(CALIPER_PRE, self.name)
 
 folder_ope = Folder()
 folder_ope.set_up_path()
+
+class ConfigFile(Singleton):
+    tests_cfg_dir = ''
+    config_dir = ''
+    name = ''
+
+    def __init__(self, folder=""):
+        if folder:
+            self.name = os.path.abspath(folder)
+        else:
+            if judge_caliper_installed():
+                self.name = os.path.join('/etc', 'caliper')
+            else:
+                self.name = CALIPER_DIR
+
+    def setup_path(self):
+        self.tests_cfg_dir = os.path.join(self.name, 'test_cases_cfg')
+        self.config_dir = os.path.join(self.name, 'config')
+
+config_files = ConfigFile()
+config_files.setup_path()

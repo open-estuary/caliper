@@ -7,6 +7,7 @@
 
 import os
 import sys
+import shutil
 
 try:
     import caliper.common as common
@@ -54,6 +55,14 @@ def run():
             'matplotlib',
             'numpy >= 1.8.2',
         ])
+    if os.path.exists('caliper.egg-info'):
+        shutil.rmtree('caliper.egg-info')
+    if os.path.exists('dist'):
+        shutil.rmtree('dist')
+    if os.path.exists('build'):
+        shutil.rmtree('build')
+
+
 
 if __name__=="__main__":
     run()

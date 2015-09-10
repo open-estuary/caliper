@@ -158,18 +158,29 @@ if __name__=="__main__":
             default=False, help="Select to send mail to the receivers or not")
     parser.add_argument( "-f", "--folder", action="store", dest="folder",
             default="", help="assign a folder to store the results")
-
+    parser.add_argument("-c", "--config", action="store", dest="config_file",
+            default="", help="specify the location of config file")
     args = parser.parse_args()
     start_time = datetime.datetime.now()
     remote_host = get_remote_host()
 
+    if args.folder:
+        caliper_path.folder_ope.name = args.folder
+        caliper_path.folder_ope.set_up_path()
+    if not os.path.exists(caliper_path.folder_ope.name):
+        os.makedirs(caliper_path.folder_ope.name)
+
+    if args.config_file:
+        caliper_path.config_files.name = args.config_file
+        caliper_path.config_files.setup_path()
+        if not os.path.exists(caliper_path.config_files.tests_cfg_dir):
+            logging.info("The tests_cfg_dir does not exists.")
+            sys.exit()
+        if not os.path.exists(caliper_path.config_files.config_dir):
+            logging.info("The config_dir does not exists.")
+            sys.exit()
 
     if args.build:
-        if args.folder:
-            caliper_path.folder_ope.name = args.folder
-            caliper_path.folder_ope.set_up_path()
-        if not os.path.exists(caliper_path.folder_ope.name):
-            os.makedirs(caliper_path.folder_ope.name)
         try:
             result1 = build_all_tests(remote_host)
             if result1:
