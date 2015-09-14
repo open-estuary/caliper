@@ -193,7 +193,7 @@ def draw_radar(file_lists, store_folder, kind=1):
     dimension = len(spoke_labels)
     if (dimension < 3):
         logging.info("The comparision dimension is less than 3")
-        return 
+        return 1
     theta = radar_factory(dimension, frame='circle')
     labels = [file_list.split('/')[-1].split('_')[0] for file_list in file_lists]
 
@@ -233,9 +233,11 @@ def draw_radar(file_lists, store_folder, kind=1):
     plt.figtext(0.5, 0.965, 'rawing Radar Diagram for Caliper',
                 ha='center', color='black', weight='bold', size='large')
 
-    path_name = os.path.join(store_folder, "test.png")
+    path_name = os.path.join(store_folder, '_'.join([ category,
+        "Total_Scores.png"]))
 
     plt.savefig(path_name, dit=512)
+    return 0
 
 #if __name__ == "__main__":
 #    file_lists = ['D01_16_result.yaml', 'D01_1_result.yaml', 'Server_result.yaml',

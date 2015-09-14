@@ -9,7 +9,6 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from pylab import *
 import numpy.numarray as na
-import pdb
 import re
 
 import radar_caliper as radar
@@ -58,6 +57,19 @@ def get_cases_union(file_lists, subItem, subPoint, category=1):
         test_points = test_results[subItem].keys()
         test_cases = test_results[subItem][subPoint][utils.POINT_SCORE].keys()
         union_cases = list(set(union_cases) & set(test_cases))
+    int_flag = 0
+    for i in union_cases:
+        if int_flag:
+            break
+        try:
+            if int(i.split('_')[-1]):
+                continue
+            else:
+                int_flag = 1
+        except Exception:
+            int_flag = 1
+    if not int_flag:
+        union_cases = sorted( union_cases, key = lambda x:int(x.split('_')[-1]) )
     return union_cases
 
 def _get_labels(files):
@@ -303,7 +315,7 @@ class DrawPicture:
                         ha='center', va='bottom')
         #for i in range(0, len(rects)):
         #    autolabel(rects[i])
-        png_name = os.path.join(folder, 'Total_Scores.png')
+        png_name = os.path.join(folder, '_'.join([classify, 'Total_Scores.png']))
         plt.savefig( png_name)
 
 def get_files_union(file_lists, category=1):
@@ -339,10 +351,14 @@ def draw_picture(file_lists, picture_location):
                 picture_location, utils.PERF_FLAG )
         DrawPicture.draw_testCase_picture( file_lists, perf_Items,
                 picture_location, utils.PERF_FLAG)
-        DrawPicture.draw_testSubItem_picture( file_lists, perf_Items,
-                picture_location, utils.PERF_FLAG)
         if (len(file_lists) >= 3):
-            radar.draw_radar(file_lists, picture_location, utils.PERF_FLAG)
+            result = radar.draw_radar(file_lists, picture_location, utils.PERF_FLAG)
+            if result:
+                DrawPicture.draw_testSubItem_picture( file_lists, perf_Items,
+                    picture_location, utils.PERF_FLAG)
+        else:
+            DrawPicture.draw_testSubItem_picture( file_lists, perf_Items,
+                picture_location, utils.PERF_FLAG)
 
     func_Items = get_files_union(file_lists, utils.FUNC_FLAG)
     if func_Items:
@@ -350,8 +366,12 @@ def draw_picture(file_lists, picture_location):
         #        picture_location, utils.FUNC_FLAG)
         DrawPicture.draw_testCase_picture( file_lists, func_Items,
                 picture_location, utils.FUNC_FLAG)
-        DrawPicture.draw_testSubItem_picture( file_lists, func_Items,
-                picture_location, utils.FUNC_FLAG)
         if (len(file_lists) >= 3):
-            radar.draw_radar(file_lists, picture_location, utils.FUNC_FLAG)
+            result = radar.draw_radar(file_lists, picture_location, utils.FUNC_FLAG)
+            if result:
+                DrawPicture.draw_testSubItem_picture( file_lists, func_Items,
+                    picture_location, utils.FUNC_FLAG)
+        else:
+            DrawPicture.draw_testSubItem_picture( file_lists, func_Items,
+                picture_location, utils.FUNC_FLAG)
 

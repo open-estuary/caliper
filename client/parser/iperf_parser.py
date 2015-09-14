@@ -16,9 +16,14 @@ def iperf_parser(content, outfp, tag):
     sum_score = 0
     count = 0
     if (tag == 'iperf TCP'):
-        for speed in re.findall("MBytes(.*?)MBytes/sec", content):
-            sum_score = string.atof( speed.strip() ) + sum_score
-            count = count + 1
+        if re.search('SUM', content):
+            for speed in re.findall("SUM.*?MBytes(.*?)MBytes/sec", content):
+                sum_score = string.atof( speed.strip() ) + sum_score
+                count = count + 1
+        else:
+            for speed in re.findall("MBytes(.*?)MBytes/sec", content):
+                sum_score = string.atof( speed.strip() ) + sum_score
+                count = count + 1
     else:
         if (tag == 'iperf UDP'):
             speeds = re.findall("MBytes(.*?)MBytes/sec", content)
