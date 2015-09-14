@@ -29,7 +29,7 @@ class CfgsSelector(object):
         cfg_files = []
         cases_tail = "_cases_def.cfg"
         common_cfg = "common" + cases_tail
-        common_cfg_path = os.path.join( caliper_path.TESTS_CFG_DIR, common_cfg )
+        common_cfg_path = os.path.join( caliper_path.config_files.tests_cfg_dir, common_cfg )
         cfg_files.append(common_cfg_path)
         if (self.arch == 'arm_32' ):
             other_cfg = "arm" + cases_tail
@@ -39,7 +39,7 @@ class CfgsSelector(object):
             other_cfg = "server" + cases_tail
         else:
             other_cfg =  'server' + cases_tail
-        other_cfg_path = os.path.join( caliper_path.TESTS_CFG_DIR, other_cfg )
+        other_cfg_path = os.path.join( caliper_path.config_files.tests_cfg_dir, other_cfg )
         cfg_files.append( other_cfg_path )
         return cfg_files
 
@@ -115,7 +115,7 @@ def get_bench_info(config_file, bench_name):
         logging.debug("There is error with the config file: %s" % config_file)
         raise
     else:
-        location = os.path.join(caliper_path.TESTS_CFG_DIR, location)
+        location = os.path.join(caliper_path.config_files.tests_cfg_dir, location)
         build_file = get_real_files(location, build_file)
         run_config = get_real_files(location, run_config)
         parser_file = get_real_files(location, parser_file)

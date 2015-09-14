@@ -1,5 +1,17 @@
 build_ltp() {
     set -e
+
+    SrcPath=$BENCH_PATH"313.ebizzy"
+    TOP_SRCDIR="$CURRENT_PATH/$SrcPath"
+
+    INSTALL_PATH=$INSTALL_DIR/scripts
+    if [ ! -d $INSTALL_PATH ]; then
+        mkdir -p $INSTALL_PATH
+    fi
+    pushd $TOP_SRCDIR
+        cp * $INSTALL_PATH
+    popd
+
        SrcPath=$BENCH_PATH"300.ltp"
    BuildPATH="$CALIPER_TMP/build.ltp"
    echo $BuildPATH
@@ -59,9 +71,6 @@ build_ltp() {
             rm -rf $BuildPATH
         fi
     fi
-        pushd $TOP_SRCDIR
-            cp -r ltp_network $INSTALL_DIR/
-        popd
 }
 
 build_ltp

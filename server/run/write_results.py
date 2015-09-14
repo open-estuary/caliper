@@ -53,38 +53,7 @@ def compute_score(score_way, result_fp):
     return result_score
 
 def write_yaml_func(yaml_file, tmp, result, kind):
-    flag = 0
-    if not os.path.exists(yaml_file):
-        os.mknod(yaml_file)
-    fp = open(yaml_file)
-    x = yaml.load(fp)
-    result = round_perf(result)
-    try:
-        RES = 'results'
-        if not x:
-            x = {}
-        if RES not in x:
-            x[RES] = {}
-        if not x[RES]:
-            x[RES] = {}
-        if tmp[0] not in x[RES]:
-            x[RES][tmp[0]] = {}
-        if tmp[1] not in x[RES][tmp[0]]:
-            x[RES][tmp[0]][tmp[1]] = {}
-        if tmp[2] not in x[RES][tmp[0]][tmp[1]]:
-            x[RES][tmp[0]][tmp[1]][tmp[2]] = {}
-        x[RES][tmp[0]][tmp[1]][tmp[2]] = result
-    except BaseException, e:
-        logging.info( "There is wrong when write the data in file %s." % yaml)
-        logging.info( e)
-        flag = -1
-    else:
-        flag = 1
-        fp.close()
-        with open(yaml_file, 'w') as outfile:
-            outfile.write(yaml.dump(x, default_flow_style=False))
-        outfile.close()
-    return flag
+    return write_yaml_perf(yaml_file, tmp, result, kind)
 
 def write_dic(result, tmp, score_way, yaml_file, score_yaml_file ):
     flag = 0 

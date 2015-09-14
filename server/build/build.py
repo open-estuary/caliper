@@ -23,11 +23,12 @@ except ImportError:
 import caliper.server.utils as server_utils
 from caliper.client.shared import error
 from caliper.client.shared import caliper_path
+from caliper.client.shared.caliper_path import folder_ope as FOLDER
 
-CALIPER_DIR = caliper_path.CALIPER_DIR 
+CALIPER_DIR = caliper_path.CALIPER_DIR
 GEN_DIR = caliper_path.GEN_DIR
-TEST_CFG_DIR = caliper_path.TESTS_CFG_DIR 
-caliper_log_file = caliper_path.CALIPER_LOG_FILE
+TEST_CFG_DIR = caliper_path.config_files.tests_cfg_dir
+TMP_DIR = caliper_path.TMP_DIR
 
 def git(*args):
     return subprocess.check_call(['git'] + list(args))
@@ -106,9 +107,9 @@ def generate_build(config, section_name, dir_name, build_file, flag=0):
         filename = section_name + '_' + version
     else:
         filename = section_name
-    """we think that if we store the benchmarks in the directory of benchmarks, 
-    we need not download the benchmark. if the benchmarks are in the root 
-    directory of Caliper, we think it is temporarily, after compiling we will 
+    """we think that if we store the benchmarks in the directory of benchmarks,
+    we need not download the benchmark. if the benchmarks are in the root
+    directory of Caliper, we think it is temporarily, after compiling we will
     delete them."""
 
     try:
@@ -138,7 +139,7 @@ def generate_build(config, section_name, dir_name, build_file, flag=0):
     else we give up the build of it."""
     location = -2
     if tmp_build:
-        build_command = os.path.join(TEST_CFG_DIR, dir_name, 
+        build_command = os.path.join(TEST_CFG_DIR, dir_name,
                                         section_name, tmp_build)
         file_path = "source " + build_command +"\n"
         insert_content_to_file(build_file, location, file_path)
@@ -169,7 +170,7 @@ def build_caliper(target_arch, flag=0):
     logging.debug("config files are %s" %  files_list)
 
     source_build_file = caliper_path.SOURCE_BUILD_FILE 
-    des_build_file = os.path.join(caliper_path.TMP_DIR, caliper_path.BUILD_FILE)
+    des_build_file = os.path.join(TMP_DIR, caliper_path.BUILD_FILE)
     logging.info("destination file of building is %s" % des_build_file)
 
     for i in range(0, len(files_list)):
@@ -178,7 +179,7 @@ def build_caliper(target_arch, flag=0):
 
         config = ConfigParser.ConfigParser()
         config.read(files_list[i])
-        
+
         sections = config.sections()
         for i in range(0, len(sections)):
             if os.path.exists(des_build_file):
@@ -186,19 +187,19 @@ def build_caliper(target_arch, flag=0):
             shutil.copyfile(os.path.abspath(source_build_file), des_build_file )
 
             try:
-                result = generate_build(config, sections[i], 
+                result = generate_build(config, sections[i],
                                         dir_name, des_build_file)
             except Exception, e:
                 logging.info(e)
             else:
                 if result:
                     return result
-            result = build_each_tool(dir_name, sections[i], 
+            result = build_each_tool(dir_name, sections[i],
                                         des_build_file, target_arch)
             if os.path.exists(des_build_file):
                 os.remove(des_build_file)
             if result:
-                build_flag = server_utils.get_fault_tolerance_config("fault_tolerance", 
+                build_flag = server_utils.get_fault_tolerance_config("fault_tolerance",
                                             "build_error_continue")
                 if build_flag == 1:
                     continue
@@ -215,27 +216,27 @@ def build_each_tool(dirname, section_name, des_build_file, arch='x86_86'):
     logging.info("Building %s" % section_name)
 
     log_name = "%s.log" % section_name
-    log_file = os.path.join(caliper_path.TMP_DIR, log_name)
+    log_file = os.path.join(TMP_DIR, log_name)
     start_time = datetime.datetime.now()
     try:
-        result = subprocess.call("echo '$$ %s BUILD START: %s' >> %s" 
-                                    % (section_name, str(start_time)[:19], 
-                                        caliper_log_file), shell=True)
-        result = subprocess.call("%s %s %s >> %s 2>&1" 
+        result = subprocess.call("echo '$$ %s BUILD START: %s' >> %s"
+                                    % (section_name, str(start_time)[:19],
+                                        FOLDER.caliper_log_file), shell=True)
+        result = subprocess.call("%s %s %s >> %s 2>&1"
                                     % (des_build_file, arch,
-                                        caliper_path.CALIPER_DIR, log_file), 
+                                        CALIPER_DIR, log_file),
                                         shell=True)
     except Exception, e:
         logging.info('There is exception when building the benchmarks')
         raise
     else:
         end_time = datetime.datetime.now()
-        subprocess.call("echo '$$ %s BUILD STOP: %s' >> %s" 
-                         % (section_name, str(end_time)[:19], caliper_log_file), 
+        subprocess.call("echo '$$ %s BUILD STOP: %s' >> %s"
+                         % (section_name, str(end_time)[:19], FOLDER.caliper_log_file),
                             shell=True)
         subprocess.call("echo '$$ %s BUILD DURATION: %s Seconds' >> %s"
                               % (section_name, (end_time-start_time).seconds,
-                                  caliper_log_file), shell=True)
+                                  FOLDER.caliper_log_file), shell=True)
         if result:
             logging.info("Building Failed")
             logging.info("====================================================")
@@ -244,7 +245,7 @@ def build_each_tool(dirname, section_name, des_build_file, arch='x86_86'):
             logging.info("Building Successful")
             logging.info("====================================================")
             record_log(log_file, arch, 1)
-    
+
     server_config = server_utils.get_server_cfg_path(
                                     os.path.join(dirname, section_name))
     if (server_config != ''):
@@ -252,15 +253,15 @@ def build_each_tool(dirname, section_name, des_build_file, arch='x86_86'):
         if (local_arch != arch):
             result = subprocess.call("%s %s %s> %s 2>&1" 
                                     % (des_build_file, local_arch,
-                                        caliper_path.CALIPER_DIR, log_file), 
+                                        CALIPER_DIR, log_file),
                                         shell=True )
             end_time = datetime.datetime.now()
-            subprocess.call("echo '$$ %s BUILD STOP: %s' >> %s" 
-                            % (section_name,str(end_time)[:19], caliper_log_file), 
+            subprocess.call("echo '$$ %s BUILD STOP: %s' >> %s"
+                            % (section_name,str(end_time)[:19], FOLDER.caliper_log_file),
                                 shell=True)
             subprocess.call("echo '$$ %s BUILD DURATION %s Seconds' >> %s"
-                            % (section_name, (end_time-start_time).seconds, 
-                                caliper_log_file), shell=True)
+                            % (section_name, (end_time-start_time).seconds,
+                                FOLDER.caliper_log_file), shell=True)
             if result:
                 record_log(log_file, local_arch, 0)
             else:
@@ -270,8 +271,8 @@ def build_each_tool(dirname, section_name, des_build_file, arch='x86_86'):
     return result
 
 def record_log(log_file, arch, succeed_flag):
-    build_log_dir= caliper_path.BUILD_LOG_DIR
-    
+    build_log_dir= FOLDER.build_dir
+
     new_name_pre = log_file.split('/')[-1].split('.')[0] + '_' + arch
     pwd = os.getcwd()
     os.chdir(build_log_dir)
@@ -285,8 +286,8 @@ def record_log(log_file, arch, succeed_flag):
 
     try:
         shutil.move(log_file, build_log_dir)
-        current_file = os.path.join(caliper_path.BUILD_LOG_DIR, log_file.split("/")[-1])
-        new_log_name = os.path.join(caliper_path.BUILD_LOG_DIR, new_log_name)
+        current_file = os.path.join(FOLDER.build_dir, log_file.split("/")[-1])
+        new_log_name = os.path.join(FOLDER.build_dir, new_log_name)
         os.rename(current_file, new_log_name)
         #shutil.move(new_log_name, build_log_dir)
     except Exception, e:
@@ -301,16 +302,16 @@ def build_for_target(target):
             shutil.rmtree(benchs_dir)
         shutil.copytree(caliper_path.BENCHS_DIR, benchs_dir)
 
-    if os.path.exists(caliper_path.CALIPER_LOG_FILE):
-        os.remove(caliper_path.CALIPER_LOG_FILE)
-    if os.path.exists(caliper_path.CALIPER_LOG_FILE):
-        os.remove(caliper_path.CALIPER_LOG_FILE)
-    if os.path.exists(caliper_path.BUILD_LOG_DIR):
-        shutil.rmtree(caliper_path.BUILD_LOG_DIR)
-    os.mkdir(caliper_path.BUILD_LOG_DIR)
-    if os.path.exists(caliper_path.TMP_DIR):
-        shutil.rmtree(caliper_path.TMP_DIR)
-    os.mkdir(caliper_path.TMP_DIR)
+    if os.path.exists(FOLDER.caliper_log_file):
+        os.remove(FOLDER.caliper_log_file)
+    if os.path.exists(FOLDER.caliper_log_file):
+        os.remove(FOLDER.caliper_log_file)
+    if os.path.exists(FOLDER.build_dir):
+        shutil.rmtree(FOLDER.build_dir)
+    os.mkdir(FOLDER.build_dir)
+    if os.path.exists(TMP_DIR):
+        shutil.rmtree(TMP_DIR)
+    os.mkdir(TMP_DIR)
 
     if server_utils.get_target_ip(target) in server_utils.get_local_ip():
         return build_for_local()
@@ -356,10 +357,10 @@ def copy_gen_to_target(target, target_arch):
         remote_caliper_dir = os.path.join(remote_pwd, "caliper")
         remote_gen_dir = os.path.join(remote_caliper_dir, "binary", target_arch)
         send_file_relative = ['client', 'common.py',  '__init__.py']
-        send_files = [ os.path.join(caliper_path.CALIPER_DIR, i) for i in
+        send_files = [ os.path.join(CALIPER_DIR, i) for i in
                 send_file_relative]
-        send_gen_files= os.path.join( caliper_path.GEN_DIR, target_arch)
-       
+        send_gen_files= os.path.join( GEN_DIR, target_arch)
+
         for i in range(0, len(send_files)):
             try:
                 target.send_file(send_files[i], remote_caliper_dir)
@@ -374,7 +375,7 @@ def copy_gen_to_target(target, target_arch):
 
 def build_for_local():
     arch = server_utils.get_local_machine_arch()
-    logging.info("arch of the local host is %s" % arch)   
+    logging.info("arch of the local host is %s" % arch)
     arch_dir = os.path.join(GEN_DIR, arch)
     if os.path.exists(arch_dir):
         shutil.rmtree(arch_dir)

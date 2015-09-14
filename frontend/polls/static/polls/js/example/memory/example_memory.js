@@ -1,7 +1,6 @@
 
 $(function () {
     var test = document.getElementById("memory_tst").value;  
-    
     var sum_dic = getJson(test, 'sum');
     var columns = getHoriColumn(sum_dic);
     var data = getHoriData(sum_dic, columns);
@@ -12,10 +11,8 @@ $(function () {
     draw_grid(grid);
     
     // api examples
-    var $row = grid.getRowByIndex(3);
+    var $row = grid.getRowByIndex(0);
     console.group("data api examples");
-    console.log("grid.getRowDataByIndex(0):", grid.getRowDataByIndex(0));
-    console.log("grid.getRowData($row):", grid.getRowData($row));
     console.log("grid.getGridData():", grid.getGridData());
     console.groupEnd();
 

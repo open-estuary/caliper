@@ -22,6 +22,8 @@ from matplotlib.spines import Spine
 from matplotlib.projections.polar import PolarAxes
 from matplotlib.projections import register_projection
 
+import plot_utils as utils
+
 LOCATION = os.path.dirname(sys.modules[__name__].__file__)
 caliper_dir = os.path.join(LOCATION, '..', '..', '..', '..')
 yaml_dir = os.path.join(caliper_dir, 'gen', 'output', 'yaml')
@@ -112,7 +114,7 @@ def unit_poly_verts(theta):
     verts = [(r*np.cos(t) + x0, r*np.sin(t) + y0) for t in theta]
     return verts
 
-def get_Items_score(files_list):
+def get_Items_score(files_list, category):
     targets_scores = []
     
     full_path = yaml_dir
@@ -120,7 +122,7 @@ def get_Items_score(files_list):
     fp = open(files_list[0], 'r')
     results = yaml.load(fp)
     fp.close()
-    test_results = results['results']['Performance']
+    test_results = results[utils.RESULT][category]
     test_subItems = test_results.keys()
     union_items = test_subItems
 
@@ -128,7 +130,7 @@ def get_Items_score(files_list):
         fp = open(files_list[j], 'r')
         results = yaml.load(fp)
         fp.close()
-        test_results = results['results']['Performance']
+        test_results = results[utils.RESULT][category]
         test_subItems = test_results.keys()
         union_items = list(set(union_items) & set(test_subItems))
 
@@ -138,10 +140,10 @@ def get_Items_score(files_list):
         fp = open(full_path_i, 'r')
         result = yaml.load(fp)
         fp.close()
-        subItems = result['results']['Performance']
+        subItems = result[utils.RESULT][category]
         scores_for_target = []
         for key in union_items:
-            score = subItems[key]['Total_Scores']
+            score = subItems[key][utils.TOTAL_SCORE]
             scores_for_target.append(string.atof(score))
         targets_scores.append(scores_for_target)
     return (union_items, targets_scores)
@@ -185,12 +187,13 @@ def deal_data(data_lists):
             data_lists[j][i] = data_lists[j][i] * divisor_of_columns[i]
     return data_lists
 
-def draw_radar(file_lists, store_folder):
-    (spoke_labels, data_lists) = get_Items_score(file_lists)
+def draw_radar(file_lists, store_folder, kind=1):
+    category = utils.get_category(kind)
+    (spoke_labels, data_lists) = get_Items_score(file_lists, category)
     dimension = len(spoke_labels)
     if (dimension < 3):
         logging.info("The comparision dimension is less than 3")
-        return 
+        return 1
     theta = radar_factory(dimension, frame='circle')
     labels = [file_list.split('/')[-1].split('_')[0] for file_list in file_lists]
 
@@ -200,6 +203,7 @@ def draw_radar(file_lists, store_folder):
     title = 'Radar Diagram'
 
     fig = plt.figure(figsize=(9, 9))
+    fig.set_size_inches(13.0, 13.0)
     fig.subplots_adjust(wspace=0.25, hspace=0.20, top=0.85, bottom=0.05)
     ax = fig.add_subplot(1, 1, 1, projection='radar')
     # get the approriate scale for the picture
@@ -229,9 +233,11 @@ def draw_radar(file_lists, store_folder):
     plt.figtext(0.5, 0.965, 'rawing Radar Diagram for Caliper',
                 ha='center', color='black', weight='bold', size='large')
 
-    path_name = os.path.join(store_folder, "test.png")
+    path_name = os.path.join(store_folder, '_'.join([ category,
+        "Total_Scores.png"]))
 
     plt.savefig(path_name, dit=512)
+    return 0
 
 #if __name__ == "__main__":
 #    file_lists = ['D01_16_result.yaml', 'D01_1_result.yaml', 'Server_result.yaml',

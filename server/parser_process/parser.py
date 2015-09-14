@@ -16,8 +16,6 @@ import test_perf_tranver as traverse
 import caliper.server.utils as server_utils
 from caliper.client.shared import caliper_path
 
-CALIPER_DIR = caliper_path.CALIPER_DIR
-OUT_DIR = caliper_path.RESULTS_DIR 
 LOCATION = os.path.dirname(sys.modules[__name__].__file__)
 
 def get_targets_data(outdir):
@@ -37,12 +35,12 @@ def get_targets_data(outdir):
 
 def traverse_caliper_output(hosts):
 
-    YAML_DIR = os.path.join(OUT_DIR, 'yaml')
+    YAML_DIR = os.path.join(caliper_path.folder_ope.results_dir, 'yaml')
     host_name = server_utils.get_host_name(hosts)
     host_yaml_name = host_name + '_score.yaml'
     host_yaml_file = os.path.join(YAML_DIR, host_yaml_name)
     try:
-        return_code = traverse.traverser_perf(hosts, host_yaml_file)
+        return_code = traverse.traverser_results(hosts, host_yaml_file)
     except Exception, e:
         logging.info(e)
         raise
@@ -58,7 +56,7 @@ def parser_caliper(host):
         return
 
     file_lists = []
-    (file_lists, json_files) = get_targets_data(OUT_DIR)
+    (file_lists, json_files) = get_targets_data(caliper_path.folder_ope.results_dir)
 
     if caliper_path.judge_caliper_installed():
         if not os.path.exists(caliper_path.FRONT_END_DIR):

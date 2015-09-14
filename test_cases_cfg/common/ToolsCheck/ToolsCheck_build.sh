@@ -3,7 +3,7 @@ build_ToolsCheck() {
    SrcPath=${BENCH_PATH}"304.ToolsCheck"
    BuildPATH="$CALIPER_TMP/build.ToolsCheck"
    TOP_SRCDIR="$CURRENT_PATH/$SrcPath"
-   #INSTALL_DIR="$MYPWD/$OBJPATH"
+   INSTALL_DIR="$MYPWD/$OBJPATH"
 
     if [ $ARCH = "x86_64" -o $ARCH = "x86_32" ]
    then

@@ -133,16 +133,11 @@ def get_local_machine_arch():
 
 def get_target_ip(target):
     try:
-        ip_result = target.run("ifconfig")
-    except error.CmdError, e:
-        raise error.ServRunError(e.args[0], e.args[1])
+        client_ip = settings.get_value('CLIENT', 'ip', type=str)
+    except Exception:
+        raise 
     else:
-        returncode = ip_result.exit_status
-        if returncode==0:
-            ip = re.search('\d+\.\d+\.\d+\.\d+', ip_result.stdout).group(0)
-            if ip:
-                return ip
-        return None
+        return client_ip
 
 def sh_escape(command):
     """

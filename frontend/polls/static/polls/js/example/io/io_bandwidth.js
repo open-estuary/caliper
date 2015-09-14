@@ -12,10 +12,8 @@ $(function () {
     draw_grid(grid);
 
     // api examples
-    var $row = grid.getRowByIndex(5);
+    var $row = grid.getRowByIndex(0);
     console.group("data api examples");
-    console.log("grid.getRowDataByIndex(0):", grid.getRowDataByIndex(0));
-    console.log("grid.getRowData($row):", grid.getRowData($row));
     console.log("grid.getGridData():", grid.getGridData());
     console.groupEnd();
 

@@ -20,7 +20,8 @@ build_iperf() {
         then
             #echo ${GCC//gcc/g++}
       pushd $BuildPATH
-                ac_cv_func_malloc_0_nonnull=yes $TOP_SRCDIR/configure --host=$ARMCROSS  CC=$GCC CXX=${GCC//gcc/g++}      
+             export ac_cv_func_malloc_0_nonnull=yes 
+             $TOP_SRCDIR/configure --host=$ARMCROSS  CC=$GCC CXX=${GCC//gcc/g++}      
            make -s      
            cp src/iperf $myOBJPATH
       popd
