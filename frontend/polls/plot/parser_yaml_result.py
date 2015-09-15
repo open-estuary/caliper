@@ -22,19 +22,25 @@ def get_points_union(file_lists, subItem, category=1):
     fp = open(file_lists[0], 'r')
     results = yaml.load(fp)
     fp.close()
-    test_results = results[utils.RESULT][classify]
-    test_points = test_results[subItem].keys()
-    key_test_points = [x for x in test_points if x != utils.TOTAL_SCORE]
-    union_points = key_test_points
+    try:
+        test_results = results[utils.RESULT][classify]
+        test_points = test_results[subItem].keys()
+        key_test_points = [x for x in test_points if x != utils.TOTAL_SCORE]
+        union_points = key_test_points
+    except Exception:
+        union_points = []
 
     for i in range(1, len(file_lists)):
         fp = open(file_lists[i], 'r')
         results = yaml.load(fp)
         fp.close()
         test_results = results[utils.RESULT][classify]
-        test_points = test_results[subItem].keys()
-        key_test_points = [x for x in test_points if x != utils.TOTAL_SCORE]
-        union_points = list(set(union_points) & set(key_test_points))
+        if subItem in test_results.keys():
+            test_points = test_results[subItem].keys()
+            key_test_points = [x for x in test_points if x != utils.TOTAL_SCORE]
+        else:
+            key_test_points = []
+        union_points = list(set(union_points).union(set(key_test_points)))
     return union_points
 
 # for each test point getting test cases
@@ -43,20 +49,25 @@ def get_cases_union(file_lists, subItem, subPoint, category=1):
     fp = open(file_lists[0], 'r')
     results = yaml.load(fp)
     fp.close()
-    test_results = results[utils.RESULT][classify]
-    test_points = test_results[subItem].keys()
-    test_points = [x for x in test_points if x != utils.TOTAL_SCORE]
-    test_cases = test_results[subItem][subPoint][utils.POINT_SCORE].keys()
-    union_cases = test_cases
+    try:
+        test_results = results[utils.RESUlt][classify]
+        test_points = test_results[subItem].keys()
+        test_points = [x for x in test_points if x != utils.TOTAL_SCORE]
+        test_cases = test_results[subItem][subPoint][utils.POINT_SCORE].keys()
+        union_cases = test_cases
+    except Exception:
+        union_cases = []
 
     for i in range(1, len(file_lists)):
         fp = open(file_lists[i], 'r')
         results = yaml.load(fp)
         fp.close()
         test_results = results[utils.RESULT][classify]
-        test_points = test_results[subItem].keys()
-        test_cases = test_results[subItem][subPoint][utils.POINT_SCORE].keys()
-        union_cases = list(set(union_cases) & set(test_cases))
+        if subItem in test_results.keys():
+            test_points = test_results[subItem].keys()
+            if subPoint in test_points:
+                test_cases = test_results[subItem][subPoint][utils.POINT_SCORE].keys()
+                union_cases = list(set(union_cases).union(set(test_cases)))
     int_flag = 0
     for i in union_cases:
         if int_flag:
@@ -105,7 +116,7 @@ class DrawPicture:
                 ## get the keys of the Test Points, namely the Test Cases
                 label = get_cases_union(file_names, subItem, point, category)
                 if not label:
-                    continue 
+                    continue
                 # set the length of x axis
                 x1 = na.array(range(len(label))) + 0.5
                 fig, ax = plt.subplots()
@@ -119,17 +130,19 @@ class DrawPicture:
                     resultsi = yaml.load(fpi)
                     fpi.close()
 
+                    labeli = resultsi['name']
                     try:
-                        labeli = resultsi['name']
                         test_resultsi = resultsi[utils.RESULT][classify]
                         test_data = test_resultsi[subItem][point][utils.POINT_SCORE]
                     except Exception, e:
-                        print e
-                        continue
+                        test_data = {}
 
                     test_values = []
                     for k in range(0, len(label)):
-                        data = test_data[label[k]]
+                        try:
+                            data = test_data[label[k]]
+                        except Exception:
+                            data = 0
                         test_values.append( data )
                     y_value = max(test_values)
                     if (y_value > y_max):
@@ -139,7 +152,6 @@ class DrawPicture:
                         ax.plot(x1, test_values, PLOT_COLOR[i] , label=labeli)
                     except Exception, e:
                         print e
-                        continue
 
                 str_xlabel = 'Test Cases for ' + subItem + '_'  + point
                 title_name = point + ' BarChart'
@@ -204,10 +216,15 @@ class DrawPicture:
                 #calculate the total score of each point in the subitem
                 data = []
                 for key in key_points:
-                    test_key = test_resultsi[item][key]
-                    data.append(test_key[utils.TOTAL_SCORE])
+                    try:
+                        test_key = test_resultsi[item][key]
+                        data.append(test_key[utils.TOTAL_SCORE])
+                        y_value = test_key[utils.TOTAL_SCORE]
+                    except Exception:
+                        test_key = {}
+                        data.append(0)
+                        y_value = 0
 
-                    y_value = test_key[utils.TOTAL_SCORE]
                     if(y_value > y_max):
                         y_max = y_value
 
@@ -281,10 +298,15 @@ class DrawPicture:
             data = []
 
             for subitem in test_subItems:
-                test_sub = test_resultsi[subitem]
-                data.append(test_sub[utils.TOTAL_SCORE])
+                try:
+                    test_sub = test_resultsi[subitem]
+                    data.append(test_sub[utils.TOTAL_SCORE])
+                    y_value = test_sub[utils.TOTAL_SCORE]
+                except Exception:
+                    test_sub = {}
+                    data.append(0)
+                    y_value = 0
 
-                y_value = test_sub[utils.TOTAL_SCORE]
                 if(y_value > y_max):
                     y_max = y_value
             data_total.append(data)
@@ -338,7 +360,7 @@ def get_files_union(file_lists, category=1):
         fp.close()
         test_results = results[utils.RESULT][classify]
         test_subItems = test_results.keys()
-        union_items = list(set(union_items) & set(test_subItems))
+        union_items = list(set(union_items).union(set(test_subItems)))
     return union_items
 
 def draw_picture(file_lists, picture_location):

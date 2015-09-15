@@ -63,7 +63,11 @@
 
     <div class="page-header">
     </div>
-    
+    <p> With Caliper you can test hardware easily, get visible results and
+    compare the performance of it with other boards. All the data below are
+    scores; the scores are normalized from the original data and the
+    normalization algoirthm.</p>
+
     <h1><small>Comparision platforms and configuration</small></h1>
     <div id="platform_configuration" class="sensei-grid"></div>
     
@@ -75,9 +79,9 @@
 
     <h1><small>Result Summary</small></h1>
     {% if func_summary %}
-    <h2><small>Functional summary</small></h2>
+    <h2><small>Functional tests</small></h2>
     
-    <p>This is the functional test summary result of D02, pc and our team's server. 
+    <p>This is the functional test result of D02, pc and our team's server. 
     More detail information about <a href="/polls/kernel">KERNEL</a>.
     More detail information about <a href="/polls/peripheral">PERIPHERAL</a>.
     </p>
@@ -91,9 +95,9 @@
     {% endif %}
 
     {% if perf_summary %}
-    <h2><small>Perfomance summary</small></h2>
+    <h2><small>Perfomance tests</small></h2>
 
-    <p>This is the performance summary result of D02, pc and our team's server. 
+    <p>This is the performance result of D02, pc and our team's server. 
     More detail information about <a href="/polls/algorithm">ALGORITHM</a>;
     More detail information about <a href="/polls/cpu">CPU</a>;
     More detail information about <a href="/polls/disk">DISK</a>;

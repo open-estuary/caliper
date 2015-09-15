@@ -296,7 +296,7 @@ def record_log(log_file, arch, succeed_flag):
 def build_for_target(target):
     if caliper_path.judge_caliper_installed():
         if not os.path.exists(os.path.join('/tmp', 'caliper_build')):
-            os.mkdir(os.path.join('/tmp', 'caliper_build'))
+            os.mkdir(os.path.join('/tmp', 'caliper_build'), 0755)
         benchs_dir = os.path.join('/tmp', 'caliper_build', 'benchmarks')
         if os.path.exists(benchs_dir):
             shutil.rmtree(benchs_dir)
@@ -308,10 +308,10 @@ def build_for_target(target):
         os.remove(FOLDER.caliper_log_file)
     if os.path.exists(FOLDER.build_dir):
         shutil.rmtree(FOLDER.build_dir)
-    os.mkdir(FOLDER.build_dir)
+    os.mkdir(FOLDER.build_dir, 0755)
     if os.path.exists(TMP_DIR):
         shutil.rmtree(TMP_DIR)
-    os.mkdir(TMP_DIR)
+    os.mkdir(TMP_DIR, 0755)
 
     if server_utils.get_target_ip(target) in server_utils.get_local_ip():
         return build_for_local()

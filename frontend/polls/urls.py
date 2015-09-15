@@ -12,7 +12,7 @@ from . import views
 
 urlpatterns = [
         # ex:  /polls/
-        url(r'^index/$', views.index, name='index'),
+        url(r'^$', views.index, name='index'),
         # for Performance
         url(r'algorithm/$', views.algorithm, name='algorithm' ),
         url(r'cpu/$', views.cpu, name='cpu'),

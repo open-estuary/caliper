@@ -105,8 +105,12 @@ def get_detail_data( files, testItem, category ):
             fp.close()
             # get the target hostname from the filename
             target = '_'.join(filename.split('/')[-1].split('_')[:-2])
-            test_points = data[RESULTS_STR][testItem][category][key]
-            tmp_dic[target] = test_points[POINT_STR]
+            try:
+                test_points = data[RESULTS_STR][testItem][category][key]
+                tmp_dic[target] = test_points[POINT_STR]
+            except Exception:
+                test_points = {}
+                tmp_dic[target] = 0
         dic[key] = tmp_dic
     return dic
 
