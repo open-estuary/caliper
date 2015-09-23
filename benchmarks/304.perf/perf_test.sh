@@ -22,7 +22,7 @@ test_perf_record()
 {
     TCID="perf record test"
     test_prequisite
-    if [ $? -eq 0 ]; then
+    if [ $? -ne 0 ]; then
         echo "$TCID : fail"
         return 
     fi
@@ -56,7 +56,7 @@ test_perf_report()
 {
     TCID="perf report test"
     test_prequisite
-    if [ $? -eq 0 ]; then
+    if [ $? -ne 0 ]; then
         echo "$TCID : fail"
         return 
     fi
@@ -79,7 +79,7 @@ test_perf_stat()
 {
     TCID="perf stat test"
     test_prequisite
-    if [ $? -eq 0 ]; then
+    if [ $? -ne 0 ]; then
         echo "$TCID : fail"
         return 
     fi
@@ -102,7 +102,7 @@ test_perf_stat()
 test_perf_test()
 {
     test_prequisite
-    if [ $? -eq 0 ]; then
+    if [ $? -ne 0 ]; then
         echo "perf test : fail"
         echo "-1"
     fi
