@@ -22,7 +22,7 @@ test_perf_record()
 {
     TCID="perf record test"
     test_prequisite
-    if [ $? -ne 0 ]; then
+    if [ $result -eq 1 ]; then
         echo "$TCID : fail"
         return 
     fi
@@ -40,15 +40,18 @@ test_perf_record()
 
 test_prequisite()
 {
+    result=0	
     output=$(stress|grep 'Usage')
     if [ "$output"x = ""x ]; then 
         echo "you need to install stress first"
         echo '-1'
+	result=1
     fi
     output=$(perf | grep 'usage')
     if [ "$output"x = ""x ]; then
         echo "you need to install perf first"
         echo '-1'
+	result=1
     fi
 }
 
@@ -56,7 +59,7 @@ test_perf_report()
 {
     TCID="perf report test"
     test_prequisite
-    if [ $? -ne 0 ]; then
+    if [ $result -eq 1 ]; then
         echo "$TCID : fail"
         return 
     fi
@@ -79,7 +82,7 @@ test_perf_stat()
 {
     TCID="perf stat test"
     test_prequisite
-    if [ $? -ne 0 ]; then
+    if [ $result -eq 1 ]; then
         echo "$TCID : fail"
         return 
     fi
@@ -102,9 +105,10 @@ test_perf_stat()
 test_perf_test()
 {
     test_prequisite
-    if [ $? -ne 0 ]; then
+    if [ $result -eq 1 ]; then
         echo "perf test : fail"
         echo "-1"
+	return
     fi
     # Test 'perf test'
     echo "Performing 'perf test'..."
