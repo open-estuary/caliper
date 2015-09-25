@@ -14,7 +14,7 @@ import re
 import radar_caliper as radar
 import plot_utils as utils
 
-PLOT_COLOR = ['ro-', 'yo-', 'bo-', 'go-', 'do-']
+PLOT_COLOR = ['ro-', 'yo-', 'bo-', 'go-', 'ko-', 'co-', 'mo-']
 
 # for each subItem get the union points
 def get_points_union(file_lists, subItem, category=1):

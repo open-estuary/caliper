@@ -197,7 +197,7 @@ def draw_radar(file_lists, store_folder, kind=1):
     theta = radar_factory(dimension, frame='circle')
     labels = [file_list.split('/')[-1].split('_')[0] for file_list in file_lists]
 
-    colors = ['b','r', 'g', 'm', 'y']
+    colors = ['b','r', 'g', 'm', 'y', 'c', 'k']
     if len(file_lists) < len(colors):
         colors = colors[0:len(file_lists)]
     title = 'Radar Diagram'

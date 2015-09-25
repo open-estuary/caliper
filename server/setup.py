@@ -87,8 +87,8 @@ params = dict(
         package_dir=get_package_dirs(),
         packages=get_packages(),
         data_files=get_data_files(),
-        url='http://github.com/hisilicon/caliper-dev',
-        maintainer="hisilicon HTSAT",
+        url='http://github.com/open-estuary/caliper',
+        maintainer="open-estuary",
 )
 
 def run():

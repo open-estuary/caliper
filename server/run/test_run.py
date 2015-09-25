@@ -145,12 +145,8 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
             server_utils.file_copy(parser_result_file, tmp_parser_file, "a+")
             os.remove(tmp_parser_file)
             os.remove(tmp_log_file)
-            try:
-                if ( parser_result < 0 ):
-                    continue
-            except Exception:
-                if not parser_result:
-                    continue
+            if ( parser_result <= 0 ):
+                continue
 
         ## according the method in the config file, compute the score
         try:
