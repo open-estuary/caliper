@@ -1,5 +1,6 @@
 build_ltp() {
     set -e
+    set -x
        SrcPath=$BENCH_PATH"300.ltp"
    BuildPATH="$CALIPER_TMP/build.ltp"
    echo $BuildPATH
@@ -28,8 +29,7 @@ build_ltp() {
                         BUILD="x86_64-unknown-linux-gnu"
                     fi
                     $TOP_SRCDIR/configure CC=$GCC --target=$ARMCROSS  --host=$ARMCROSS  --build=$BUILD
-                    make -C $BuildPATH -f $TOP_SRCDIR/Makefile
-                    "top_srcdir=$TOP_SRCDIR" "top_builddir=$BuildPATH" -s
+                    make -C $BuildPATH -f $TOP_SRCDIR/Makefile top_srcdir=$TOP_SRCDIR top_builddir=$BuildPATH -s
                     make -C $BuildPATH -f $TOP_SRCDIR/Makefile "top_srcdir=$TOP_SRCDIR" "top_builddir=$BuildPATH" "DESTDIR=$INSTALL_DIR" SKIP_IDCHECK=1 install
                     mv $INSTALL_DIR/opt/ltp  $INSTALL_DIR/ltp
                     rm -rf  $INSTALL_DIR/opt

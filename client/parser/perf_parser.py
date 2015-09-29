@@ -24,7 +24,7 @@ def perf_parser(content, outfp):
     if (failNum + sucNum + skipNum == 0):
         score = 0
     else:
-        score = sucNum / (failNum + sucNum + skipNum)
+        score = sucNum / (failNum + sucNum + skipNum + 0.0)
     return score
 
 if __name__=="__main__":
