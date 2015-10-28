@@ -1,53 +1,30 @@
-#!/bin/bash
-# wu.wu@hisilicon.com
-#
-
-do_msg() {
-   OBJ=$1
-   ACTION=$2
-   echo "========================================================="
-   echo "$OBJ  $ACTION"
-}
-
-do_msg_end()
-{
-    OBJ=$1
-   ACTION=$2
-   echo "$OBJ  $ACTION"
-   echo "========================================================="
-   
-}
+#!/bin/bash 
 
 build_prepare() {
+    
     OBJPATH=$OBJDIR/$ARCH
-       BENCH_PATH="benchmarks/"
+    BENCH_PATH="benchmarks/"
+    
     caliper_exists=$(which caliper)
-
     if [ "$caliper_exists"x != ""x ]; then
         INSTALL_DIR="/home/$(whoami)/caliper_workspace/$OBJPATH"
-        OBJPATH=/tmp/caliper_build/$OBJPATH
-        BENCH_PATH=/tmp/caliper_build/$BENCH_PATH
         CURRENT_PATH=""
     else
-        INSTALL_DIR="$MYPWD/$OBJPATH"
+        INSTALL_DIR="$MYPWD/caliper_workspace/$OBJPATH"
         CURRENT_PATH=$MYPWD
     fi
-        if [ ! -d $OBJPATH/bin ]; then
-            mkdir -p $OBJPATH/bin
-        fi
-        if [ ! -d $INSTALL_DIR ]; then
-            mkdir -p $INSTALL_DIR
-            mkdir -p $INSTALL_DIR/bin
-        fi
 
-# SPV - for adding time stamp to the temp folder so that caliper can run on multiple board simultaneously
-    NOW=$(date +"%Y-%m-%d_%H-%M-%S") 
-    CALIPER_TMP="/tmp/caliper_$NOW.tmp"
-    if [ ! -d $CALIPER_TMP ]; then
-        mkdir -p $CALIPER_TMP
+    OBJPATH=$TMP_DIR/caliper_build/$OBJPATH
+    BENCH_PATH=$TMP_DIR/caliper_build/$BENCH_PATH
+    
+    if [ ! -d $OBJPATH/bin ]; then
+         mkdir -p $OBJPATH/bin
     fi
-
-    #LOG_FILE="$CALIPER_BUILD/build.log"
+    if [ ! -d $INSTALL_DIR ]; then
+         mkdir -p $INSTALL_DIR
+         mkdir -p $INSTALL_DIR/bin
+    fi
+    
 }
 
 build_cleanup()
@@ -58,7 +35,10 @@ build_cleanup()
     fi
 }
 
+
+
 OBJDIR=binary
+TMP_DIR=$3
 if [ $# -eq 0 ]; then
    ARCH=x86_64
 else
@@ -92,6 +72,8 @@ MYPWD=$2
 
 build_prepare
 
-
 start=$(date +%s)
+
+
+
 

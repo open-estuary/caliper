@@ -97,7 +97,7 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
             os.remove(tmp_parser_file)
         if os.path.exists(tmp_log_file):
             os.remove(tmp_log_file)
-
+        
         server_run_command = get_server_command(kind_bench, sections_run[i])
         logging.debug("Get the server command is: %s" % server_run_command)
         ## run the command of the benchmarks
@@ -116,6 +116,7 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
             else:
                 return result
         else:
+
             server_utils.file_copy(logfile, tmp_log_file, 'a+')
             if flag != 1:
                 logging.info("There is wrong when running the command \"%s\""

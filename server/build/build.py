@@ -5,7 +5,6 @@
 
 import os
 import sys
-#from datetime import datetime
 import subprocess
 import ConfigParser
 import re
@@ -28,7 +27,8 @@ from caliper.client.shared.caliper_path import folder_ope as FOLDER
 CALIPER_DIR = caliper_path.CALIPER_DIR
 GEN_DIR = caliper_path.GEN_DIR
 TEST_CFG_DIR = caliper_path.config_files.tests_cfg_dir
-TMP_DIR = caliper_path.TMP_DIR
+#SPV A unique folder name based on the date and time is created in /tmp so that multiple instance of caliper can run.
+TMP_DIR = caliper_path.TMP_DIR+"_"+datetime.datetime.now().strftime("%y-%m-%d_%H-%M-%S")
 
 def git(*args):
     return subprocess.check_call(['git'] + list(args))
@@ -144,6 +144,7 @@ def generate_build(config, section_name, dir_name, build_file, flag=0):
         file_path = "source " + build_command +"\n"
         insert_content_to_file(build_file, location, file_path)
     else:
+    #SPV when is this else part hit?    
         source_fp = open(build_file, "r")
         all_text = source_fp.read()
         source_fp.close()
@@ -160,6 +161,7 @@ def build_caliper(target_arch, flag=0):
         0: means for the target
         1: means for the server
     """
+
     if target_arch:
         arch = target_arch
     else:
@@ -169,6 +171,7 @@ def build_caliper(target_arch, flag=0):
     files_list = server_utils.get_cases_def_files( arch )
     logging.debug("config files are %s" %  files_list)
 
+    
     source_build_file = caliper_path.SOURCE_BUILD_FILE 
     des_build_file = os.path.join(TMP_DIR, caliper_path.BUILD_FILE)
     logging.info("destination file of building is %s" % des_build_file)
@@ -185,7 +188,7 @@ def build_caliper(target_arch, flag=0):
             if os.path.exists(des_build_file):
                 os.remove(des_build_file)
             shutil.copyfile(os.path.abspath(source_build_file), des_build_file )
-
+            
             try:
                 result = generate_build(config, sections[i],
                                         dir_name, des_build_file)
@@ -199,8 +202,7 @@ def build_caliper(target_arch, flag=0):
             if os.path.exists(des_build_file):
                 os.remove(des_build_file)
             if result:
-                build_flag = server_utils.get_fault_tolerance_config("fault_tolerance",
-                                            "build_error_continue")
+                build_flag = server_utils.get_fault_tolerance_config("fault_tolerance","build_error_continue")
                 if build_flag == 1:
                     continue
                 else:
@@ -211,6 +213,7 @@ def build_each_tool(dirname, section_name, des_build_file, arch='x86_86'):
     """
     generate build.sh file for each benchmark tool and run the build.sh
     """
+    
     os.chmod( des_build_file, stat.S_IRWXO + stat.S_IRWXU + stat.S_IRWXG )
     logging.info("=========================================================")
     logging.info("Building %s" % section_name)
@@ -219,12 +222,13 @@ def build_each_tool(dirname, section_name, des_build_file, arch='x86_86'):
     log_file = os.path.join(TMP_DIR, log_name)
     start_time = datetime.datetime.now()
     try:
+# Fixme : Using shell=True can be a security hazard. See the warning under https://docs.python.org/2/library/subprocess.html?highlight=subprocess.call#frequently-used-arguments. 
         result = subprocess.call("echo '$$ %s BUILD START: %s' >> %s"
                                     % (section_name, str(start_time)[:19],
                                         FOLDER.caliper_log_file), shell=True)
-        result = subprocess.call("%s %s %s >> %s 2>&1"
+        result = subprocess.call("%s %s %s %s >> %s 2>&1"
                                     % (des_build_file, arch,
-                                        CALIPER_DIR, log_file),
+                                        CALIPER_DIR,TMP_DIR, log_file),
                                         shell=True)
     except Exception, e:
         logging.info('There is exception when building the benchmarks')
@@ -245,9 +249,9 @@ def build_each_tool(dirname, section_name, des_build_file, arch='x86_86'):
             logging.info("Building Successful")
             logging.info("====================================================")
             record_log(log_file, arch, 1)
-
     server_config = server_utils.get_server_cfg_path(
                                     os.path.join(dirname, section_name))
+# Not sure the server_config related section to be retained...    
     if (server_config != ''):
         local_arch = server_utils.get_local_machine_arch()
         if (local_arch != arch):
@@ -294,52 +298,85 @@ def record_log(log_file, arch, succeed_flag):
         raise e
 
 def build_for_target(target):
-    if caliper_path.judge_caliper_installed():
-        if not os.path.exists(os.path.join('/tmp', 'caliper_build')):
-            os.mkdir(os.path.join('/tmp', 'caliper_build'), 0755)
-        benchs_dir = os.path.join('/tmp', 'caliper_build', 'benchmarks')
-        if os.path.exists(benchs_dir):
-            shutil.rmtree(benchs_dir)
-        shutil.copytree(caliper_path.BENCHS_DIR, benchs_dir)
 
-    if os.path.exists(FOLDER.caliper_log_file):
-        os.remove(FOLDER.caliper_log_file)
-    if os.path.exists(FOLDER.caliper_log_file):
-        os.remove(FOLDER.caliper_log_file)
-    if os.path.exists(FOLDER.build_dir):
+   # Create the temperory build folders 
+   if not os.path.exists(os.path.join(TMP_DIR, 'caliper_build')):
+       os.makedirs(os.path.join(TMP_DIR, 'caliper_build'), 0755)
+
+   # Improvement Point: Right now all the benchmarks are copied, we can only copy the selected benchmarks to save the time. 
+   benchs_dir = os.path.join(TMP_DIR, 'caliper_build', 'benchmarks')
+   if os.path.exists(benchs_dir):
+      shutil.rmtree(benchs_dir)
+   shutil.copytree(caliper_path.BENCHS_DIR, benchs_dir)
+   
+   
+   if os.path.exists(FOLDER.caliper_log_file):
+       os.remove(FOLDER.caliper_log_file)
+   
+   if os.path.exists(FOLDER.summary_file):
+       os.remove(FOLDER.summary_file)
+   
+   if os.path.exists(FOLDER.build_dir):
         shutil.rmtree(FOLDER.build_dir)
-    os.mkdir(FOLDER.build_dir, 0755)
-    if os.path.exists(TMP_DIR):
-        shutil.rmtree(TMP_DIR)
-    os.mkdir(TMP_DIR, 0755)
+   os.mkdir(FOLDER.build_dir, 0755)
+   
+   if os.path.exists(FOLDER.exec_dir):
+        shutil.rmtree(FOLDER.exec_dir)
+   os.mkdir(FOLDER.exec_dir, 0755)
+   
+   if os.path.exists(FOLDER.results_dir):
+        shutil.rmtree(FOLDER.results_dir)
+   os.mkdir(FOLDER.results_dir, 0755)
+   
+   if os.path.exists(FOLDER.yaml_dir):
+        shutil.rmtree(FOLDER.yaml_dir)
+   os.mkdir(FOLDER.yaml_dir, 0755)
+   
+   if os.path.exists(FOLDER.html_dir):
+        shutil.rmtree(FOLDER.html_dir)
+   os.mkdir(FOLDER.html_dir, 0755)
+   
+   if server_utils.get_target_ip(target) in server_utils.get_local_ip():
+       return build_for_local()
 
-    if server_utils.get_target_ip(target) in server_utils.get_local_ip():
-        return build_for_local()
+   try:
+      host_arch = server_utils.get_local_machine_arch()
+   except Exception, e:
+       logging.debug(" Error in get_local_machine_arch()")
+       raise e
+# This call assign target_arch with target architecture. Call "get_host_arch" looks to be confusing :(   
+   target_arch = server_utils.get_host_arch(target)
+   target_arch_dir = os.path.join(GEN_DIR, target_arch)
+   if os.path.exists(target_arch_dir):
+       shutil.rmtree(target_arch_dir)
+   os.makedirs(target_arch_dir, 0755)    
 
-    try:
-        arch = server_utils.get_local_machine_arch()
-    except Exception, e:
-        logging.debug("get the arch of localhost wrong")
-        raise e
+# Why should we check and remove local architecture folder??? 
+   host_arch_dir = os.path.join(GEN_DIR, host_arch)
+   if os.path.exists(host_arch_dir):
+       shutil.rmtree(host_arch_dir)
 
-    target_arch = server_utils.get_host_arch(target)
-    target_arch_dir = os.path.join(GEN_DIR, target_arch)
-    if os.path.exists(target_arch_dir):
-        shutil.rmtree(target_arch_dir)
+   logging.info(" ")
+   logging.info(" Local Host Arch : %s" %host_arch)
+   logging.info(" Target Arch : %s" %target_arch)
+   logging.info(" Caliper reports and logs are stored : %s" %FOLDER.name)
+   logging.info(" Caliper build directory : %s" %TMP_DIR)
+   logging.info(" ")
 
-    arch_dir = os.path.join(GEN_DIR, arch)
-    if os.path.exists(arch_dir):
-        shutil.rmtree(arch_dir)
+   
+   try:
+#Build all caliper benchmarks for the target architecture
+       result = build_caliper(target_arch, 0)
+   except Exception,e:
+       raise
+   else:
+       if result:
+          return result
+   
 
-    try:
-        result = build_caliper(target_arch, 0)
-    except Exception,e:
-        raise
-    else:
-        if result:
-            return result
-    result = copy_gen_to_target(target, target_arch)
-    return result
+#Copy generated binaries to target machine
+   result = copy_gen_to_target(target, target_arch)
+   return result
 
 def copy_gen_to_target(target, target_arch):
     try:
