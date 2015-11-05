@@ -2,7 +2,7 @@
 # -*- coding:utf-8 -*-
 #
 #   Date    :   15/01/07 11:06:50
-#   Desc    :  
+#   Desc    :
 #
 
 import os
@@ -11,6 +11,7 @@ import sys
 import new
 import imp
 
+
 def _create_module(name):
     """
     Create a single top-level module and add it to sys.modules.
@@ -18,6 +19,7 @@ def _create_module(name):
     module = new.module(name)
     sys.modules[name] = module
     return module
+
 
 def _create_module_and_parents(name):
     """
@@ -40,6 +42,7 @@ def _create_module_and_parents(name):
         sys.modules[".".join(created_parts)] = module
         parent = module
 
+
 def import_module(module, from_where):
     """
     Equivalent to 'from from_where import module'
@@ -49,6 +52,7 @@ def import_module(module, from_where):
     """
     from_module = __import__(from_where, globals(), locals(), [module])
     return getattr(from_module, module)
+
 
 def setup(base_path, root_module_name="caliper"):
     """
@@ -66,4 +70,3 @@ def setup(base_path, root_module_name="caliper"):
 
     # allow locally installed third party packages to be found.
     sys.path.insert(0, os.path.join(base_path, "site_packages"))
-

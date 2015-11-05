@@ -4,18 +4,17 @@
 #   Author  :   wuyanjun 00291783
 #   E-mail  :   wu.wu@hisilicon.com
 #   Date    :   15/01/19 16:20:17
-#   Desc    :  
+#   Desc    :
 #
 
 import re
-import string
 import pdb
+
 
 def common_parser(content, outfp, unit):
     score = -1
-    dic={'Throughput':'Mbits/sec', 'Rate':'times'}
     lines = content.splitlines()
-    
+
     test = re.findall('(.*)from', content)
     if test:
         test_case = test[0].strip()
@@ -25,29 +24,30 @@ def common_parser(content, outfp, unit):
                 break
             if re.search(unit, lines[i]):
                 for j in range(i+1, len(lines)):
-                    if ((len(lines[j].split()) >= 5) and re.match('\d+', lines[j].split()[0])):
+                    if ((len(lines[j].split()) >= 5) and
+                            re.match('\d+', lines[j].split()[0])):
                         score = lines[j].split()[-1]
                         flag = 1
                         break
     else:
         score = 0
     outfp.write(test_case + ' ' + str(score) + '\n')
-            
     return score
+
 
 def throughput_parser(content, outfp):
     return common_parser(content, outfp, 'Throughput')
 
+
 def frequent_parser(content, outfp):
     return common_parser(content, outfp, 'Rate')
 
-if __name__=="__main__":
+if __name__ == "__main__":
     infp = open("output.log", "r")
     content = infp.read()
     outfp = open("2.txt", "a+")
     pdb.set_trace()
     throughput_parser(content, outfp)
-
     frequent_parser(content, outfp)
     outfp.close()
     infp.close()

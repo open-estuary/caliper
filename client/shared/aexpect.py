@@ -26,6 +26,7 @@ def clean_tmp_files():
         shutil.rmtree(BASE_DIR, ignore_errors=True)
 # The following helper functions are shared by the server and the client.
 
+
 def _lock(filename):
     if not os.path.exists(filename):
         open(filename, "w").close()
@@ -33,9 +34,11 @@ def _lock(filename):
     fcntl.lockf(fd, fcntl.LOCK_EX)
     return fd
 
+
 def _unlock(fd):
     fcntl.lockf(fd, fcntl.LOCK_UN)
     os.close(fd)
+
 
 def _locked(filename):
     try:
@@ -56,6 +59,7 @@ def _wait(filename):
     fd = _lock(filename)
     _unlock(fd)
 
+
 def _makeraw(shell_fd):
     attr = termios.tcgetattr(shell_fd)
     attr[0] &= ~(termios.IGNBRK | termios.BRKINT | termios.PARMRK |
@@ -67,6 +71,7 @@ def _makeraw(shell_fd):
     attr[3] &= ~(termios.ECHO | termios.ECHONL | termios.ICANON |
                  termios.ISIG | termios.IEXTEN)
     termios.tcsetattr(shell_fd, termios.TCSANOW, attr)
+
 
 def _makestandard(shell_fd, echo):
     attr = termios.tcgetattr(shell_fd)
@@ -80,11 +85,13 @@ def _makestandard(shell_fd, echo):
         attr[3] &= ~termios.ECHO
     termios.tcsetattr(shell_fd, termios.TCSANOW, attr)
 
+
 def _get_filenames(base_dir, a_id):
     return [os.path.join(base_dir, a_id, s) for s in
             "shell-pid", "status", "output", "inpipe", "ctrlpipe",
             "lock-server-running", "lock-client-starting",
             "server-log"]
+
 
 def _get_reader_filename(base_dir, a_id, reader):
     return os.path.join(base_dir, a_id, "outpipe-%s" % reader)
@@ -149,7 +156,8 @@ if __name__ == "__main__":
             os.execv("/bin/bash", ["/bin/bash", "-c", command])
     else:
         # Parent process
-        server_log.info('Acquiring server lock on %s' % lock_server_running_filename)
+        server_log.info('Acquiring server lock on %s' %
+                                lock_server_running_filename)
         lock_server_running = _lock(lock_server_running_filename)
 
         # Set terminal echo on/off and disable pre- and post-processing
@@ -231,7 +239,8 @@ if __name__ == "__main__":
                 data = os.read(inpipe_fd, 1024)
                 os.write(shell_fd, data)
 
-        server_log.info('Out of the main read loop. Writing status to %s' % status_filename)
+        server_log.info('Out of the main read loop. Writing status to %s' %
+                            status_filename)
         fileobj = open(status_filename, "w")
         fileobj.write(str(status))
         fileobj.close()
@@ -279,11 +288,13 @@ class ExpectError(Exception):
         return ("Unknown error occurred while looking for %s    (output: %r)" %
                 (self._pattern_str(), self.output))
 
+
 class ExpectTimeoutError(ExpectError):
 
     def __str__(self):
         return ("Timeout expired while looking for %s    (output: %r)" %
                 (self._pattern_str(), self.output))
+
 
 class ExpectProcessTerminatedError(ExpectError):
     def __init__(self, patterns, status, output):
@@ -294,6 +305,8 @@ class ExpectProcessTerminatedError(ExpectError):
         return ("Process terminated while looking for %s    "
                 "(status: %s,    output: %r)" % (self._pattern_str(),
                                                  self.status, self.output))
+
+
 class ShellError(Exception):
     def __init__(self, cmd, output):
         Exception.__init__(self, cmd, output)
@@ -304,10 +317,12 @@ class ShellError(Exception):
         return ("Could not execute shell command %r    (output: %r)" %
                 (self.cmd, self.output))
 
+
 class ShellTimeoutError(ShellError):
     def __str__(self):
         return ("Timeout expired while waiting for shell command to "
                 "complete: %r    (output: %r)" % (self.cmd, self.output))
+
 
 class ShellProcessTerminatedError(ShellError):
     # Raised when the shell process itself (e.g. ssh, netcat, telnet)
@@ -321,6 +336,7 @@ class ShellProcessTerminatedError(ShellError):
         return ("Shell process terminated while waiting for command to "
                 "complete: %r    (status: %s,    output: %r)" %
                 (self.cmd, self.status, self.output))
+
 
 class ShellCmdError(ShellError):
     # Raised when a command executed in a shell terminates with a nonzero
@@ -341,8 +357,9 @@ class ShellStatusError(ShellError):
         return ("Could not get exit status of command: %r    (output: %r)" %
                 (self.cmd, self.output))
 
-def run_tail(command, termination_func=None, output_func=None, output_prefix="",
-             timeout=1.0, auto_close=True):
+
+def run_tail(command, termination_func=None, output_func=None, 
+                output_prefix="", timeout=1.0, auto_close=True):
     """
     Run a subprocess in the background and collect its output and exit status.
 
@@ -376,6 +393,7 @@ def run_tail(command, termination_func=None, output_func=None, output_prefix="",
         time.sleep(0.1)
 
     return process
+
 
 def run_bg(command, termination_func=None, output_func=None, output_prefix="",
            timeout=1.0, auto_close=True):
@@ -413,6 +431,7 @@ def run_bg(command, termination_func=None, output_func=None, output_prefix="",
 
     return process
 
+
 def run_fg(command, output_func=None, output_prefix="", timeout=1.0):
     """
     Run a subprocess in the foreground and collect its output and exit status.
@@ -443,8 +462,8 @@ def run_fg(command, output_func=None, output_prefix="", timeout=1.0):
     process.close()
     return (status, output)
 
-class Spawn(object):
 
+class Spawn(object):
     """
     This class is used for spawning and controlling a child process.
 
@@ -767,6 +786,7 @@ class Spawn(object):
 
 _thread_kill_requested = False
 
+
 def kill_tail_threads():
     """
     Kill all Tail threads.
@@ -779,6 +799,7 @@ def kill_tail_threads():
         if hasattr(t, "name") and t.name.startswith("tail_thread"):
             t.join(10)
     _thread_kill_requested = False
+
 
 class Tail(Spawn):
     """
@@ -834,7 +855,8 @@ class Tail(Spawn):
         # Init the superclass
         Spawn.__init__(self, command, a_id, auto_close, echo, linesep)
         if thread_name is None:
-            self.thread_name = ("tail_thread_%s_%s") % (self.a_id, str(command)[:10])
+            self.thread_name = ("tail_thread_%s_%s") % (self.a_id,
+                                                        str(command)[:10])
         else:
             self.thread_name = thread_name
 
@@ -992,6 +1014,7 @@ class Tail(Spawn):
         if t:
             t.join()
 
+
 class Expect(Tail):
     """
     This class runs a child process in the background and provides expect-like
@@ -1115,14 +1138,15 @@ class Expect(Tail):
                                   print_func=None, match_func=None):
         """
         Read from child using read_nonblocking until a pattern matches.
-        Read using read_nonblocking until a match is found using match_patterns,
-        or until timeout expires. Before attempting to search for a match, the
-        data is filtered using the filter_func function provided.
+        Read using read_nonblocking until a match is found using
+        match_patterns, or until timeout expires. Before attempting to
+        search for a match, the data is filtered using the filter_func
+        function provided.
 
         :param patterns: List of strings (regular expression patterns)
-        :param filter_func: Function to apply to the data read from the child before
-                attempting to match it against the patterns (should take and
-                return a string)
+        :param filter_func: Function to apply to the data read from the child
+                before attempting to match it against the patterns (should
+                take and return a string)
         :param timeout: The duration (in seconds) to wait until a match is
                 found
         :param internal_timeout: The timeout to pass to read_nonblocking
@@ -1201,7 +1225,8 @@ class Expect(Tail):
     def read_until_last_line_matches(self, patterns, timeout=60,
                                      internal_timeout=None, print_func=None):
         """
-        Read using read_nonblocking until the last non-empty line matches a pattern.
+        Read using read_nonblocking until the last non-empty line matches a
+        pattern.
 
         Read using read_nonblocking until the last non-empty line of the output
         matches one of the patterns (using match_patterns), or until timeout
@@ -1260,8 +1285,8 @@ class Expect(Tail):
                                               internal_timeout, print_func,
                                               self.match_patterns_multiline)
 
-class ShellSession(Expect):
 
+class ShellSession(Expect):
     """
     This class runs a child process in the background.  It it suited for
     processes that provide an interactive shell, such as SSH and Telnet.
@@ -1378,7 +1403,8 @@ class ShellSession(Expect):
     def read_up_to_prompt(self, timeout=60, internal_timeout=None,
                           print_func=None):
         """
-        Read using read_nonblocking until the last non-empty line matches the prompt.
+        Read using read_nonblocking until the last non-empty line matches
+        the prompt.
 
         Read using read_nonblocking until the last non-empty line of the output
         matches the prompt regular expression set by set_prompt, or until

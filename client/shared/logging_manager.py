@@ -2,12 +2,13 @@
 # -*- coding:utf-8 -*-
 #
 #   Date    :   15/01/06 08:39:35
-#   Desc    :  
+#   Desc    :
 #
 
 import logging
 
 logger = logging.getLogger()
+
 
 def _current_handlers():
     return set(logger.handlers)
@@ -23,13 +24,15 @@ def do_not_report_as_logging_caller(func):
     _caller_code_to_skip_in_logging_stack.add(func.func_code)
     return func
 
+
 class LoggingFile(object):
     """
-    File-like object that will receive messages pass them to the logging infrastructure
-    in an appropriate way.
+    File-like object that will receive messages pass them to the logging
+    infrastructure in an appropriate way.
     """
 
-    def __init__(self, prefix='', level=logging.DEBUG, logger=logging.getLogger()):
+    def __init__(self, prefix='', level=logging.DEBUG,
+            logger=logging.getLogger()):
         """
         :param prefix - the prefix for each line logged by this object
         """
@@ -41,8 +44,8 @@ class LoggingFile(object):
     @do_not_report_as_logging_caller
     def write(self, data):
         """
-        Writes data only if it constitues a whileone line. If it is not the case, store it in a buffer
-        and wait until we have a complete line.
+        Writes data only if it constitues a whileone line. If it is not the
+        case, store it in a buffer and wait until we have a complete line.
         """
         data_lines = data.split('\n')
         if len(data_lines) > 1:

@@ -1,15 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#                      
-#    E-mail    :    wu.wu@hisilicon.com 
+#
+#    E-mail    :    wu.wu@hisilicon.com
 #    Data      :    2015-08-27 15:39:09
 #    Desc      :
 
 import re
-import sys
 import time
 import logging
-import subprocess
 
 try:
     import caliper.common
@@ -20,6 +18,7 @@ from caliper.client.shared import error
 from caliper.client.shared import utils
 from caliper.client.shared.settings import settings
 from caliper.server.hosts import host_factory
+
 
 class RemoteBMCer(object):
     command = None
@@ -73,13 +72,14 @@ class RemoteBMCer(object):
             else:
                 self.host = bmc_host
 
+
 def judge_target_crash():
     result = -1
     try:
         client = settings.get_value('CLIENT', 'ip', type=str)
         commands = 'ping -c 10 %s' % client
         result = utils.run(commands)
-    except error.CmdError as e:
+    except error.CmdError:
         return True
     else:
         if result.exit_status:
@@ -91,9 +91,9 @@ def judge_target_crash():
             else:
                 return False
 
+
 def main():
     if judge_target_crash():
         bmcer = RemoteBMCer()
         bmcer.remote_BMC_operate()
         time.sleep(200)
-

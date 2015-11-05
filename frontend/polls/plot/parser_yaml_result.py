@@ -1,6 +1,6 @@
-## wuyanjun w00291783
-## wu.wu@hisilicon.com
-## Copyright @
+# wuyanjun w00291783
+# wu.wu@hisilicon.com
+# Copyright @
 
 import os
 import yaml
@@ -15,6 +15,7 @@ import radar_caliper as radar
 import plot_utils as utils
 
 PLOT_COLOR = ['ro-', 'yo-', 'bo-', 'go-', 'ko-', 'co-', 'mo-']
+
 
 # for each subItem get the union points
 def get_points_union(file_lists, subItem, category=1):
@@ -37,11 +38,13 @@ def get_points_union(file_lists, subItem, category=1):
         test_results = results[utils.RESULT][classify]
         if subItem in test_results.keys():
             test_points = test_results[subItem].keys()
-            key_test_points = [x for x in test_points if x != utils.TOTAL_SCORE]
+            key_test_points = [x for x in test_points
+                                if x != utils.TOTAL_SCORE]
         else:
             key_test_points = []
         union_points = list(set(union_points).union(set(key_test_points)))
     return union_points
+
 
 # for each test point getting test cases
 def get_cases_union(file_lists, subItem, subPoint, category=1):
@@ -66,7 +69,8 @@ def get_cases_union(file_lists, subItem, subPoint, category=1):
         if subItem in test_results.keys():
             test_points = test_results[subItem].keys()
             if subPoint in test_points:
-                test_cases = test_results[subItem][subPoint][utils.POINT_SCORE].keys()
+                test_cases = \
+                    test_results[subItem][subPoint][utils.POINT_SCORE].keys()
                 union_cases = list(set(union_cases).union(set(test_cases)))
     int_flag = 0
     for i in union_cases:
@@ -80,8 +84,10 @@ def get_cases_union(file_lists, subItem, subPoint, category=1):
         except Exception:
             int_flag = 1
     if not int_flag:
-        union_cases = sorted( union_cases, key = lambda x:int(x.split('_')[-1]) )
+        union_cases = sorted(union_cases,
+                                key=lambda x:int(x.split('_')[-1]))
     return union_cases
+
 
 def _get_labels(files):
     label_total = []
@@ -93,27 +99,30 @@ def _get_labels(files):
         label_total.append(label)
     return label_total
 
-class DrawPicture:
 
+class DrawPicture:
     @staticmethod
-    def draw_testpoint_picture( file_names, test_sub_items, folder, category = 1 ):
+    def draw_testpoint_picture(file_names, test_sub_items, folder,
+                                category=1):
         """
         This function is used to draw the comparion histogram for the subItem
 
         :Param file_names: the input files which need to be compared
-        :Param result_test: the test results in a Test Item, such as in 'performance' or 'functional'
-        :Param test_sub_items: the Test Cases need to be draw, each Test Case means a picture
+        :Param result_test: the test results in a Test Item, such as in
+                                'performance' or 'functional'
+        :Param test_sub_items: the Test Cases need to be draw, each Test
+                                Case means a picture
         :Param folder: the location will store the picture
         """
         classify = utils.get_category(category)
 
         for subItem in test_sub_items:
-            ## get the Test Points in each Test SubItem
+            # get the Test Points in each Test SubItem
             key_points = get_points_union(file_names, subItem, category)
 
             rcParams['figure.figsize'] = 9, 6
             for point in key_points:
-                ## get the keys of the Test Points, namely the Test Cases
+                # get the keys of the Test Points, namely the Test Cases
                 label = get_cases_union(file_names, subItem, point, category)
                 if not label:
                     continue
@@ -123,17 +132,19 @@ class DrawPicture:
                 fig.set_size_inches(12, 10)
                 y_max = 0
 
-                # draw the dot line for each file, namely, draw the target's content one by one
+                # draw the dot line for each file, namely, draw the target's
+                # content one by one
                 for i in range(0, len(file_names)):
                     file_name = file_names[i]
-                    fpi = open( file_name )
+                    fpi = open(file_name)
                     resultsi = yaml.load(fpi)
                     fpi.close()
 
                     labeli = resultsi['name']
                     try:
                         test_resultsi = resultsi[utils.RESULT][classify]
-                        test_data = test_resultsi[subItem][point][utils.POINT_SCORE]
+                        test_data = \
+                            test_resultsi[subItem][point][utils.POINT_SCORE]
                     except Exception, e:
                         test_data = {}
 
@@ -143,17 +154,17 @@ class DrawPicture:
                             data = test_data[label[k]]
                         except Exception:
                             data = 0
-                        test_values.append( data )
+                        test_values.append(data)
                     y_value = max(test_values)
                     if (y_value > y_max):
                         y_max = y_value
 
                     try:
-                        ax.plot(x1, test_values, PLOT_COLOR[i] , label=labeli)
+                        ax.plot(x1, test_values, PLOT_COLOR[i], label=labeli)
                     except Exception, e:
                         print e
 
-                str_xlabel = 'Test Cases for ' + subItem + '_'  + point
+                str_xlabel = 'Test Cases for ' + subItem + '_' + point
                 title_name = point + ' BarChart'
                 ll = ax.legend(loc='upper right')
                 leg = plt.gca().get_legend()
@@ -171,13 +182,13 @@ class DrawPicture:
                 plt.axis([0, len(label)*1.2, 0, y_max*1.05])
                 plt.grid(True)
                 if re.search('/', point):
-                    point=point.replace('/', '_')
+                    point = point.replace('/', '_')
                 point = '_'.join(point.split(" "))
                 png_name = os.path.join(folder, subItem + '_' + point + '.png')
-                plt.savefig( png_name)
+                plt.savefig(png_name)
 
     @staticmethod
-    def draw_testCase_picture( file_names, test_subItems, folder, category=1 ):
+    def draw_testCase_picture(file_names, test_subItems, folder, category=1):
         classify = utils.get_category(category)
 
         if not len(test_subItems):
@@ -195,7 +206,6 @@ class DrawPicture:
             rects = []
             ind = 0
             width = 0.35
-            avialabel_points = []
             error_flag = 0
 
             fig, ax = plt.subplots()
@@ -210,10 +220,10 @@ class DrawPicture:
                     test_resultsi = results_i[utils.RESULT][classify]
                 except Exception:
                     print e
-                    print "Error: %s"  % file_names[i]
+                    print "Error: %s" % file_names[i]
                     continue
 
-                #calculate the total score of each point in the subitem
+                # calculate the total score of each point in the subitem
                 data = []
                 for key in key_points:
                     try:
@@ -232,7 +242,7 @@ class DrawPicture:
                     data_total.append(data)
                 else:
                     key_length = key_length - 1
-                    error_falg = 1
+                    error_flag = 1
 
             if error_flag == 1:
                 continue
@@ -240,32 +250,37 @@ class DrawPicture:
             for i in range(0, len(label_total)):
                 ind = na.array(range(key_length))+0.5
                 width = 0.20
-                rect_item = ax.bar(ind+i*width, data_total[i], width, color=color_total[i])
+                rect_item = ax.bar(ind+i*width, data_total[i], width,
+                                    color=color_total[i])
                 rects.append(rect_item)
 
             ax.set_ylabel('Scores')
-            ax.set_title('Total Score of Item %s' % item )
+            ax.set_title('Total Score of Item %s' % item)
             ax.set_xticks(ind+width*len(rects)/2)
-            ax.set_xticklabels( tuple(key_points) )
+            ax.set_xticklabels(tuple(key_points))
 
-            ax.legend(tuple(rects), tuple(label_total),  loc="upper right" )
+            ax.legend(tuple(rects), tuple(label_total), loc="upper right")
             leg = plt.gca().get_legend()
             ltext = leg.get_texts()
             plt.setp(ltext, fontsize='small')
             plt.ylim(0, y_max*1.20)
+
             # show the value of the bar
             def autolabel(rectsi):
                 for rect in rectsi:
                     height = rect.get_height()
-                    ax.text(rect.get_x()+rect.get_width()/2., 1.02*height, '%.2f'%float(height),
+                    ax.text(rect.get_x() + rect.get_width() / 2.,
+                            1.02 * height,
+                            '%.2f' % float(height),
                             ha='center', va='bottom')
-            #for i in range(0, len(rects)):
-                #autolabel(rects[i])
+            # for i in range(0, len(rects)):
+                # autolabel(rects[i])
             png_name = os.path.join(folder, item + '_summary.png')
-            plt.savefig( png_name )
+            plt.savefig(png_name)
 
     @staticmethod
-    def draw_testSubItem_picture(file_names, test_subItems, folder, category=1 ):
+    def draw_testSubItem_picture(file_names, test_subItems,
+                                    folder, category=1):
         y_max = 0
         data_total = []
         label_total = []
@@ -280,7 +295,7 @@ class DrawPicture:
         classify = utils.get_category(category)
 
         if not len(test_subItems):
-            return 
+            return
         # get the lists of each Test SubItems from different targets
         for i in range(0, len(file_names)):
             fpi = open(file_names[i])
@@ -291,10 +306,10 @@ class DrawPicture:
                 test_resultsi = results_i[utils.RESULT][classify]
             except Exception:
                 print e
-                print "Error: %s"  % file_names[i]
+                print "Error: %s" % file_names[i]
                 continue
 
-            #calculate the total score of each subItems
+            # calculate the total score of each subItems
             data = []
 
             for subitem in test_subItems:
@@ -314,31 +329,35 @@ class DrawPicture:
         for i in range(0, len(label_total)):
             ind = na.array(range(len(test_subItems)))+0.5
             width = 0.20
-            rect_item = ax.bar(ind+i*width, data_total[i], width, color=color_total[i])
+            rect_item = ax.bar(ind+i*width, data_total[i], width,
+                                color=color_total[i])
             rects.append(rect_item)
 
         ax.set_ylabel('Scores')
         ax.set_title('Total Score of each Items')
-        ax.set_xticks(ind+width*len(rects)/2)
-        ax.set_xticklabels( tuple(test_subItems) )
+        ax.set_xticks(ind + width * len(rects) / 2)
+        ax.set_xticklabels(tuple(test_subItems))
 
-        ax.legend(tuple(rects), tuple(label_total),  loc="upper left" )
+        ax.legend(tuple(rects), tuple(label_total),  loc="upper left")
         # set the fonts in the plotting
         leg = plt.gca().get_legend()
         ltext = leg.get_texts()
         plt.setp(ltext, fontsize='small')
-
         plt.ylim(0, y_max*1.08)
+
         # show the value of the bar
         def autolabel(rectsi):
             for rect in rectsi:
                 height = rect.get_height()
-                ax.text(rect.get_x()+rect.get_width()/2., 1.02*height, '%.2f'%float(height),
+                ax.text(rect.get_x()+rect.get_width()/2., 1.02*height,
+                        '%.2f' % float(height),
                         ha='center', va='bottom')
-        #for i in range(0, len(rects)):
-        #    autolabel(rects[i])
-        png_name = os.path.join(folder, '_'.join([classify, 'Total_Scores.png']))
-        plt.savefig( png_name)
+        # for i in range(0, len(rects)):
+        #     autolabel(rects[i])
+        png_name = os.path.join(folder,
+                                '_'.join([classify, 'Total_Scores.png']))
+        plt.savefig(png_name)
+
 
 def get_files_union(file_lists, category=1):
     fp = open(file_lists[0], 'r')
@@ -363,6 +382,7 @@ def get_files_union(file_lists, category=1):
         union_items = list(set(union_items).union(set(test_subItems)))
     return union_items
 
+
 def draw_picture(file_lists, picture_location):
     if len(file_lists) == 0:
         return
@@ -370,30 +390,31 @@ def draw_picture(file_lists, picture_location):
     perf_Items = get_files_union(file_lists, utils.PERF_FLAG)
     if perf_Items:
         DrawPicture.draw_testpoint_picture(file_lists, perf_Items,
-                picture_location, utils.PERF_FLAG )
-        DrawPicture.draw_testCase_picture( file_lists, perf_Items,
-                picture_location, utils.PERF_FLAG)
+                        picture_location, utils.PERF_FLAG)
+        DrawPicture.draw_testCase_picture(file_lists, perf_Items,
+                        picture_location, utils.PERF_FLAG)
         if (len(file_lists) >= 3):
-            result = radar.draw_radar(file_lists, picture_location, utils.PERF_FLAG)
+            result = radar.draw_radar(file_lists, picture_location,
+                                        utils.PERF_FLAG)
             if result:
-                DrawPicture.draw_testSubItem_picture( file_lists, perf_Items,
+                DrawPicture.draw_testSubItem_picture(file_lists, perf_Items,
                     picture_location, utils.PERF_FLAG)
         else:
-            DrawPicture.draw_testSubItem_picture( file_lists, perf_Items,
+            DrawPicture.draw_testSubItem_picture(file_lists, perf_Items,
                 picture_location, utils.PERF_FLAG)
 
     func_Items = get_files_union(file_lists, utils.FUNC_FLAG)
     if func_Items:
-        #DrawPicture.draw_testpoint_picture(file_lists, func_Items,
+        # DrawPicture.draw_testpoint_picture(file_lists, func_Items,
         #        picture_location, utils.FUNC_FLAG)
-        DrawPicture.draw_testCase_picture( file_lists, func_Items,
-                picture_location, utils.FUNC_FLAG)
+        DrawPicture.draw_testCase_picture(file_lists, func_Items,
+                            picture_location, utils.FUNC_FLAG)
         if (len(file_lists) >= 3):
-            result = radar.draw_radar(file_lists, picture_location, utils.FUNC_FLAG)
+            result = radar.draw_radar(file_lists, picture_location,
+                                        utils.FUNC_FLAG)
             if result:
-                DrawPicture.draw_testSubItem_picture( file_lists, func_Items,
+                DrawPicture.draw_testSubItem_picture(file_lists, func_Items,
                     picture_location, utils.FUNC_FLAG)
         else:
-            DrawPicture.draw_testSubItem_picture( file_lists, func_Items,
+            DrawPicture.draw_testSubItem_picture(file_lists, func_Items,
                 picture_location, utils.FUNC_FLAG)
-

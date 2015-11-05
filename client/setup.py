@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#                      
-#    E-mail    :    wu.wu@hisilicon.com 
+#
+#    E-mail    :    wu.wu@hisilicon.com
 #    Data      :    2015-08-06 11:42:02
 #    Desc      :
 
 import os
-import sys
-import pdb
 
 try:
     import client.common as common
@@ -24,13 +22,16 @@ if os.path.isdir('client'):
 else:
     client_dir = '.'
 
+
 def get_packages():
     return ['caliper.client.shared',
             'caliper.client.parser',
-            'caliper.client'] 
+            'caliper.client']
+
 
 def get_package_dirs():
     return {'caliper.client': client_dir}
+
 
 params = dict(
         name='caliper',
@@ -42,8 +43,9 @@ params = dict(
         maintainer="hisilicon HTSAT",
 )
 
+
 def run():
     setup(**params)
 
-if __name__=="__main__":
+if __name__ == "__main__":
     run()

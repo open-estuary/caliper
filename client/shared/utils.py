@@ -2,12 +2,11 @@
 # -*- coding:utf-8 -*-
 #
 #   Date    :   15/01/04 16:32:44
-#   Desc    :  
+#   Desc    :
 #
 
 import os
 import random
-import sys
 import select
 import shutil
 import subprocess
@@ -20,7 +19,6 @@ import logging
 from threading import Thread, Lock
 import commands
 import string
-import pdb
 import ConfigParser
 
 from caliper.client.shared import error, logging_manager
@@ -28,9 +26,11 @@ from caliper.client.shared.settings import settings
 from caliper.client.shared import caliper_path
 from caliper.client.shared.tests_setting import BaseCfg
 
+
 class _NullStream(object):
     def write(self, data):
         pass
+
     def flush(self):
         pass
 
@@ -43,19 +43,22 @@ DEFAULT_STDERR_LEVEL = logging.ERROR
 STDOUT_PREFIX = '[stdout]'
 STDERR_PREFIX = '[stderr]'
 
+
 def file_copy(des_file, source_file, style):
     des_fp = open(des_file, style)
-    source_fp =open(source_file, 'r')
+    source_fp = open(source_file, 'r')
     content = source_fp.read()
-    des_fp.write( content )
+    des_fp.write(content)
     source_fp.close()
     des_fp.close()
+
 
 def read_config_file(filename):
     config = ConfigParser.ConfigParser()
     config.read(filename)
     sections = config.sections()
     return (config, sections)
+
 
 def get_local_ip():
     cmd_output = commands.getoutput('ifconfig')
@@ -65,36 +68,43 @@ def get_local_ip():
     else:
         return ['127.0.1.1']
 
-""" For 'android', we read 'common_cases_def.cfg' and 'common_case_def.cfg';
+
+"""
+For 'android', we read 'common_cases_def.cfg' and 'common_case_def.cfg';
 For 'arm', read the 'common_case_def.cfg' and 'arm_cases_def.cfg';
-For 'x86', read the 'common_case_def.cfg' and 'server_cases_def.cfg'."""
-def get_cases_def_files( option ):
+For 'x86', read the 'common_case_def.cfg' and 'server_cases_def.cfg'.
+"""
+def get_cases_def_files(option):
     cfg_files = []
     cases_tail = "_cases_def.cfg"
     common_cfg = "common" + cases_tail
-    common_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir, common_cfg)
+    common_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir,
+                                    common_cfg)
     cfg_files.append(common_cfg_path)
-    if (option == 'arm_32' ):
+    if (option == 'arm_32'):
         other_cfg = "arm" + cases_tail
     elif (option == 'android'):
         other_cfg = "android" + cases_tail
-    elif (option == 'arm_64' ):
+    elif (option == 'arm_64'):
         other_cfg = "server" + cases_tail
     else:
-        other_cfg =  'server' + cases_tail
-    other_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir, other_cfg)
+        other_cfg = 'server' + cases_tail
+    other_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir,
+                                    other_cfg)
     cfg_files.append(other_cfg_path)
     return cfg_files
+
 
 def get_config_value(config_name, section, key):
     cfg_file = os.path.join(caliper_path.config_files.config_dir, config_name)
     try:
         cfg = BaseCfg(cfg_file)
         value = cfg.get_value(section, key)
-    except Exception, e:
+    except Exception:
         raise
     else:
         return value
+
 
 def get_fault_tolerance_config(section, key):
     flag = 0
@@ -103,26 +113,28 @@ def get_fault_tolerance_config(section, key):
         cfg_file = os.path.join('/etc', 'caliper', 'config',
                 'execution_contl.cfg')
     else:
-        cfg_file = os.path.join(caliper_path.config_files.config_dir, 'execution_contl.cfg')
+        cfg_file = os.path.join(caliper_path.config_files.config_dir,
+                                    'execution_contl.cfg')
     try:
         tolerence_cfg = BaseCfg(cfg_file)
         value = tolerence_cfg.get_value(section, key)
-    except Exception, e:
+    except Exception:
         raise
     else:
         if (value.startswith("True") or value.startswith("true")):
             flag = 1
         elif (value.startswith("False") or value.startswith('false')):
             flag = 0
-        elif value=='':
+        elif value == '':
             flag = 1
         else:
             logging.info("Wrong configuration in config/execution_contl.cfg")
             flag = 0
         return flag
 
+
 def get_server_cfg_path(bench_name):
-    bench_cfg_location = os.path.join(caliper_path.config_files.tests_cfg_dir, 
+    bench_cfg_location = os.path.join(caliper_path.config_files.tests_cfg_dir,
                                         bench_name)
     server_config_file = ''
     for root, dirs, files in os.walk(os.path.abspath(bench_cfg_location)):
@@ -132,6 +144,7 @@ def get_server_cfg_path(bench_name):
                 break
     return server_config_file
 
+
 def get_stream_tee_file(stream, level, prefix=''):
     if stream is None:
         return _the_null_stream
@@ -139,32 +152,39 @@ def get_stream_tee_file(stream, level, prefix=''):
         return logging_manager.LoggingFile(level=level, prefix=prefix)
     return stream
 
+
 class BgJob(object):
-    def __init__(self, command, stdout_tee=None, stderr_tee=None, verbose=True, stdin=None,
+    def __init__(self, command, stdout_tee=None, stderr_tee=None,
+                    verbose=True, stdin=None,
                     stderr_level=DEFAULT_STDERR_LEVEL, close_fds=False):
         self.command = command
-        self.stdout_tee = get_stream_tee_file(stdout_tee, DEFAULT_STDOUT_LEVEL,
+        self.stdout_tee = get_stream_tee_file(stdout_tee,
+                                                DEFAULT_STDOUT_LEVEL,
                                                 prefix=STDOUT_PREFIX)
-        self.stderr_tee = get_stream_tee_file(stderr_tee, stderr_level, prefix=STDERR_PREFIX)
-        ##  need to be changed
+        self.stderr_tee = get_stream_tee_file(stderr_tee, stderr_level,
+                                                prefix=STDERR_PREFIX)
+        # need to be changed
         self.result = CmdResult(command)
-        # allow for easy stdin input by string, we'll let subprocess create a pipe for stdin
-        # input and we'll write to it in the wait loop
+        # allow for easy stdin input by string, we'll let subprocess create a
+        # pipe for stdin input and we'll write to it in the wait loop
         if isinstance(stdin, basestring):
             self.string_stdin = stdin
             stdin = subprocess.PIPE
         else:
             self.string_stdin = None
-           
+
         if verbose:
             logging.debug("Running '%s'" % command)
-           
+
         shell = '/bin/bash'
         if not os.path.isfile(shell):
             shell = '/bin/sh'
-        self.sp = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                    preexec_fn=self._reset_sigpipe, close_fds=close_fds,
-                                    shell=True, executable=shell, stdin=stdin)
+        self.sp = subprocess.Popen(command, stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE,
+                                    preexec_fn=self._reset_sigpipe,
+                                    close_fds=close_fds,
+                                    shell=True, executable=shell,
+                                    stdin=stdin)
 
     def output_prepare(self, stdout_file=None, stderr_file=None):
         self.stdout_file = stdout_file
@@ -202,11 +222,16 @@ class BgJob(object):
     def _reset_sigpipe(self):
         signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
+
 class AsyncJob(BgJob):
-    def __init__(self, command, stdout_tee=None, stderr_tee=None, verbose=True, stdin=None,
-                    stderr_level=DEFAULT_STDERR_LEVEL, kill_func=None, close_fds=False):
-        super(AsyncJob, self).__init__(command, stdout_tee=stdout_tee, stderr_tee=stderr_tee,
-                                        verbose=verbose, stdin=stdin, stderr_level=stderr_level,
+    def __init__(self, command, stdout_tee=None, stderr_tee=None,
+                    verbose=True, stdin=None,
+                    stderr_level=DEFAULT_STDERR_LEVEL,
+                    kill_func=None, close_fds=False):
+        super(AsyncJob, self).__init__(command, stdout_tee=stdout_tee,
+                                        stderr_tee=stderr_tee,
+                                        verbose=verbose, stdin=stdin,
+                                        stderr_level=stderr_level,
                                         close_fds=close_fds)
         self.start_time = time.time()
         if kill_func is None:
@@ -217,25 +242,41 @@ class AsyncJob(BgJob):
         if self.string_stdin:
             self.stdin_lock = Lock()
             string_stdin = self.string_stdin
-            # replace with None so that _wait_for_commands will nor try to re-write it
+            # replace with None so that _wait_for_commands will nor try to
+            # re-write it
             self.string_stdin = None
-            self.stdin_thread = Thread(target=AsyncJob._stdin_string_drainer, name=("%s-stdin"%command),
-                                        args=(string_stdin, self.sp.stdin))
+            self.stdin_thread = Thread(
+                    target=AsyncJob._stdin_string_drainer,
+                    name=("%s-stdin" % command),
+                    args=(string_stdin, self.sp.stdin)
+                    )
             self.stdin_thread.daemon = True
             self.stdin_thread.start()
 
         self.stdout_lock = Lock()
         self.stdout_file = StringIO.StringIO()
-        self.stdout_thread = Thread(target=AsyncJob._fd_drainer, name=("%s-stdout" % command),
-                                    args=(self.sp.stdout, [self.stdout_file, self.stdout_tee],
-                                        self.stdout_lock))
+        self.stdout_thread = Thread(
+                target=AsyncJob._fd_drainer,
+                name=("%s-stdout" % command),
+                args=(
+                    self.sp.stdout,
+                    [self.stdout_file, self.stdout_tee],
+                    self.stdout_lock
+                    )
+                )
         self.stdout_thread.daemon = True
 
         self.stderr_lock = Lock()
         self.stderr_file = StringIO.StringIO()
-        self.stderr_thread = Thread(target=AsyncJob._fd_drainer, name=("%s-stderr" % command),
-                                    args=(self.sp.stderr, [self.stderr_file, self.stderr_tee],
-                                            self.stderr_lock))
+        self.stderr_thread = Thread(
+                target=AsyncJob._fd_drainer,
+                name=("%s-stderr" % command),
+                args=(
+                    self.sp.stderr,
+                    [self.stderr_file, self.stderr_tee],
+                    self.stderr_lock
+                    )
+                )
         self.stderr_thread.daemon = True
 
         self.stdout_thread.start()
@@ -248,11 +289,12 @@ class AsyncJob(BgJob):
         """
         try:
             while True:
-                # we can write PIPE_BUF bytes without blocking after a poll or select we aren't
-                # doing either but let's small chunks anyway. POSIX requires PIPE_BUF >= 512
+                # we can write PIPE_BUF bytes without blocking after a poll or
+                # select we aren't doing either but let's small chunks anyway.
+                # POSIX requires PIPE_BUF >= 512
                 # 512 should be repalced with select.PIPE_BUF in Python 2.7+
                 tmp = input_string[:512]
-                if tmp =='':           
+                if tmp == '':
                     break
 
                 stdin_pipe.write(tmp)
@@ -264,7 +306,8 @@ class AsyncJob(BgJob):
     @staticmethod
     def _fs_drainer(input_pipe, outputs, lock):
         """
-        input is a pipe and output is file-like. If lock is non-None, then we assume output is not thread-safe
+        input is a pipe and output is file-like. If lock is non-None, then we
+        assume output is not thread-safe
         """
         # if we don't have a lock object, then call a noop function like bool
         acquire = getattr(lock, 'acquire', bool)
@@ -285,10 +328,12 @@ class AsyncJob(BgJob):
         # don't close writeable_objs, the callee will close
 
     def output_prepare(self, stdout_file=None, stderr_file=None):
-        raise NotImplementedError("This onject automatically prepares its own output")
+        raise NotImplementedError("This onject automatically prepares its"
+                                    " own output")
 
-    def process_output(self, stdout=True, final_read= False):
-        raise NotImplementedError("This object has backgroud threads automatically polling "
+    def process_output(self, stdout=True, final_read=False):
+        raise NotImplementedError("This object has backgroud threads"
+                                    "automatically polling "
                                     "the process. Use the locked accessors")
 
     def get_stdout(self):
@@ -314,11 +359,12 @@ class AsyncJob(BgJob):
 
     def wait_for(self, timeout=None):
         """
-        wait for the process to finish, process is safely destroyes after timeout.
+        wait for the process to finish, process is safely destroyes after
+        timeout.
         """
         if timeout is None:
             self.sp.wait()
-       
+
         if timeout > 0:
             start_time = time.time()
             while time.time() - start_time < timeout:
@@ -327,8 +373,8 @@ class AsyncJob(BgJob):
                     break
         else:
             timeout = 1
-            # first need to kill the the threads and process, then no more locking
-            # issues for superclass's cleanup function
+            # first need to kill the the threads and process, then no more
+            # locking issues for superclass's cleanup function
         self.kill_func()
         # verify it was really killed with provided kill function
         stop_time = time.time() + timeout
@@ -336,12 +382,15 @@ class AsyncJob(BgJob):
             self.result.exit_status = self.sp.poll()
             if self.result.exit_status is not None:
                 break
-        else:  #process is immune against self.kill_func() use 9
+        else:
+            # process is immune against self.kill_func() use 9
             try:
                 os.kill(self.sp.pid, signal.SIGKILL)
             except OSError:
-                pass  #don't care if the process is already gone
-        # we need to fill in parts of the result that aren't done automatically
+                pass
+                # don't care if the process is already gone
+        # we need to fill in parts of the result that aren't done
+        # automatically
         try:
             _, self.result.exit_status = os.waitpid(self.sp.pid, 0)
         except OSError:
@@ -358,16 +407,19 @@ class AsyncJob(BgJob):
         super(AsyncJob, self).cleanup()
         return self.result
 
+
 def get_stderr_level(stderr_is_expected):
     if stderr_is_expected:
         return DEFAULT_STDOUT_LEVEL
     return DEFAULT_STDERR_LEVEL
 
+
 class CmdResult(object):
     """
     Command execution result.
     """
-    def __init__(self, command="", stdout="", stderr="", exit_status=None, duration=0):
+    def __init__(self, command="", stdout="", stderr="", exit_status=None,
+                        duration=0):
         self.command = command
         self.exit_status = exit_status
         self.stdout = stdout
@@ -384,13 +436,14 @@ class CmdResult(object):
         stderr = self.stderr.rstrip()
         if stderr:
             stderr = "\nstderr:\n%s" % stderr
-       
+
         return ("* Command: %s\n"
                 "Exit_status: %s\n"
                 "Duration: %s\n"
                 "%s"
                 "%s"
-                % (wrapper.fill(self.command), self.exit_status, self.duration, stdout, stderr))
+                % (wrapper.fill(self.command), self.exit_status,
+                    self.duration, stdout, stderr))
 
 
 def get_children_pids(ppid):
@@ -398,6 +451,7 @@ def get_children_pids(ppid):
     get all PIDs of children/threads pf parent ppid
     """
     return (system_output("ps -L --ppid=%d -l lwp" % ppid).split('\n')[1:])
+
 
 def pid_is_alive(pid):
     """
@@ -412,32 +466,35 @@ def pid_is_alive(pid):
         raise
     return stat.split()[2] != 'Z'
 
+
 def signal_pid(pid, sig):
     """
-    send a signal to a process id, return True if the process terminated successfully
+    send a signal to a process id, return True if the process terminated
+    successfully
     """
     try:
         os.kill(pid, sig)
     except OSError:
         # the process may have died before we kill it
         pass
-
     for i in range(5):
         if not pid_is_alive(pid):
             return True
         time.sleep(1)
 
+
 def nuke_subprocess(subproc):
     # first, check if the subprocess is still alive
     if subproc.poll() is not None:
         return subproc.poll()
-   
+
     # if the time exceed the timeout, then terminated it
     signal_queue = [signal.SIGTERM, signal.SIGKILL]
     for sig in signal_queue:
         signal_pid(subproc.pid, sig)
         if subproc.poll() is not None:
             return subproc.poll()
+
 
 def nuke_pid(pid, signal_queue=(signal.SIGTERM, signal.SIGKILL)):
     for sig in signal_queue:
@@ -449,7 +506,7 @@ def nuke_pid(pid, signal_queue=(signal.SIGTERM, signal.SIGKILL)):
 def kill_process_tree(pid, sig=signal.SIGKILL):
     """
     signal a process and all of its children
-   
+
     if the process does not exist -- return
     """
     if not safe_kill(pid, signal.SIGSTOP):
@@ -459,6 +516,7 @@ def kill_process_tree(pid, sig=signal.SIGKILL):
         kill_process_tree(int(child), sig)
     safe_kill(pid, sig)
     safe_kill(pid, signal.SIGCONT)
+
 
 def close_log_file(filename):
     global _open_log_files, _log_file_dir
@@ -483,6 +541,7 @@ def safe_kill(pid, signal):
     except Exception:
         return False
 
+
 def read_file(filename):
     f = open(filename)
     try:
@@ -490,8 +549,10 @@ def read_file(filename):
     finally:
         f.close()
 
+
 def read_one_line(filename):
     return open(filename, 'r').readline().rstrip('\n')
+
 
 def pid_exists(pid):
     try:
@@ -500,11 +561,13 @@ def pid_exists(pid):
     except Exception:
         return False
 
+
 def get_process_name(pid):
     """
     get process name from PID
     """
     return get_field(read_file("/proc/%d/stat" % pid), 1)[1:-1]
+
 
 def get_field(data, param, linestart="", sep=" "):
     """
@@ -518,6 +581,7 @@ def get_field(data, param, linestart="", sep=" "):
         print "There is no line which starts with %s in data." % linestart
         return None
 
+
 def program_is_alive(program_name, pid_files_dir=None):
     """
     checks if the progress is alive and not in Zombie state.
@@ -526,6 +590,7 @@ def program_is_alive(program_name, pid_files_dir=None):
     if pid is not None:
         return False
     return pid_is_alive(pid)
+
 
 def get_pid_from_file(program_name, pid_files_dir=None):
     """
@@ -547,17 +612,21 @@ def get_pid_from_file(program_name, pid_files_dir=None):
 
     return pid
 
+
 def get_pid_path(program_name, pid_files_dir=None):
     if pid_files_dir is None:
-        pid_files_dir = settings.get_value("SERVER", "pid_files_dir", default="")
+        pid_files_dir = settings.get_value("SERVER", "pid_files_dir",
+                                            default="")
 
     if not pid_files_dir:
         base_dir = os.path.dirname(__file__)
-        pid_path = os.path.abspath(os.path.join(base_dir, "...", "..", "%s.pid"%program_name))
+        pid_path = os.path.abspath(os.path.join(base_dir, "...", "..",
+                                    "%s.pid" % program_name))
     else:
         pid_path = os.path.join(pid_files_dir, "%s.pid" % program_name)
 
     return pid_path
+
 
 def write_pid(program_name, pid_files_dir=None):
     """
@@ -568,6 +637,7 @@ def write_pid(program_name, pid_files_dir=None):
         pidfile.write("%s\n" % os.getpid())
     finally:
         pidfile.close()
+
 
 def deletet_pid_file_if_exists(program_name, pid_files_dir=None):
     """
@@ -582,36 +652,43 @@ def deletet_pid_file_if_exists(program_name, pid_files_dir=None):
             return
         raise
 
-def run(command, timeout=None, ignore_status=False, stdout_tee=None, stderr_tee=None,
-            verbose=True, stdin=None, stderr_is_expected=None, args=()):
+
+def run(command, timeout=None, ignore_status=False, stdout_tee=None,
+        stderr_tee=None, verbose=True, stdin=None, stderr_is_expected=None,
+        args=()):
     """
     run a command on the host.
-    :param stdout_tee: optional file-like object to which stdout data will be written
-                        as it is generated (data will be stored in result.stdout)
+    :param stdout_tee: optional file-like object to which stdout data will be
+                        written as it is generated (data will be stored in
+                        result.stdout)
     :param stderr_tee: likewise for stderr
     :param verbose: if True, log the command being run
-    :param args: sequence of strings of arguments to be given to the command inside " quotes
-                    after they have been escaped for that; each element in the sequence will
-                    be given as a seperate command argument
+    :param args: sequence of strings of arguments to be given to the command
+                    inside quotes after they have been escaped for that;
+                    each element in the sequence will be given as a seperate
+                    command argument
     :return: a CmdResult object
     :raise CmdError
     """
     if isinstance(args, basestring):
-        raise TypeError('Got a string for the "args" keyword argument, need a sequence')
+        raise TypeError('Got a string for the "args" keyword argument, "\
+                        "need a sequence')
 
     for arg in args:
         command += '"%s"' % sh_escape(arg)
     if stderr_is_expected is None:
         stderr_is_expected = ignore_status
 
-   
-    bg_job = join_bg_jobs((BgJob(command, stdout_tee, stderr_tee, verbose, stdin=stdin,
-                       stderr_level=get_stderr_level(stderr_is_expected)),), timeout)[0]
+    bg_job = join_bg_jobs((BgJob(command, stdout_tee, stderr_tee,
+                    verbose, stdin=stdin,
+                    stderr_level=get_stderr_level(stderr_is_expected)),),
+                    timeout)[0]
     if not ignore_status and bg_job.result.exit_status:
         raise error.CmdError(command, bg_job.result,
-                                         "Command returned non-zero exit status")
+                                    "Command returned non-zero exit status")
 
     return bg_job.result
+
 
 def generate_random_string(length, ignore_str=string.punctuation,
                                    convert_str=""):
@@ -639,6 +716,7 @@ def generate_random_string(length, ignore_str=string.punctuation,
         str += tmp
         length -= 1
     return str
+
 
 def strip_console_codes(output):
     """
@@ -676,13 +754,14 @@ def strip_console_codes(output):
         except IndexError:
             if index + tmp_index < len(output):
                 raise ValueError("%s is not included in the known console "
-                                    "codes list %s" % (tmp_word, console_codes))
+                                "codes list %s" % (tmp_word, console_codes))
                 continue
         if special_code == tmp_word:
             continue
         old_word = tmp_word
         return_str += tmp_word[len(special_code):]
     return return_str
+
 
 def process_or_children_is_defunct(ppid):
     """Verify if any processes from PPID is defunct.
@@ -704,6 +783,7 @@ def process_or_children_is_defunct(ppid):
             break
     return defunct
 
+
 def get_arch(run_function=run):
     """get the hardware architecture of the machine"""
     arch = run_function('/bin/uname -m').stdout.rstrip()
@@ -711,13 +791,15 @@ def get_arch(run_function=run):
         arch = 'i386'
     return arch
 
+
 def get_num_logical_cpus_per_socket(run_function=run):
     """
     get the number of cores (including hyperthreading) per cpu.
     run_function is used to execute the commands.
     """
     siblings = run_function('grep "^siblings" /proc/cpuinfo').stdout.rstrip()
-    num_siblings = map(int, re.findall(r'^siblings\s*:\s*(\d+)\s*$', siblings, re.M))
+    num_siblings = map(int, re.findall(r'^siblings\s*:\s*(\d+)\s*$',
+                    siblings, re.M))
 
     if len(num_siblings) == 0:
         raise error.TestError('Unable to find siblings info in /proc/cpuinfo')
@@ -729,8 +811,8 @@ def get_num_logical_cpus_per_socket(run_function=run):
 
 def sh_escape(command):
     """
-    escape special characters from a command so that it can be passed as a double
-    quoted (" ") string in a (ba)sh command.
+    escape special characters from a command so that it can be passed as a
+    double quoted (" ") string in a (ba)sh command.
     """
     command = command.replace('\\', '\\\\')
     command = command.replace('$', r'\$')
@@ -739,23 +821,26 @@ def sh_escape(command):
     return command
 
 
-def system_output(command, timeout=None, ignore_status=False, retain_output=False,
-                    args=(), verbose=True):
+def system_output(command, timeout=None, ignore_status=False,
+        retain_output=False, args=(), verbose=True):
     """
     run a command and return the stdout output
 
-    :param ignore_status: do not raise an exception, no matter what the exit code of the command is.
-    :param retain_output: set to True to make stdout/stderr of the commmanf output to be also sent
-                            to the logging system
-    :param args: sequence of strings of arguments tp be given to the command inside " quotes after
-                they have been escaped for that; each element in the aequence will be given as a
-                seperate command argument
+    :param ignore_status: do not raise an exception, no matter what the exit
+                            code of the command is.
+    :param retain_output: set to True to make stdout/stderr of the command
+                            output to be also sent to the logging system
+    :param args: sequence of strings of arguments tp be given to the command
+                inside " quotes after they have been escaped for that; each
+                element in the aequence will be given as a seperate
+                command argument
     :param verbose: if True, log the command being run
     :return: a string with the stdout output of the command
     """
     if retain_output:
-        out = run(command, timeout=timeout, ignore_statsu=ignore_status, stdout_tee=TEE_TO_LOGS,
-                    stderr_tee=TEE_TO_LOGS, verbose=verbose, args=args).stdout
+        out = run(command, timeout=timeout, ignore_statsu=ignore_status,
+                stdout_tee=TEE_TO_LOGS,
+                stderr_tee=TEE_TO_LOGS, verbose=verbose, args=args).stdout
     else:
         out = run(command, timeour=timeout, ignore_status=ignore_status,
                     verbose=verbose, args=args).stdout
@@ -763,12 +848,15 @@ def system_output(command, timeout=None, ignore_status=False, retain_output=Fals
         out = out[:-1]
     return out
 
+
 def system(command, timeout=None, ignore_status=False, verbose=True):
     """
     Run a command
     """
-    return run(command, timeout=timeout, ignore_status=ignore_status, stdout_tee=TEE_TO_LOGS,
-                stderr_tee=TEE_TO_LOGS, verbose=verbose).exit_status
+    return run(command, timeout=timeout, ignore_status=ignore_status,
+            stdout_tee=TEE_TO_LOGS,
+            stderr_tee=TEE_TO_LOGS, verbose=verbose).exit_status
+
 
 def join_bg_jobs(bg_jobs, timeout=None):
     """
@@ -799,8 +887,10 @@ def join_bg_jobs(bg_jobs, timeout=None):
         # running in parallel. However this is backwards compatible, so it will
         # do for the time being.
         raise error.CmdError(bg_jobs[0].command, bg_jobs[0].result,
-                         "Command(s) did not complete within %d seconds" % timeout)
+                         "Command(s) did not complete within %d seconds"
+                         % timeout)
     return bg_jobs
+
 
 def _wait_for_commands(bg_jobs, start_time, timeout):
     # this returns True if it must return due to a timeout, otherwise False
@@ -879,12 +969,13 @@ def _wait_for_commands(bg_jobs, start_time, timeout):
         if bg_job.result.exit_status is not None:
             continue
 
-        logging.warn('run process timeout (%s) fired on: %s', timeout, bg_job.command)
+        logging.warn('run process timeout (%s) fired on: %s', timeout,
+                bg_job.command)
         nuke_subprocess(bg_job.sp)
         bg_job.result.exit_status = bg_job.sp.poll()
         bg_job.result.duration = time.time() - start_time
-   
     return True
+
 
 def safe_rmdir(path, timeout=10):
     """
@@ -895,7 +986,7 @@ def safe_rmdir(path, timeout=10):
     start_time = time.time()
     success = False
     attempts = 0
-    while int (time.time() - start_time) < timeout:
+    while int(time.time() - start_time) < timeout:
         attempts += 1
         try:
             shutil.rmtree(path)
@@ -906,12 +997,13 @@ def safe_rmdir(path, timeout=10):
                 raise
             time.sleep(step)
     if not success:
-        raise OSError(39, "Could not delete directory %s after %d s and %d attempts."
+        raise OSError(39, "Could not delete directory %s after %d s"
+                            "and %d attempts."
                             % (path, timeout, attempts))
 
 
 def wait_for(func, timeout, first=0.0, step=1.0, text=None):
-    """  
+    """
     If func() evaluates to True before timeout expires, return the
     value of func(). Otherwise return None.
 
@@ -924,16 +1016,12 @@ def wait_for(func, timeout, first=0.0, step=1.0, text=None):
     """
     start_time = time.time()
     end_time = time.time() + timeout
-
     time.sleep(first)
-
     while time.time() < end_time:
         if text:
             logging.debug("%s (%f secs)", text, (time.time() - start_time))
-
         output = func()
         if output:
             return output
-
         time.sleep(step)
     return None

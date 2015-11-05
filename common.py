@@ -4,7 +4,7 @@
 #   Author  :   wuyanjun 00291783
 #   E-mail  :   wu.wu@hisilicon.com
 #   Date    :   15/01/07 11:01:41
-#   Desc    :  
+#   Desc    :
 #
 
 import os

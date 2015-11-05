@@ -2,13 +2,14 @@
 # -*- coding:utf-8 -*-
 #
 #   Date    :   14/12/31 15:01:30
-#   Desc    :  
+#   Desc    :
 #
 
 import os
 import logging
 
 import remote
+
 
 def get_public_key():
     """
@@ -22,17 +23,19 @@ def get_public_key():
 
     ssh_conf_path = os.path.expanduser('~/.ssh')
 
-    dsa_public_key_path = os.path.join( ssh_conf_path, 'id_dsa.pub' )
-    dsa_private_key_path = os.path.join( ssh_conf_path, 'id_dsa' )
+    dsa_public_key_path = os.path.join(ssh_conf_path, 'id_dsa.pub')
+    dsa_private_key_path = os.path.join(ssh_conf_path, 'id_dsa')
 
-    rsa_public_key_path = os.path.join( ssh_conf_path, 'id_rsa.pub' )
-    rsa_private_key_path = os.path.join( ssh_conf_path, 'id_rsa' )
+    rsa_public_key_path = os.path.join(ssh_conf_path, 'id_rsa.pub')
+    rsa_private_key_path = os.path.join(ssh_conf_path, 'id_rsa')
 
-    has_dsa_keypair = (os.path.isfile(dsa_public_key_path) and  os.path.isfile(dsa_private_key_path))
-    has_rsa_keypair = (os.path.isfile(rsa_public_key_path) and  os.path.isfile(rsa_private_key_path))
+    has_dsa_keypair = (os.path.isfile(dsa_public_key_path) and
+                            os.path.isfile(dsa_private_key_path))
+    has_rsa_keypair = (os.path.isfile(rsa_public_key_path) and
+                            os.path.isfile(rsa_private_key_path))
 
     if has_dsa_keypair:
-        print  "DSA keypair found, using it"
+        print "DSA keypair found, using it"
         public_key_path = dsa_public_key_path
 
     elif has_rsa_keypair:
@@ -48,6 +51,7 @@ def get_public_key():
     public_key.close()
 
     return public_key_str
+
 
 def setup_ssh_key(hostname, user, password, port=22):
     """
@@ -68,10 +72,11 @@ def setup_ssh_key(hostname, user, password, port=22):
         public_key = get_public_key()
         # remote_login is need to be realize
         session = remote.remote_login(client='ssh', host=hostname, port=port,
-                                        username=user, portword=password, prompt=r'[$#%]')
+                                        username=user, portword=password,
+                                        prompt=r'[$#%]')
         session.cmd_output('mkdir -p ~/.ssh')
         session.cmd_output('chmod 700 ~/.ssh')
-        session.cmd_output("echo '%s' >> ~/.ssh/authorized_keys; " % public_key )
+        session.cmd_output("echo '%s' >> ~/.ssh/authorized_keys" % public_key)
         session.cmd_output('cmd 600 ~/.ssh/authorized_keys')
         logging.debug('SSH key setup complete.')
     except Exception as err:

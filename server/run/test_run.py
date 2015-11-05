@@ -1,18 +1,15 @@
-## wuyanjun w00291783
-## wu.wu@hisilicon.com
-## copyright
+# wuyanjun w00291783
+# wu.wu@hisilicon.com
+# copyright
 
-import ConfigParser
 import os
 import sys
 import time
 import shutil
 import importlib
-import yaml
 import types
 import string
 import re
-import pdb
 import logging
 import datetime
 import subprocess
@@ -22,23 +19,23 @@ try:
 except ImportError:
     import common
 
-from caliper.server import crash_handle 
+from caliper.server import crash_handle
 from caliper.client.shared import error
 from caliper.server import utils as server_utils
 from caliper.client.shared import utils
 from caliper.client.shared import caliper_path
 from caliper.client.shared.settings import settings
 from caliper.server.run import write_results
-from caliper.server.compute_model.scores_method import Scores_method
 from caliper.client.shared.caliper_path import folder_ope as Folder
+
 
 def get_server_command(kind_bench, section_name):
     server_config_file = ''
-    bench_conf_dir = os.path.join(caliper_path.config_files.tests_cfg_dir, kind_bench)
 
     server_config_file = server_utils.get_server_cfg_path(kind_bench)
     if server_config_file != '':
-        server_config, server_sections = server_utils.read_config_file(server_config_file)
+        server_config, server_sections = \
+                server_utils.read_config_file(server_config_file)
         if section_name in server_sections:
             command = server_config.get(section_name, 'command')
             logging.debug("command is %s" % command)
@@ -48,17 +45,20 @@ def get_server_command(kind_bench, section_name):
     else:
         return None
 
+
 def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
                     run_file, parser_file):
     """
     function: run one benchmark which was selected in the configuration files
     """
     try:
-        #get the abspath, which is the file name of run config for the benchmark
-        bench_conf_file = os.path.join(caliper_path.config_files.tests_cfg_dir,
+        # get the abspath, which is filename of run config for the benchmark
+        bench_conf_file = os.path.join(
+                                    caliper_path.config_files.tests_cfg_dir,
                                     kind_bench, run_file)
-        #get the config sections for the benchmrk
-        configRun, sections_run = server_utils.read_config_file(bench_conf_file)
+        # get the config sections for the benchmrk
+        configRun, sections_run = server_utils.read_config_file(
+                                                    bench_conf_file)
     except AttributeError as e:
         raise AttributeError
     except Exception:
@@ -79,9 +79,10 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
     starttime = datetime.datetime.now()
     result = subprocess.call("echo '$$ %s EXECUTION START: %s' >> %s"
                             % (bench_name,
-                                str(starttime)[:19], Folder.caliper_log_file),
+                                str(starttime)[:19],
+                                Folder.caliper_log_file),
                             shell=True)
-    #for each command in run config file, read the config for the benchmark
+    # for each command in run config file, read the config for the benchmark
     for i in range(0, len(sections_run)):
         flag = 0
         try:
@@ -97,13 +98,14 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
             os.remove(tmp_parser_file)
         if os.path.exists(tmp_log_file):
             os.remove(tmp_log_file)
-        
+
         server_run_command = get_server_command(kind_bench, sections_run[i])
         logging.debug("Get the server command is: %s" % server_run_command)
-        ## run the command of the benchmarks
+        # run the command of the benchmarks
         try:
             flag = run_kinds_commands(sections_run[i], server_run_command,
-                                      tmp_log_file, kind_bench, target, command)
+                                      tmp_log_file, kind_bench,
+                                      target, command)
         except Exception, e:
             logging.info(e)
             crash_handle.main()
@@ -116,7 +118,6 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
             else:
                 return result
         else:
-
             server_utils.file_copy(logfile, tmp_log_file, 'a+')
             if flag != 1:
                 logging.info("There is wrong when running the command \"%s\""
@@ -130,14 +131,15 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
                     continue
                 else:
                     return result
-        #parser the result in the tmp_log_file, the result is the output of
-        #running the command
+        # parser the result in the tmp_log_file, the result is the output of
+        # running the command
         try:
             logging.debug("Parsering the result of command: %s" % command)
-            parser_result = parser_case(kind_bench, bench_name, parser_file, parser,
-                                        tmp_log_file, tmp_parser_file)
+            parser_result = parser_case(kind_bench, bench_name, parser_file,
+                                        parser, tmp_log_file,
+                                        tmp_parser_file)
         except Exception, e:
-            logging.info("There is wrong when parsering the result of \" %s \"" 
+            logging.info("There's wrong when parsering the result of \" %s \""
                             % sections_run[i])
             logging.info(e)
             os.remove(tmp_parser_file)
@@ -146,10 +148,10 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
             server_utils.file_copy(parser_result_file, tmp_parser_file, "a+")
             os.remove(tmp_parser_file)
             os.remove(tmp_log_file)
-            if ( parser_result <= 0 ):
+            if (parser_result <= 0):
                 continue
 
-        ## according the method in the config file, compute the score
+        # according the method in the config file, compute the score
         try:
             logging.debug("Computing the score of the result of command: %s"
                             % command)
@@ -160,15 +162,17 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
             continue
         else:
             if not flag_compute and parser_result:
-                logging.info( "There is wrong when computing the result\
+                logging.info("There is wrong when computing the result\
                                 of \"%s\"" % command)
     endtime = datetime.datetime.now()
     result = subprocess.call("echo '$$ %s EXECUTION STOP: %s' >> %s"
                                 % (sections_run[i], str(endtime)[:19],
                                     Folder.caliper_log_file), shell=True)
     result = subprocess.call("echo '$$ %s EXECUTION DURATION %s Seconds'>>%s"
-                                % (sections_run[i], (endtime-starttime).seconds,
+                                % (sections_run[i],
+                                    (endtime-starttime).seconds,
                                     Folder.caliper_log_file), shell=True)
+
 
 def run_commands(exec_dir, kind_bench, commands,
                     stdout_tee=None, stderr_tee=None, target=None):
@@ -181,14 +185,14 @@ def run_commands(exec_dir, kind_bench, commands,
         # the commands is multiple lines, and was included by Quotation
         actual_commands = get_actual_commands(commands, target)
         try:
-            logging.debug("the actual commands running in local is: %s" 
+            logging.debug("the actual commands running in local is: %s"
                             % actual_commands)
             result = utils.run(actual_commands, stdout_tee=stdout_tee,
                                 stderr_tee=stderr_tee, verbose=True)
         except error.CmdError, e:
             raise error.ServRunError(e.args[0], e.args[1])
     except Exception, e:
-        logging.debug( e )
+        logging.debug(e)
     else:
         if result.exit_status and result.stderr and not result.stdout:
             returncode = result.exit_status
@@ -201,11 +205,11 @@ def run_commands(exec_dir, kind_bench, commands,
     os.chdir(pwd)
     return [output, returncode]
 
+
 # normalize the commands
 def get_actual_commands(commands, target):
-    if commands is None or commands=='':
+    if commands is None or commands == '':
         return None
-
     post_commands = commands
 
     if re.findall('\$SERVER_IP', commands):
@@ -242,7 +246,6 @@ def get_actual_commands(commands, target):
         post_commands = strinfo.sub(client_ip, commands)
 
     commands = post_commands
-
     if commands[0] == '\'' and commands[-1] == '\'':
         actual_commands = commands[1:-1]
     elif commands[0] == '\"' and commands[-1] == '\"':
@@ -253,11 +256,13 @@ def get_actual_commands(commands, target):
         return ''
     return actual_commands
 
+
 def remote_commands_deal(commands, exec_dir, target):
     actual_commands = get_actual_commands(commands, target)
     final_commands = "cd %s; %s" % (exec_dir, actual_commands)
     logging.debug("The final command is %s" % final_commands)
     return final_commands
+
 
 def run_remote_commands(exec_dir, kind_bench, commands, target,
                     stdout_tee=None, stderr_tee=None):
@@ -267,8 +272,8 @@ def run_remote_commands(exec_dir, kind_bench, commands, target,
         # the commands is multiple lines, and was included by Quotation
         final_commands = remote_commands_deal(commands, exec_dir, target)
         if final_commands is not None and final_commands != '':
-            logging.debug("the actual commands running on the remote host is: %s"
-                            % final_commands)
+            logging.debug("the actual commands running on the remote host "
+                            "is: %s" % final_commands)
             result = target.run(final_commands, stdout_tee=stdout_tee,
                                 stderr_tee=stderr_tee, verbose=True)
         else:
@@ -276,7 +281,7 @@ def run_remote_commands(exec_dir, kind_bench, commands, target,
     except error.CmdError, e:
         raise error.ServRunError(e.args[0], e.args[1])
     except Exception, e:
-        logging.debug( e )
+        logging.debug(e)
     else:
         if result.exit_status and result.stderr and not result.stdout:
             returncode = result.exit_status
@@ -288,9 +293,11 @@ def run_remote_commands(exec_dir, kind_bench, commands, target,
             output = result.stderr
     return [output, returncode]
 
-def run_client_command(cmd_sec_name, tmp_logfile, kind_bench, target, command):
+
+def run_client_command(cmd_sec_name, tmp_logfile, kind_bench,
+                        target, command):
     fp = open(tmp_logfile, "a+")
-    start_log = "%%%%%%          %s test start         %%%%%% \n" % cmd_sec_name
+    start_log = "%%%%%%         %s test start       %%%%%% \n" % cmd_sec_name
     fp.write(start_log)
     fp.write("<<<BEGIN TEST>>>\n")
     tags = "[test: " + cmd_sec_name + "]\n"
@@ -299,7 +306,7 @@ def run_client_command(cmd_sec_name, tmp_logfile, kind_bench, target, command):
     fp.write(logs)
     start = time.time()
     flag = 0
-    logging.debug( "the client running command is %s" % command)
+    logging.debug("the client running command is %s" % command)
 
     # get the execution location in the remote host
     is_localhost = 0
@@ -311,10 +318,11 @@ def run_client_command(cmd_sec_name, tmp_logfile, kind_bench, target, command):
     else:
         host_current_pwd = target.run("pwd").stdout.split("\n")[0]
         arch = server_utils.get_host_arch(target)
-        host_exec_dir = os.path.join(host_current_pwd, 'caliper', "binary", arch)
+        host_exec_dir = os.path.join(host_current_pwd, 'caliper',
+                                        "binary", arch)
 
     try:
-        logging.debug("begining to execute the command of %s on the remote host"
+        logging.debug("begining to execute the command of %s on remote host"
                         % command)
         if (is_localhost == 1):
             logging.debug("client command in localhost is: %s" % command)
@@ -325,15 +333,15 @@ def run_client_command(cmd_sec_name, tmp_logfile, kind_bench, target, command):
             [out, returncode] = run_remote_commands(host_exec_dir, kind_bench,
                                                     command, target, fp, fp)
     except error.ServRunError, e:
-        fp.write( "[status]: FAIL\n")
+        fp.write("[status]: FAIL\n")
         sys.stdout.write(e)
         flag = -1
     else:
         if not returncode:
-            fp.write( "[status]: PASS\n")
+            fp.write("[status]: PASS\n")
             flag = 1
         else:
-            fp.write( "[status]: FAIL\n")
+            fp.write("[status]: FAIL\n")
             flag = 0
     end = time.time()
     interval = end - start
@@ -342,6 +350,7 @@ def run_client_command(cmd_sec_name, tmp_logfile, kind_bench, target, command):
     fp.write("%%%%%% test_end %%%%%%\n\n")
     fp.close()
     return flag
+
 
 def run_server_command(kind_bench, server_command, target):
     return_code = 0
@@ -354,15 +363,16 @@ def run_server_command(kind_bench, server_command, target):
     except Exception, e:
         logging.debug("There is wrong with running the server command: %s"
                         % server_command)
-        logging.info( e )
+        logging.info(e)
     else:
         os._exit(return_code)
 
+
 def run_case(cmd_sec_name, server_command, tmp_logfile, kind_bench,
                 target, command):
-    if server_command is None or server_command=='':
+    if server_command is None or server_command == '':
         return
-    if command is None or command =='':
+    if command is None or command == '':
         return
 
     while True:
@@ -376,7 +386,7 @@ def run_case(cmd_sec_name, server_command, tmp_logfile, kind_bench,
             logging.debug("the pid number of child is %d" % newpid)
             try:
                 return_code = run_client_command(cmd_sec_name, tmp_logfile,
-                                                    kind_bench,target, command)
+                                                  kind_bench, target, command)
             except Exception, e:
                 logging.info("There is wrong with running the remote host\
                                 command of %s" % command)
@@ -387,27 +397,31 @@ def run_case(cmd_sec_name, server_command, tmp_logfile, kind_bench,
                 return return_code
     return 0
 
-def run_kinds_commands(cmd_sec_name, server_run_command, tmp_logfile, kind_bench,
-                target, command):
+
+def run_kinds_commands(cmd_sec_name, server_run_command, tmp_logfile,
+                        kind_bench, target, command):
     if server_run_command != '' and server_run_command is not None:
-        logging.debug("Running the server_command: %s, and the client command: %s"
-                            % (server_run_command, command))
+        logging.debug("Running the server_command: %s, "
+                        "and the client command: %s" %
+                        (server_run_command, command))
         flag = run_case(cmd_sec_name, server_run_command, tmp_logfile,
                         kind_bench, target, command)
     else:
-        logging.debug("only running the command %s in the remote host" % command)
+        logging.debug("only running the command %s in the remote host"
+                        % command)
         flag = run_client_command(cmd_sec_name, tmp_logfile, kind_bench,
                                     target, command)
     return flag
+
 
 def parser_case(kind_bench, bench_name, parser_file, parser, infile, outfile):
     if not os.path.exists(infile):
         return -1
     result = 0
     fp = open(outfile, "w")
-    #the parser function defined in the config file is to filter the output.
+    # the parser function defined in the config file is to filter the output.
     # get the abspth of the parser.py which is defined in the config files.
-    ##changed by Elaine Aug 8-10
+    # changed by Elaine Aug 8-10
     if not parser_file:
         pwd_file = bench_name + "_parser.py"
         parser_file = os.path.join(caliper_path.PARSER_DIR, pwd_file)
@@ -424,29 +438,31 @@ def parser_case(kind_bench, bench_name, parser_file, parser, infile, outfile):
             # import the parser module import_module
             parser_module = importlib.import_module(parser_name)
         except ImportError, e:
-            logging.info( e )
+            logging.info(e)
             return -3
         try:
             methodToCall = getattr(parser_module, parser)
         except Exception, e:
-            logging.info( e )
+            logging.info(e)
             return -4
         else:
             infp = open(infile, "r")
             outfp = open(outfile, 'a+')
             contents = infp.read()
-            for content in re.findall("BEGIN TEST(.*?)\[status\]", contents, re.DOTALL):
+            for content in re.findall("BEGIN TEST(.*?)\[status\]", contents,
+                                        re.DOTALL):
                 try:
                     # call the parser function to filter the output
                     logging.debug("Begining to parser the result of the case")
                     result = methodToCall(content, outfp)
                 except Exception, e:
-                    logging.info( e )
+                    logging.info(e)
                     return -5
             outfp.close()
             infp.close()
     fp.close()
     return result
+
 
 def compute_case_score(result, category, score_way, target):
     tmp = category.split()
@@ -458,27 +474,32 @@ def compute_case_score(result, category, score_way, target):
     score_yaml_name = target_name + '_score.yaml'
     result_yaml = os.path.join(yaml_dir, result_yaml_name)
     score_yaml = os.path.join(yaml_dir, score_yaml_name)
-    if (length==4 and tmp[0]=='Functional'):
+    if (length == 4 and tmp[0] == 'Functional'):
         return compute_func(result, tmp, score_way, result_yaml, score_yaml)
-    elif ((length != 0 and length <=4) and tmp[0]=='Performance'):
+    elif ((length != 0 and length <= 4) and tmp[0] == 'Performance'):
         return compute_perf(result, tmp, score_way, result_yaml, score_yaml)
     else:
         return -4
 
+
 def compute_func(result, tmp, score_way, result_yaml, score_yaml):
-    flag = 0
+    flag1 = 0
+    flag2 = 0
     result_flag = 1
     score_flag = 2
 
     result_score = result * 100
     try:
-        flag1 = write_results.write_yaml_func(result_yaml, tmp, result,
-                result_flag)
-        flag2 = write_results.write_yaml_func(score_yaml, tmp, result_score,
-                score_flag)
+        flag1 = write_results.write_yaml_func(result_yaml,
+                                                tmp, result,
+                                                result_flag)
+        flag2 = write_results.write_yaml_func(score_yaml,
+                                                tmp, result_score,
+                                                score_flag)
     except BaseException:
         logging.debug("There is wrong when computing the score")
     return flag1 & flag2
+
 
 def compute_perf(result, tmp, score_way, result_yaml, score_yaml):
     result_flag = 1
@@ -486,14 +507,15 @@ def compute_perf(result, tmp, score_way, result_yaml, score_yaml):
 
     if type(result) is types.StringType:
         if re.search('\+', result):
-            result=result.replace('\+', 'e')
+            result = result.replace('\+', 'e')
         result_fp = string.atof(result)
     elif type(result) is types.FloatType:
         result_fp = result
     elif type(result) is types.IntType:
         result_fp = result
-    elif (type(result)==dict and (len(tmp)>0 and len(tmp)<4)):
-        return deal_dic_for_yaml(result, tmp, score_way, result_yaml, score_yaml)
+    elif (type(result) == dict and (len(tmp) > 0 and len(tmp) < 4)):
+        return deal_dic_for_yaml(result, tmp, score_way,
+                                    result_yaml, score_yaml)
     else:
         return -4
 
@@ -509,10 +531,11 @@ def compute_perf(result, tmp, score_way, result_yaml, score_yaml):
         logging.debug("There is wrong when compute the score.")
     return flag1 & flag2
 
+
 def deal_dic_for_yaml(result, tmp, score_way, yaml_file, score_yaml_file):
     if (len(tmp) == 2):
         flag = write_results.write_dic(result, tmp, score_way,
-                                yaml_file, score_yaml_file )
+                                yaml_file, score_yaml_file)
     elif (len(tmp) == 3):
         flag = write_results.write_sin_dic(result, tmp, score_way, yaml_file,
                                             score_yaml_file)
@@ -521,19 +544,20 @@ def deal_dic_for_yaml(result, tmp, score_way, yaml_file, score_yaml_file):
                                             yaml_file, score_yaml_file)
     return flag
 
-def caliper_run( target_exec_dir, target):
+
+def caliper_run(target_exec_dir, target):
     # get the test cases defined files
-    config_files = server_utils.get_cases_def_files( target_exec_dir )
+    config_files = server_utils.get_cases_def_files(target_exec_dir)
     logging.debug("the selected configuration are %s" % config_files)
 
     for i in range(0, len(config_files)):
         # run benchmarks selected in each configuration file
-        #config_file = os.path.join(caliper_path.CALIPER_PRE, config_files[i])
-        config_file = os.path.join( config_files[i] )
+        # config_file = os.path.join(caliper_path.CALIPER_PRE, config_files[i])
+        config_file = os.path.join(config_files[i])
         config, sections = server_utils.read_config_file(config_file)
         logging.debug(sections)
 
-        #get if it is the 'common' or 'arm' or 'android'
+        # get if it is the 'common' or 'arm' or 'android'
         classify = config_files[i].split("/")[-1].strip().split("_")[0]
         logging.debug(classify)
 
@@ -562,7 +586,7 @@ def caliper_run( target_exec_dir, target):
             try:
                 result = run_all_cases(target_exec_dir, target, bench,
                                         sections[i], run_file, parser)
-            except Exception as ex:
+            except Exception:
                 logging.info("Running %s Exception" % sections[i])
                 crash_handle.main()
                 print_format()
@@ -577,8 +601,10 @@ def caliper_run( target_exec_dir, target):
                 print_format()
     return 0
 
+
 def print_format():
     logging.info("="*55)
+
 
 def run_caliper_tests(target):
     if os.path.exists(Folder.exec_dir):
@@ -598,13 +624,13 @@ def run_caliper_tests(target):
     try:
         logging.debug("beginnig to run the test cases")
         test_result = caliper_run(target_execution_dir, target)
-    except error.CmdError, e:
-        logging.info( "There is wrong in running benchmarks")
+    except error.CmdError:
+        logging.info("There is wrong in running benchmarks")
         flag = 1
     else:
         if test_result:
-            flag = test_result 
+            flag = test_result
     return flag
 
-if __name__=="__main__":
+if __name__ == "__main__":
     caliper_run(sys.argv[1])

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#                      
-#    E-mail    :    wu.wu@hisilicon.com 
+#
+#    E-mail    :    wu.wu@hisilicon.com
 #    Data      :    2015-04-25 14:48:03
 #    Desc      :
 
@@ -9,7 +9,6 @@ import os
 import re
 import yaml
 import datetime
-import pdb
 
 try:
     import caliper.common
@@ -20,6 +19,7 @@ import caliper.server.utils as server_utils
 from caliper.client.shared import caliper_path
 from caliper.server.hosts import host_factory
 
+
 def write_yaml_file(dic, filename):
     if filename:
         with open(filename, 'w') as outfile:
@@ -27,23 +27,25 @@ def write_yaml_file(dic, filename):
             outfile.write('\n')
         outfile.close()
 
+
 def write_file(filename, content):
     fp = open(filename, 'a')
     fp.write(content)
     fp.write("\n")
     fp.close()
 
+
 def get_selected_tools(summary_file, target):
     selected_tools = []
-    target_exec_dir = server_utils.get_target_exec_dir(target) 
     config_files = server_utils.get_cases_def_files(target)
 
     for i in range(0, len(config_files)):
-        config_file = os.path.join( config_files[i] )
+        config_file = os.path.join(config_files[i])
         config, sections = server_utils.read_config_file(config_file)
         if len(sections):
             selected_tools.extend(sections)
     return selected_tools
+
 
 def get_builded_tools():
     despath = caliper_path.folder_ope.build_dir
@@ -62,6 +64,7 @@ def get_builded_tools():
                 if test_tool_name not in fail_tools:
                     fail_tools.append(test_tool_name)
     return [suc_tools, fail_tools]
+
 
 def get_exec_tools():
     despath = caliper_path.folder_ope.exec_dir
@@ -99,6 +102,7 @@ def get_exec_tools():
         return (0, 0, 0)
     return (pass_tools, partial_tools, failed_tools)
 
+
 def write_summary_tools(summary_file, target):
     selected_tools = get_selected_tools(summary_file, target)
     if len(selected_tools):
@@ -118,19 +122,21 @@ def write_summary_tools(summary_file, target):
         exec_suc_num = "Num of tools run successfully: %s" % len(suc_tools)
         write_file(summary_file, exec_suc_num)
     if len(partial_tools):
-        exec_partial_num = "Num of tools run partial successfully: %s" % len(partial_tools)
+        exec_partial_num = "Num of tools run partial successfully: %s" % \
+                len(partial_tools)
         write_file(summary_file, exec_partial_num)
     if len(failed_tools):
         exec_failed_num = "Num of tools run failed: %s" % len(failed_tools)
-        write_file(summary_file, exec_failed_num)   
+        write_file(summary_file, exec_failed_num)
     write_file(summary_file, '\n')
 
+
 def write_info_for_tools(filename, target):
-    build_suc_info = "Tool %s : Build PASS" 
-    build_fail_info = "Tool %s : Build Fail" 
-    exec_suc_info = "Tool %s : Execution PASS\n" 
-    exec_partial_info = "Tool %s : Execution Partial PASS\n" 
-    exec_fail_info = "Tool %s : Execution Fail\n" 
+    build_suc_info = "Tool %s : Build PASS"
+    build_fail_info = "Tool %s : Build Fail"
+    exec_suc_info = "Tool %s : Execution PASS\n"
+    exec_partial_info = "Tool %s : Execution Partial PASS\n"
+    exec_fail_info = "Tool %s : Execution Fail\n"
 
     selected_tools = get_selected_tools(filename, target)
     if not len(selected_tools):
@@ -156,6 +162,7 @@ def write_info_for_tools(filename, target):
         write_file(filename, build_info)
         write_file(filename, exec_info)
 
+
 def output_summary_info(target, interval):
     summary_file = caliper_path.folder_ope.summary_file
     if os.path.exists(summary_file):
@@ -166,11 +173,11 @@ def output_summary_info(target, interval):
 
     used_time = "Total used time: %.4s minutes" % (interval/60.0)
     write_file(summary_file, used_time)
-    
+
     write_summary_tools(summary_file, target)
     write_info_for_tools(summary_file, target)
-    
-if __name__=="__main__":
+
+if __name__ == "__main__":
     start_time = datetime.datetime.now()
     target = host_factory.create_host('localhost', 'wuyanjun', '', 22)
     end_time = datetime.datetime.now()

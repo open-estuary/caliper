@@ -1,13 +1,16 @@
-## wuyanjun  00291783  wu.wu@hisilicon.com
+#!/usr/bin/env python
+# wuyanjun  00291783  wu.wu@hisilicon.com
 import re
-import string
-import pdb
 import yaml
+
 
 def parser(content, option, outfp):
     score = 0
-    for lines in re.findall("=+LINUX\s+DATA\s+BELOW\s*=+\n(.*?)\n\*\s+Trademarks", content, re.DOTALL):
-        if lines :
+    for lines in re.findall(
+                    "=+LINUX\s+DATA\s+BELOW\s*=+\n(.*?)\n\*\s+Trademarks",
+                    content,
+                    re.DOTALL):
+        if lines:
             line_list = lines.splitlines()
             for i in range(0, len(line_list)):
                 if re.search("MEMORY\s+INDEX", line_list[i]):
@@ -35,10 +38,12 @@ def parser(content, option, outfp):
                 outfp.write(line_list[i] + '\n')
             return score
 
+
 def nbench_int_parser(content, outfp):
     score = -1
     score = parser(content, "int", outfp)
     return score
+
 
 def nbench_float_parser(content, outfp):
     score = -1
@@ -46,11 +51,12 @@ def nbench_float_parser(content, outfp):
     return score
 
 dic = {}
-dic['sincore_int']={}
-dic['sincore_float']={}
-int_list = ['NUMERIC SORT', 'STRING SORT', 'BITFIELD', 'FP EMULATION', 
-            'ASSIGNMENT', 'HUFFMAN','IDEA']
+dic['sincore_int'] = {}
+dic['sincore_float'] = {}
+int_list = ['NUMERIC SORT', 'STRING SORT', 'BITFIELD', 'FP EMULATION',
+            'ASSIGNMENT', 'HUFFMAN', 'IDEA']
 float_list = ['FOURIER', 'NEURAL NET', 'LU DECOMPOSITION']
+
 
 def nbench_parser(content, outfp):
     for line in content.splitlines():
@@ -59,21 +65,21 @@ def nbench_parser(content, outfp):
     outfp.write(yaml.dump(dic, default_flow_style=False))
     return dic
 
+
 def get_value(line, flag, list_tables):
     for label in list_tables:
         if re.search(label, line):
-            value =  re.findall('(\d+\.*\d*)', line)[0]
+            value = re.findall('(\d+\.*\d*)', line)[0]
             dic[flag][label] = value
             break
 
-if __name__=="__main__":
+if __name__ == "__main__":
     infp = open("nbench_output.log", "r")
     outfp = open("2.txt", "a+")
     content = infp.read()
-    #pdb.set_trace()
+    # pdb.set_trace()
     nbench_parser(content, outfp)
     outfp.close()
     outfp = open("3.txt", "a+")
-    #nbench__parser(content, outfp)
+    # nbench__parser(content, outfp)
     outfp.close()
-

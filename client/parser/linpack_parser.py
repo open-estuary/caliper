@@ -1,21 +1,23 @@
-## wuyanjun 00291783
-## wu.wu@hisilicon.com
-
 #!/usr/bin/python
+# wuyanjun 00291783
+# wu.wu@hisilicon.com
+
 import re
 import string
 import pdb
 
+
 def compute_mflops(content, outfp):
     score = 0
-    #pdb.set_trace()
-    for lines in re.findall("Reps(.*?)\n(.*?)\n([\d\.\%\s]*)", content, re.DOTALL):
+    # pdb.set_trace()
+    for lines in re.findall("Reps(.*?)\n(.*?)\n([\d\.\%\s]*)", content,
+                            re.DOTALL):
         mflops = 0
         line = lines[2].strip().split("\n")
         for i in range(0, len(line)):
-            if ( line[i] != ""):
+            if (line[i] != ""):
                 try:
-                    mflops_tmp = string.atof( line[i].strip().split(" ")[-1] )
+                    mflops_tmp = string.atof(line[i].strip().split(" ")[-1])
                 except Exception, e:
                     print e
                     continue
@@ -26,17 +28,20 @@ def compute_mflops(content, outfp):
         score = mflops
     return score
 
+
 def linpack_dp_parser(content, outfp):
     score = -1
     if re.search("LINPACK(.*?)Double(.*?)", content, re.DOTALL):
         score = compute_mflops(content, outfp)
     return score
 
+
 def linpack_sp_parser(content, outfp):
     score = -1
     if re.search("LINPACK(.*?)Single(.*?)", content, re.DOTALL):
         score = compute_mflops(content, outfp)
     return score
+
 
 if __name__ == "__main__":
     infp = open("2.txt", "r")

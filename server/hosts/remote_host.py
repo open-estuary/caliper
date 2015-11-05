@@ -4,11 +4,10 @@
 #   Author  :   wuyanjun 00291783
 #   E-mail  :   wu.wu@hisilicon.com
 #   Date    :   14/12/30 20:14:55
-#   Desc    :  
+#   Desc    :
 #
 
 import os
-import sys
 import logging
 import urllib
 
@@ -16,18 +15,17 @@ from caliper.client.shared import error
 from caliper.server.hosts import basic_host
 from caliper.server import utils
 
-DEFAULT_HALT_TIMEOUT=50
-DEFAULT_REBOOT_TIMEOUT=120
-LAST_BOOT_TAG=None
+DEFAULT_HALT_TIMEOUT = 50
+DEFAULT_REBOOT_TIMEOUT = 120
+LAST_BOOT_TAG = None
+
 
 class RemoteHost(basic_host.Host):
     """
     this class means a remote machine on which you can run programs
-
     it may be accessed through a network, a serial line, ...
     """
     VAR_LOG_MESSAGES_COPY_PATH = "/var/tmp/messages.caliper_start"
-   
     VAR_LOG_MESSAGES_PATHS = ["/var/log/messages"]
 
     def _initialize(self, hostname, autodir=None, profile='', *args, **dargs):
@@ -74,18 +72,22 @@ class RemoteHost(basic_host.Host):
         if messages_file is not None:
             try:
                 self.run('rm -fr %s' % self.VAR_LOG_MESSAGES_COPY_PATH)
-                self.run('cp %s %s' % (messages_file, self.VAR_LOG_MESSAGES_COPY_PATH))
+                self.run('cp %s %s' % (messages_file,
+                            self.VAR_LOG_MESSAGES_COPY_PATH))
             except Exception, e:
-                logging.info('Failed to copy %s at startup: %s', messages_file, e)
+                logging.info('Failed to copy %s at startup: %s',
+                                messages_file, e)
         else:
-            logging.debug("No remote messages path found, looked %s", self.VAR_LOG_MESSAGES_COPY_PATH)
+            logging.debug("No remote messages path found, looked %s",
+                            self.VAR_LOG_MESSAGES_COPY_PATH)
 
     def get_autodir(self):
         return self.autodir
 
     def set_autodir(self, autodir):
         """
-        this method is called to make the host object aware of where to install the Caliper.
+        this method is called to make the host object aware of where to
+        install the Caliper.
         """
         self.autodir = autodir
 
@@ -135,7 +137,7 @@ class RemoteHost(basic_host.Host):
         """
         delete the given temporary directory on the remote machine
         """
-        self.run('rm -fr "%s"' % utils.sh_escape(tmpdir), ignore_status=True )
+        self.run('rm -fr "%s"' % utils.sh_escape(tmpdir), ignore_status=True)
         self.tmp_dirs.remove(tmpdir)
 
     def check_uptime(self):
@@ -147,4 +149,3 @@ class RemoteHost(basic_host.Host):
             raise error.ServHostError('Client does not appear to be up')
         result = self.run("/bin/cat /proc/uptime", 30)
         return result.stdout.strip().split()[0]
-

@@ -1,9 +1,9 @@
-## wuyanjun 00291783
-## wu.wu@hisilicon.com
-
 #!/usr/bin/python
+#
+# wuyanjun 00291783
+# wu.wu@hisilicon.com
+
 import re
-import string
 import pdb
 
 def parser(content, outfp):
@@ -44,4 +44,3 @@ if __name__ == "__main__":
     parser(content, outfp)
     outfp.close()
     infp.close()
-   

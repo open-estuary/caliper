@@ -2,18 +2,18 @@
 # -*- coding:utf-8 -*-
 #
 #   Date    :   15/01/07 19:21:42
-#   Desc    :  
+#   Desc    :
 #
 
 import os
-import sys
 import ConfigParser
-import pdb
 from caliper.client.shared import error
 from caliper.client.shared import caliper_path
 
+
 class SettingsError(error.AutoError):
     pass
+
 
 class SettingsValueError(SettingsError):
     pass
@@ -21,7 +21,9 @@ class SettingsValueError(SettingsError):
 settings_filename = 'client_config.cfg'
 shadow_config_filename = 'shadow_config.cfg'
 
-settings_path_root = os.path.join(caliper_path.config_files.config_dir, settings_filename)
+settings_path_root = os.path.join(
+                        caliper_path.config_files.config_dir,
+                        settings_filename)
 config_in_root = os.path.exists(settings_path_root)
 
 # need to change
@@ -31,6 +33,7 @@ if config_in_root:
 else:
     DEFAULT_CONFIG_FILE = None
     RUNNING_STAND_ALONE_CLIENT = False
+
 
 class Settings(object):
     _NO_DEFAULT_SPECIFIED = object()
@@ -55,11 +58,14 @@ class Settings(object):
 
     def get_section_values(self, sections):
         """
-        Return a config parser object containing a single section of the global configuration,
-        that can be written to a file object.
+        Return a config parser object containing a single section of the
+        global configuration, that can be written to a file object.
 
-        :param section: Tuple with sections we want to turn into a config parser
-        :return: ConfigParser() onject containing all the contents of sections.
+        :param
+        section: Tuple with sections we want to turn into a config
+                        parser
+        :return: ConfigParser() onject containing all the contents of
+                        sections.
         """
         self._ensure_config_parserd()
 
@@ -72,7 +78,8 @@ class Settings(object):
                 cfgparser.set(section, option, value)
         return cfgparser
 
-    def get_value(self, section, key, type=str, default=_NO_DEFAULT_SPECIFIED, allow_blank=False):
+    def get_value(self, section, key, type=str, default=_NO_DEFAULT_SPECIFIED,
+                    allow_blank=False):
         self._ensure_config_parsed()
 
         try:
@@ -94,10 +101,11 @@ class Settings(object):
 
     def reset_values(self):
         """
-        Reset all values to those found in the config files (undoes all overrides).
+        Reset all values to those found in the config files (undoes all
+        overrides).
         """
         self.parse_config_file()
-   
+
     def _ensure_config_parsed(self):
         if self.config is None:
             self.parse_config_file()
@@ -122,7 +130,7 @@ class Settings(object):
             self.config.read(self.config_file)
         else:
             raise SettingsError('%s not found' % (self.config_file))
-        
+
     # the values pulled from ini are strings
     # try to convert them to other types if needed.
     def _convert_value(self, key, section, value, value_type):
@@ -159,7 +167,6 @@ class Settings(object):
                     (key, sval, section, value_type))
             raise SettingsValueError(msg)
 
-# insure the class is a singleton. Now the symbol settings will point to the one and
-# only one instance pof the class
+# insure the class is a singleton. Now the symbol settings will point to the
+# one and only one instance pof the class
 settings = Settings()
-

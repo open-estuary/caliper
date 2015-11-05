@@ -1,22 +1,21 @@
-## wuyanjun 00291783
-## wu.wu@hisilicon.com
-## Copyright
-
 #!/usr/bin/python
+
+# wuyanjun 00291783
+# wu.wu@hisilicon.com
+# Copyright
 
 import os
 import sys
 import logging
-import pdb
 import re
 import shutil
-import subprocess
 
 import test_perf_tranver as traverse
 import caliper.server.utils as server_utils
 from caliper.client.shared import caliper_path
 
 LOCATION = os.path.dirname(sys.modules[__name__].__file__)
+
 
 def get_targets_data(outdir):
     yaml_dir = os.path.join(outdir, 'yaml')
@@ -33,6 +32,7 @@ def get_targets_data(outdir):
                     json_files.append(json_name)
     return (yaml_files, json_files)
 
+
 def traverse_caliper_output(hosts):
 
     YAML_DIR = os.path.join(caliper_path.folder_ope.results_dir, 'yaml')
@@ -48,6 +48,7 @@ def traverse_caliper_output(hosts):
         if return_code != 1:
             logging.info("there is wrong when dealing the yaml file")
 
+
 def parser_caliper(host):
     try:
         traverse_caliper_output(host)
@@ -56,11 +57,13 @@ def parser_caliper(host):
         return
 
     file_lists = []
-    (file_lists, json_files) = get_targets_data(caliper_path.folder_ope.results_dir)
+    (file_lists, json_files) = get_targets_data(
+                                caliper_path.folder_ope.results_dir)
 
     if caliper_path.judge_caliper_installed():
         if not os.path.exists(caliper_path.FRONT_END_DIR):
-            shutil.copytree(caliper_path.FRONT_TMP_DIR, caliper_path.FRONT_END_DIR)
+            shutil.copytree(caliper_path.FRONT_TMP_DIR,
+                                caliper_path.FRONT_END_DIR)
 
     if not os.path.exists(caliper_path.HTML_DATA_DIR):
         os.makedirs(caliper_path.HTML_DATA_DIR)

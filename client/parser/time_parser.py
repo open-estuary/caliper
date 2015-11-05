@@ -1,16 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#                      
-#    E-mail    :    wu.wu@hisilicon.com 
+#
+#    E-mail    :    wu.wu@hisilicon.com
 #    Data      :    2015-08-17 16:01:34
 #    Desc      :
-import os
+
 import re
 import string
+
 
 def trans_float(minutes, seconds):
     total = string.atoi(minutes) * 60 + string.atof(seconds)
     return total
+
 
 def time_parser(content, outfp):
     score = -1
@@ -29,7 +31,7 @@ def time_parser(content, outfp):
         outfp.write("sys " + str(sys_time) + "s\n")
     return score/1000
 
-if __name__=="__main__":
+if __name__ == "__main__":
     infp = open("1.txt", "r")
     content = infp.read()
     outfp = open("2.txt", "a+")

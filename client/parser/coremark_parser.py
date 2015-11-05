@@ -3,12 +3,12 @@
 import re
 import string
 
+
 def coremark_parser(content, outfp):
     score = -1
     m = re.search("Iterations/Sec(.*?)\n", content)
     if m:
         score = 0
-        line = m.group()
         lastline = content.splitlines()[-1]
         outfp.write(lastline + '\n')
         score_tmp = lastline.split(":")[-1].strip().split("/")[0]
@@ -20,7 +20,7 @@ def coremark_parser(content, outfp):
             score = score_latter
         return score
 
-if __name__=="__main__":
+if __name__ == "__main__":
     infp = open("1.txt", "r")
     content = infp.read()
     outfp = open("2.txt", "a+")

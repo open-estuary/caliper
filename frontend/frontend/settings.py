@@ -13,8 +13,6 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 import os
 import sys
 
-from django.http import HttpResponse, HttpResponseRedirect
-
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 # Quick-start development settings - unsuitable for production
@@ -46,7 +44,7 @@ DATAFILES_FOLDER = os.path.join(PROJECT_ROOT, 'data_files/')
 STATICFILES_FINDERS = (
         'django.contrib.staticfiles.finders.FileSystemFinder',
         'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-)
+    )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
         "django.contrib.auth.context_processors.auth",
@@ -55,20 +53,20 @@ TEMPLATE_CONTEXT_PROCESSORS = (
         "django.core.context_processors.media",
         "django.core.context_processors.static",
         "django.contrib.messages.context_processors.messages",
-)
+    )
 
 TEMPLATE_LOADER = (
         "django.template.loaders.filesystem.Loader",
         "django.template.loaders.app_directories.Loader",
-)
+    )
 
 TEMPLATES = [
         {
             'BACKEND': 'django.template.backends.django.DjangoTemplates',
             'DIRS': [os.path.join(BASE_DIR, 'templates')],
             'APP_DIRS': True,
-            'OPTIONS':{
-                'context_processors':[
+            'OPTIONS': {
+                'context_processors': [
                     'django.template.context_processors.debug',
                     'django.template.context_processors.request',
                     'django.contrib.auth.context_processors.auth',
@@ -85,7 +83,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-)
+    )
 
 INSTALLED_APPS = (
     'django.contrib.admin',
@@ -97,7 +95,7 @@ INSTALLED_APPS = (
     'polls',
     'chartit',
     'homepage',
-)
+    )
 
 
 ROOT_URLCONF = 'frontend.urls'
@@ -111,8 +109,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
     }
-}
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/

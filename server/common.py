@@ -4,7 +4,7 @@
 #   Author  :   wuyanjun 00291783
 #   E-mail  :   wu.wu@hisilicon.com
 #   Date    :   15/01/07 17:20:26
-#   Desc    :  
+#   Desc    :
 
 import os
 import sys
@@ -21,6 +21,3 @@ except ImportError:
     sys.path.pop(0)
 
 setup_modules.setup(base_path=caliper_dir, root_module_name="caliper")
-
-
-

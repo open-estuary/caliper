@@ -1,6 +1,6 @@
-## wuyanjun 00291783
-## wu.wu@hisilicon.com
-## Copyright
+# wuyanjun 00291783
+# wu.wu@hisilicon.com
+# Copyright
 
 import os
 import sys
@@ -26,19 +26,19 @@ func_str = 'Functional'
 conf_str = 'Configuration'
 name_str = 'name'
 
+
 def traverse_pre(target, dic_file):
-    """ dic_file means sections in the yaml file which store the information of machine """
+    """ dic_file means sections in the yaml file which store the information
+    of machine """
     if name_str not in dic_file:
         dic_file[name_str] = {}
-    hostName = server_utils.get_host_name( target )
+    hostName = server_utils.get_host_name(target)
     dic_file[name_str] = hostName
-
     if conf_str not in dic_file:
         dic_file[conf_str] = {}
-
     dic_file[conf_str] = server_utils.get_host_hardware_info(target)
-
     return dic_file
+
 
 def traverse_score(results):
     keys_sub_items = results.keys()
@@ -52,7 +52,8 @@ def traverse_score(results):
         for test_point in key_test_points:
             test_case_dic = test_point_dic[test_point]
             point_values = test_case_dic[point_str].values()
-            useful_values = [string.atof(x) for x in point_values if string.atof(x) != 0 ]
+            useful_values = [string.atof(x) for x in point_values
+                                if string.atof(x) != 0]
             if len(useful_values) < 1:
                 last_result = 0
             else:
@@ -60,7 +61,7 @@ def traverse_score(results):
                     last_result = geometric_mean(useful_values)
                     last_result = round(last_result, 2)
                 except TypeError, e:
-                    logging.info( e )
+                    logging.info(e)
                     continue
 
             test_case_dic[total_str] = last_result
@@ -73,7 +74,8 @@ def traverse_score(results):
             try:
                 total_sub_items_result = geometric_mean(values_test_points)
             except TypeError, e:
-                logging.info( "Compute the last score of subItem %s wrong" % subItem )
+                logging.info("Compute the last score of subItem %s wrong" %
+                                subItem)
                 logging.info(e)
             else:
                 if total_str not in test_point_dic:
@@ -81,13 +83,14 @@ def traverse_score(results):
                 test_point_dic[total_str] = round(total_sub_items_result, 2)
     return results
 
+
 def traverser_results(target, yaml_file):
     flag = 0
     yaml_file_post = yaml_file[0:-5] + "_post" + yaml_file[-5:]
     if os.path.exists(yaml_file):
         shutil.copyfile(yaml_file, yaml_file_post)
     else:
-        logging.info( "No such file %s" % yaml_file )
+        logging.info("No such file %s" % yaml_file)
         flag = -1
         return flag
     fp = open(yaml_file)
@@ -102,7 +105,7 @@ def traverser_results(target, yaml_file):
         dic_[results_str][func_str] = traverse_score(func_results)
 
     dic_ = traverse_pre(target, dic_)
-   
+
     with open(yaml_file_post, 'w') as outfile:
         outfile.write(yaml.dump(dic_, default_flow_style=False))
         flag = 1
@@ -111,10 +114,9 @@ def traverser_results(target, yaml_file):
     json.dump(dic_, open(json_file_post, 'w'))
     return flag
 
-if __name__=="__main__":
+if __name__ == "__main__":
     target = sys.argv[1]
     file_name = sys.argv[2] + "/yaml/Ur_machine_score.yaml"
     result = traverser_results(target, file_name)
     if result != 1:
         logging.info("There is wrong")
-

@@ -1,10 +1,7 @@
 import os
 import json
 
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404
-from django.core.urlresolvers import reverse
-from django.views import generic
+from django.shortcuts import render
 from django.conf import settings
 from plot import show_picture
 
@@ -15,14 +12,16 @@ PERF_STR = 'Performance'
 FUNC_STR = 'Functional'
 RESULTS_STR = 'results'
 
+
 def get_files():
     json_dir = settings.DATAFILES_FOLDER
     filesname = []
     for root, dirs, files in os.walk(json_dir):
         for i in range(0, len(files)):
             if files[i].endswith('.json'):
-                filesname.append( os.path.join(root, files[i]) )
+                filesname.append(os.path.join(root, files[i]))
     return filesname
+
 
 def get_eachItem_sum(files, testItem):
     summary_tmp = {}
@@ -41,6 +40,7 @@ def get_eachItem_sum(files, testItem):
         summary_tmp[target] = sum_tmp
     return summary_tmp
 
+
 def get_sum_dics(files):
     dic = {}
     dic['config'] = {}
@@ -48,8 +48,6 @@ def get_sum_dics(files):
     dic['summary'] = {}
 
     conf_tmp = {}
-    tools_tmp = {}
-    summary_tmp = {}
     for filename in files:
         with open(filename) as fp:
             data = json.load(fp)
@@ -61,7 +59,8 @@ def get_sum_dics(files):
     dic['func_summary'] = get_eachItem_sum(files, FUNC_STR)
     return dic
 
-def get_each_sum_item( files, testItem, category ):
+
+def get_each_sum_item(files, testItem, category):
     dic = {}
     for filename in files:
         tmp_dic = {}
@@ -80,7 +79,8 @@ def get_each_sum_item( files, testItem, category ):
         dic[target] = tmp_dic
     return dic
 
-def get_detail_data( files, testItem, category ):
+
+def get_detail_data(files, testItem, category):
     dic = {}
     dic['sum'] = get_each_sum_item(files, testItem, category)
     for filename in files:
@@ -114,11 +114,13 @@ def get_detail_data( files, testItem, category ):
         dic[key] = tmp_dic
     return dic
 
+
 def _deal_keyword(string):
     new_str = '_'.join(string.split('/'))
     new_str = '_'.join(new_str.split(' '))
     new_str = '_'.join(new_str.split('-'))
     return new_str
+
 
 def index(request):
     show_picture.show_caliper_result()
@@ -132,6 +134,7 @@ def index(request):
             dic_total[key] = True
     return render(request, 'polls/index.html', dic_total)
 
+
 def algorithm(request):
     files = get_files()
     dic_total = {}
@@ -141,6 +144,7 @@ def algorithm(request):
         key_name = _deal_keyword(key)
         dic_total[key_name] = True
     return render(request, 'polls/algorithm.html', dic_total)
+
 
 def cpu(request):
     files = get_files()
@@ -152,6 +156,7 @@ def cpu(request):
         dic_total[key_name] = True
     return render(request, 'polls/cpu.html', dic_total)
 
+
 def disk(request):
     files = get_files()
     dic_total = {}
@@ -161,6 +166,7 @@ def disk(request):
         key_name = _deal_keyword(key)
         dic_total[key_name] = True
     return render(request, 'polls/disk.html', dic_total)
+
 
 def latency(request):
     files = get_files()
@@ -172,6 +178,7 @@ def latency(request):
         dic_total[key_name] = True
     return render(request, 'polls/latency.html', dic_total)
 
+
 def memory(request):
     files = get_files()
     dic_total = {}
@@ -181,6 +188,7 @@ def memory(request):
         key_name = _deal_keyword(key)
         dic_total[key_name] = True
     return render(request, 'polls/memory.html', dic_total)
+
 
 def io(request):
     files = get_files()
@@ -192,6 +200,7 @@ def io(request):
         dic_total[key_name] = True
     return render(request, 'polls/io.html', dic_total)
 
+
 def network(request):
     files = get_files()
     dic_total = {}
@@ -201,6 +210,7 @@ def network(request):
         key_name = _deal_keyword(key)
         dic_total[key_name] = True
     return render(request, 'polls/network.html', dic_total)
+
 
 def kernel(request):
     files = get_files()
@@ -212,6 +222,7 @@ def kernel(request):
         dic_total[key_name] = True
     return render(request, 'polls/kernel.html', dic_total)
 
+
 def debug(request):
     files = get_files()
     dic_total = {}
@@ -221,6 +232,7 @@ def debug(request):
         key_name = _deal_keyword(key)
         dic_total[key_name] = True
     return render(request, 'polls/debug.html', dic_total)
+
 
 def peripheral(request):
     files = get_files()
@@ -232,6 +244,7 @@ def peripheral(request):
         dic_total[key_name] = True
     return render(request, 'polls/peripheral.html', dic_total)
 
+
 def application(request):
     files = get_files()
     dic_total = {}
@@ -241,5 +254,3 @@ def application(request):
         key_name = _deal_keyword(key)
         dic_total[key_name] = True
     return render(request, 'polls/application.html', dic_total)
-
-

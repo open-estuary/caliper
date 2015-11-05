@@ -1,10 +1,10 @@
 import re
 import sys
-import pdb
+
 
 def perf_parser(content, outfp):
     score = -1
-    failNum = 0 
+    failNum = 0
     sucNum = 0
     skipNum = 0
     lines = content.splitlines()
@@ -27,7 +27,7 @@ def perf_parser(content, outfp):
         score = sucNum / (failNum + sucNum + skipNum + 0.0)
     return score
 
-if __name__=="__main__":
+if __name__ == "__main__":
     fp = open(sys.argv[1], "r")
     text = fp.read()
     outfp = open("2.txt", "a+")

@@ -1,9 +1,10 @@
-## wuyanjun 00291783
-## wu.wu@hisilicon.com
-
 #!/usr/bin/python
+# wuyanjun 00291783
+# wu.wu@hisilicon.com
+
 import re
 import string
+
 
 def scimark_parser(content, outfp):
     score = -1
@@ -21,7 +22,8 @@ def scimark_parser(content, outfp):
             score = score_latter
         return score
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     infp = open("1.ttx", "r")
     content = infp.read()
     outfp = open("2.txt", "a+")

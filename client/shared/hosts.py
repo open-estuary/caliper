@@ -2,7 +2,7 @@
 # -*- coding:utf-8 -*-
 #
 #   Date    :   14/12/26 17:14:04
-#   Desc    :  
+#   Desc    :
 #
 
 import utils
@@ -14,8 +14,10 @@ from caliper.client.shared import error
 
 TEE_TO_LOGS = object()
 
+
 class Host(object):
     job = None
+
     def __init__(self, *args, **dargs):
         self._initialize(*args, **dargs)
 
@@ -25,16 +27,16 @@ class Host(object):
 
     def setup(self):
         pass
-   
+
     def close(self):
         pass
 
     def send_file(self, source, dest, delete_dest=False):
         raise NotImplementedError("Get file not implemented!")
 
-    def get_file(self, source, dest, delete_dest =False ):
+    def get_file(self, source, dest, delete_dest=False):
         raise NotImplementedError("Send File not implemented!")
-        
+
     def get_tmp_dir(self):
         raise NotImplementedError("Get tmp dir not implemented!")
 
@@ -49,9 +51,10 @@ class Host(object):
         if free_space_gb < gb:
             raise error.ServDiskFullHostError(path, gb, free_space_gb)
         else:
-            logging.info('Found %s GB >= %s GB of space under %s on machine %s'%(
-                            free_space_gb, gb, path, self.hostname))
-   
+            logging.info('Found %s GB >= %s GB of space under %s on "\
+                            "machine %s' % (free_space_gb, gb, path,
+                            self.hostname))
+
     def run(self, command, timeout=3600, ignore_status=False,
             stdout_tee=TEE_TO_LOGS, stderr_tee=TEE_TO_LOGS,
             stdin=None, args=()):
@@ -59,9 +62,9 @@ class Host(object):
         :param ignore_status: do not raise an exception, no matter
             what the exit code of the command is.
         :param stdout_tee/stderr_tee: where to tee the stdout/stderr
-        :param args: sequence of strings to pass as arguments to command by quoting
-            them in '' and escaping their contents if necessary
-
+        :param args: sequence of strings to pass as arguments to command by
+                        quoting them in '' and escaping their contents if
+                        necessary
         :return: CmdResult object
         """
         raise NotImplementedError('Run not implemented!')
@@ -133,10 +136,9 @@ class Host(object):
         for key, val in (line.split(':', 1) for line in meminfo):
             meminfo_dict[key.strip()] = val.strip()
         return meminfo_dict
-   
+
     def path_exists(self, path):
         """Determine if path existes on the remote machien"""
         result = self.run('ls %s > /dev/null' % utils.sh_escape(path),
-                ignore_status = True )
-        return result.exit_status == 0 
-   
+                            ignore_status=True)
+        return result.exit_status == 0
