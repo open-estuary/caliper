@@ -128,8 +128,8 @@ pushd $HIBENCH_DIR
 echo $hadoop_dir
         sed -i "s/$hadoop_str/$hadoop_dir/g"  $USER_DEFINED_FILE
         sed -i "s/$hdfs_url/$hdfs_server/g" $USER_DEFINED_FILE
-        sed -i 's/^hibench.spark/#hibench.spark/g' $USER_DEFINED_FILE
-        sed -i 's/4/2/g' $USER_DEFINED_FILE
+        sed -i 's/^hibench.spark.master/#hibench.spark.master/g' $USER_DEFINED_FILE
+        sed -i 's/ 4 / 2 /g' $USER_DEFINED_FILE
         sed -i '52,67s/12/2/g' $USER_DEFINED_FILE
         sed -i '52,67s/6/1/g'  $USER_DEFINED_FILE
     popd

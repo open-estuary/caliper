@@ -39,8 +39,8 @@ params = dict(
         devices, and compare the test results',
         package_dir=get_package_dirs(),
         packages=get_packages(),
-        url='http://github.com/hisilicon/caliper-dev',
-        maintainer="hisilicon HTSAT",
+        url='http://github.com/open-estuary',
+        maintainer="open-estuary/caliper",
 )
 
 

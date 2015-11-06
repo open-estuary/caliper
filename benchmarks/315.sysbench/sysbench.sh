@@ -1,5 +1,4 @@
 #!/bin/bash
-set -x
 sysbench_dir=sysbench-0.5
 cpu_num=$(grep 'processor' /proc/cpuinfo |sort |uniq |wc -l)
 
@@ -23,17 +22,15 @@ db_driver=mysql
 : ${db_name:=$9}
 : ${db_name:=sbtest}
 : ${max_requests:=$10}
-: ${max_requests:=10000}
+: ${max_requests:=100000}
 test_name="$PWD/sysbench-0.5/sysbench/tests/db/oltp.lua"
-
-sudo apt-get install libtool -y
-sudo apt-get install autoconf -y
-sudo apt-get install automake -y
+echo "max_requests are $max_requests"
+sudo apt-get install libtool autoconf automake -y
 
 exists=$(ps -aux | grep 'mysqld')
 if [ "$exists"x = ""x ]; then
     echo 'The mysql server has not been installed'
-    exit
+    exit 1
 fi
 
 sudo apt-get install libmysqlclient-dev -y
@@ -45,7 +42,7 @@ if [ ! -d $sysbench_dir ]; then
   bzr branch lp:~sysbench-developers/sysbench/0.5 $sysbench_dir
   if [ $? -ne 0 ]; then
     echo 'Download the sysbench failed'
-    exit
+    exit 1
   fi
 fi
 
@@ -71,14 +68,14 @@ do
     fi
 done
 
-if [ "$mysql_lib"x = ""x || "$mysql_include"x = ""x ]; then
+if [ "$mysql_lib"x = ""x ] or [ "$mysql_include"x = ""x ]; then
     echo 'mysql has not been installed right'
-    exit
+    exit 1
 fi
 
 if [ ! -d $sysbench_dir ]; then
     echo 'sysbench has not been download completely'
-    exit
+    exit 1
 fi
 
 export PATH=$PATH:/usr/local
@@ -88,20 +85,47 @@ pushd $sysbench_dir
   ./autogen.sh
   ./configure --prefix=$prefix --with-mysql-includes=$mysql_include
   --with0mysql-libs=$mysql_lib
-  make 
+  make -s 
   make install
 popd
 
 sudo apt-get install expect -y
 if [ $? -ne 0 ]; then 
     echo "install expect failed"
-    exit
+    exit 1
 fi
 
-# create $db_name in the databases
-./mysql.sh $mysql_user $mysql_passwd $db_name
+/usr/bin/expect > /dev/null 2>&1 <<EOF
+set timeout 40
 
-echo $num_threads
+spawn mysql -u$mysql_user -p
+expect "*password:"
+send "$mysql_password\r"
+expect "mysql>"
+send "show databases;\r"
+
+expect {
+ "$db_name"
+ {
+     send "drop database $db_name;\r"
+     expect "mysql>"
+     send "create database $db_name;\r"
+     expect "mysql>"
+ }
+ "mysql>"
+ {
+     send "create database $db_name;\r"
+ }
+}
+expect "mysql>"
+send "quit;\r"
+expect eof
+EOF
+
+if [ $max_requests -eq 0 ]; then 
+    max_requests=100000
+fi
+set -x
 # prepare the test data
 $sysbench_dir/sysbench/sysbench \
   --db-driver=mysql \
@@ -118,7 +142,7 @@ $sysbench_dir/sysbench/sysbench \
 
 if [ $? -ne 0 ]; then
     echo 'Prepare the oltp test data failed'
-    exit
+    exit 1
 fi
 
 # do the oltp test
@@ -137,7 +161,7 @@ fi
 
 if [ $? -ne 0 ]; then
     echo 'Run the oltp test failed'
-    exit
+    exit 1
 fi
 
 # cleanup the test data
@@ -156,5 +180,5 @@ fi
 
 if [ $? -ne 0 ]; then
     echo 'cleanup the test data failed'
-    exit
+    exit 1
 fi
