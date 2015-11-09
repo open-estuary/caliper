@@ -33,6 +33,7 @@ def _combine_dicts(list_dicts):
 def get_packages():
     return (client.setup.get_packages() + server.setup.get_packages())
 
+
 def get_package_dirs():
     return _combine_dicts(
             [client.setup.get_package_dirs(),
@@ -41,14 +42,12 @@ def get_package_dirs():
 
 
 def run():
-    caliper_benchs_dir = os.path.join("/tmp", ".caliper")
-    if os.path.exists(caliper_benchs_dir):
-        shutil.rmtree(caliper_benchs_dir)
-    else:
-        os.mkdir(caliper_benchs_dir)
+    caliper_tmp_dir = os.path.join(os.environ['HOME'], ".caliper", 'benchmarks')
+    if os.path.exists(caliper_tmp_dir):
+        shutil.rmtree(caliper_tmp_dir)
     shutil.copytree(
             os.path.join(os.getcwd(), 'benchmarks'),
-            caliper_benchs_dir
+            caliper_tmp_dir
             )
 
     setup(

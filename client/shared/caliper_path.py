@@ -35,6 +35,7 @@ if not judge_caliper_installed():
     CALIPER_REPORT_HOME = os.path.join(CALIPER_DIR, 'caliper_workspace')
     if not os.path.exists(CALIPER_REPORT_HOME):
         os.mkdir(CALIPER_REPORT_HOME)
+    BENCHS_DIR = os.path.join(CALIPER_DIR, 'benchmarks')
 else:
     # This means that the caliper is already installed. Only instance can
     # execute as the updatation of the results will happen under
@@ -43,9 +44,9 @@ else:
     if not os.path.exists(CALIPER_TMP_DIR):
         os.mkdir(CALIPER_TMP_DIR)
     CALIPER_REPORT_HOME = CALIPER_TMP_DIR
+    BENCHS_DIR = os.path.join(os.environ['HOME'], '.caliper', 'benchmarks')
 
 BUILD_FILE = 'build.sh'
-BENCHS_DIR = os.path.join(CALIPER_DIR, 'benchmarks')
 SOURCE_BUILD_FILE = os.path.join(CALIPER_DIR, 'server', 'build', 'build.sh')
 TMP_DIR = os.path.join('/tmp', 'caliper.tmp')
 GEN_DIR = os.path.join(CALIPER_REPORT_HOME, 'binary')

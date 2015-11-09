@@ -13,8 +13,8 @@ check_sum()
         echo "Invalidate file!"
         checksum_result=1
         exit 1
-    fi   
-    
+    fi
+
     md5_value=$(cat $md5_file)
     check_value=$(md5sum $checksum_source | awk '{print $1}')
     if [ x"$md5_value" != x"$check_value" ]; then
@@ -31,7 +31,7 @@ download_file()
 {
     # we have less than 3 arguments. Print the help text:
     if [ $# -lt 3 ] ; then
-        echo 
+        echo
         'download.sh  -- download and check if the package downloads correctly
         USAGE: download.sh "location" "url_head" "packages"
         EXAMPLE: download pack from url_head and put it in Location:
@@ -53,24 +53,24 @@ download_file()
 
     # always update the md5sum file
     wget -c $download_sum_file 2>/dev/null
-    if [ $? -ne 0 ]; then 
+    if [ $? -ne 0 ]; then
         echo "Download the $download_sum_file failed"
         exit 1
     fi
 
-    if [ ! -f $file ]; then 
+    if [ ! -f $file ]; then
         wget -c $download_file 2>/dev/null
-        if [ $? -ne 0 ]; then 
+        if [ $? -ne 0 ]; then
             echo "Download the $download_file failed"
             exit 1
         fi
     fi
 
     check_sum $file $sum_file
-    if [ $checksum_result -ne 0 ]; then 
+    if [ $checksum_result -ne 0 ]; then
         echo "Download the $file ..."
         wget -c $download_file 2>/dev/null
-        if [ $? -ne 0 ]; then 
+        if [ $? -ne 0 ]; then
             rm -rf $file $sum_file 2>/dev/null
             echo "Download $file failed!"
             exit 1
@@ -83,7 +83,7 @@ build_prepare() {
     
     OBJPATH=$OBJDIR/$ARCH
     BENCH_PATH="benchmarks/"
-    
+
     caliper_exists=$(which caliper)
     if [ "$caliper_exists"x != ""x ]; then
         INSTALL_DIR="/home/$(whoami)/caliper_workspace/$OBJPATH"
@@ -95,7 +95,7 @@ build_prepare() {
 
     OBJPATH=$TMP_DIR/caliper_build/$OBJPATH
     BENCH_PATH=$TMP_DIR/caliper_build/$BENCH_PATH
-    
+
     if [ ! -d $OBJPATH/bin ]; then
          mkdir -p $OBJPATH/bin
     fi
@@ -103,7 +103,7 @@ build_prepare() {
          mkdir -p $INSTALL_DIR
          mkdir -p $INSTALL_DIR/bin
     fi
-    
+
 }
 
 build_cleanup()
@@ -150,4 +150,3 @@ MYPWD=$2
 build_prepare
 
 start=$(date +%s)
-
