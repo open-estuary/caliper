@@ -60,11 +60,6 @@ def parser_caliper(host):
     (file_lists, json_files) = get_targets_data(
                                 caliper_path.folder_ope.results_dir)
 
-    if caliper_path.judge_caliper_installed():
-        if not os.path.exists(caliper_path.FRONT_END_DIR):
-            shutil.copytree(caliper_path.FRONT_TMP_DIR,
-                                caliper_path.FRONT_END_DIR)
-
     if not os.path.exists(caliper_path.HTML_DATA_DIR):
         os.makedirs(caliper_path.HTML_DATA_DIR)
 

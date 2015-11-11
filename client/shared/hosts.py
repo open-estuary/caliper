@@ -55,7 +55,7 @@ class Host(object):
                             "machine %s' % (free_space_gb, gb, path,
                             self.hostname))
 
-    def run(self, command, timeout=3600, ignore_status=False,
+    def run(self, command, timeout=7200, ignore_status=False,
             stdout_tee=TEE_TO_LOGS, stderr_tee=TEE_TO_LOGS,
             stdin=None, args=()):
         """

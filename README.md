@@ -2,7 +2,28 @@
 Specific to 1.01
 
 Caliper test suite mainly includes performance test cases which can be used to test the performance of a Linux machine.
-The test suite supports x86_64, arm_32 and arm_64. 
+The test suite supports x86_64, arm_32 and arm_64.
+
+Supported Open Source Benchmarks:
+    openssl: (https://www.openssl.org/)
+    coremark: EEMBC (https://www.eembc.org/) 
+    linpack: (http://www.netlib.org/linpack/)
+    nbench: (http://www.tux.org/~mayer/linux/bmark.html)
+    lmbench: (http://www.bitmover.com/lmbench/)
+    cachebench: (http://icl.cs.utk.edu/projects/llcbench/cachebench.html)
+    iozone: (http://www.iozone.org/)
+    rttest: (https://rt.wiki.kernel.org/index.php/Rt-tests)
+    netperf: (http://www.netperf.org/netperf/)
+    dhrystone: (http://fossies.org/linux/privat/old/dhrystone-2.1.tar.gz/)
+    memtester: (http://pyropus.ca/software/memtester/)
+    ltp: (http://ltp.sourceforge.net/)
+    ebizzy: (http://sourceforge.net/projects/ebizzy/)
+    fio: GPL v2 (https://github.com/axboe/fio/blob/master/COPYING)
+    Hibench: (https://github.com/intel-hadoop/HiBench)
+    iperf: BSD license(http://iperf.sourceforge.net/)
+    netperf: HP license (http://www.calculate-linux.org/packages/licenses/netperf)
+    scimark2: public domain (http://math.nist.gov/scimark2/credits.html)
+    sysbench_oltp: GPL v2 (https://github.com/akopytov/sysbench)
 
 Steps to run Caliper
 
@@ -11,7 +32,7 @@ Steps to run Caliper
     CentOS system or Ubuntu system on your PC or server platform.
 
 2. Toolchain installation
-    To build arm/android target binary, it requires arm toolchain deployment, for arm system we use compiler with hard-float ABI. 
+    To build arm/android target binary, it requires arm toolchain deployment, for arm system we use compiler with hard-float ABI.
 
     Here is website to download ARM toolchains:
         https://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.bz2 and https://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.bz2.
@@ -90,7 +111,7 @@ will be stopped or not. The default value of the sections’ key are True.
     configured in the email_config.cfg . The default value is False.
 
     '-f': if you have installed caliper, the directory which is appointed to
-    will be located in the ~/caliper_workspace; if not, the folder will be
+    will be located in the ~/caliper_output; if not, the folder will be
     located in the root directory of caliper.
 
 
@@ -121,9 +142,3 @@ will be stopped or not. The default value of the sections’ key are True.
 
 1. Execution of multiple targets from same host is not supported.
 2. configuring host as target as well is not supported.
-
-
-
-
- 
-

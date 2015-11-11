@@ -32,7 +32,7 @@ if not judge_caliper_installed():
     # Output folders are created with in the local directory structure.
     # This will allow multi instance of caliper to execute.
     # fixme CALIPER_REPORT_HOME ??? replace it with CALIPER_REPORT_HOME
-    CALIPER_REPORT_HOME = os.path.join(CALIPER_DIR, 'caliper_workspace')
+    CALIPER_REPORT_HOME = os.path.join(CALIPER_DIR, 'caliper_output')
     if not os.path.exists(CALIPER_REPORT_HOME):
         os.mkdir(CALIPER_REPORT_HOME)
     BENCHS_DIR = os.path.join(CALIPER_DIR, 'benchmarks')
@@ -40,7 +40,7 @@ else:
     # This means that the caliper is already installed. Only instance can
     # execute as the updatation of the results will happen under
     # ~/home/user/caliper_workspace
-    CALIPER_TMP_DIR = os.path.join(os.environ['HOME'], 'caliper_workspace')
+    CALIPER_TMP_DIR = os.path.join(os.environ['HOME'], 'caliper_output')
     if not os.path.exists(CALIPER_TMP_DIR):
         os.mkdir(CALIPER_TMP_DIR)
     CALIPER_REPORT_HOME = CALIPER_TMP_DIR

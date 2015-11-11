@@ -1,5 +1,5 @@
 #!/bin/bash 
-
+set -x
 download_dir=$HOME/.caliper
 if [ ! -f $download_dir ]; then
     mkdir -p $download_dir
@@ -86,22 +86,25 @@ build_prepare() {
 
     caliper_exists=$(which caliper)
     if [ "$caliper_exists"x != ""x ]; then
-        INSTALL_DIR="/home/$(whoami)/caliper_workspace/$OBJPATH"
+        INSTALL_DIR="/home/$(whoami)/caliper_output/$OBJPATH"
+        BENCH_PATH=$TMP_DIR/$BENCH_PATH
         CURRENT_PATH=""
     else
-        INSTALL_DIR="$MYPWD/caliper_workspace/$OBJPATH"
+        INSTALL_DIR="$MYPWD/caliper_output/$OBJPATH"
         CURRENT_PATH=$MYPWD
     fi
 
-    OBJPATH=$TMP_DIR/caliper_build/$OBJPATH
-    BENCH_PATH=$TMP_DIR/caliper_build/$BENCH_PATH
+    OBJPATH=$TMP_DIR/$OBJPATH
+    #BENCH_PATH=$TMP_DIR/$BENCH_PATH
 
-    if [ ! -d $OBJPATH/bin ]; then
-         mkdir -p $OBJPATH/bin
-    fi
+    #if [ ! -d $OBJPATH/bin ]; then
+    #    mkdir -p $OBJPATH/bin
+    #fi
     if [ ! -d $INSTALL_DIR ]; then
-         mkdir -p $INSTALL_DIR
-         mkdir -p $INSTALL_DIR/bin
+        mkdir -p $INSTALL_DIR
+    fi
+    if [ ! -d $INSTALL_DIR/bin ]; then
+        mkdir -p $INSTALL_DIR/bin
     fi
 
 }
@@ -146,6 +149,7 @@ if [ $ARCH = "android" ]; then
 fi
 
 MYPWD=$2
+CALIPER_TMP=$TMP_DIR
 
 build_prepare
 

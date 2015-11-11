@@ -223,7 +223,7 @@ def build_each_tool(dirname, section_name, des_build_file, arch='x86_86'):
     """
 
     os.chmod(des_build_file, stat.S_IRWXO + stat.S_IRWXU + stat.S_IRWXG)
-    logging.info("=========================================================")
+    logging.info("=" * 55)
     logging.info("Building %s" % section_name)
 
     log_name = "%s.log" % section_name
@@ -253,13 +253,11 @@ def build_each_tool(dirname, section_name, des_build_file, arch='x86_86'):
                                   FOLDER.caliper_log_file), shell=True)
         if result:
             logging.info("Building Failed")
-            logging.info("==============================================="
-                    "=====")
+            logging.info("=" * 55)
             record_log(log_file, arch, 0)
         else:
             logging.info("Building Successful")
-            logging.info("==============================================="
-                    "=====")
+            logging.info("=" * 55)
             record_log(log_file, arch, 1)
     server_config = server_utils.get_server_cfg_path(
                                     os.path.join(dirname, section_name))
@@ -267,9 +265,9 @@ def build_each_tool(dirname, section_name, des_build_file, arch='x86_86'):
     if (server_config != ''):
         local_arch = server_utils.get_local_machine_arch()
         if (local_arch != arch):
-            result = subprocess.call("%s %s %s> %s 2>&1"
+            result = subprocess.call("%s %s %s %s> %s 2>&1"
                                     % (des_build_file, local_arch,
-                                        CALIPER_DIR, log_file),
+                                        CALIPER_DIR, TMP_DIR, log_file),
                                         shell=True)
             end_time = datetime.datetime.now()
             subprocess.call("echo '$$ %s BUILD STOP: %s' >> %s"
@@ -310,17 +308,33 @@ def record_log(log_file, arch, succeed_flag):
         raise e
 
 
+def create_folder(folder, mode=0755):
+    if os.path.exists(folder):
+        shutil.rmtree(folder)
+    try:
+        os.mkdir(folder, mode)
+    except OSError:
+        os.makedirs(folder, mode)
+
+
 def build_for_target(target):
     # Create the temperory build folders
-    if not os.path.exists(os.path.join(TMP_DIR, 'caliper_build')):
-        os.makedirs(os.path.join(TMP_DIR, 'caliper_build'), 0755)
+    benchs_dir = os.path.join(TMP_DIR, 'benchmarks')
+    if not os.path.exists(benchs_dir):
+        try:
+            os.makedirs(benchs_dir, 0755)
+        except Exception:
+            os.mkdir(benchs_dir, 0755)
 
     # Improvement Point: Right now all the benchmarks are copied, we can only
     # copy the selected benchmarks to save the time.
-    benchs_dir = os.path.join(TMP_DIR, 'caliper_build', 'benchmarks')
     if os.path.exists(benchs_dir):
         shutil.rmtree(benchs_dir)
     shutil.copytree(caliper_path.BENCHS_DIR, benchs_dir)
+
+    if not os.path.exists(caliper_path.FRONT_END_DIR):
+        shutil.copytree(caliper_path.FRONT_TMP_DIR,
+                caliper_path.FRONT_END_DIR)
 
     if os.path.exists(FOLDER.caliper_log_file):
         os.remove(FOLDER.caliper_log_file)
@@ -328,25 +342,11 @@ def build_for_target(target):
     if os.path.exists(FOLDER.summary_file):
         os.remove(FOLDER.summary_file)
 
-    if os.path.exists(FOLDER.build_dir):
-        shutil.rmtree(FOLDER.build_dir)
-    os.mkdir(FOLDER.build_dir, 0755)
-
-    if os.path.exists(FOLDER.exec_dir):
-        shutil.rmtree(FOLDER.exec_dir)
-    os.mkdir(FOLDER.exec_dir, 0755)
-
-    if os.path.exists(FOLDER.results_dir):
-        shutil.rmtree(FOLDER.results_dir)
-    os.mkdir(FOLDER.results_dir, 0755)
-
-    if os.path.exists(FOLDER.yaml_dir):
-        shutil.rmtree(FOLDER.yaml_dir)
-    os.mkdir(FOLDER.yaml_dir, 0755)
-
-    if os.path.exists(FOLDER.html_dir):
-        shutil.rmtree(FOLDER.html_dir)
-    os.mkdir(FOLDER.html_dir, 0755)
+    create_folder(FOLDER.build_dir)
+    create_folder(FOLDER.exec_dir)
+    create_folder(FOLDER.results_dir)
+    create_folder(FOLDER.yaml_dir)
+    create_folder(FOLDER.html_dir)
 
     if server_utils.get_target_ip(target) in server_utils.get_local_ip():
         return build_for_local()
@@ -360,9 +360,7 @@ def build_for_target(target):
     # "get_host_arch" looks to be confusing :(
     target_arch = server_utils.get_host_arch(target)
     target_arch_dir = os.path.join(GEN_DIR, target_arch)
-    if os.path.exists(target_arch_dir):
-        shutil.rmtree(target_arch_dir)
-    os.makedirs(target_arch_dir, 0755)
+    create_folder(target_arch_dir, 0755)
 
     # Why should we check and remove local architecture folder???
     host_arch_dir = os.path.join(GEN_DIR, host_arch)
@@ -387,6 +385,8 @@ def build_for_target(target):
 
     # Copy generated binaries to target machine
     result = copy_gen_to_target(target, target_arch)
+    if os.path.exists(TMP_DIR):
+        shutil.rmtree(TMP_DIR)
     return result
 
 

@@ -4,7 +4,7 @@
 build_fio()
 {
     set -e
-   SrcPath=${BENCH_PATH}"/432.fio"
+   SrcPath=${BENCH_PATH}"432.fio"
 
    if [ $ARCH = "x86_64" -o $ARCH = "x86_32" ]
       then
