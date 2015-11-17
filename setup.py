@@ -63,9 +63,7 @@ def run():
             maintainer="hisilicon HTSAT",
             install_requires=[
                 'pyYAML',
-                'django >= 1.6.1',
-                'matplotlib',
-                'numpy >= 1.8.2', ]
+                'django >= 1.6.1', ]
             )
     if os.path.exists('caliper.egg-info'):
         shutil.rmtree('caliper.egg-info')
