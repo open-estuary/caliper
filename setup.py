@@ -6,6 +6,7 @@
 #    Desc      :
 
 import os
+import stat
 import shutil
 
 try:
@@ -42,14 +43,20 @@ def get_package_dirs():
 
 
 def run():
-    caliper_tmp_dir = os.path.join(os.environ['HOME'], ".caliper", 'benchmarks')
+    caliper_data_dir = os.path.join(os.environ['HOME'], '.caliper')
+    caliper_tmp_dir = os.path.join(caliper_data_dir, 'benchmarks')
     if os.path.exists(caliper_tmp_dir):
         shutil.rmtree(caliper_tmp_dir)
+
     shutil.copytree(
             os.path.join(os.getcwd(), 'benchmarks'),
             caliper_tmp_dir
             )
-
+    shutil.copystat(
+            os.path.join(os.getcwd(), 'benchmarks'),
+            caliper_tmp_dir
+    )
+    os.chmod(caliper_data_dir, stat.S_IRWXO + stat.S_IRWXU)
     setup(
             name='caliper',
             description='A test suite for automatically running on different\
