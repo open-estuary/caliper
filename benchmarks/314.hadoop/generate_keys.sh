@@ -11,7 +11,7 @@ spawn ssh-keygen
 expect "*id_rsa):"
 send "\r"
 expect "*passphrase):"
-send "ENTER\r"
+send "\r"
 expect "*again:"
-send "ENTER\r"
+send "\r"
 expect eof

@@ -17,6 +17,7 @@ HIBENCH_OUTPUT=$HIBENCH_DIR/report
 HIBENCH_BENCH_LIST=$HIBENCH_CONF/benchmarks.lst
 HIBENCH_LAN_API=$HIBENCH_CONF/languages.lst
 
+sudo apt-get install expect -y
 ##### set the ssh no-passwd login #####
 if [ ! -f ~/.ssh/*.pub ]; then
     ./generate_keys.sh
@@ -74,10 +75,21 @@ pushd $HADOOP_DIR
   pushd $HADOOP_CONF
     echo "export JAVA_HOME=$java_loc" >> $HADOOP_CONF/hadoop-env.sh
   popd
-  $HADOOP_SERVICE/stop-dfs.sh
+  $HADOOP_SERVICE/stop-all.sh
   rm -fr $hdfs_tmp
   $HADOOP_BIN/hdfs namenode -format
-  $HADOOP_SERVICE/start-dfs.sh
+/usr/bin/expect  << EOF
+  spawn $HADOOP_SERVICE/start-dfs.sh
+   expect {
+    "connecting (yes/no)?"
+    {
+      send "yes\r"
+      expect "connecting (yes/no)?"
+      send "yes\r"
+    }
+  }
+  expect eof
+EOF
   hdfs_jps=$(jps)
   if [ "$(echo $hdfs_jps | grep -w 'SecondaryNameNode')"x != ""x ]; then
     if [ "$(echo $hdfs_jps | grep -w 'DataNode')"x != ""x ]; then
@@ -96,7 +108,18 @@ pushd $HADOOP_DIR
     exit
   fi
 
-  $HADOOP_SERVICE/start-yarn.sh
+/usr/bin/expect  << EOF
+  spawn $HADOOP_SERVICE/start-yarn.sh
+  expect {
+    "connecting (yes/no)?"
+    {
+      send "yes\r"
+      expect "connecting (yes/no)?"
+      send "yes\r"
+    }
+  }
+  expect eof
+EOF
   yarn_jps=$(jps)
   yarn_suc=$(echo $yarn_jps | grep -w 'NodeManager')
   yarn_suc1=$(echo $yarn_jps | grep -w 'ResourceManager')

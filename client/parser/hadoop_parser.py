@@ -25,7 +25,6 @@ def hadoop_parser(content, outfp):
                 hadoop_dic[key] = sum_value / line_cnt
             else:
                 hadoop_dic[key] = 0
-    print hadoop_dic
     return hadoop_dic
 
 if __name__ == "__main__":

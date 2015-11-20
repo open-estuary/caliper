@@ -3,25 +3,25 @@ sysbench_dir=sysbench-0.5
 cpu_num=$(grep 'processor' /proc/cpuinfo |sort |uniq |wc -l)
 
 db_driver=mysql
-: ${mysql_table_engine:=$1}
-: ${mysql_table_engine:=innodb}
-: ${oltp_table_size:=$2}
-: ${oltp_table_size:=100000}
-: ${oltp_tables_count:=$3}
-: ${oltp_tables_count:=8}
-#: ${num_threads:=$4}
-: ${num_threads:=$((cpu_num*2))}
-: ${mysql_host:=$5}
-: ${mysql_host:=localhost}
-: ${mysql_port:=$6}
-: ${mysql_port:=33306}
-: ${mysql_user:=$7}
+: ${mysql_user:=$1}
 : ${mysql_user:=root}
-: ${mysql_password:=$8}
+: ${mysql_password:=$2}
 : ${mysql_password:=123456}
+: ${mysql_table_engine:=$3}
+: ${mysql_table_engine:=innodb}
+: ${oltp_table_size:=$4}
+: ${oltp_table_size:=100000}
+: ${oltp_tables_count:=$5}
+: ${oltp_tables_count:=8}
+#: ${num_threads:=$6}
+: ${num_threads:=$((cpu_num*2))}
+: ${mysql_host:=$7}
+: ${mysql_host:=localhost}
+: ${mysql_port:=$8}
+: ${mysql_port:=33306}
 : ${db_name:=$9}
 : ${db_name:=sbtest}
-: ${max_requests:=$10}
+#: ${max_requests:=$10}
 : ${max_requests:=100000}
 test_name="$PWD/sysbench-0.5/sysbench/tests/db/oltp.lua"
 echo "max_requests are $max_requests"
@@ -83,8 +83,7 @@ export PATH=$PATH:/usr/local
 pushd $sysbench_dir
   prefix=/usr/local/sysbench
   ./autogen.sh
-  ./configure --prefix=$prefix --with-mysql-includes=$mysql_include
-  --with0mysql-libs=$mysql_lib
+  ./configure --prefix=$prefix --with-mysql-includes=$mysql_include --with-mysql-libs=$mysql_lib
   make -s 
   make install
 popd
