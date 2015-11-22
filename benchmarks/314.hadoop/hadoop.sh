@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#set -x
+set -x
 
 user=$(echo $USER)
 hdfs_tmp=/tmp/hadoop-$user
@@ -9,6 +9,8 @@ HADOOP_DIR=$PWD/hadoop
 HADOOP_CONF=$HADOOP_DIR/etc/hadoop
 HADOOP_BIN=$HADOOP_DIR/bin
 HADOOP_SERVICE=$HADOOP_DIR/sbin
+
+SPARK_DIR=$PWD/spark
 
 HIBENCH_DIR=$PWD/hibench
 HIBENCH_CONF=$HIBENCH_DIR/conf
@@ -75,7 +77,18 @@ pushd $HADOOP_DIR
   pushd $HADOOP_CONF
     echo "export JAVA_HOME=$java_loc" >> $HADOOP_CONF/hadoop-env.sh
   popd
-  $HADOOP_SERVICE/stop-all.sh
+/usr/bin/expect  << EOF
+  spawn $HADOOP_SERVICE/stop-all.sh
+  expect {
+    "connecting (yes/no)?"
+    {
+      send "yes\r"
+      expect "connecting (yes/no)?"
+      send "yes\r"
+    }
+  }
+  expect eof
+EOF
   rm -fr $hdfs_tmp
   $HADOOP_BIN/hdfs namenode -format
 /usr/bin/expect  << EOF
@@ -147,11 +160,15 @@ pushd $HIBENCH_DIR
         hdfs_url="\/URL\/TO\/YOUR\/HDFS"
         hadoop_str="\/PATH\/TO\/YOUR\/HADOOP\/ROOT"
         hdfs_server="hdfs\:\/\/127\.0\.0\.1\:9000"
+        spark_str="\/PATH\/TO\/YOUR\/SPARK\/ROOT"
 	hadoop_dir=${HADOOP_DIR//\//\\\/}
+    spark_dir=${SPARK_DIR//\//\\\/}
 echo $hadoop_dir
         sed -i "s/$hadoop_str/$hadoop_dir/g"  $USER_DEFINED_FILE
+        sed -i "s/$spark_str/$spark_dir/g" $USER_DEFINED_FILE
         sed -i "s/$hdfs_url/$hdfs_server/g" $USER_DEFINED_FILE
         sed -i 's/^hibench.spark.master/#hibench.spark.master/g' $USER_DEFINED_FILE
+        sed -i 's/#hibench.spark.version/hibench.spark.version/g' $USER_DEFINED_FILE
         sed -i 's/ 4 / 2 /g' $USER_DEFINED_FILE
         sed -i '52,67s/12/2/g' $USER_DEFINED_FILE
         sed -i '52,67s/6/1/g'  $USER_DEFINED_FILE
