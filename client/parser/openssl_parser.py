@@ -118,7 +118,7 @@ def get_list(line, outfp, flag, list_tables):
     for label in list_tables:
         if re.search(label, line):
             list_label = re.findall('(\d+\.\d+)', line)
-            dic[flag][label.split('^')[-1]] = list_label
+            dic[flag][label.split('^')[-1]] = float(list_label)/100
             # outfp.write(flag+' ' + label + ' ' + str(list_label))
             break
 

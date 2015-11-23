@@ -19,6 +19,7 @@ def dhry1_parser(content, outfp):
         fields = line.split()
         score = fields[-1]
         outfp.write(str(score) + '\n')
+        break
     return score
 
 if __name__ == "__main__":

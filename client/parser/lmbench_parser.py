@@ -53,8 +53,8 @@ ipc_local_label = ['lat_pipe', 'lat_unix', 'lat_udp_local',
                     'lat_rpc_udp_local', 'lat_tcp_local',
                     'lat_rpc_tcp_local', 'lat_tcp_connect_local']
 ipc_local_dic = {'lat_pipe': 'Pipe', 'lat_unix': 'AF Unix',
-                'lat_udp_local': 'UDP', 'lat_rpc_udp_local': 'RPC/UDP',
-                'lat_tcp_local': 'TCP', 'lat_rpc_tcp_local': 'RPC/TCP',
+                'lat_udp_local': 'UDP',# 'lat_rpc_udp_local': 'RPC/UDP',
+                'lat_tcp_local': 'TCP',# 'lat_rpc_tcp_local': 'RPC/TCP',
                 'lat_tcp_connect_local': 'TCP con'}
 
 ipc_remote_label = ['lat_udp_remote', 'lat_rpc_udp_remote', 'lat_tcp_remote',
@@ -225,16 +225,16 @@ def lmbench_lat_parser(content, outfp):
             else:
                 if re.search('TCP latency using', line):
                     dic_remote_lat[ipc_remote_dic['lat_tcp_remote']] = num
-            if re.search('RPC.udp latency using localhost:', line):
-                dic_local_lat[ipc_local_dic['lat_rpc_udp_local']] = num
-            else:
-                if re.search('RPC.udp latency using', line):
-                    dic_remote_lat[ipc_remote_dic['lat_rpc_udp_remote']] = num
-            if re.search('RPC.tcp latency using localhost:', line):
-                dic_local_lat[ipc_local_dic['lat_rpc_tcp_local']] = num
-            else:
-                if re.search('RPC.tcp latency using', line):
-                    dic_remote_lat[ipc_remote_dic['lat_rpc_tcp_remote']] = num
+            #if re.search('RPC.udp latency using localhost:', line):
+            #    dic_local_lat[ipc_local_dic['lat_rpc_udp_local']] = num
+            #else:
+            #    if re.search('RPC.udp latency using', line):
+            #        dic_remote_lat[ipc_remote_dic['lat_rpc_udp_remote']] = num
+            #if re.search('RPC.tcp latency using localhost:', line):
+            #    dic_local_lat[ipc_local_dic['lat_rpc_tcp_local']] = num
+            #else:
+            #    if re.search('RPC.tcp latency using', line):
+            #        dic_remote_lat[ipc_remote_dic['lat_rpc_tcp_remote']] = num
             if re.search('TCP.IP connection cost to localhost:', line):
                 dic_local_lat[ipc_local_dic['lat_tcp_connect_local']] = num
             else:
