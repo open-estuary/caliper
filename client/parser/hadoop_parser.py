@@ -26,7 +26,7 @@ def hadoop_parser(content, outfp):
                 hadoop_dic[key] = sum_value / line_cnt
             else:
                 hadoop_dic[key] = 0
-    outfp.write(yaml.dump(haddop_dic, default_flow_style=False))
+    outfp.write(yaml.dump(hadoop_dic, default_flow_style=False))
     return hadoop_dic
 
 if __name__ == "__main__":
