@@ -287,7 +287,10 @@ def lmbench_lat_parser(content, outfp):
             if re.search('size=16', line):
                 for subline in orig_block.splitlines():
                     if subline:
-                        ctx_value = subline.split()[1]
+                        try:
+                            ctx_value = subline.split()[1]
+                        except IndexError:
+                            continue
                     if re.search('^2 ', subline):
                         dic_context[ctx_label_dic['lat_ctx16_2']] = ctx_value
                     elif re.search('^8 ', subline):
@@ -553,7 +556,7 @@ if __name__ == "__main__":
     # network_latency_parser(content, outfp)
     # memory_speed_parser(content, outfp)
     pdb.set_trace()
-    # lmbench_lat_parser(content, outfp)
-    lmbench_bandwidth_parser(content, outfp)
+    lmbench_lat_parser(content, outfp)
+    #lmbench_bandwidth_parser(content, outfp)
     outfp.close()
     infp.close()
