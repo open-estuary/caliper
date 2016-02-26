@@ -26,15 +26,11 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 
 static void setup(void);
-static void cleanup(void);
 
 char *TCID = "ustat02";
-
-static int exp_enos[] = { EINVAL, EFAULT, 0 };
 
 static dev_t invalid_dev = -1;
 static dev_t root_dev;
@@ -59,10 +55,8 @@ int main(int ac, char **av)
 {
 
 	int lc, i;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -73,7 +67,7 @@ int main(int ac, char **av)
 			TEST(ustat(*tc[i].dev, tc[i].buf));
 
 			if (TEST_RETURN == -1 && TEST_ERRNO == ENOSYS)
-				tst_brkm(TCONF, cleanup, "ustat not supported");
+				tst_brkm(TCONF, NULL, "ustat not supported");
 
 			if ((TEST_RETURN == -1)
 			    && (TEST_ERRNO == tc[i].exp_errno)) {
@@ -88,12 +82,9 @@ int main(int ac, char **av)
 					 ": %s",
 					 tc[i].exp_errno, tc[i].exp_errval);
 			}
-
-			TEST_ERROR_LOG(TEST_ERRNO);
 		}
 	}
 
-	cleanup();
 	tst_exit();
 }
 
@@ -101,19 +92,12 @@ static void setup(void)
 {
 	struct stat buf;
 
-	tst_sig(NOFORK, DEF_HANDLER, cleanup);
-
-	TEST_EXP_ENOS(exp_enos);
+	tst_sig(NOFORK, DEF_HANDLER, NULL);
 
 	TEST_PAUSE;
 
 	/* Find a valid device number */
-	SAFE_STAT(cleanup, "/", &buf);
+	SAFE_STAT(NULL, "/", &buf);
 
 	root_dev = buf.st_dev;
-}
-
-static void cleanup(void)
-{
-	TEST_CLEANUP;
 }

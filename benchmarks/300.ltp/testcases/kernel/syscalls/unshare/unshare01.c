@@ -92,7 +92,6 @@
 #include <stdio.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "config.h"
 
 char *TCID = "unshare01";
@@ -122,7 +121,6 @@ int TST_TOTAL = 1;
 void cleanup(void)
 {
 
-	TEST_CLEANUP;
 	tst_rmdir();
 }
 
@@ -146,6 +144,8 @@ void cleanup(void)
 /******************************************************************************/
 void setup(void)
 {
+	tst_require_root();
+
 	/* Capture signals if any */
 	/* Create temporary directories */
 	TEST_PAUSE;
@@ -157,10 +157,8 @@ int main(int ac, char **av)
 	pid_t pid1;
 	int lc;
 	int rval;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 

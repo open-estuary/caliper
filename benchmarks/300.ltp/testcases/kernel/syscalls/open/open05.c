@@ -33,20 +33,17 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include "test.h"
-#include "usctest.h"
 
-static char user1name[] = "nobody";
+#include "test.h"
+#include "safe_macros.h"
 
 char *TCID = "open05";
 int TST_TOTAL = 1;
 
-extern struct passwd *my_getpwnam(char *);
 static char fname[20];
-static struct passwd *nobody;
 static int fd;
 
-static int exp_enos[] = { EACCES, 0 };
+static uid_t nobody_uid;
 
 static void cleanup(void);
 static void setup(void);
@@ -54,17 +51,12 @@ static void setup(void);
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int e_code, status, retval = 0;
 	pid_t pid;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
-
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		/* reset tst_count in case we are looping */
@@ -75,7 +67,7 @@ int main(int ac, char **av)
 			tst_brkm(TBROK, cleanup, "fork() failed");
 
 		if (pid == 0) {
-			if (seteuid(nobody->pw_uid) == -1) {
+			if (seteuid(nobody_uid) == -1) {
 				tst_resm(TWARN, "seteuid() failed, errno: %d",
 					 errno);
 			}
@@ -86,8 +78,6 @@ int main(int ac, char **av)
 				tst_resm(TFAIL, "open succeeded unexpectedly");
 				continue;
 			}
-
-			TEST_ERROR_LOG(TEST_ERRNO);
 
 			if (TEST_ERRNO != EACCES) {
 				retval = 1;
@@ -123,7 +113,12 @@ int main(int ac, char **av)
 
 static void setup(void)
 {
-	tst_require_root(NULL);
+	struct passwd *pw;
+
+	tst_require_root();
+
+	pw = SAFE_GETPWNAM(NULL, "nobody");
+	nobody_uid = pw->pw_uid;
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
@@ -134,8 +129,6 @@ static void setup(void)
 
 	sprintf(fname, "file.%d", getpid());
 
-	nobody = my_getpwnam(user1name);
-
 	fd = open(fname, O_RDWR | O_CREAT, 0700);
 	if (fd == -1)
 		tst_brkm(TBROK, cleanup, "open() failed, errno: %d", errno);
@@ -143,8 +136,6 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	unlink(fname);
 
 	/* delete the test directory created in setup() */

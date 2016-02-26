@@ -62,7 +62,6 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include "test.h"
-#include "usctest.h"
 #include "config.h"
 
 #define SIZE (5*1024*1024)
@@ -89,11 +88,8 @@ static option_t options[] = {
 int main(int argc, char *argv[])
 {
 	int lc;
-	const char *msg;
 
-	msg = parse_opts(argc, argv, options, help);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, options, help);
 
 	if (opt_ksm) {
 		if (access(PATH_KSM, F_OK) == -1)
@@ -190,12 +186,11 @@ void mmapzero(void)
 
 void cleanup(void)
 {
-	TEST_CLEANUP;
 }
 
 void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 	TEST_PAUSE;

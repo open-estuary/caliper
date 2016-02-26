@@ -55,7 +55,6 @@
  */
 
 #include "test.h"
-#include "usctest.h"
 
 #include <errno.h>
 #include <sys/personality.h>
@@ -77,11 +76,9 @@ int pers[] = { PER_LINUX, PER_LINUX_32BIT, PER_SVR4, PER_SVR3, PER_SCOSVR3,
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int i, start_pers;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();		/* global setup */
 
@@ -157,9 +154,4 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 }

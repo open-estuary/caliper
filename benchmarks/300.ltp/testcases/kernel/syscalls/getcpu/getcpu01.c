@@ -58,7 +58,6 @@
 #include <sched.h>
 #include <errno.h>
 #include "test.h"
-#include "usctest.h"
 #include <sys/types.h>
 #include <dirent.h>
 
@@ -94,7 +93,6 @@ int TST_TOTAL = 1;
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	unsigned int cpu_id, node_id = 0;
 	unsigned int cpu_set;
 #ifdef __i386__
@@ -111,8 +109,7 @@ int main(int ac, char **av)
 		exit(0);
 	}
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();		/* global setup */
 
@@ -308,10 +305,5 @@ unsigned int get_nodeid(unsigned int cpu_id)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }

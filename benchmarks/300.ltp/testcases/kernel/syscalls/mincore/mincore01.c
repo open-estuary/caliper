@@ -43,7 +43,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 
 static int PAGESIZE;
@@ -84,11 +83,8 @@ int TST_TOTAL = ARRAY_SIZE(TC);
 int main(int ac, char **av)
 {
 	int i, lc;
-	const char *msg;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, cleanup, "error parsing options: %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -219,8 +215,6 @@ static void mincore_verify(struct test_case_t *tc)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	free(global_vec);
 
 	if (munmap(global_pointer, global_len) == -1)

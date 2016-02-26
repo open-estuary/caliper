@@ -76,7 +76,6 @@
 #include <signal.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #define FILE_MODE	S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
 #define TESTFILE	"testfile"
@@ -93,15 +92,12 @@ int main(int ac, char **av)
 {
 	struct stat stat_buf;
 	int lc;
-	const char *msg;
 	int i;
 	int mode;
 
 	TST_TOTAL = sizeof(modes) / sizeof(int);
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -163,7 +159,5 @@ void setup(void)
 
 void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	tst_rmdir();
 }

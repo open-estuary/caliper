@@ -43,14 +43,18 @@
 
 #include "compiler.h"
 
+#include "usctest.h"
+
 #include "safe_file_ops.h"
 #include "tst_checkpoint.h"
 #include "tst_process_state.h"
 #include "tst_resource.h"
 #include "tst_res_flags.h"
+#include "tst_timer.h"
 
 /* virt types for tst_is_virt() */
 #define VIRT_XEN	1	/* xen dom0/domU */
+#define VIRT_KVM	2	/* only default virtual CPU */
 
 /*
  * Ensure that NUMSIGS is defined.
@@ -116,15 +120,18 @@ pid_t tst_vfork(void);
 extern int Forker_pids[];
 extern int Forker_npids;
 
+typedef struct {
+	char *option;	/* Valid option string (one option only) like "a:"  */
+	int  *flag;	/* Pointer to location to set true if option given  */
+	char **arg;	/* Pointer to location to place argument, if needed */
+} option_t;
+
+/* lib/tst_parse_opts.c */
+void tst_parse_opts(int argc, char *argv[], const option_t *user_optarg,
+                    void (*user_help)(void));
+
 /* lib/tst_res.c */
 const char *strttype(int ttype);
-void tst_res_(const char *file, const int lineno, int ttype,
-	const char *fname, const char *arg_fmt, ...)
-	__attribute__ ((format (printf, 5, 6)));
-
-#define tst_res(ttype, fname, arg_fmt, ...) \
-	tst_res_(__FILE__, __LINE__, (ttype), (fname), \
-		 (arg_fmt), ##__VA_ARGS__)
 
 void tst_resm_(const char *file, const int lineno, int ttype,
 	const char *arg_fmt, ...)
@@ -140,13 +147,6 @@ void tst_resm_hexd_(const char *file, const int lineno, int ttype,
 	tst_resm_hexd_(__FILE__, __LINE__, (ttype), (buf), (size), \
 		       (arg_fmt), ##__VA_ARGS__)
 
-void tst_brk_(const char *file, const int lineno, int ttype,
-	const char *fname, void (*func)(void), const char *arg_fmt, ...)
-	__attribute__ ((format (printf, 6, 7)));
-#define tst_brk(ttype, fname, func, arg_fmt, ...) \
-	tst_brk_(__FILE__, __LINE__, (ttype), (fname), (func), \
-		 (arg_fmt), ##__VA_ARGS__)
-
 void tst_brkm_(const char *file, const int lineno, int ttype,
 	void (*func)(void), const char *arg_fmt, ...)
 	__attribute__ ((format (printf, 5, 6))) LTP_ATTRIBUTE_NORETURN;
@@ -154,7 +154,9 @@ void tst_brkm_(const char *file, const int lineno, int ttype,
 	tst_brkm_(__FILE__, __LINE__, (ttype), (func), \
 		  (arg_fmt), ##__VA_ARGS__)
 
-void tst_require_root(void (*func)(void));
+void tst_cat_file(const char *filename);
+
+void tst_require_root(void);
 int  tst_environ(void);
 void tst_exit(void) LTP_ATTRIBUTE_NORETURN;
 void tst_flush(void);
@@ -283,22 +285,30 @@ long tst_ncpus_max(void);
  * redirection is not needed.
  * @stderr_fd: file descriptor where to redirect stderr. Set -1 if
  * redirection is not needed.
+ * @pass_exit_val: if it's non-zero, this function will return the program
+ * exit code, otherwise it will call cleanup_fn() if the program
+ * exit code is not zero.
  */
-void tst_run_cmd_fds(void (cleanup_fn)(void),
+int tst_run_cmd_fds(void (cleanup_fn)(void),
 			const char *const argv[],
 			int stdout_fd,
-			int stderr_fd);
+			int stderr_fd,
+			int pass_exit_val);
 
 /* Executes tst_run_cmd_fds() and redirects its output to a file
  * @stdout_path: path where to redirect stdout. Set NULL if redirection is
  * not needed.
  * @stderr_path: path where to redirect stderr. Set NULL if redirection is
  * not needed.
+ * @pass_exit_val: if it's non-zero, this function will return the program
+ * exit code, otherwise it will call cleanup_fn() if the program
+ * exit code is not zero.
  */
-void tst_run_cmd(void (cleanup_fn)(void),
+int tst_run_cmd(void (cleanup_fn)(void),
 		const char *const argv[],
 		const char *stdout_path,
-		const char *stderr_path);
+		const char *stderr_path,
+		int pass_exit_val);
 
 /* Wrapper function for system(3), ignorcing SIGCLD signal.
  * @command: the command to be run.
@@ -345,6 +355,13 @@ const char *tst_acquire_device(void (cleanup_fn)(void));
  * @dev: device path returned by the tst_acquire_device()
  */
 void tst_release_device(void (cleanup_fn)(void), const char *dev);
+
+/* lib/tst_device.c
+ *
+ * Just like umount() but retries several times on failure.
+ * @path: Path to umount
+ */
+int tst_umount(const char *path);
 
 /* lib/tst_fill_file.c
  *

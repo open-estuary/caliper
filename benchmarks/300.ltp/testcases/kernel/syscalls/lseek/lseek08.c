@@ -77,7 +77,6 @@
 #include <signal.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #define TEMP_FILE	"tmp_file"
 #define FILE_MODE	S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
@@ -93,11 +92,9 @@ void cleanup();			/* cleanup function for the test */
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	char read_buf[1];	/* data read from temp. file */
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -195,11 +192,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	/* Close the temporary file created */
 	if (close(fildes) < 0) {

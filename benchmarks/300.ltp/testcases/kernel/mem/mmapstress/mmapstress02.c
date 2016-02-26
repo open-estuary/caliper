@@ -52,7 +52,6 @@ static char tmpname[] = "fileXXXXXX";
 static int fd;
 /*****  LTP Port        *****/
 #include "test.h"
-#include "usctest.h"
 #define FAILED 0
 #define PASSED 1
 
@@ -175,14 +174,14 @@ int main(int argc, char *argv[])
 }
 
 /*****  LTP Port        *****/
-void ok_exit()
+void ok_exit(void)
 {
 	tst_resm(TPASS, "Test passed\n");
 	tst_rmdir();
 	tst_exit();
 }
 
-int anyfail()
+int anyfail(void)
 {
 	tst_brkm(TFAIL, tst_rmdir, "Test failed");
 }

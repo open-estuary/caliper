@@ -45,7 +45,6 @@
 #include <sys/wait.h>
 #include <inttypes.h>
 #include "test.h"
-#include "usctest.h"
 
 #define STRINGSIZE	27
 #define STRING		"abcdefghijklmnopqrstuvwxyz\n"
@@ -125,11 +124,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified
-	 * print errno log if that option was specified
-	 */
-	TEST_CLEANUP;
 
 	tst_rmdir();
 
@@ -295,11 +289,8 @@ int main(int ac, char **av)
 	struct flock tl;
 
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 #ifdef UCLINUX
 	maybe_run_child(&do_child, "ddddd", &parent_pipe[0], &parent_pipe[1],
 			&child_pipe[0], &child_pipe[1], &fd);

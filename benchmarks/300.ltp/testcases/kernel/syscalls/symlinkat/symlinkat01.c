@@ -43,7 +43,6 @@
 #include <string.h>
 #include <signal.h>
 #include "test.h"
-#include "usctest.h"
 #include "rmobj.h"
 #include "linux_syscall_numbers.h"
 
@@ -141,7 +140,6 @@ static int mysymlinkat(const char *oldfilename,
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int i;
 
 	/* Disable test if the version of the kernel is less than 2.6.16 */
@@ -151,8 +149,7 @@ int main(int ac, char **av)
 		exit(0);
 	}
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -233,7 +230,6 @@ static void mysymlinkat_test(struct test_struct *desc)
 				 TEST_ERRNO, strerror(TEST_ERRNO));
 		}
 	} else {
-		TEST_ERROR_LOG(TEST_ERRNO);
 		tst_resm(TFAIL,
 			 TEST_RETURN ==
 			 0 ? "symlinkat() surprisingly succeeded" :
@@ -274,5 +270,4 @@ static void setup(void)
 static void cleanup(void)
 {
 	tst_rmdir();
-	TEST_CLEANUP;
 }

@@ -77,7 +77,6 @@
 #include <pwd.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #define FILE_MODE	S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
 #define TESTFILE	"testfile"
@@ -88,7 +87,6 @@
 
 char *TCID = "stat02";
 int TST_TOTAL = 1;
-int exp_enos[] = { 0 };
 
 uid_t user_id;			/* eff. user id/group id of test process */
 gid_t group_id;
@@ -102,15 +100,10 @@ int main(int ac, char **av)
 {
 	struct stat stat_buf;	/* stat structure buffer */
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
-
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -123,7 +116,6 @@ int main(int ac, char **av)
 		TEST(stat(TESTFILE, &stat_buf));
 
 		if (TEST_RETURN == -1) {
-			TEST_ERROR_LOG(TEST_ERRNO);
 			tst_resm(TFAIL,
 				 "stat(%s, &stat_buf) Failed, errno=%d : %s",
 				 TESTFILE, TEST_ERRNO, strerror(TEST_ERRNO));
@@ -168,7 +160,7 @@ void setup(void)
 	int wbytes;		/* no. of bytes written to file */
 	int write_len = 0;
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -233,11 +225,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	tst_rmdir();
 }

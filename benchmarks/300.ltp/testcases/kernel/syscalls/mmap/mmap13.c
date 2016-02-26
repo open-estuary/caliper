@@ -40,7 +40,6 @@
 #include <setjmp.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #define TEMPFILE	"mmapfile"
 
@@ -61,11 +60,8 @@ int main(int argc, char *argv[])
 {
 	int lc;
 	char *ch;
-	const char *msg;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 
@@ -142,6 +138,5 @@ static void sig_handler(int sig)
 static void cleanup(void)
 {
 	close(fildes);
-	TEST_CLEANUP;
 	tst_rmdir();
 }

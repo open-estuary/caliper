@@ -57,7 +57,6 @@
 #include <pwd.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #include "ipcmsg.h"
 
@@ -66,8 +65,6 @@ int TST_TOTAL = 6;
 
 char nobody_uid[] = "nobody";
 struct passwd *ltpuser;
-
-int exp_enos[] = { EACCES, EFAULT, EINVAL, 0 };
 
 int msg_q_1 = -1;		/* The message queue id created in setup */
 int msg_q_2 = -1;		/* Another queue id created in setup */
@@ -104,11 +101,9 @@ struct test_case_t {		/* This allows testing of many negative */
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int i;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();		/* global setup */
 
@@ -130,8 +125,6 @@ int main(int ac, char **av)
 					 "on expected fail");
 				continue;
 			}
-
-			TEST_ERROR_LOG(TEST_ERRNO);
 
 			if (TEST_ERRNO == TC[i].error) {
 				tst_resm(TPASS | TTERRNO, "expected failure");
@@ -155,12 +148,9 @@ void setup(void)
 {
 	key_t msgkey2;
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
-
-	/* Set up the expected error numbers for -e option */
-	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 
@@ -209,11 +199,5 @@ void cleanup(void)
 	rm_queue(msg_q_2);
 
 	tst_rmdir();
-
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }

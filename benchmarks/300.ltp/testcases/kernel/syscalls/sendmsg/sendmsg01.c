@@ -48,8 +48,6 @@
 #include <netinet/in.h>
 
 #include "test.h"
-#include "usctest.h"
-#include "msg_common.h"
 
 char *TCID = "sendmsg01";
 int testno;
@@ -305,23 +303,6 @@ struct test_case_t tdat[] = {
 	 .cleanup = cleanup4,
 	 .desc = "rights passing"}
 	,
-	{.domain = PF_UNIX,
-	 .type = SOCK_DGRAM,
-	 .proto = 0,
-	 .iov = iov,
-	 .iovcnt = 1,
-	 .buf = buf,
-	 .buflen = sizeof(buf),
-	 .msg = &msgdat,
-	 .flags = ~MSG_CMSG_COMPAT,
-	 .to = (struct sockaddr *)&sun1,
-	 .tolen = sizeof(sun1),
-	 .retval = -1,
-	 .experrno = EOPNOTSUPP,
-	 .setup = setup4,
-	 .cleanup = cleanup4,
-	 .desc = "invalid flags set w/ control"}
-	,
 	{.domain = PF_INET,
 	 .type = SOCK_DGRAM,
 	 .proto = 0,
@@ -376,11 +357,6 @@ struct test_case_t tdat[] = {
 
 int TST_TOTAL = sizeof(tdat) / sizeof(tdat[0]);
 
-int exp_enos[] = {
-	EBADF, ENOTSOCK, EFAULT, EISCONN, ENOTCONN, EINVAL, EMSGSIZE, EPIPE,
-	ENOBUFS, 0
-};
-
 #ifdef UCLINUX
 static char *argv0;
 #endif
@@ -388,11 +364,8 @@ static char *argv0;
 int main(int argc, char *argv[])
 {
 	int lc;
-	const char *msg;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 #ifdef UCLINUX
 	argv0 = argv[0];
@@ -400,8 +373,6 @@ int main(int argc, char *argv[])
 #endif
 
 	setup();
-
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); ++lc) {
 		tst_count = 0;
@@ -423,9 +394,7 @@ int main(int argc, char *argv[])
 			TEST(sendmsg(s, tdat[testno].msg, tdat[testno].flags));
 
 			if (TEST_RETURN > 0)
-				TEST_RETURN = 0;	/* all success equal */
-
-			TEST_ERROR_LOG(TEST_ERRNO);
+				TEST_RETURN = 0;
 
 			if (TEST_RETURN != tdat[testno].retval ||
 			    (TEST_RETURN < 0 &&
@@ -569,7 +538,7 @@ static void setup(void)
 
 	int ret = 0;
 
-	tst_require_root(NULL);
+	tst_require_root();
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 	TEST_PAUSE;
 
@@ -601,7 +570,6 @@ static void cleanup(void)
 	if (pid > 0)
 		kill(pid, SIGKILL);	/* kill server, if server exists */
 	unlink(tmpsunpath);
-	TEST_CLEANUP;
 	tst_rmdir();
 }
 

@@ -54,7 +54,6 @@
 #include <string.h>
 #include <errno.h>
 #include "test.h"
-#include "usctest.h"
 
 char *TCID = "getcwd01";
 char buf[100];
@@ -82,23 +81,16 @@ struct test_case_t {
 	"Test for ERANGE", (void *)setup_test4, buf, 1, ERANGE, NULL}
 };
 
-int exp_enos[] = { EFAULT, ENOMEM, EINVAL, ERANGE, 0 };
-
 int TST_TOTAL = ARRAY_SIZE(testcases);
 
 int main(int ac, char **av)
 {
 	int i;
 	int lc;
-	const char *msg;		/* parse_opts() return message */
 	char *test_erg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 	setup();
-
-	TEST_EXP_ENOS(exp_enos);
 
 	/*
 	 * The following loop checks looping state if -i option given
@@ -116,8 +108,6 @@ int main(int ac, char **av)
 			errno = 0;
 			test_erg = getcwd(testcases[i].buf, testcases[i].size);
 			TEST_ERRNO = errno;
-
-			TEST_ERROR_LOG(TEST_ERRNO);
 
 			if (test_erg != testcases[i].exp_retval) {
 				tst_resm(TFAIL, "getcwd(2) failed to return"
@@ -159,10 +149,4 @@ void cleanup(void)
 {
 	/* remove the test directory */
 	tst_rmdir();
-
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 }

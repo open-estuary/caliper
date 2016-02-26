@@ -73,7 +73,6 @@
 #include <netinet/in.h>
 
 #include "test.h"
-#include "usctest.h"
 
 char *TCID = "socketcall03";
 
@@ -103,11 +102,8 @@ AF_INET, SOCK_STREAM, 6, SYS_BIND, setup1, "bind call"};
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -170,8 +166,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	TEST_CLEANUP;
-
 }
 
 #else

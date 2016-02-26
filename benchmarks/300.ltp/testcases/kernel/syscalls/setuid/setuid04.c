@@ -34,7 +34,6 @@
 #include <unistd.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "compat_16.h"
 
 char *TCID = "setuid04";
@@ -43,8 +42,6 @@ int TST_TOTAL = 1;
 static char nobody_uid[] = "nobody";
 static char testfile[] = "setuid04_testfile";
 static struct passwd *ltpuser;
-
-static int exp_enos[] = { EACCES, 0 };
 
 static int fd = -1;
 
@@ -55,15 +52,11 @@ static void do_master_child(void);
 int main(int ac, char **av)
 {
 	pid_t pid;
-	const char *msg;
 	int status;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
-
-	TEST_EXP_ENOS(exp_enos);
 
 	pid = FORK_OR_VFORK();
 	if (pid < 0)
@@ -129,8 +122,6 @@ static void do_master_child(void)
 				close(tst_fd2);
 			}
 
-			TEST_ERROR_LOG(TEST_ERRNO);
-
 			if (TEST_ERRNO == EACCES) {
 				tst_resm(TPASS, "open returned errno EACCES");
 			} else {
@@ -151,7 +142,7 @@ static void do_master_child(void)
 
 static void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	ltpuser = getpwnam(nobody_uid);
 
@@ -177,5 +168,4 @@ static void cleanup(void)
 {
 	close(fd);
 	tst_rmdir();
-	TEST_CLEANUP;
 }

@@ -40,7 +40,6 @@
 #include "include_j_h.h"
 
 #include "test.h"
-#include "usctest.h"
 #include "lapi/posix_clocks.h"
 
 #define NORMAL		1
@@ -78,10 +77,8 @@ int main(int ac, char **av)
 	int i;
 	int lc;
 	struct timespec res;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)))
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -97,7 +94,7 @@ int main(int ac, char **av)
 
 			if (TEST_RETURN != tcase[i].ret) {
 				if (TEST_ERRNO != EINVAL) {
-					tst_resm(TFAIL,
+					tst_resm(TFAIL | TTERRNO,
 						 "clock_getres %s failed",
 						 tcase[i].name);
 				} else {
@@ -132,5 +129,4 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 }

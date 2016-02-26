@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright (c) 2014 Oracle and/or its affiliates. All Rights Reserved.
+# Copyright (c) 2014-2015 Oracle and/or its affiliates. All Rights Reserved.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -28,9 +28,8 @@
 
 tst_rhost_run()
 {
-	# this is needed to run tools/apicmds on remote host
 	local pre_cmd=
-	local post_cmd=
+	local post_cmd=' || echo RTERR'
 	local out=
 	local user="root"
 	local cmd=
@@ -49,27 +48,35 @@ tst_rhost_run()
 		c) cmd=$OPTARG ;;
 		u) user=$OPTARG ;;
 		*)
-			tst_brkm TBROK "tst_rhost_run: unknown option: $opt"
+			tst_brkm TBROK "tst_rhost_run: unknown option: $OPTARG"
 		;;
 		esac
 	done
 
 	OPTIND=0
 
-	[ -z "$cmd" ] && tst_brkm TBROK "command not defined"
+	if [ -z "$cmd" ]; then
+		[ "$safe" -eq 1 ] && \
+			tst_brkm TBROK "tst_rhost_run: command not defined"
+		tst_resm TWARN "tst_rhost_run: command not defined"
+		return 1
+	fi
 
 	local output=
-	local ret=
+	local ret=0
 	if [ -n "$TST_USE_SSH" ]; then
 		output=`ssh -n -q $user@$RHOST "sh -c \
-			'$pre_cmd $cmd $post_cmd'" $out 2> /dev/null`
+			'$pre_cmd $cmd $post_cmd'" $out 2>&1 || echo 'RTERR'`
 	else
 		output=`rsh -n -l $user $RHOST "sh -c \
-			'$pre_cmd $cmd $post_cmd'" $out 2> /dev/null`
+			'$pre_cmd $cmd $post_cmd'" $out 2>&1 || echo 'RTERR'`
 	fi
-	ret=$?
-	[ "$ret" -ne 0 -a "$safe" -eq 1 ] && \
-		tst_brkm TBROK "failed to run '$cmd' on '$RHOST'"
+	echo "$output" | grep -q 'RTERR$' && ret=1
+	if [ $ret -eq 1 ]; then
+		output=$(echo "$output" | sed 's/RTERR//')
+		[ "$safe" -eq 1 ] && \
+			tst_brkm TBROK "'$cmd' failed on '$RHOST': '$output'"
+	fi
 
 	[ -z "$out" -a -n "$output" ] && echo "$output"
 
@@ -184,22 +191,21 @@ tst_init_iface()
 {
 	local type=${1:-"lhost"}
 	local link_num=${2:-"0"}
-
 	local iface=$(tst_iface $type $link_num)
 	tst_resm TINFO "initialize '$type' '$iface' interface"
 
 	if [ "$type" = "lhost" ]; then
-		ip link set $iface down || tst_brkm TBROK "iface down failed"
-		ip route flush dev $iface || tst_brkm TBROK "route flush failed"
-		ip addr flush dev $iface || tst_brkm TBROK "addr flush failed"
-		ip link set $iface up || tst_brkm TBROK "iface up failed"
-		return
+		ip link set $iface down || return $?
+		ip route flush dev $iface || return $?
+		ip addr flush dev $iface || return $?
+		ip link set $iface up
+		return $?
 	fi
 
-	tst_rhost_run -s -c "ip link set $iface down"
-	tst_rhost_run -s -c "ip route flush dev $iface"
-	tst_rhost_run -s -c "ip addr flush dev $iface"
-	tst_rhost_run -s -c "ip link set $iface up"
+	tst_rhost_run -c "ip link set $iface down" || return $?
+	tst_rhost_run -c "ip route flush dev $iface" || return $?
+	tst_rhost_run -c "ip addr flush dev $iface" || return $?
+	tst_rhost_run -c "ip link set $iface up"
 }
 
 # tst_add_ipaddr [TYPE] [LINK]
@@ -213,15 +219,16 @@ tst_add_ipaddr()
 	local mask=24
 	[ "$TST_IPV6" ] && mask=64
 
+	local iface=$(tst_iface $type $link_num)
+
 	if [ $type = "lhost" ]; then
 		tst_resm TINFO "set local addr $(tst_ipaddr)/$mask"
-		ip addr add $(tst_ipaddr)/$mask dev $iface || \
-			tst_brkm TBROK "failed to add IP address"
-		return
+		ip addr add $(tst_ipaddr)/$mask dev $iface
+		return $?
 	fi
 
 	tst_resm TINFO "set remote addr $(tst_ipaddr rhost)/$mask"
-	tst_rhost_run -s -c "ip addr add $(tst_ipaddr rhost)/$mask dev $iface"
+	tst_rhost_run -c "ip addr add $(tst_ipaddr rhost)/$mask dev $iface"
 }
 
 # tst_restore_ipaddr [TYPE] [LINK]
@@ -233,10 +240,77 @@ tst_restore_ipaddr()
 	local type=${1:-"lhost"}
 	local link_num=${2:-"0"}
 
-	tst_init_iface $type $link_num
+	tst_init_iface $type $link_num || return $?
 
-	local iface=$(tst_iface $type $link_num)
+	local ret=0
+	local backup_tst_ipv6=$TST_IPV6
+	TST_IPV6= tst_add_ipaddr $type $link_num || ret=$?
+	TST_IPV6=6 tst_add_ipaddr $type $link_num || ret=$?
+	TST_IPV6=$backup_tst_ipv6
 
-	TST_IPV6= tst_add_ipaddr $type $link_num
-	TST_IPV6=6 tst_add_ipaddr $type $link_num
+	return $ret
+}
+
+# tst_netload ADDR [FILE] [TYPE] [OPTS]
+# Run network load test
+# ADDR: IP address
+# FILE: file with result time
+# TYPE: PING or TFO (TCP traffic)
+# OPTS: additional options
+tst_netload()
+{
+	local ip_addr="$1"
+	local rfile=${2:-"netload.res"}
+	local type=${3:-"TFO"}
+	local addopts=${@:4}
+	local ret=0
+	clients_num=${clients_num:-"2"}
+	client_requests=${client_requests:-"500000"}
+	max_requests=${max_requests:-"3"}
+
+	case "$type" in
+	PING)
+		local ipv6=
+		echo "$ip_addr" | grep ":" > /dev/null
+		[ $? -eq 0 ] && ipv6=6
+		tst_resm TINFO "run ping${ipv6} test with rhost '$ip_addr'..."
+		local res=
+		res=$(ping${ipv6} -f -c $client_requests $ip_addr -w 600 2>&1)
+		[ $? -ne 0 ] && return 1
+		echo $res | sed -nE 's/.*time ([0-9]+)ms.*/\1/p' > $rfile
+	;;
+	TFO)
+		local port=
+		port=$(tst_rhost_run -c 'tst_get_unused_port ipv6 stream')
+		[ $? -ne 0 ] && tst_brkm TBROK "failed to get unused port"
+
+		tst_resm TINFO "run tcp_fastopen with '$ip_addr', port '$port'"
+		tst_rhost_run -s -b -c "tcp_fastopen -R $max_requests \
+			-g $port $addopts"
+
+		# check that tcp_fastopen on rhost in 'Listening' state
+		local sec_waited=
+		for sec_waited in $(seq 1 60); do
+			tst_rhost_run -c "ss -ltn | grep -q $port" && break
+			if [ $sec_waited -eq 60 ]; then
+				tst_resm TINFO "rhost not in LISTEN state"
+				return 1
+			fi
+			sleep 1
+		done
+
+		# run local tcp client
+		tcp_fastopen -a $clients_num -r $client_requests -l -H $ip_addr\
+			 -g $port -d $rfile $addopts > /dev/null || ret=1
+
+		if [ $ret -eq 0 -a ! -f $rfile ]; then
+			tst_brkm TBROK "can't read $rfile"
+		fi
+
+		tst_rhost_run -c "pkill -9 tcp_fastopen\$"
+	;;
+	*) tst_brkm TBROK "invalid net_load type '$type'" ;;
+	esac
+
+	return $ret
 }

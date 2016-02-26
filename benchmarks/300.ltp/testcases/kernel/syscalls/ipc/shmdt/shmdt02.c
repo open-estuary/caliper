@@ -54,16 +54,12 @@
 char *TCID = "shmdt02";
 int TST_TOTAL = 1;
 
-int exp_enos[] = { EINVAL, 0 };	/* 0 terminated list of expected errnos */
-
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int unshared;		/* a local variable to use to produce *//* the error in the shmdt() call */
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();		/* global setup */
 
@@ -83,8 +79,6 @@ int main(int ac, char **av)
 		if (TEST_RETURN != -1) {
 			tst_brkm(TFAIL, cleanup, "call succeeded unexpectedly");
 		}
-
-		TEST_ERROR_LOG(TEST_ERRNO);
 
 		switch (TEST_ERRNO) {
 		case EINVAL:
@@ -111,9 +105,6 @@ void setup(void)
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
-	/* Set up the expected error numbers for -e option */
-	TEST_EXP_ENOS(exp_enos);
-
 	TEST_PAUSE;
 }
 
@@ -123,10 +114,5 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }

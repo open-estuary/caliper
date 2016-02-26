@@ -41,7 +41,6 @@
 #include <errno.h>
 #include <grp.h>
 #include <pwd.h>
-#include "usctest.h"
 #include "test.h"
 
 char *TCID = "open10";
@@ -77,12 +76,9 @@ int main(int ac, char *av[])
 	pid_t mypid;
 
 	int lc;
-	const char *msg;
 	int fail_count = 0;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -455,7 +451,7 @@ int main(int ac, char *av[])
 
 static void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 	TEST_PAUSE;
 	tst_tmpdir();
@@ -463,6 +459,5 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 	tst_rmdir();
 }

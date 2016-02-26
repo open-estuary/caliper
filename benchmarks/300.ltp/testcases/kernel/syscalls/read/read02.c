@@ -47,7 +47,6 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 #include "tst_fs_type.h"
 
@@ -59,7 +58,6 @@ static char buf[BUFSIZ];
 static void *outside_buf = (void *)-1;
 static void *addr4;
 static void *addr5;
-static int exp_enos[] = { EBADF, EISDIR, EFAULT, EINVAL, 0 };
 
 static long fs_type;
 
@@ -87,15 +85,10 @@ int main(int ac, char **av)
 {
 	int i;
 	int lc;
-	const char *msg;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
-
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		tst_count = 0;
@@ -154,8 +147,6 @@ static void read_verify(const struct test_case_t *test)
 		return;
 	}
 
-	TEST_ERROR_LOG(TEST_ERRNO);
-
 	if (TEST_ERRNO == test->exp_error) {
 		tst_resm(TPASS | TTERRNO, "expected failure");
 	} else {
@@ -166,8 +157,6 @@ static void read_verify(const struct test_case_t *test)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	free(addr4);
 
 	if (fd4 > 0)

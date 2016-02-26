@@ -53,7 +53,6 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include "test.h"
-#include "usctest.h"
 
 static void setup(void);
 static void cleanup(void);
@@ -66,8 +65,6 @@ static pid_t bad_pid = -1;
 static pid_t zero_pid;
 static pid_t unused_pid;
 static pid_t inval_pid = 99999;
-
-int exp_enos[] = { EINVAL, ESRCH, EPERM, 0 };
 
 struct test_case_t {
 	pid_t *pid;
@@ -88,17 +85,11 @@ struct test_case_t {
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int i;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
-
-	/* set up the expected errnos */
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -114,8 +105,6 @@ int main(int ac, char **av)
 				tst_resm(TFAIL, "call succeeded unexpectedly");
 				continue;
 			}
-
-			TEST_ERROR_LOG(TEST_ERRNO);
 
 			if (TEST_ERRNO == TC[i].error) {
 				tst_resm(TPASS, "expected failure - "
@@ -155,10 +144,5 @@ static void setup(void)
  */
 static void cleanup(void)
 {
-	/*
-	 * print timing status if that option was specified
-	 * print errno log if that option was specified
-	 */
-	TEST_CLEANUP;
 
 }

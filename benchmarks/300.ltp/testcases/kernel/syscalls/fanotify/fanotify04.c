@@ -35,7 +35,6 @@
 #include <string.h>
 #include <sys/syscall.h>
 #include "test.h"
-#include "usctest.h"
 #include "linux_syscall_numbers.h"
 #include "fanotify.h"
 #include "safe_macros.h"
@@ -202,10 +201,8 @@ static void test_open_symlink(char *file)
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -291,7 +288,6 @@ static void cleanup(void)
 	if (close(fd_notify) == -1)
 		tst_resm(TWARN, "close(%d) failed", fd_notify);
 
-	TEST_CLEANUP;
 	tst_rmdir();
 }
 

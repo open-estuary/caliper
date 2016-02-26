@@ -46,7 +46,6 @@
 #include <signal.h>
 #include <errno.h>
 #include "test.h"
-#include "usctest.h"
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -290,8 +289,6 @@ static char *argv0;
  */
 void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	tst_rmdir();
 
 }
@@ -658,11 +655,8 @@ int main(int ac, char **av)
 {
 
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 #ifdef UCLINUX
 	maybe_run_child(dochild_uc, "ddddd", &kid_uc, &parent, &test,
 			&thislock, &fd);

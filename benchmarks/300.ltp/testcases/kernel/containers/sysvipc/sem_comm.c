@@ -32,19 +32,15 @@
 #include <sys/wait.h>
 #include <stdio.h>
 #include <errno.h>
-#include "usctest.h"
 #include "test.h"
 #include "safe_macros.h"
 #include "libclone.h"
 #include "ipcns_helper.h"
-
+#include "lapi/semun.h"
 
 #define TESTKEY 124426L
 char *TCID	= "sem_comm";
 int TST_TOTAL	= 1;
-struct tst_checkpoint checkpoint1;
-struct tst_checkpoint checkpoint2;
-
 
 static void cleanup(void)
 {
@@ -53,16 +49,16 @@ static void cleanup(void)
 
 static void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 	check_newipc();
 	tst_tmpdir();
-	TST_CHECKPOINT_CREATE(&checkpoint1);
-	TST_CHECKPOINT_CREATE(&checkpoint2);
+	TST_CHECKPOINT_INIT(tst_rmdir);
 }
 
 int chld1_sem(void *arg)
 {
 	int id;
+	union semun su;
 	struct sembuf sm;
 
 	id = semget(TESTKEY, 1, IPC_CREAT);
@@ -71,17 +67,15 @@ int chld1_sem(void *arg)
 		return 2;
 	}
 
-	if (semctl(id, 0, SETVAL, 1) == -1) {
+	su.val = 1;
+	if (semctl(id, 0, SETVAL, su) == -1) {
 		perror("semctl");
 		semctl(id, 0, IPC_RMID);
 		return 2;
 	}
 
-	/* tell child2 to continue */
-	TST_CHECKPOINT_SIGNAL_CHILD(NULL, &checkpoint1);
-
-	/* wait for child2 to create the semaphore */
-	TST_CHECKPOINT_CHILD_WAIT(&checkpoint2);
+	/* tell child2 to continue and wait for it to create the semaphore */
+	TST_SAFE_CHECKPOINT_WAKE_AND_WAIT(NULL, 0);
 
 	sm.sem_num = 0;
 	sm.sem_op = -1;
@@ -92,11 +86,8 @@ int chld1_sem(void *arg)
 		return 2;
 	}
 
-	/* tell child2 to continue */
-	TST_CHECKPOINT_SIGNAL_CHILD(NULL, &checkpoint1);
-
-	/* wait for child2 to lock the semaphore */
-	TST_CHECKPOINT_CHILD_WAIT(&checkpoint2);
+	/* tell child2 to continue and wait for it to lock the semaphore */
+	TST_SAFE_CHECKPOINT_WAKE_AND_WAIT(NULL, 0);
 
 	sm.sem_op = 1;
 	semop(id, &sm, 1);
@@ -109,9 +100,10 @@ int chld2_sem(void *arg)
 {
 	int id, rval = 0;
 	struct sembuf sm;
+	union semun su;
 
 	/* wait for child1 to create the semaphore */
-	TST_CHECKPOINT_CHILD_WAIT(&checkpoint1);
+	TST_SAFE_CHECKPOINT_WAIT(NULL, 0);
 
 	id = semget(TESTKEY, 1, IPC_CREAT);
 	if (id == -1) {
@@ -119,17 +111,15 @@ int chld2_sem(void *arg)
 		return 2;
 	}
 
-	if (semctl(id, 0, SETVAL, 1) == -1) {
+	su.val = 1;
+	if (semctl(id, 0, SETVAL, su) == -1) {
 		perror("semctl");
 		semctl(id, 0, IPC_RMID);
 		return 2;
 	}
 
-	/* tell child1 to continue */
-	TST_CHECKPOINT_SIGNAL_CHILD(NULL, &checkpoint2);
-
-	/* wait for child1 to lock the semaphore */
-	TST_CHECKPOINT_CHILD_WAIT(&checkpoint1);
+	/* tell child1 to continue and wait for it to lock the semaphore */
+	TST_SAFE_CHECKPOINT_WAKE_AND_WAIT(NULL, 0);
 
 	sm.sem_num = 0;
 	sm.sem_op = -1;
@@ -145,7 +135,7 @@ int chld2_sem(void *arg)
 	}
 
 	/* tell child1 to continue */
-	TST_CHECKPOINT_SIGNAL_CHILD(NULL, &checkpoint2);
+	TST_SAFE_CHECKPOINT_WAKE(NULL, 0);
 
 	sm.sem_op = 1;
 	semop(id, &sm, 1);
@@ -189,12 +179,9 @@ static void test(void)
 
 int main(int argc, char *argv[])
 {
-	const char *msg;
 	int lc;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 

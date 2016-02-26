@@ -71,7 +71,6 @@
 #include <grp.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #include "compat_16.h"
 
@@ -87,13 +86,11 @@ void cleanup();			/* cleanup function for the test */
 
 int main(int ac, char **av)
 {
-	int lc, i;		/* loop counters */
-	const char *msg;
+	int lc, i;
 	int gidsetsize = 1;	/* only one GID, the GID of TESTUSER */
 	int PASS_FLAG = 0;	/* used for checking group array */
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -152,12 +149,9 @@ int main(int ac, char **av)
 void setup(void)
 {
 
-	tst_sig(NOFORK, DEF_HANDLER, cleanup);
+	tst_require_root();
 
-	/* Make sure the calling process is super-user only */
-	if (geteuid() != 0) {
-		tst_brkm(TBROK, NULL, "Must be ROOT to run this test.");
-	}
+	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
 	TEST_PAUSE;
 
@@ -181,9 +175,5 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }

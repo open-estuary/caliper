@@ -30,7 +30,6 @@
 #include <sys/wait.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "compat_16.h"
 
 TCID_DEFINE(setregid03);
@@ -82,16 +81,13 @@ struct test_data_t {
 int TST_TOTAL = sizeof(test_data) / sizeof(test_data[0]);
 
 static void setup(void);
-static void cleanup(void);
 static void gid_verify(struct group *ru, struct group *eu, char *when);
 
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -105,7 +101,7 @@ int main(int ac, char **av)
 		tst_count = 0;
 
 		/* set the appropriate ownership values */
-		if (SETREGID(cleanup, sys.gr_gid, bin.gr_gid) == -1)
+		if (SETREGID(NULL, sys.gr_gid, bin.gr_gid) == -1)
 			tst_brkm(TBROK, NULL, "Initial setregid failed");
 
 		if (seteuid(nobody.pw_uid) == -1)
@@ -158,7 +154,6 @@ int main(int ac, char **av)
 					flag = -1;
 				}
 				if (test_ret == -1) {
-					TEST_ERROR_LOG(TEST_ERRNO);
 				}
 
 				gid_verify(test_data[i].exp_real_usr,
@@ -174,7 +169,7 @@ int main(int ac, char **av)
 			}
 		}
 	}
-	cleanup();
+
 	tst_exit();
 }
 
@@ -182,9 +177,9 @@ static void setup(void)
 {
 	struct group *junk;
 
-	tst_require_root(NULL);
+	tst_require_root();
 
-	tst_sig(FORK, DEF_HANDLER, cleanup);
+	tst_sig(FORK, DEF_HANDLER, NULL);
 
 	if (getpwnam("nobody") == NULL)
 		tst_brkm(TBROK, NULL, "nobody must be a valid user.");
@@ -204,11 +199,6 @@ static void setup(void)
 	GET_GID(bin);
 
 	TEST_PAUSE;
-}
-
-static void cleanup(void)
-{
-	TEST_CLEANUP;
 }
 
 static void gid_verify(struct group *rg, struct group *eg, char *when)

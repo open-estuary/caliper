@@ -158,17 +158,17 @@ testcase_21()
 # Case 22 - 24: Test limit_in_bytes will be aligned to PAGESIZE
 testcase_22()
 {
-	test_limit_in_bytes $((PAGESIZE-1)) $PAGESIZE 0
+	test_limit_in_bytes $((PAGESIZE-1)) 0
 }
 
 testcase_23()
 {
-	test_limit_in_bytes $((PAGESIZE+1)) $((PAGESIZE*2)) 0
+	test_limit_in_bytes $((PAGESIZE+1)) 0
 }
 
 testcase_24()
 {
-	test_limit_in_bytes 1 $PAGESIZE 0
+	test_limit_in_bytes 1 0
 }
 
 # Case 25 - 28: Test invaild memory.limit_in_bytes
@@ -213,6 +213,7 @@ testcase_29()
 	sleep 1
 	echo $pid > ../tasks
 
+	# This expects that there is swap configured
 	echo 1 > memory.force_empty
 	if [ $? -eq 0 ]; then
 		result $PASS "force memory succeeded"
@@ -225,7 +226,7 @@ testcase_29()
 
 testcase_30()
 {
-	$TEST_PATH/memcg_process --mmap-anon -s $PAGESIZE &
+	$TEST_PATH/memcg_process --mmap-lock2 -s $PAGESIZE &
 	pid=$!
 	sleep 1
 	echo $pid > tasks

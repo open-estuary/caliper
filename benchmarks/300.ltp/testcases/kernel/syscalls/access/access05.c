@@ -52,7 +52,6 @@
 #include <pwd.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 
 #define INV_OK		-1
@@ -92,9 +91,6 @@ static struct test_case_t {
 char *TCID = "access05";
 int TST_TOTAL = ARRAY_SIZE(test_cases);
 
-static int exp_enos[] = { EACCES, EFAULT, EINVAL, ENOENT, ENAMETOOLONG,
-			  ENOTDIR, ELOOP, 0 };
-
 static const char nobody_uid[] = "nobody";
 static struct passwd *ltpuser;
 
@@ -107,16 +103,11 @@ static char *bad_addr;
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int i;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
-
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		tst_count = 0;
@@ -134,7 +125,7 @@ static void setup(void)
 	int fd;
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
-	tst_require_root(NULL);
+	tst_require_root();
 
 	ltpuser = SAFE_GETPWNAM(cleanup, nobody_uid);
 	SAFE_SETUID(cleanup, ltpuser->pw_uid);
@@ -221,7 +212,5 @@ static void access_verify(int i)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	tst_rmdir();
 }

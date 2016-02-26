@@ -103,7 +103,6 @@
 #include <signal.h>
 #include <errno.h>
 #include "test.h"
-#include "usctest.h"
 
 char *TCID = "fork04";
 
@@ -120,7 +119,6 @@ int TST_TOTAL = NUMBER_OF_ENVIRON;
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 	tst_rmdir();
 }
 
@@ -276,15 +274,11 @@ void parent_environment(void)
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int kid_status;
 	int wait_status;
 	int fails;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 

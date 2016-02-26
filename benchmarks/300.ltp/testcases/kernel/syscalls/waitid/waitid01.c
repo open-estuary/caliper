@@ -47,7 +47,6 @@
 #include <sys/stat.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "linux_syscall_numbers.h"
 
 char *TCID = "waitid01";
@@ -75,7 +74,6 @@ int TST_TOTAL = 3;
 void cleanup(void)
 {
 
-	TEST_CLEANUP;
 	tst_rmdir();
 
 	tst_exit();
@@ -122,11 +120,8 @@ int main(int ac, char **av)
 	id_t pid;
 	siginfo_t infop;
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 

@@ -50,7 +50,6 @@
 #include <signal.h>
 #include <string.h>
 #include "test.h"
-#include "usctest.h"
 
 void setup();
 void cleanup();
@@ -64,12 +63,10 @@ int nfd[2];
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int i;
 	struct stat oldbuf, newbuf;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -128,9 +125,7 @@ void cleanup(void)
 {
 	int i;
 
-	TEST_CLEANUP;
-
-	for (i = 0; i < (sizeof(fd) / sizeof(fd[0])); i++) {
+	for (i = 0; i < ARRAY_SIZE(fd); i++) {
 		close(fd[i]);
 		close(nfd[i]);
 	}

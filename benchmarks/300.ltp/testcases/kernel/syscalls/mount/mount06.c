@@ -28,7 +28,6 @@
 #include <fcntl.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 
 #ifndef MS_MOVE
@@ -61,11 +60,8 @@ static int mount_flag;
 int main(int argc, char *argv[])
 {
 	int lc;
-	const char *msg;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 
@@ -88,7 +84,7 @@ int main(int argc, char *argv[])
 			else
 				tst_resm(TFAIL, "move mount does not work");
 
-			TEST(umount(mntpoint_des));
+			TEST(tst_umount(mntpoint_des));
 			if (TEST_RETURN != 0)
 				tst_brkm(TBROK | TTERRNO, cleanup,
 					 "umount(2) failed");
@@ -121,7 +117,7 @@ int ismount(char *mntpoint)
 
 static void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -161,10 +157,8 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	if (mount_flag && umount(path_name) != 0)
+	if (mount_flag && tst_umount(path_name) != 0)
 		tst_resm(TWARN | TERRNO, "umount(2) %s failed", path_name);
-
-	TEST_CLEANUP;
 
 	if (device)
 		tst_release_device(NULL, device);

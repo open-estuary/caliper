@@ -41,7 +41,6 @@
 #endif
 #include <sys/mman.h>
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 #include "linux_syscall_numbers.h"
 
@@ -50,7 +49,6 @@
 #define LONGMODNAMECHAR	'm'	/* Arbitrarily selected */
 
 char *TCID = "delete_module02";
-static int exp_enos[] = { EPERM, ENOENT, EFAULT, 0 };
 
 static char nobody_uid[] = "nobody";
 struct passwd *ltpuser;
@@ -84,11 +82,7 @@ int main(int argc, char **argv)
 	int lc;
 	int i;
 
-	const char *msg;
-
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 
@@ -102,7 +96,6 @@ int main(int argc, char **argv)
 			tst_resm(TINFO, "test %s", tdat[i].desc);
 			TEST(ltp_syscall(__NR_delete_module,
 			     tdat[i].modname, 0));
-			TEST_ERROR_LOG(TEST_ERRNO);
 
 			if (TEST_RETURN != -1) {
 				tst_resm(TFAIL, "delete_module() "
@@ -139,11 +132,9 @@ static void setup(void)
 {
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	ltpuser = SAFE_GETPWNAM(cleanup, nobody_uid);
-
-	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 
@@ -160,5 +151,4 @@ static void setup(void)
 
 void cleanup(void)
 {
-	TEST_CLEANUP;
 }

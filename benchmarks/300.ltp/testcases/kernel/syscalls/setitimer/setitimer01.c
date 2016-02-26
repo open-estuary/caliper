@@ -52,7 +52,6 @@
  */
 
 #include "test.h"
-#include "usctest.h"
 
 #include <errno.h>
 #include <sys/time.h>
@@ -70,12 +69,9 @@ int TST_TOTAL = 1;
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	struct itimerval *value, *ovalue;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();		/* global setup */
 
@@ -157,10 +153,5 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }

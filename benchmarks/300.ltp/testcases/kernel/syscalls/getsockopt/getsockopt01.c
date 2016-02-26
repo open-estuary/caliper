@@ -52,7 +52,6 @@
 #include <netinet/in.h>
 
 #include "test.h"
-#include "usctest.h"
 
 char *TCID = "getsockopt01";
 int testno;
@@ -127,17 +126,11 @@ struct test_case_t {		/* test case structure */
 
 int TST_TOTAL = sizeof(tdat) / sizeof(tdat[0]);
 
-int exp_enos[] = { EBADF, ENOTSOCK, EFAULT, EOPNOTSUPP, ENOPROTOOPT, 0 };
-
 int main(int argc, char *argv[])
 {
 	int lc;
-	const char *msg;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 
@@ -150,7 +143,6 @@ int main(int argc, char *argv[])
 					tdat[testno].optname,
 					tdat[testno].optval,
 					tdat[testno].optlen));
-			TEST_ERROR_LOG(TEST_ERRNO);
 			if (TEST_RETURN != tdat[testno].retval ||
 			    (TEST_RETURN < 0 &&
 			     TEST_ERRNO != tdat[testno].experrno)) {
@@ -175,8 +167,6 @@ void setup(void)
 {
 	TEST_PAUSE;
 
-	TEST_EXP_ENOS(exp_enos);
-
 	/* initialize local sockaddr */
 	sin0.sin_family = AF_INET;
 	sin0.sin_port = 0;
@@ -185,8 +175,6 @@ void setup(void)
 
 void cleanup(void)
 {
-	TEST_CLEANUP;
-
 }
 
 void setup0(void)

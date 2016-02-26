@@ -53,7 +53,6 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <mqueue.h>
-#include "usctest.h"
 #include "test.h"
 #include "linux_syscall_numbers.h"
 #include "libclone.h"
@@ -142,9 +141,6 @@ void cleanup_mqueue(int result, int step, mqd_t mqd)
 {
 	if (step != NO_STEP)
 		cleanup_resources(step, mqd);
-
-	/* Clean the test testcase as LTP wants */
-	TEST_CLEANUP;
 
 	tst_exit();
 }
@@ -246,7 +242,7 @@ static void father_signal_handler(int sig, siginfo_t * si, void *unused)
 
 static void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 	check_newpid();
 }
 

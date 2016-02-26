@@ -25,7 +25,6 @@
 #include <errno.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "ipcmsg.h"
 
 static int msg_q;
@@ -50,12 +49,9 @@ int TST_TOTAL = ARRAY_SIZE(test_cases);
 int main(int argc, char *argv[])
 {
 	int lc;
-	const char *msg;
 	int i;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 
@@ -101,6 +97,4 @@ void setup(void)
 void cleanup(void)
 {
 	rm_queue(msg_q);
-
-	TEST_CLEANUP;
 }

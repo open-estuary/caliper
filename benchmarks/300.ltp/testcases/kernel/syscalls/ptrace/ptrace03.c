@@ -91,12 +91,9 @@
 #include "ptrace.h"
 
 #include "test.h"
-#include "usctest.h"
 
 static void setup(void);
 static void cleanup(void);
-
-static int exp_enos[] = { EPERM, ESRCH, 0 };
 
 char *TCID = "ptrace03";
 
@@ -120,12 +117,10 @@ int main(int ac, char **av)
 {
 
 	int lc, i;
-	const char *msg;
 	pid_t child_pid;
 	int status;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -192,7 +187,6 @@ int main(int ac, char **av)
 				} else {
 					tst_resm(TFAIL, "Test Failed");
 				}
-				TEST_ERROR_LOG(WEXITSTATUS(status));
 			}
 		}
 	}
@@ -209,12 +203,6 @@ void setup(void)
 {
 	unused_pid = tst_get_unused_pid(cleanup);
 
-	/* capture signals
-	   tst_sig(FORK, DEF_HANDLER, cleanup); */
-
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
-
 	TEST_PAUSE;
 
 }
@@ -225,11 +213,5 @@ void setup(void)
  */
 void cleanup(void)
 {
-
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }

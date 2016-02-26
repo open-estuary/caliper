@@ -51,7 +51,6 @@
 #include <errno.h>
 #include <sys/wait.h>
 #include "test.h"
-#include "usctest.h"
 
 static void inthandlr();
 static void do_exit(void);
@@ -75,14 +74,11 @@ static void do_child_2_uclinux(void);
 int main(int argc, char **argv)
 {
 	int lc;
-	const char *msg;
 
 	int status;
 	int pid;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 #ifdef UCLINUX
 	argv0 = argv[0];
@@ -323,7 +319,6 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 }
 
 static void inthandlr(void)

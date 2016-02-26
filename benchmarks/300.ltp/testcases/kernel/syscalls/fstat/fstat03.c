@@ -57,14 +57,12 @@
 #include <sys/stat.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #define FILE_MODE	S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
 #define TEST_FILE	"testfile"
 
 char *TCID = "fstat03";
 int TST_TOTAL = 1;
-int exp_enos[] = { EBADF, 0 };
 
 int fildes;			/* testfile descriptor */
 
@@ -75,22 +73,14 @@ int main(int ac, char **av)
 {
 	struct stat stat_buf;	/* stat structure buffer */
 	int lc;
-	const char *msg;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	/*
 	 * Invoke setup function to create a testfile under temporary
 	 * directory.
 	 */
 	setup();
-
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -105,7 +95,6 @@ int main(int ac, char **av)
 
 		/* Check return code from fstat(2) */
 		if (TEST_RETURN == -1) {
-			TEST_ERROR_LOG(TEST_ERRNO);
 			if (TEST_ERRNO == EBADF) {
 				tst_resm(TPASS,
 					 "fstat() fails with expected error EBADF");
@@ -169,11 +158,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	tst_rmdir();
 

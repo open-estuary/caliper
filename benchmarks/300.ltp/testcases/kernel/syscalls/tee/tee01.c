@@ -34,7 +34,6 @@
 #include <sys/syscall.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "linux_syscall_numbers.h"
 #include "safe_macros.h"
 #include "tst_fs_type.h"
@@ -58,10 +57,8 @@ int TST_TOTAL = 1;
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -163,8 +160,6 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	if (fd_in > 0 && close(fd_in))
 		tst_resm(TWARN, "Failed to close fd_in");
 

@@ -29,7 +29,6 @@
 #include <sys/mman.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #define TEMPFILE        "mmapfile"
 #define MMAPSIZE        (1UL<<20)
@@ -47,14 +46,11 @@ static void cleanup(void);
 int main(int argc, char *argv[])
 {
 	int lc;
-	const char *msg;
 	unsigned int sz_before;
 	unsigned int sz_after;
 	unsigned int sz_ch;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 
@@ -116,7 +112,7 @@ void getvmlck(unsigned int *lock_sz)
 
 static void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
@@ -125,5 +121,4 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 }

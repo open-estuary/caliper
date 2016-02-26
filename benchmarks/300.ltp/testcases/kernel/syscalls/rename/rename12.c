@@ -71,18 +71,14 @@
 #include <fcntl.h>
 #include <pwd.h>
 #include <unistd.h>
+
 #include "test.h"
-#include "usctest.h"
+#include "safe_macros.h"
 
 void setup();
 void cleanup();
-extern void do_file_setup(char *);
-extern struct passwd *my_getpwnam(char *);
 
 #define PERMS		0777
-
-char user1name[] = "nobody";
-char user2name[] = "bin";
 
 char *TCID = "rename12";
 int TST_TOTAL = 1;
@@ -90,31 +86,24 @@ int TST_TOTAL = 1;
 int fd;
 char fdir[255];
 char fname[255], mname[255];
-struct passwd *nobody;
+uid_t nobody_uid;
 struct stat buf1;
-
-int exp_enos[] = { EPERM, 0 };	/* List must end with 0 */
 
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	pid_t pid;
 	int status;
 
 	/*
 	 * parse standard options
 	 */
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	/*
 	 * perform global setup for test
 	 */
 	setup();
-
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
 
 	/*
 	 * check looping state if -i option given
@@ -135,7 +124,7 @@ int main(int ac, char **av)
 
 		if (pid == 0) {	/* child */
 			/* set to nobody */
-			if (seteuid(nobody->pw_uid) == -1) {
+			if (seteuid(nobody_uid) == -1) {
 				tst_resm(TWARN, "setreuid failed");
 				perror("setreuid");
 				exit(1);
@@ -148,8 +137,6 @@ int main(int ac, char **av)
 				tst_resm(TFAIL, "call succeeded unexpectedly");
 				exit(1);
 			}
-
-			TEST_ERROR_LOG(TEST_ERRNO);
 
 			if ((TEST_ERRNO != EPERM) && (TEST_ERRNO != EACCES)) {
 				tst_resm(TFAIL,
@@ -186,9 +173,14 @@ int main(int ac, char **av)
  */
 void setup(void)
 {
-	tst_require_root(NULL);
+	struct passwd *pw;
+
+	tst_require_root();
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
+
+	pw = SAFE_GETPWNAM(NULL, "nobody");
+	nobody_uid = pw->pw_uid;
 
 	TEST_PAUSE;
 
@@ -218,10 +210,7 @@ void setup(void)
 	}
 
 	/* create a file under fdir */
-	do_file_setup(fname);
-
-	/* get nobody password file info */
-	nobody = my_getpwnam(user1name);
+	SAFE_TOUCH(cleanup, fname, 0700, NULL);
 }
 
 /*
@@ -230,11 +219,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	/*
 	 * Remove the temporary directory.

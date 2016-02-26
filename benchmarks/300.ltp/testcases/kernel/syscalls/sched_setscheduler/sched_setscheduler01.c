@@ -56,7 +56,6 @@
 #include <sched.h>
 #include <pwd.h>
 #include "test.h"
-#include "usctest.h"
 
 #define SCHED_INVALID	99
 
@@ -64,7 +63,6 @@ char *TCID = "sched_setscheduler01";
 
 struct sched_param param;
 struct sched_param param1 = { 1 };
-int exp_enos[] = { ESRCH, EINVAL, EFAULT, 0 };
 
 void setup(void);
 void cleanup(void);
@@ -101,22 +99,16 @@ int TST_TOTAL = ARRAY_SIZE(TC);
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 
 	int i;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		/* reset tst_count in case we are looping */
 		tst_count = 0;
 
 		setup();
-
-		/* set up the expected errnos */
-		TEST_EXP_ENOS(exp_enos);
 
 		/* loop through the test cases */
 		for (i = 0; i < TST_TOTAL; i++) {
@@ -128,8 +120,6 @@ int main(int ac, char **av)
 				tst_resm(TFAIL, "call succeeded unexpectedly");
 				continue;
 			}
-
-			TEST_ERROR_LOG(TEST_ERRNO);
 
 			if (TEST_ERRNO == TC[i].error) {
 				tst_resm(TPASS, "expected failure - "
@@ -166,10 +156,5 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }

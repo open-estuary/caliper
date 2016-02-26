@@ -42,7 +42,6 @@
 #include <attr/xattr.h>
 #endif
 #include "test.h"
-#include "usctest.h"
 
 char *TCID = "getxattr03";
 
@@ -60,11 +59,8 @@ int TST_TOTAL = 1;
 int main(int argc, char *argv[])
 {
 	int lc;
-	const char *msg;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, tst_exit, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 
@@ -87,7 +83,7 @@ static void setup(void)
 {
 	int fd;
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_tmpdir();
 
@@ -112,7 +108,6 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 	tst_rmdir();
 }
 #else /* HAVE_ATTR_XATTR_H */

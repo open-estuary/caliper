@@ -46,7 +46,6 @@
 #include <pwd.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 
 #define MODE_RWX	S_IRWXU | S_IRWXG | S_IRWXO
@@ -83,8 +82,6 @@ static struct test_case_t {
 
 char *TCID = "lstat02";
 int TST_TOTAL = ARRAY_SIZE(test_cases);
-static int exp_enos[] = { EACCES, EFAULT, ENAMETOOLONG, ENOENT,
-			  ENOTDIR, ELOOP, 0 };
 
 static void setup(void);
 static void lstat_verify(int);
@@ -94,15 +91,10 @@ int main(int ac, char **av)
 {
 	int lc;
 	int i;
-	const char *msg;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
-
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		tst_count = 0;
@@ -119,7 +111,7 @@ static void setup(void)
 	int i;
 	struct passwd *ltpuser;
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -177,8 +169,6 @@ static void lstat_verify(int i)
 		return;
 	}
 
-	TEST_ERROR_LOG(TEST_ERRNO);
-
 	if (TEST_ERRNO == test_cases[i].exp_errno) {
 		tst_resm(TPASS | TTERRNO, "lstat() failed as expected");
 	} else {
@@ -193,8 +183,6 @@ static void cleanup(void)
 {
 	if (seteuid(0))
 		tst_resm(TINFO | TERRNO, "Failet to seteuid(0) before cleanup");
-
-	TEST_CLEANUP;
 
 	tst_rmdir();
 }

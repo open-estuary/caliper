@@ -85,7 +85,6 @@
 #include <sys/mman.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #define MODE_RWX		S_IFIFO | S_IRWXU | S_IRWXG | S_IRWXO
 
@@ -122,9 +121,7 @@ char *TCID = "mknod06";
 int TST_TOTAL = ARRAY_SIZE(Test_cases);
 #if !defined(UCLINUX)
 extern char *get_high_address();
-int exp_enos[] = { EEXIST, EFAULT, ENOENT, ENAMETOOLONG, ENOTDIR, 0 };
 #else
-int exp_enos[] = { EEXIST, ENOENT, ENAMETOOLONG, ENOTDIR, 0 };
 #endif
 
 char *bad_addr = 0;
@@ -135,25 +132,17 @@ void cleanup();			/* cleanup function for the tests */
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	char *node_name;	/* ptr. for node name created */
 	char *test_desc;	/* test specific error message */
 	int ind;		/* counter to test different test conditions */
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	/*
 	 * Invoke setup function to call individual test setup functions
 	 * for the test which run as root/super-user.
 	 */
 	setup();
-
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -184,8 +173,6 @@ int main(int ac, char **av)
 					 Test_cases[ind].exp_errno);
 				continue;
 			}
-
-			TEST_ERROR_LOG(TEST_ERRNO);
 
 			if (TEST_ERRNO == Test_cases[ind].exp_errno) {
 				tst_resm(TPASS, "mknod() fails, %s, errno:%d",
@@ -220,7 +207,7 @@ void setup(void)
 {
 	int ind;
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	/* Capture unexpected signals */
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
@@ -313,11 +300,6 @@ int setup3(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	tst_rmdir();
 

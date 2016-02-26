@@ -30,7 +30,6 @@
 
 #include <errno.h>
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 
 TCID_DEFINE(pselect02);
@@ -50,7 +49,6 @@ static struct test_case_t {
 };
 
 int TST_TOTAL = ARRAY_SIZE(test_cases);
-static int exp_enos[] = { EBADF, EINVAL, 0 };
 
 static void setup(void);
 static void cleanup(void);
@@ -58,12 +56,9 @@ static void pselect_verify(const struct test_case_t *);
 
 int main(int argc, char **argv)
 {
-	const char *msg;
 	int lc, i;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 
@@ -82,8 +77,6 @@ static void setup(void)
 	int fd;
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
-
-	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 
@@ -121,7 +114,5 @@ static void pselect_verify(const struct test_case_t *test)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	tst_rmdir();
 }

@@ -31,7 +31,6 @@
  * 02110-1301, USA.
  */
 #include "test.h"
-#include "usctest.h"
 #include "config.h"
 
 char *TCID = "mlock04";
@@ -100,8 +99,6 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	close(fd);
 
 	tst_rmdir();

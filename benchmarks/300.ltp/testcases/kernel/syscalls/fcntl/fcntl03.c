@@ -117,7 +117,6 @@
 #include <string.h>
 #include <signal.h>
 #include "test.h"
-#include "usctest.h"
 
 void setup();
 void cleanup();
@@ -125,22 +124,16 @@ void cleanup();
 char *TCID = "fcntl03";
 int TST_TOTAL = 1;
 
-int exp_enos[] = { 0, 0 };
-
 char fname[255];
 int fd;
 
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
-
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -177,8 +170,6 @@ void setup(void)
 
 void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	if (close(fd) == -1)
 		tst_resm(TWARN | TERRNO, "close failed");
 

@@ -29,7 +29,6 @@
 #include <string.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "compat_16.h"
 
 TCID_DEFINE(setregid04);
@@ -80,10 +79,8 @@ static void gid_verify(struct group *ru, struct group *eu, const char *when);
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -98,7 +95,6 @@ int main(int ac, char **av)
 				      *test_data[i].eff_gid));
 
 			if (TEST_RETURN == -1) {
-				TEST_ERROR_LOG(TEST_ERRNO);
 				tst_resm(TBROK, "setregid(%d, %d) failed",
 					 *test_data[i].real_gid,
 					 *test_data[i].eff_gid);
@@ -122,7 +118,7 @@ int main(int ac, char **av)
 
 static void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
@@ -136,7 +132,6 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 }
 
 static void gid_verify(struct group *rg, struct group *eg, const char *when)

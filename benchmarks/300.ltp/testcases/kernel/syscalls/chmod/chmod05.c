@@ -97,7 +97,6 @@
 #include <pwd.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #define DEBUG 0
 
@@ -116,11 +115,9 @@ int main(int ac, char **av)
 {
 	struct stat stat_buf;	/* stat struct */
 	int lc;
-	const char *msg;
 	mode_t dir_mode;	/* mode permissions set on test directory */
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -178,7 +175,7 @@ void setup(void)
 	struct passwd *nobody_u;
 	struct group *bin_group;
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	TEST_PAUSE;
 
@@ -217,8 +214,6 @@ void setup(void)
 
 void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	if (setegid(0) == -1)
 		tst_resm(TWARN | TERRNO, "setegid(0) failed");
 	if (seteuid(0) == -1)

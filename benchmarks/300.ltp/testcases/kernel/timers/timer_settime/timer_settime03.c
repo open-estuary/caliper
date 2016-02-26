@@ -70,19 +70,10 @@
 #include <unistd.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "common_timers.h"
 
 void setup(void);
 void setup_test(int option);
-
-char *TCID = "timer_settime03";	/* Test program identifier.    */
-int TST_TOTAL;			/* Total number of test cases. */
-
-static struct itimerspec new_set, old_set, *old_temp, *new_temp;
-static kernel_timer_t timer, tim;
-
-static int exp_enos[] = { EINVAL, EFAULT, 0 };
 
 int testcase[] = {
 	EINVAL,			/* New setting null */
@@ -93,19 +84,19 @@ int testcase[] = {
 	EFAULT			/* bad oldsetting * */
 };
 
+char *TCID = "timer_settime03";
+int TST_TOTAL = ARRAY_SIZE(testcase);
+
+static struct itimerspec new_set, old_set, *old_temp, *new_temp;
+static kernel_timer_t timer, tim;
+
 int main(int ac, char **av)
 {
 	int lc, i;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL))
-	    != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
-
-	TST_TOTAL = sizeof(testcase) / sizeof(testcase[0]);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -187,9 +178,6 @@ void setup(void)
 			 " setup test");
 	}
 
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
-
 	TEST_PAUSE;
 }
 
@@ -199,9 +187,4 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 }

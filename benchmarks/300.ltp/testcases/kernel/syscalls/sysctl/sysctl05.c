@@ -47,7 +47,6 @@
  */
 
 #include "test.h"
-#include "usctest.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <linux/unistd.h>
@@ -70,12 +69,8 @@ int sysctl(int *name, int nlen, void *oldval, size_t * oldlenp,
 	return syscall(__NR__sysctl, &args);
 }
 
-#define SIZE(x) sizeof(x)/sizeof(x[0])
-
 char osname[BUFSIZ];
 size_t osnamelth;
-
-int exp_enos[] = { EFAULT, 0 };
 
 void setup(void);
 void cleanup(void);
@@ -106,17 +101,12 @@ struct testcases {
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int i;
 	int ret = 0;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
-
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -125,7 +115,7 @@ int main(int ac, char **av)
 
 		for (i = 0; i < TST_TOTAL; ++i) {
 
-			osnamelth = SIZE(osname);
+			osnamelth = sizeof(osname);
 
 			TEST(sysctl(testcases[i].name, testcases[i].size,
 				    testcases[i].oldval, testcases[i].oldlen,
@@ -137,8 +127,6 @@ int main(int ac, char **av)
 					 testcases[i].exp_retval, ret);
 				continue;
 			}
-
-			TEST_ERROR_LOG(TEST_ERRNO);
 
 			if (TEST_ERRNO == ENOSYS) {
 				tst_resm(TCONF,
@@ -190,11 +178,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }
 

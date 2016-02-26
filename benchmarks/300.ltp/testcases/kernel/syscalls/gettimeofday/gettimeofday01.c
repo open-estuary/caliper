@@ -38,7 +38,6 @@
 #include <sys/time.h>
 #include <errno.h>
 #include "test.h"
-#include "usctest.h"
 #include <sys/syscall.h>
 #include <unistd.h>
 
@@ -49,24 +48,17 @@ int TST_TOTAL = 1;
 
 #if !defined UCLINUX
 
-int exp_enos[] = { EFAULT, 0 };
-
 void cleanup(void);
 void setup(void);
 
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int ret;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
-
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		tst_count = 0;
@@ -83,7 +75,6 @@ int main(int ac, char **av)
 			continue;
 		}
 
-		TEST_ERROR_LOG(TEST_ERRNO);
 		if (TEST_ERRNO == EFAULT)
 			tst_resm(TPASS,
 				 "gettimeofday(2) set the errno EFAULT correctly");
@@ -107,7 +98,6 @@ void setup(void)
 
 void cleanup(void)
 {
-	TEST_CLEANUP;
 }
 #else
 

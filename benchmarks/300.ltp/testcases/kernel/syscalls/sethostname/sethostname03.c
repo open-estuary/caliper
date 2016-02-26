@@ -74,7 +74,6 @@
 #include <linux/utsname.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #define MAX_LENGTH __NEW_UTS_LEN
 
@@ -83,7 +82,6 @@ int TST_TOTAL = 1;
 
 static char ltpthost[] = "ltphost";
 static char hname[MAX_LENGTH];
-static int exp_enos[] = { EPERM, 0 };
 
 static char nobody_uid[] = "nobody";
 struct passwd *ltpuser;
@@ -94,12 +92,8 @@ static void cleanup(void);
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	/* Do initial setup */
 	setup();
@@ -119,7 +113,6 @@ int main(int ac, char **av)
 				 "expected error;  errno: %d : %s",
 				 TEST_ERRNO, strerror(TEST_ERRNO));
 		}
-		TEST_ERROR_LOG(TEST_ERRNO);
 
 	}
 
@@ -136,10 +129,7 @@ void setup(void)
 {
 	int ret;
 
-	tst_require_root(NULL);
-
-	/* set up expected errnos */
-	TEST_EXP_ENOS(exp_enos);
+	tst_require_root();
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -172,11 +162,6 @@ void setup(void)
 void cleanup(void)
 {
 	int ret;
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	/* Set effective user id back to root/super user */
 	if (seteuid(0) == -1) {

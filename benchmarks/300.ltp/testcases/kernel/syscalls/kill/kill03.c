@@ -56,7 +56,6 @@
  */
 
 #include "test.h"
-#include "usctest.h"
 
 #include <signal.h>
 #include <errno.h>
@@ -69,27 +68,20 @@ void do_child(void);
 char *TCID = "kill03";
 int TST_TOTAL = 1;
 
-int exp_enos[] = { EINVAL, 0 };
-
 #define TEST_SIG 2000
 
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	pid_t pid;
 	int exno, status;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 #ifdef UCLINUX
 	maybe_run_child(&do_child, "");
 #endif
 
-	setup();		/* global setup */
-
-	TEST_EXP_ENOS(exp_enos);
+	setup();
 
 	/* The following loop checks looping state if -i option given */
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
@@ -127,7 +119,6 @@ int main(int ac, char **av)
 		 * Check to see if the errno was set to the expected
 		 * value of 22 : EINVAL.
 		 */
-		TEST_ERROR_LOG(TEST_ERRNO);
 		if (TEST_ERRNO == EINVAL) {
 			tst_resm(TPASS, "errno set to %d : %s, as "
 				 "expected", TEST_ERRNO,
@@ -170,10 +161,5 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing status if that option was specified.
-	 * print errno log if that option was specified
-	 */
-	TEST_CLEANUP;
 
 }

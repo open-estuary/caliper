@@ -27,7 +27,6 @@
 
 
 #include "test.h"
-#include "usctest.h"
 
 #include <errno.h>
 #include <sys/time.h>
@@ -40,16 +39,11 @@ int TST_TOTAL = 1;
 static void cleanup(void);
 static void setup(void);
 
-int exp_enos[] = { EFAULT, 0 };
-
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -65,8 +59,6 @@ int main(int ac, char **av)
 				 TEST_ERRNO, strerror(TEST_ERRNO));
 			continue;
 		}
-
-		TEST_ERROR_LOG(TEST_ERRNO);
 
 		switch (TEST_ERRNO) {
 		case EFAULT:
@@ -89,14 +81,11 @@ static void setup(void)
 {
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
-	TEST_EXP_ENOS(exp_enos);
-
 	TEST_PAUSE;
 }
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 }
 
 #else

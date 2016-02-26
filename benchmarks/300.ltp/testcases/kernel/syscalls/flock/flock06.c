@@ -67,7 +67,6 @@
 #include <sys/file.h>
 #include <sys/wait.h>
 #include "test.h"
-#include "usctest.h"
 
 void setup(void);
 void cleanup(void);
@@ -79,11 +78,8 @@ char filename[100];
 int main(int argc, char **argv)
 {
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 
@@ -97,20 +93,20 @@ int main(int argc, char **argv)
 
 		fd1 = open(filename, O_RDWR);
 		if (fd1 == -1)
-			tst_brkm(TFAIL, cleanup, "failed to open the"
-				 "file, errno %d", errno);
+			tst_brkm(TFAIL | TERRNO, cleanup,
+				 "failed to open the file");
 
 		TEST(flock(fd1, LOCK_EX | LOCK_NB));
 		if (TEST_RETURN != 0)
-			tst_resm(TFAIL, "First attempt to flock() failed, "
-				 "errno %d", TEST_ERRNO);
+			tst_resm(TFAIL | TTERRNO,
+				 "First attempt to flock() failed");
 		else
 			tst_resm(TPASS, "First attempt to flock() passed");
 
 		fd2 = open(filename, O_RDWR);
 		if (fd2 == -1)
-			tst_brkm(TFAIL, cleanup, "failed to open the"
-				 "file, errno %d", errno);
+			tst_brkm(TFAIL | TERRNO, cleanup,
+				 "failed to open the file");
 
 		TEST(flock(fd2, LOCK_EX | LOCK_NB));
 		if (TEST_RETURN == -1)
@@ -120,8 +116,7 @@ int main(int argc, char **argv)
 
 		TEST(flock(fd1, LOCK_UN));
 		if (TEST_RETURN == -1)
-			tst_resm(TFAIL, "Failed to unlock fd1, errno %d",
-				 TEST_ERRNO);
+			tst_resm(TFAIL | TTERRNO, "Failed to unlock fd1");
 		else
 			tst_resm(TPASS, "Unlocked fd1");
 
@@ -164,16 +159,8 @@ void setup(void)
 
 	/* creating temporary file */
 	fd = creat(filename, 0666);
-	if (fd < 0) {
-		tst_resm(TFAIL, "creating a new file failed");
-
-		TEST_CLEANUP;
-
-		/* Removing temp dir */
-		tst_rmdir();
-
-		tst_exit();
-	}
+	if (fd < 0)
+		tst_brkm(TBROK, tst_rmdir, "creating a new file failed");
 	close(fd);
 }
 
@@ -184,11 +171,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	unlink(filename);
 	tst_rmdir();

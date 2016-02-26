@@ -28,7 +28,6 @@
 #include <errno.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "compat_16.h"
 
 static void setup(void);
@@ -40,12 +39,10 @@ int TST_TOTAL = 1;
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 
 	uid_t uid;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -87,5 +84,4 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 }

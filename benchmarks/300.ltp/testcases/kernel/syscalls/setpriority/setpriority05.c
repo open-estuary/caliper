@@ -53,7 +53,6 @@
  */
 
 #include "test.h"
-#include "usctest.h"
 
 #include <errno.h>
 #include <sys/time.h>
@@ -68,18 +67,13 @@ int TST_TOTAL = 1;
 char nobody_uid[] = "nobody";
 struct passwd *ltpuser;
 
-int exp_enos[] = { EPERM, 0 };
-
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int new_val = 2;
 	int init_val = 1;	/* the init process = id 1 */
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();		/* global setup */
 
@@ -103,8 +97,6 @@ int main(int ac, char **av)
 				 strerror(TEST_ERRNO));
 		}
 
-		TEST_ERROR_LOG(TEST_ERRNO);
-
 		switch (TEST_ERRNO) {
 		case EPERM:
 			tst_resm(TPASS, "expected failure - errno = %d - %s",
@@ -126,7 +118,7 @@ int main(int ac, char **av)
  */
 void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	/* Switch to nobody user for correct error code collection */
 	ltpuser = getpwnam(nobody_uid);
@@ -138,8 +130,6 @@ void setup(void)
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
-	TEST_EXP_ENOS(exp_enos);
-
 	TEST_PAUSE;
 }
 
@@ -149,10 +139,5 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }

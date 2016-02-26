@@ -97,7 +97,6 @@
 #include <errno.h>
 #include <stdlib.h>
 #include "test.h"
-#include "usctest.h"
 
 #define FLAG O_RDWR | O_CREAT | O_TRUNC	/* Flags used when opening temp tile */
 #define MODE  0777		/* Mode to open file with */
@@ -122,8 +121,6 @@ int testrun(int flag, int bytes, int ti);
 char *TCID = "asyncio02";
 int TST_TOTAL = 6;
 
-int exp_enos[] = { 0 };		/* Array of expected errnos */
-
 char *filename;			/* name of the temporary file */
 
 char *Progname;
@@ -146,14 +143,12 @@ int main(int ac, char **av)
 	int ret_val;
 	int eok;		/* everything is ok flag */
 	int lc;
-	const char *msg;
 	int flag_cnt;
 
 	Num_flags = sizeof(Flags) / sizeof(int);
 	TST_TOTAL = 3 * Num_flags;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -284,9 +279,6 @@ void setup(void)
 	/* create a temporary directory and go to it */
 	tst_tmpdir();
 
-	/* Indicate which errnos are expected */
-	TEST_EXP_ENOS(exp_enos);
-
 	/*
 	 *  Attempt to get some memory to work with.
 	 */
@@ -303,11 +295,6 @@ void setup(void)
  ***************************************************************/
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	tst_rmdir();
 }

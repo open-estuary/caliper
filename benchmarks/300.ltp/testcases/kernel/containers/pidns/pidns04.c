@@ -56,7 +56,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
-#include "usctest.h"
 #include "test.h"
 #define CLEANUP cleanup
 #include "libclone.h"
@@ -66,7 +65,7 @@
 #define CHILD_PID       1
 #define PARENT_PID      0
 
-char *TCID = "pid_namespace4";
+char *TCID = "pidns04";
 int TST_TOTAL = 1;
 int fd[2];
 
@@ -103,7 +102,7 @@ static int child_fn1(void *ttype)
 
 static void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 	check_newpid();
 }
 
@@ -148,6 +147,5 @@ int main(int argc, char *argv[])
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 	close(fd[0]);
 }

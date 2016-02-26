@@ -87,12 +87,11 @@
 #include <linux/unistd.h>
 
 #include "test.h"		/*LTP Specific Include File */
-#include "usctest.h"		/*LTP Specific Include File */
 
 /* Test case defines */
 #define WINDOW_START 0x48000000
 
-size_t page_sz;
+static int page_sz;
 size_t page_words;
 size_t cache_pages;
 size_t cache_sz;
@@ -113,7 +112,6 @@ char fname[255];
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 
 #if defined (__s390__) || (__s390x__) || (__ia64__)
 	/* Disables the test in case the kernel version is lower than 2.6.12 and arch is s390 */
@@ -124,9 +122,7 @@ int main(int ac, char **av)
 	}
 #endif
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -183,7 +179,8 @@ again:
 		if (remap_file_pages(page, page_sz * 2, 0,
 				     (window_pages - i - 2), 0) == -1) {
 			tst_resm(TFAIL | TERRNO,
-				 "remap_file_pages error for page=%p, page_sz=%zu, window_pages=%zu",
+				 "remap_file_pages error for page=%p, "
+				 "page_sz=%d, window_pages=%zu",
 				 page, (page_sz * 2), (window_pages - i - 2));
 			cleanup(data);
 		}
@@ -196,7 +193,8 @@ again:
 		if (i & 1) {
 			if (data[i * page_sz] != window_pages - i) {
 				tst_resm(TFAIL,
-					 "hm, mapped incorrect data, data[%zu]=%d, (window_pages-%d)=%zu",
+					 "hm, mapped incorrect data, "
+					 "data[%d]=%d, (window_pages-%d)=%zu",
 					 (i * page_sz), data[i * page_sz], i,
 					 (window_pages - i));
 				cleanup(data);
@@ -204,7 +202,8 @@ again:
 		} else {
 			if (data[i * page_sz] != window_pages - i - 2) {
 				tst_resm(TFAIL,
-					 "hm, mapped incorrect data, data[%zu]=%d, (window_pages-%d-2)=%zu",
+					 "hm, mapped incorrect data, "
+					 "data[%d]=%d, (window_pages-%d-2)=%zu",
 					 (i * page_sz), data[i * page_sz], i,
 					 (window_pages - i - 2));
 				cleanup(data);
@@ -229,12 +228,9 @@ void setup(void)
 	TEST_PAUSE;
 
 	/* Get page size */
-	if ((page_sz = getpagesize()) < 0) {
-		tst_brkm(TFAIL, cleanup,
-			 "getpagesize() fails to get system page size");
-	}
+	page_sz = getpagesize();
 
-	page_words = (page_sz / sizeof(char));
+	page_words = page_sz;
 
 	/* Set the cache size */
 	cache_pages = 1024;
@@ -276,12 +272,6 @@ void cleanup(char *data)
 
 	/* Remove the /dev/shm/cache_<pid> file */
 	unlink(fname);
-
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	tst_rmdir();
 

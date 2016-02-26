@@ -121,14 +121,11 @@
 #include <setjmp.h>
 #include <unistd.h>
 #include "test.h"
-#include "usctest.h"
 
 void setup();
 void cleanup();
 
 char *TCID = "stat06";
-
-int exp_enos[] = { 0, 0 };
 
 char *bad_addr = 0;
 
@@ -178,7 +175,6 @@ int TST_TOTAL = ARRAY_SIZE(Test_cases);
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	char *fname;
 	char *desc;
 	int ind;
@@ -188,17 +184,12 @@ int main(int ac, char **av)
     /***************************************************************
      * parse standard options
      ***************************************************************/
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
     /***************************************************************
      * perform global setup for test
      ***************************************************************/
 	setup();
-
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
 
     /***************************************************************
      * check looping state if -c option given
@@ -298,11 +289,6 @@ void setup(void)
  ***************************************************************/
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	tst_rmdir();
 

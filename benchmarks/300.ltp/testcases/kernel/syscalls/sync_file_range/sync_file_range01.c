@@ -92,7 +92,6 @@
 #include <unistd.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "linux_syscall_numbers.h"
 
 #ifndef SYNC_FILE_RANGE_WAIT_BEFORE
@@ -146,11 +145,6 @@ int TST_TOTAL = sizeof(test_data) / sizeof(test_data[0]);
 /******************************************************************************/
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	/* close the file we have open */
 	if (close(filed) == -1) {
@@ -202,7 +196,7 @@ void setup(void)
 static inline long syncfilerange(int fd, off64_t offset, off64_t nbytes,
 				 unsigned int flags)
 {
-
+/* arm and powerpc */
 #if (defined(__arm__) || defined(__powerpc__) || defined(__powerpc64__))
 #if (__WORDSIZE == 32)
 #if __BYTE_ORDER == __BIG_ENDIAN
@@ -216,10 +210,16 @@ static inline long syncfilerange(int fd, off64_t offset, off64_t nbytes,
 #else
 	return ltp_syscall(__NR_sync_file_range2, fd, flags, offset, nbytes);
 #endif
+
+/* s390 */
+#elif (defined(__s390__) || defined(__s390x__)) && __WORDSIZE == 32
+	return ltp_syscall(__NR_sync_file_range, fd, (int)(offset >> 32),
+		(int)offset, (int)(nbytes >> 32), (int)nbytes, flags);
+
+/* other */
 #else
 	return ltp_syscall(__NR_sync_file_range, fd, offset, nbytes, flags);
 #endif
-
 }
 
 /******************************************************************************/
@@ -245,10 +245,8 @@ int main(int ac, char **av)
 {
 
 	int test_index = 0;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 #if defined(__powerpc__) || defined(__powerpc64__)	/* for PPC, kernel version > 2.6.21 needed */
 	if (tst_kvercmp(2, 16, 22) < 0) {
@@ -279,8 +277,6 @@ int main(int ac, char **av)
 				 TEST_RETURN);
 			continue;
 		}
-
-		TEST_ERROR_LOG(TEST_ERRNO);
 
 		if (TEST_ERRNO == test_data[test_index].error) {
 			tst_resm(TPASS | TTERRNO, "got expected error");

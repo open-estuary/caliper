@@ -33,7 +33,6 @@
 #include <unistd.h>
 
 #include "test.h"
-#include "usctest.h"
 
 static void setup(void);
 static void cleanup(void);
@@ -48,15 +47,11 @@ int main(int argc, char *argv[])
 	int i = 0;
 	char *file = NULL;
 	struct stat stat;
-
-	const char *msg = NULL;
 	char filename[64];
 	char *progname = NULL;
 	char *str_for_file = "abcdefghijklmnopqrstuvwxyz12345\n";
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 
@@ -130,8 +125,6 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	tst_rmdir();
 
 }

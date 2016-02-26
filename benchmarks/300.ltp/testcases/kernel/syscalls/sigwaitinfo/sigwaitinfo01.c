@@ -21,7 +21,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 #include "test.h"
-#include "usctest.h"
 #include <errno.h>
 #include <signal.h>
 #include "../utils/include_j_h.h"
@@ -87,8 +86,6 @@ static void setup(void)
 
 static void cleanup(void)
 {
-
-	TEST_CLEANUP;
 }
 
 typedef int (*swi_func) (const sigset_t * set, siginfo_t * info,
@@ -449,10 +446,8 @@ int main(int argc, char **argv)
 {
 	unsigned i;
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 

@@ -26,7 +26,6 @@
 
 #include <errno.h>
 #include "test.h"
-#include "usctest.h"
 #include "tst_module.h"
 #include "safe_macros.h"
 #include "linux_syscall_numbers.h"
@@ -40,7 +39,6 @@ static int dummy_mod_loaded;
 static int dummy_mod_dep_loaded;
 
 char *TCID = "delete_module03";
-static int exp_enos[] = { EWOULDBLOCK, 0 };
 
 int TST_TOTAL = 1;
 
@@ -50,11 +48,8 @@ static void cleanup(void);
 int main(int argc, char **argv)
 {
 	int lc;
-	const char *msg;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 
@@ -62,7 +57,6 @@ int main(int argc, char **argv)
 		tst_count = 0;
 
 		TEST(ltp_syscall(__NR_delete_module, DUMMY_MOD, 0));
-		TEST_ERROR_LOG(errno);
 
 		if (TEST_RETURN < 0) {
 			switch (errno) {
@@ -99,9 +93,7 @@ static void setup(void)
 {
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
-	tst_require_root(NULL);
-
-	TEST_EXP_ENOS(exp_enos);
+	tst_require_root();
 
 	/* Load first kernel module */
 	tst_module_load(cleanup, DUMMY_MOD_KO, NULL);
@@ -123,6 +115,4 @@ static void cleanup(void)
 	/* Unload first kernel module */
 	if (dummy_mod_loaded == 1)
 		tst_module_unload(NULL, DUMMY_MOD_KO);
-
-	TEST_CLEANUP;
 }

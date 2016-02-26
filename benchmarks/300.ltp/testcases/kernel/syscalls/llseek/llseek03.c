@@ -42,7 +42,6 @@
 #include <inttypes.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 
 #define TEST_FILE "testfile"
@@ -63,11 +62,8 @@ static size_t file_size;
 int main(int ac, char **av)
 {
 	int i, lc;
-	const char *msg;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -178,7 +174,5 @@ cleanup_seekend:
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	tst_rmdir();
 }

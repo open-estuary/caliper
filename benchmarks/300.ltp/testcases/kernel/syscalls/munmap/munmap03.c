@@ -41,7 +41,6 @@
 #include <sys/stat.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 
 char *TCID = "munmap03";
@@ -49,7 +48,6 @@ char *TCID = "munmap03";
 static size_t page_sz;
 static char *global_addr;
 static size_t global_maplen;
-static int exp_enos[] = { EINVAL, 0 };
 
 static void setup(void);
 static void cleanup(void);
@@ -63,10 +61,8 @@ int TST_TOTAL = ARRAY_SIZE(testfunc);
 int main(int ac, char **av)
 {
 	int i, lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -84,8 +80,6 @@ int main(int ac, char **av)
 static void setup(void)
 {
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
-
-	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 
@@ -157,8 +151,6 @@ static void test_einval3(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	if (munmap(global_addr, global_maplen) == -1)
 		tst_resm(TWARN | TERRNO, "munmap failed");
 }

@@ -54,13 +54,11 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
-#include "usctest.h"
 #include "test.h"
-#define CLEANUP cleanup
 #include "libclone.h"
 #include "pidns_helper.h"
 
-char *TCID = "pid_namespace1";
+char *TCID = "pidns01";
 int TST_TOTAL = 1;
 
 #define CHILD_PID       1
@@ -69,7 +67,7 @@ int TST_TOTAL = 1;
 /*
  * child_fn1() - Inside container
  */
-int child_fn1(void *ttype)
+int child_fn1(void *ttype LTP_ATTRIBUTE_UNUSED)
 {
 	int exit_val;
 	pid_t cpid, ppid;
@@ -91,22 +89,22 @@ int child_fn1(void *ttype)
 
 static void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 	check_newpid();
 }
 
 int main(int argc, char *argv[])
 {
 	int status;
-
+	tst_parse_opts(argc, argv, NULL, NULL);
 	setup();
 
 	TEST(do_clone_unshare_test(T_CLONE, CLONE_NEWPID, child_fn1, NULL));
 
 	if (TEST_RETURN == -1) {
-		tst_brkm(TFAIL | TTERRNO, cleanup, "clone failed");
+		tst_brkm(TFAIL | TTERRNO, NULL, "clone failed");
 	} else if ((wait(&status)) == -1) {
-		tst_brkm(TWARN | TERRNO, cleanup, "wait failed");
+		tst_brkm(TWARN | TERRNO, NULL, "wait failed");
 	}
 
 	if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
@@ -116,12 +114,6 @@ int main(int argc, char *argv[])
 			 WTERMSIG(status));
 	}
 
-	cleanup();
 	tst_exit();
 }
 
-static void cleanup()
-{
-	/* Clean the test testcase as LTP wants */
-	TEST_CLEANUP;
-}

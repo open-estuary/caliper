@@ -33,7 +33,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "test.h"
-#include "usctest.h"
 
 char *TCID = "stream02";
 int TST_TOTAL = 1;
@@ -53,13 +52,11 @@ int main(int ac, char *av[])
 	FILE *stream;
 	int fd;
 	int lc;
-	const char *msg;
 
 	/*
 	 * parse standard options
 	 */
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	local_flag = PASSED;
 	tst_tmpdir();

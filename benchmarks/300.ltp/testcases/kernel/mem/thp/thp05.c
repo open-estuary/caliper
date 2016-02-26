@@ -48,7 +48,6 @@
 #include <unistd.h>
 #include "numa_helper.h"
 #include "test.h"
-#include "usctest.h"
 #include "mem.h"
 
 char *TCID = "thp05";
@@ -73,9 +72,8 @@ int main(int argc, char *argv[])
 	char *msg;
 	int nr_children = 2, nr_thps = 64;
 
-	msg = parse_opts(argc, argv, thp_options, thp_usage);
-	if (msg != NULL)
-		tst_brkm(TBROK, tst_exit, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, thp_options, thp_usage);
+
 	check_thp_options(&nr_children, &nr_thps);
 
 	setup();
@@ -104,10 +102,10 @@ int main(int argc, char *argv[])
 
 void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	if (access(PATH_THP, F_OK) == -1)
-		tst_brkm(TCONF, NULL, "THP is not enabled");
+		tst_brkm(TCONF, NULL, "THP not enabled in kernel?");
 
 	if (!is_numa(NULL))
 		tst_brkm(TCONF, NULL, "The case need a NUMA system.");
@@ -141,8 +139,6 @@ void cleanup(void)
 		FILE_PRINTF(PATH_THP "enabled", "madvise");
 	else
 		FILE_PRINTF(PATH_THP "enabled", "never");
-
-	TEST_CLEANUP;
 }
 
 #else /* no NUMA */

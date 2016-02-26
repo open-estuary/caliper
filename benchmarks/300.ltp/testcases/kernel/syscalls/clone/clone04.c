@@ -30,7 +30,6 @@
 #include <errno.h>
 #include <sys/wait.h>
 #include "test.h"
-#include "usctest.h"
 #include "clone_platform.h"
 
 static void cleanup(void);
@@ -38,8 +37,6 @@ static void setup(void);
 static int child_fn();
 
 static void *child_stack;
-
-static int exp_enos[] = { EINVAL, 0 };
 
 static struct test_case_t {
 	int (*child_fn) ();
@@ -56,12 +53,9 @@ int TST_TOTAL = sizeof(test_cases) / sizeof(test_cases[0]);
 int main(int ac, char **av)
 {
 	int lc, ind;
-	const char *msg;
 	void *test_stack;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -93,7 +87,6 @@ int main(int ac, char **av)
 					 test_cases[ind].exp_errno,
 					 TEST_RETURN);
 			}
-			TEST_ERROR_LOG(TEST_ERRNO);
 		}
 	}
 
@@ -104,7 +97,6 @@ int main(int ac, char **av)
 static void setup(void)
 {
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
-	TEST_EXP_ENOS(exp_enos);
 	TEST_PAUSE;
 
 	child_stack = malloc(CHILD_STACK_SIZE);
@@ -112,7 +104,6 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 	free(child_stack);
 }
 

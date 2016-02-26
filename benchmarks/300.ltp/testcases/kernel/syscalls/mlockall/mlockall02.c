@@ -77,7 +77,6 @@
 #include <pwd.h>
 #include <sys/mman.h>
 #include "test.h"
-#include "usctest.h"
 #include <sys/resource.h>
 
 void setup();
@@ -87,8 +86,6 @@ void cleanup();
 
 char *TCID = "mlockall02";
 int TST_TOTAL = 3;
-
-int exp_enos[] = { ENOMEM, EPERM, EINVAL, 0 };
 
 struct test_case_t {
 	int flag;		/* flag value                   */
@@ -106,11 +103,8 @@ struct test_case_t {
 int main(int ac, char **av)
 {
 	int lc, i;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -131,7 +125,6 @@ int main(int ac, char **av)
 
 			/* check return code */
 			if (TEST_RETURN == -1) {
-				TEST_ERROR_LOG(TEST_ERRNO);
 				if (TEST_ERRNO != TC[i].error)
 					tst_brkm(TFAIL, cleanup,
 						 "mlock() Failed with wrong "
@@ -171,10 +164,9 @@ int main(int ac, char **av)
 void setup(void)
 {
 
-	tst_sig(FORK, DEF_HANDLER, cleanup);
+	tst_require_root();
 
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
+	tst_sig(FORK, DEF_HANDLER, cleanup);
 
 	TEST_PAUSE;
 
@@ -272,8 +264,6 @@ void cleanup_test(int i)
  */
 void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	return;
 }
 

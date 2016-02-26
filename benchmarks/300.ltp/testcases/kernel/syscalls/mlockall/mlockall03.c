@@ -79,7 +79,6 @@
 #include <ctype.h>
 #include <sys/mman.h>
 #include "test.h"
-#include "usctest.h"
 #include <sys/resource.h>
 #include <sys/utsname.h>
 
@@ -95,7 +94,6 @@ int TST_TOTAL = 3;
 #if !defined(UCLINUX)
 
 char *ref_release = "2.6.8\0";
-int exp_enos[] = { ENOMEM, EPERM, EINVAL, 0 };
 
 struct test_case_t {
 	int flag;		/* flag value                   */
@@ -112,12 +110,9 @@ struct test_case_t {
 int main(int ac, char **av)
 {
 	int lc, i;
-	const char *msg;
 	struct utsname *buf;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	/* allocate some space for buf */
 	if ((buf = malloc((size_t)sizeof(struct utsname))) == NULL) {
@@ -153,7 +148,6 @@ int main(int ac, char **av)
 
 			/* check return code */
 			if (TEST_RETURN == -1) {
-				TEST_ERROR_LOG(TEST_ERRNO);
 				if (TEST_ERRNO != TC[i].error)
 					tst_brkm(TFAIL, cleanup,
 						 "mlockall() Failed with wrong "
@@ -189,10 +183,9 @@ int main(int ac, char **av)
 void setup(void)
 {
 
-	tst_sig(FORK, DEF_HANDLER, cleanup);
+	tst_require_root();
 
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
+	tst_sig(FORK, DEF_HANDLER, cleanup);
 
 	TEST_PAUSE;
 
@@ -320,7 +313,5 @@ int main(void)
  */
 void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	return;
 }

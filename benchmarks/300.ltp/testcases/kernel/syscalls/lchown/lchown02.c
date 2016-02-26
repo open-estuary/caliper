@@ -57,7 +57,6 @@
 #include <sys/mman.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "compat_16.h"
 
 #define TEST_USER       "nobody"
@@ -103,26 +102,19 @@ static struct test_case_t test_cases[] = {
 
 static struct passwd *ltpuser;
 
-static int exp_enos[] =
-    { EPERM, EACCES, EFAULT, ENAMETOOLONG, ENOENT, ENOTDIR, 0 };
-
 static void setup(void);
 static void cleanup(void);
 
 int main(int argc, char *argv[])
 {
 	int lc;
-	const char *msg;
 	uid_t user_id;
 	gid_t group_id;
 	int i;
 
-	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
 
 	user_id = geteuid();
 	UID16_CHECK(user_id, lchown, cleanup);
@@ -145,7 +137,6 @@ int main(int argc, char *argv[])
 
 			/* Check return code from lchown(2) */
 			if (TEST_RETURN == -1) {
-				TEST_ERROR_LOG(TEST_ERRNO);
 				if (TEST_ERRNO == test_cases[i].exp_errno) {
 					tst_resm(TPASS,
 						 "lchown(2) fails, %s, errno:%d",
@@ -174,7 +165,7 @@ static void setup(void)
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	TEST_PAUSE;
 
@@ -324,9 +315,6 @@ static void setup_longpath(int pos)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
-	/* become root again */
 	if (seteuid(0) == -1) {
 		tst_resm(TINFO | TERRNO,
 			 "seteuid(2) failed to set the effective uid to 0");

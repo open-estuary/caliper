@@ -78,11 +78,9 @@
 #include <wait.h>
 
 #include "test.h"
-#include "usctest.h"
 
 char *TCID = "vfork02";
 int TST_TOTAL = 1;
-int exp_enos[] = { 0 };
 
 void setup();			/* Main setup function of test */
 void cleanup();			/* cleanup function for the test */
@@ -91,21 +89,13 @@ void sig_handler();		/* signal catching function */
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	pid_t cpid;		/* process id of the child process */
 	int exit_status;	/* exit status of child process */
 	sigset_t PendSig;	/* variable to hold pending signal */
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
-
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -118,7 +108,6 @@ int main(int ac, char **av)
 		TEST(vfork());
 
 		if ((cpid = TEST_RETURN) == -1) {
-			TEST_ERROR_LOG(TEST_ERRNO);
 			tst_resm(TFAIL, "vfork() Failed, errno=%d : %s",
 				 TEST_ERRNO, strerror(TEST_ERRNO));
 		} else if (cpid == 0) {	/* Child process */
@@ -233,11 +222,6 @@ void sig_handler(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	/* Release the signal 'SIGUSR1' if in pending state */
 	if (sigrelse(SIGUSR1) == -1) {

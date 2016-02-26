@@ -65,11 +65,8 @@ static void do_mremap(void);
 int main(int argc, char **argv)
 {
 	int lc;
-	const char *msg;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 
@@ -124,6 +121,9 @@ static void do_mremap(void)
 
 void setup(void)
 {
+	if (access(PATH_THP, F_OK) == -1)
+		tst_brkm(TCONF, NULL, "THP not enabled in kernel?");
+
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 	TEST_PAUSE;
 
@@ -134,7 +134,6 @@ void setup(void)
 
 void cleanup(void)
 {
-	TEST_CLEANUP;
 }
 
 #else

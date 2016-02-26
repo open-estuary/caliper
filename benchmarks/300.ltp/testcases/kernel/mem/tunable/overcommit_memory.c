@@ -81,7 +81,6 @@
 #include <stdlib.h>
 #include "test.h"
 #include "safe_macros.h"
-#include "usctest.h"
 #include "mem.h"
 
 #define DEFAULT_OVER_RATIO	50L
@@ -111,12 +110,9 @@ static void update_mem(void);
 
 int main(int argc, char *argv[])
 {
-	const char *msg;
 	int lc;
 
-	msg = parse_opts(argc, argv, options, &usage);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, options, &usage);
 
 #if __WORDSIZE == 32
 	tst_brkm(TCONF, NULL, "test is not designed for 32-bit system.");
@@ -143,8 +139,9 @@ int main(int argc, char *argv[])
 void setup(void)
 {
 	long mem_total, swap_total;
+	struct rlimit lim;
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -158,8 +155,6 @@ void setup(void)
 	old_overcommit_memory = get_sys_tune("overcommit_memory");
 	old_overcommit_ratio = get_sys_tune("overcommit_ratio");
 
-	set_sys_tune("overcommit_ratio", overcommit_ratio, 1);
-
 	mem_total = read_meminfo("MemTotal:");
 	tst_resm(TINFO, "MemTotal is %ld kB", mem_total);
 	swap_total = read_meminfo("SwapTotal:");
@@ -168,14 +163,25 @@ void setup(void)
 
 	commit_limit = read_meminfo("CommitLimit:");
 	tst_resm(TINFO, "CommitLimit is %ld kB", commit_limit);
+
+	SAFE_GETRLIMIT(NULL, RLIMIT_AS, &lim);
+
+	if (lim.rlim_cur != RLIM_INFINITY) {
+		lim.rlim_cur = RLIM_INFINITY;
+		lim.rlim_max = RLIM_INFINITY;
+
+		tst_resm(TINFO, "Increasing RLIM_AS to INFINITY");
+
+		SAFE_SETRLIMIT(NULL, RLIMIT_AS, &lim);
+	}
+
+	set_sys_tune("overcommit_ratio", overcommit_ratio, 1);
 }
 
 void cleanup(void)
 {
 	set_sys_tune("overcommit_memory", old_overcommit_memory, 0);
 	set_sys_tune("overcommit_ratio", old_overcommit_ratio, 0);
-
-	TEST_CLEANUP;
 }
 
 static void usage(void)

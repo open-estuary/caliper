@@ -41,7 +41,6 @@
 #include <fcntl.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "getdents.h"
 #include "safe_macros.h"
 
@@ -54,8 +53,6 @@ static void setup(void);
 static void print_test_result(int err, int exp_errno);
 
 char *TCID = "getdents02";
-
-static int exp_enos[] = { EBADF, EINVAL, ENOTDIR, ENOENT, 0 };
 
 static void test_ebadf(void);
 static void test_einval(void);
@@ -83,10 +80,8 @@ static void help(void)
 int main(int ac, char **av)
 {
 	int lc, i;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, options, &help)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, options, &help);
 
 	setup();
 
@@ -107,14 +102,11 @@ static void setup(void)
 
 	tst_tmpdir();
 
-	TEST_EXP_ENOS(exp_enos);
-
 	TEST_PAUSE;
 }
 
 static void print_test_result(int err, int exp_errno)
 {
-	TEST_ERROR_LOG(err);
 	if (err == 0) {
 		tst_resm(TFAIL, "call succeeded unexpectedly");
 	} else if  (err == exp_errno) {
@@ -204,7 +196,5 @@ static void test_enoent(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	tst_rmdir();
 }

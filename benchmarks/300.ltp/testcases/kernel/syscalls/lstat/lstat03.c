@@ -38,7 +38,6 @@
 #include <pwd.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 
 #define FILE_MODE	S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
@@ -63,11 +62,8 @@ int main(int ac, char **av)
 {
 	struct stat stat_buf;
 	int lc;
-	const char *msg;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -101,7 +97,7 @@ static void setup(void)
 {
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	ltpuser = SAFE_GETPWNAM(NULL, nobody_uid);
 	SAFE_SETUID(NULL, ltpuser->pw_uid);
@@ -121,7 +117,5 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	tst_rmdir();
 }

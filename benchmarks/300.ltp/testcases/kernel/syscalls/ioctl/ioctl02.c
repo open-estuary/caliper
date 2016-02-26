@@ -67,7 +67,6 @@
 #include <sys/ioctl.h>
 #include <sys/termios.h>
 #include "test.h"
-#include "usctest.h"
 
 #define	CNUL	0
 
@@ -97,7 +96,6 @@ static void sigterm_handler(void);
 static int Devflag;
 static char *devname;
 
-/* for test specific parse_opts options - in this case "-D" */
 static option_t options[] = {
 	{"D:", &Devflag, &devname},
 	{NULL, NULL, NULL}
@@ -107,11 +105,9 @@ int main(int ac, char **av)
 {
 	int lc;
 	int rval;
-	const char *msg;
 
-	msg = parse_opts(ac, av, options, &help);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, options, &help);
+
 #ifdef UCLINUX
 	maybe_run_child(&do_child_uclinux, "dS", &parentpid, &childtty);
 #endif
@@ -120,7 +116,7 @@ int main(int ac, char **av)
 		tst_brkm(TBROK, NULL, "You must specify a tty device with "
 			 "the -D option.");
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	setup();
 
@@ -475,9 +471,6 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
-	/* Restore the device information that was saved in setup() */
 	if (!closed) {
 		if (ioctl(parentfd, TCSETA, &save_io) == -1)
 			tst_resm(TINFO, "ioctl restore failed in cleanup()");

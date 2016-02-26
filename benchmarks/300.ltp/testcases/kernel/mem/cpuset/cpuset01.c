@@ -49,7 +49,6 @@
 #include <unistd.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "mem.h"
 #include "numa_helper.h"
 
@@ -71,11 +70,8 @@ static long count_cpu(void);
 
 int main(int argc, char *argv[])
 {
-	const char *msg;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	ncpus = count_cpu();
 	if (get_allowed_nodes_arr(NH_MEMS | NH_CPUS, &nnodes, &nodes) < 0)
@@ -131,7 +127,7 @@ static void testcpuset(void)
 
 void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	if (tst_kvercmp(2, 6, 32) < 0)
 		tst_brkm(TCONF, NULL, "2.6.32 or greater kernel required");
@@ -145,8 +141,6 @@ void setup(void)
 void cleanup(void)
 {
 	umount_mem(CPATH, CPATH_NEW);
-
-	TEST_CLEANUP;
 }
 
 static void sighandler(int signo LTP_ATTRIBUTE_UNUSED)

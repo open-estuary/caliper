@@ -54,7 +54,6 @@
 #include <signal.h>
 #include <unistd.h>
 #include "test.h"
-#include "usctest.h"
 #include "libftest.h"
 
 #define MAXCHILD	25
@@ -385,7 +384,7 @@ struct ino_thing {
 } ino_thing[] = {
 THING(crfile), THING(unlfile), THING(fussdir), THING(sync),};
 
-#define	NTHING	(sizeof(ino_thing) / sizeof(ino_thing[0]))
+#define	NTHING	ARRAY_SIZE(ino_thing)
 
 int thing_cnt[NTHING];
 int thing_last[NTHING];

@@ -52,7 +52,6 @@
  */
 
 #include "test.h"
-#include "usctest.h"
 
 #include "ipcmsg.h"
 
@@ -61,8 +60,6 @@ void setup(void);
 
 char *TCID = "msgsnd03";
 int TST_TOTAL = 4;
-
-int exp_enos[] = { EINVAL, 0 };	/* 0 terminated list of expected errnos */
 
 int msg_q_1 = -1;		/* The message queue id created in setup */
 MSGBUF msg_buf;			/* a buffer for the message to queue */
@@ -92,11 +89,9 @@ struct test_case_t {
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int i;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();		/* global setup */
 
@@ -124,8 +119,6 @@ int main(int ac, char **av)
 				continue;
 			}
 
-			TEST_ERROR_LOG(TEST_ERRNO);
-
 			if (TEST_ERRNO == TC[i].error) {
 				tst_resm(TPASS, "expected failure - "
 					 "errno = %d : %s", TEST_ERRNO,
@@ -149,9 +142,6 @@ void setup(void)
 {
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
-
-	/* Set up the expected error numbers for -e option */
-	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 
@@ -184,11 +174,5 @@ void cleanup(void)
 	rm_queue(msg_q_1);
 
 	tst_rmdir();
-
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }

@@ -57,7 +57,6 @@
 #include <attr/xattr.h>
 #endif
 #include "test.h"
-#include "usctest.h"
 
 char *TCID = "setxattr02";
 
@@ -150,11 +149,8 @@ int main(int argc, char *argv[])
 {
 	int lc;
 	int i;
-	const char *msg;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, tst_exit, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 
@@ -182,8 +178,9 @@ int main(int argc, char *argv[])
 static void setup(void)
 {
 	int fd;
+	dev_t dev;
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_tmpdir();
 
@@ -217,7 +214,8 @@ static void setup(void)
 		tst_brkm(TBROK | TERRNO, cleanup, "Create FIFO(%s) failed",
 			 FIFO);
 
-	if (mknod(CHR, S_IFCHR | 0777, 0) == -1)
+	dev = makedev(1, 3);
+	if (mknod(CHR, S_IFCHR | 0777, dev) == -1)
 		tst_brkm(TBROK | TERRNO, cleanup, "Create char special(%s)"
 			 " failed", CHR);
 
@@ -234,7 +232,6 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 	tst_rmdir();
 }
 #else /* HAVE_ATTR_XATTR_H */

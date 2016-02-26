@@ -53,7 +53,6 @@
 #include <sys/mount.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 #include "compat_16.h"
 
@@ -88,8 +87,6 @@ static struct test_case_t {
 
 TCID_DEFINE(chown04);
 int TST_TOTAL = ARRAY_SIZE(tc);
-static int exp_enos[] = { EPERM, EACCES, EFAULT, ENAMETOOLONG, ENOENT, ENOTDIR,
-		          ELOOP, EROFS, 0 };
 
 static char *bad_addr;
 
@@ -99,18 +96,13 @@ static void cleanup(void);
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int i;
 	uid_t user_id;
 	gid_t group_id;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
-
-	TEST_EXP_ENOS(exp_enos);
 
 	UID16_CHECK((user_id = geteuid()), "chown", cleanup)
 	GID16_CHECK((group_id = getegid()), "chown", cleanup)
@@ -146,7 +138,7 @@ static void setup(void)
 	struct passwd *ltpuser;
 	const char *fs_type;
 
-	tst_require_root(NULL);
+	tst_require_root();
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 	ltpuser = SAFE_GETPWNAM(NULL, "nobody");
 
@@ -191,12 +183,10 @@ static void setup(void)
 
 void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	if (seteuid(0) == -1)
 		tst_resm(TWARN | TERRNO, "seteuid(0) failed");
 
-	if (mount_flag && umount("mntpoint") < 0) {
+	if (mount_flag && tst_umount("mntpoint") < 0) {
 		tst_brkm(TBROK | TERRNO, NULL,
 			 "umount device:%s failed", device);
 	}

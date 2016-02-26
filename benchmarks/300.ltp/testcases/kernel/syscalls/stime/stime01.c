@@ -77,7 +77,6 @@
 #include <sys/time.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #define INCR_TIME	30	/* increment in the system's current time */
 
@@ -86,8 +85,7 @@
 char *TCID = "stime01";
 int TST_TOTAL = 1;
 struct timeval real_time_tv, pres_time_tv;
-time_t new_time;		/* system's new time */
-int exp_enos[] = { 0 };
+time_t new_time;
 
 void setup();			/* Main setup function of test */
 void cleanup();			/* cleanup function for the test */
@@ -95,18 +93,10 @@ void cleanup();			/* cleanup function for the test */
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
-
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -189,7 +179,7 @@ int main(int ac, char **av)
  */
 void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	TEST_PAUSE;
 
@@ -202,11 +192,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	/* Restore the original system time. */
 	if (settimeofday(&real_time_tv, NULL) != 0) {

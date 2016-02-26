@@ -47,7 +47,6 @@
 #include <errno.h>
 #include <wait.h>
 #include "test.h"
-#include "usctest.h"
 
 char *TCID = "setpgrp02";
 int TST_TOTAL = 1;
@@ -58,14 +57,11 @@ void cleanup(void);
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;		/* message returned by parse_opts */
 
 	int pid, oldpgrp;
 	int e_code, status, retval = 0;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -130,10 +126,5 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }

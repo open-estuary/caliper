@@ -68,15 +68,12 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include "test.h"
-#include "usctest.h"
 
 void setup();
 void cleanup();
 
 char *TCID = "mlockall01";
 int TST_TOTAL = 3;
-
-int exp_enos[] = { 0 };
 
 #if !defined(UCLINUX)
 
@@ -96,11 +93,8 @@ struct test_case_t {
 int main(int ac, char **av)
 {
 	int lc, i;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -115,7 +109,6 @@ int main(int ac, char **av)
 			/* check return code */
 
 			if (TEST_RETURN == -1) {
-				TEST_ERROR_LOG(TEST_ERRNO);
 				tst_resm(TFAIL | TTERRNO,
 					 "mlockall(%s) Failed with "
 					 "return=%ld", TC[i].fdesc,
@@ -150,12 +143,9 @@ int main(void)
 
 void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
-
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 }
@@ -166,6 +156,4 @@ void setup(void)
  */
 void cleanup(void)
 {
-	TEST_CLEANUP;
-
 }

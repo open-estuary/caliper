@@ -65,19 +65,15 @@
 #include <errno.h>
 
 #include "test.h"
-#include "usctest.h"
 
 void setup();
 void cleanup();
-extern void do_file_setup(char *);
 
 char *TCID = "rename10";
 int TST_TOTAL = 2;
 
 char badmname[] =
     "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstmnopqrstuvwxyzabcdefghijklmnopqrstmnopqrstuvwxyzabcdefghijklmnopqrstmnopqrstuvwxyzabcdefghijklmnopqrstmnopqrstuvwxyzabcdefghijklmnopqrstmnopqrstuvwxyzabcdefghijklmnopqrstmnopqrstuvwxyz";
-
-int exp_enos[] = { ENAMETOOLONG, ENOENT, 0 };	/* List must end with 0 */
 
 int fd;
 char fname[255], mname[255];
@@ -99,22 +95,17 @@ struct test_case_t {
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int i;
 
 	/*
 	 * parse standard options
 	 */
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	/*
 	 * perform global setup for test
 	 */
 	setup();
-
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
 
 	/*
 	 * check looping state if -i option given
@@ -132,8 +123,6 @@ int main(int ac, char **av)
 				tst_resm(TFAIL, "call succeeded unexpectedly");
 				continue;
 			}
-
-			TEST_ERROR_LOG(TEST_ERRNO);
 
 			if (TEST_ERRNO == TC[i].error) {
 				tst_resm(TPASS, "expected failure - "
@@ -169,7 +158,7 @@ void setup(void)
 	sprintf(mdir, "./rndir_%d", getpid());
 	sprintf(mname, "%s/rnfile_%d", mdir, getpid());
 
-	do_file_setup(fname);
+	SAFE_TOUCH(cleanup, fname, 0700, NULL);
 }
 
 /*
@@ -178,11 +167,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	/*
 	 * Remove the temporary directory.

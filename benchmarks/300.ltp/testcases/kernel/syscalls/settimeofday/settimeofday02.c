@@ -60,7 +60,6 @@
 #include <sys/time.h>
 #include <errno.h>
 #include "test.h"
-#include "usctest.h"
 #include <pwd.h>
 
 #define	VAL_SEC		100
@@ -68,7 +67,6 @@
 
 char *TCID = "settimeofday02";
 int TST_TOTAL = 1;
-int exp_enos[] = { EFAULT, EPERM, 0 };
 
 struct timeval tp;
 time_t save_tv_sec, save_tv_usec;
@@ -85,11 +83,8 @@ void restore_time(void);
 int main(int argc, char **argv)
 {
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 
@@ -102,7 +97,6 @@ int main(int argc, char **argv)
 			tst_resm(TFAIL, "settimeofday(2) failed to FAIL");
 			restore_time();
 		} else {
-			TEST_ERROR_LOG(TEST_ERRNO);
 			if (TEST_ERRNO != EFAULT) {
 				tst_resm(TFAIL, "Expected EFAULT got %d",
 					 TEST_ERRNO);
@@ -118,7 +112,6 @@ int main(int argc, char **argv)
 			tst_resm(TFAIL, "settimeofday(2) failed to FAIL");
 			restore_time();
 		} else {
-			TEST_ERROR_LOG(TEST_ERRNO);
 			if (TEST_ERRNO != EPERM) {
 				tst_resm(TFAIL, "Expected EPERM got %d",
 					 TEST_ERRNO);
@@ -148,7 +141,7 @@ int main(void)
  */
 void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
@@ -159,9 +152,6 @@ void setup(void)
 			 "to set the effective uid to %d", ltpuser->pw_uid);
 		perror("setuid");
 	}
-
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
 
 	/* Pause if that option was specified
 	 * TEST_PAUSE contains the code to fork the test with the -c option.
@@ -184,11 +174,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }
 

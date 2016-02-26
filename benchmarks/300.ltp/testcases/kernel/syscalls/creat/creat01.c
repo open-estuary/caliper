@@ -57,7 +57,6 @@
 #include <pwd.h>
 #include <stdio.h>
 #include "test.h"
-#include "usctest.h"
 
 void setup(void);
 void cleanup(void);
@@ -89,10 +88,8 @@ int main(int ac, char **av)
 {
 	int i;
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -141,7 +138,7 @@ void setup(void)
 {
 	fd = -1;
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	ltpuser = getpwnam(nobody_uid);
 	if (ltpuser == NULL)
@@ -162,8 +159,6 @@ void setup(void)
 
 void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	if (fd != -1)
 		close(fd);
 

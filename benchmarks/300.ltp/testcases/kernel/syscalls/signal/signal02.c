@@ -54,7 +54,6 @@
  */
 
 #include "test.h"
-#include "usctest.h"
 
 #include <errno.h>
 #include <signal.h>
@@ -69,17 +68,13 @@ typedef void (*sighandler_t) (int);
 
 sighandler_t Tret;
 int sigs[] = { _NSIG + 1, SIGKILL, SIGSTOP };
-int exp_enos[] = { 22, 0 };
 
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int i;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();		/* global setup */
 
@@ -103,8 +98,6 @@ int main(int ac, char **av)
 					 "errno = %d : %s", TCID, TEST_ERRNO,
 					 strerror(TEST_ERRNO));
 			}
-
-			TEST_ERROR_LOG(TEST_ERRNO);
 
 			switch (TEST_ERRNO) {
 			case EINVAL:
@@ -136,9 +129,6 @@ void setup(void)
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
-	/* set expected errnos for -e option */
-	TEST_EXP_ENOS(exp_enos);
-
 	TEST_PAUSE;
 }
 
@@ -148,10 +138,5 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }

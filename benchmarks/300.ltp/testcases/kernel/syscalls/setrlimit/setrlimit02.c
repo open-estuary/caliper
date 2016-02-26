@@ -45,7 +45,6 @@
 #include <errno.h>
 #include <pwd.h>
 #include "test.h"
-#include "usctest.h"
 
 char *TCID = "setrlimit02";
 
@@ -56,8 +55,6 @@ struct rlimit rlim;
 
 void setup();
 void cleanup();
-
-int exp_enos[] = { EFAULT, EINVAL, EPERM, 0 };
 
 struct test_case_t {
 	int resource;
@@ -82,17 +79,11 @@ int TST_TOTAL = ARRAY_SIZE(TC);
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int i;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
-
-	/* set up the expected errnos */
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -107,8 +98,6 @@ int main(int ac, char **av)
 				tst_resm(TFAIL, "call succeeded unexpectedly");
 				continue;
 			}
-
-			TEST_ERROR_LOG(TEST_ERRNO);
 
 			if (TEST_ERRNO == TC[i].error) {
 				tst_resm(TPASS, "expected failure - "
@@ -132,7 +121,7 @@ int main(int ac, char **av)
  */
 void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -157,10 +146,5 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }

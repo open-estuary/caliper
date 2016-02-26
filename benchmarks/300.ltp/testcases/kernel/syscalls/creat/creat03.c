@@ -49,7 +49,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "test.h"
-#include "usctest.h"
 
 char *TCID = "creat03";
 int TST_TOTAL = 1;
@@ -65,10 +64,8 @@ int main(int ac, char **av)
 	struct stat statbuf;
 	unsigned short filmode;
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -128,8 +125,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	tst_rmdir();
 
 }

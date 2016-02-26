@@ -70,7 +70,6 @@
 #include "diotest_routines.h"
 
 #include "test.h"
-#include "usctest.h"
 #include "tst_fs_type.h"
 
 char *TCID = "diotest4";	/* Test program identifier.    */
@@ -180,9 +179,9 @@ static void testcheck_end(int ret, int *failed, int *fail_count, char *msg)
 	if (ret != 0) {
 		*failed = TRUE;
 		(*fail_count)++;
-		tst_resm(TFAIL, msg);
+		tst_resm(TFAIL, "%s", msg);
 	} else
-		tst_resm(TPASS, msg);
+		tst_resm(TPASS, "%s", msg);
 }
 
 static void setup(void);

@@ -70,23 +70,21 @@
 #include <signal.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "common_timers.h"
 
-void setup(void);
+static void setup(void);
+static void cleanup(void);
 
-char *TCID = "clock_settime02";	/* Test program identifier.    */
-int TST_TOTAL = 1;		/* Total number of test cases. */
-static struct timespec saved;	/* Used to reset the time */
+char *TCID = "clock_settime02";
+int TST_TOTAL = 1;
+static struct timespec saved;
 
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
-	struct timespec spec;	/* Used to specify time for test */
+	struct timespec spec;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -94,7 +92,7 @@ int main(int ac, char **av)
 
 		tst_count = 0;
 
-		spec.tv_sec = 1;
+		spec.tv_sec = saved.tv_sec + 1;
 		spec.tv_nsec = 0;
 
 		TEST(ltp_syscall(__NR_clock_settime, CLOCK_REALTIME, &spec));
@@ -107,16 +105,12 @@ int main(int ac, char **av)
 	tst_exit();
 }
 
-/* setup() - performs all ONE TIME setup for this test */
-void setup(void)
+static void setup(void)
 {
-
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
-	/* Check whether we are root */
-	if (geteuid() != 0) {
-		tst_brkm(TBROK, NULL, "Test must be run as root");
-	}
+	tst_require_root();
+
 	/* Save the current time specifications */
 	if (ltp_syscall(__NR_clock_gettime, CLOCK_REALTIME, &saved) < 0)
 		tst_brkm(TBROK, NULL, "Could not save the current time");
@@ -124,22 +118,11 @@ void setup(void)
 	TEST_PAUSE;
 }
 
-/*
- * cleanup() - Performs one time cleanup for this test at
- * completion or premature exit
- */
-
-void cleanup(void)
+static void cleanup(void)
 {
 	/* Set the saved time */
 	if (clock_settime(CLOCK_REALTIME, &saved) < 0) {
 		tst_resm(TWARN, "FATAL COULD NOT RESET THE CLOCK");
 		tst_resm(TFAIL, "Error Setting Time, errno=%d", errno);
 	}
-
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 }

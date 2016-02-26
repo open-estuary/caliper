@@ -52,7 +52,6 @@
 #include <errno.h>
 #include <string.h>
 #include "test.h"
-#include "usctest.h"
 
 #define PIPE_SIZE_TEST getpagesize()
 
@@ -63,9 +62,6 @@ void cleanup();
 char *TCID = "write04";
 int TST_TOTAL = 1;
 
-/* 0 terminated list of expected errnos */
-int exp_enos[] = { 11, 0 };
-
 char fifo[100] = "fifo";
 static sigjmp_buf jmp;
 int rfd, wfd;
@@ -73,7 +69,6 @@ int rfd, wfd;
 int main(int argc, char **argv)
 {
 	int lc;
-	const char *msg;
 
 	struct stat buf;
 	int fail;
@@ -81,9 +76,7 @@ int main(int argc, char **argv)
 	char wbuf[17 * PIPE_SIZE_TEST];
 	struct sigaction sigptr;	/* set up signal handler */
 
-	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	/* global setup */
 	setup();
@@ -184,7 +177,6 @@ int main(int argc, char **argv)
 				 "is full");
 			fail = 1;
 		} else {
-			TEST_ERROR_LOG(errno);
 			if (errno != EAGAIN) {
 				tst_resm(TBROK, "write set bad errno, expected "
 					 "EAGAIN, got %d", errno);
@@ -221,8 +213,6 @@ void setup(void)
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
-	TEST_EXP_ENOS(exp_enos);
-
 	/* Pause if that option was specified
 	 * TEST_PAUSE contains the code to fork the test with the -i option.
 	 * You want to make sure you do this before you create your temporary
@@ -240,10 +230,6 @@ void setup(void)
 
 void cleanup(void)
 {
-	/*
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	close(rfd);
 	close(wfd);

@@ -36,7 +36,6 @@
 #include <pwd.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 
 static void setup(void);
@@ -69,15 +68,11 @@ static struct test_case_t {
 
 int TST_TOTAL = ARRAY_SIZE(testcases);
 
-static int exp_enos[] = { EBUSY, EINVAL, EFAULT, ENAMETOOLONG, ENOENT, 0 };
-
 int main(int ac, char **av)
 {
 	int lc, i;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)))
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -112,7 +107,7 @@ static void setup(void)
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_tmpdir();
 
@@ -134,19 +129,15 @@ static void setup(void)
 
 	fd = SAFE_OPEN(cleanup, MNTPOINT "/file", O_CREAT | O_RDWR);
 
-	TEST_EXP_ENOS(exp_enos);
-
 	TEST_PAUSE;
 }
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	if (fd > 0 && close(fd))
 		tst_resm(TWARN | TERRNO, "Failed to close file");
 
-	if (mount_flag && umount(MNTPOINT))
+	if (mount_flag && tst_umount(MNTPOINT))
 		tst_resm(TWARN | TERRNO, "umount() failed");
 
 	if (device)

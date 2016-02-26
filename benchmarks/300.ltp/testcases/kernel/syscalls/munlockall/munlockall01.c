@@ -64,26 +64,20 @@
 #include <errno.h>
 #include <sys/mman.h>
 #include "test.h"
-#include "usctest.h"
 
 void setup();
 void cleanup();
 
 char *TCID = "munlockall01";
 int TST_TOTAL = 1;
-int exp_enos[] = { 0 };
 
 #if !defined(UCLINUX)
 
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -124,12 +118,9 @@ int main(void)
 /* setup() - performs all ONE TIME setup for this test. */
 void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
-
-	/*set the expected errnos */
-	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 }
@@ -140,6 +131,4 @@ void setup(void)
  */
 void cleanup(void)
 {
-	TEST_CLEANUP;
-
 }

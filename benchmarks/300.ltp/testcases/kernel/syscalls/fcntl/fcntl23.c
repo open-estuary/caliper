@@ -93,7 +93,6 @@
 #include <string.h>
 #include <signal.h>
 #include "test.h"
-#include "usctest.h"
 #include "tst_fs_type.h"
 
 void setup();
@@ -102,21 +101,17 @@ void cleanup();
 char *TCID = "fcntl23";
 int TST_TOTAL = 1;
 
-int exp_enos[] = { 0, 0 };
-
 char fname[255];
 int fd;
 
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 
     /***************************************************************
      * parse standard options
      ***************************************************************/
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
     /***************************************************************
      * perform global setup for test
@@ -127,9 +122,6 @@ int main(int ac, char **av)
 		tst_brkm(TCONF, cleanup,
 			 "Cannot do fcntl on a file on NFS filesystem");
 	}
-
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
 
     /***************************************************************
      * check looping state if -c option given
@@ -146,7 +138,6 @@ int main(int ac, char **av)
 
 		/* check return code */
 		if (TEST_RETURN == -1) {
-			TEST_ERROR_LOG(TEST_ERRNO);
 			tst_resm(TFAIL,
 				 "fcntl(%s, F_SETLEASE, F_RDLCK) Failed, errno=%d : %s",
 				 fname, TEST_ERRNO, strerror(TEST_ERRNO));
@@ -210,11 +201,6 @@ void setup(void)
  ***************************************************************/
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	/* close the file we've had open */
 	if (close(fd) == -1) {

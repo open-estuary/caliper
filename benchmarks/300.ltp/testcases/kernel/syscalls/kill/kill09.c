@@ -117,7 +117,6 @@
 #include <sys/wait.h>
 
 #include "test.h"
-#include "usctest.h"
 
 void setup();
 void cleanup();
@@ -132,11 +131,9 @@ int fork_pid;
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int status;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 #ifdef UCLINUX
 	maybe_run_child(&do_child, "");
@@ -204,8 +201,6 @@ void setup(void)
 
 void cleanup(void)
 {
-	TEST_CLEANUP;
-
 }
 
 void alarm_handler(int sig)

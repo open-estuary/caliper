@@ -75,7 +75,6 @@
 #include <pwd.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #define LTPUSER		"nobody"
 
@@ -91,15 +90,10 @@ void cleanup();			/* cleanup function for the test */
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	gid_t real_gid,		/* real/eff./saved user id from getresgid() */
 	 eff_gid, sav_gid;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -147,7 +141,7 @@ void setup(void)
 {
 	struct passwd *user_id;	/* passwd struct for test user */
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -186,11 +180,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	/* Reset the effective/saved gid of the calling process */
 	if (setregid(-1, pr_gid) < 0) {

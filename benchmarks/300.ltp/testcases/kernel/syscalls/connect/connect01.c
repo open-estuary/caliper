@@ -53,7 +53,6 @@
 #include <netinet/in.h>
 
 #include "test.h"
-#include "usctest.h"
 
 char *TCID = "connect01";
 int testno;
@@ -112,10 +111,6 @@ struct test_case_t {		/* test case structure */
 
 int TST_TOTAL = sizeof(tdat) / sizeof(tdat[0]);
 
-int exp_enos[] = { EBADF, EFAULT, EINVAL, ENOTSOCK, EISCONN, ECONNREFUSED,
-	EAFNOSUPPORT, 0
-};
-
 #ifdef UCLINUX
 static char *argv0;
 #endif
@@ -123,19 +118,12 @@ static char *argv0;
 int main(int argc, char *argv[])
 {
 	int lc;
-	const char *msg;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(argc, argv, NULL, NULL);
 #ifdef UCLINUX
 	argv0 = argv[0];
 	maybe_run_child(&do_child, "d", &sfd);
 #endif
-
-	/* set up expected errnos */
-	TEST_EXP_ENOS(exp_enos);
 
 	setup();
 
@@ -146,7 +134,6 @@ int main(int argc, char *argv[])
 
 			TEST(connect
 			     (s, tdat[testno].sockaddr, tdat[testno].salen));
-			TEST_ERROR_LOG(TEST_ERRNO);
 
 			if (TEST_RETURN != tdat[testno].retval ||
 			    (TEST_RETURN < 0 &&
@@ -194,9 +181,7 @@ void setup(void)
 
 void cleanup(void)
 {
-	(void)kill(pid, SIGKILL);	/* kill server */
-
-	TEST_CLEANUP;
+	(void)kill(pid, SIGKILL);
 
 }
 

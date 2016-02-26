@@ -47,7 +47,6 @@
 #define _GNU_SOURCE
 #endif
 #include "ipcshm.h"
-#include "libtestsuite.h"
 
 char *TCID = "shmctl01";
 
@@ -66,7 +65,6 @@ static void *set_shared;
 #define N_ATTACH	4
 
 static pid_t pid_arr[N_ATTACH];
-static int sync_pipes[2];
 
 /* Setup, cleanup and check routines for IPC_STAT */
 static void stat_setup(void), func_istat(int ret);
@@ -131,12 +129,9 @@ static int stat_i;
 int main(int argc, char *argv[])
 {
 	int lc;
-	const char *msg;
 	int i;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 #ifdef UCLINUX
 	argv0 = argv[0];
 	maybe_run_child(do_child, "ddd", &stat_i, &stat_time, &shm_id_1);
@@ -234,9 +229,6 @@ void stat_setup(void)
 
 	tst_flush();
 	for (stat_i = 0; stat_i < N_ATTACH; stat_i++) {
-		if (sync_pipe_create(sync_pipes, PIPE_NAME) == -1)
-			tst_brkm(TBROK, cleanup, "sync_pipe_create failed");
-
 		pid = FORK_OR_VFORK();
 		if (pid == -1)
 			tst_brkm(TBROK, cleanup, "could not fork");
@@ -253,41 +245,19 @@ void stat_setup(void)
 		} else {
 			/* save the child's pid for cleanup later */
 			pid_arr[stat_i] = pid;
-			if (sync_pipe_wait(sync_pipes) == -1)
-				tst_brkm(TBROK, cleanup,
-					 "sync_pipe_wait failed");
-
-			if (sync_pipe_close(sync_pipes, PIPE_NAME) == -1)
-				tst_brkm(TBROK, cleanup,
-					 "sync_pipe_close failed");
+			TST_PROCESS_STATE_WAIT(cleanup, pid, 'S');
 		}
 	}
-	/* Wait 1 second to be sure all sons are in the pause function. */
-	sleep(1);
 }
 
 void do_child(void)
 {
 	void *test;
 
-#ifdef UCLINUX
-	if (sync_pipe_create(sync_pipes, PIPE_NAME) == -1)
-		tst_brkm(TBROK, cleanup, "sync_pipe_create failed");
-#endif
-
 	if (stat_time == FIRST)
 		test = set_shmat();
 	else
 		test = set_shared;
-
-	if (sync_pipe_notify(sync_pipes) == -1)
-		tst_brkm(TBROK, cleanup, "sync_pipe_notify failed");
-#ifdef UCLINUX
-	if (sync_pipe_close(sync_pipes, NULL) == -1)
-#else
-	if (sync_pipe_close(sync_pipes, PIPE_NAME) == -1)
-#endif
-		tst_brkm(TBROK, cleanup, "sync_pipe_close failed");
 
 	memcpy(test, &stat_i, sizeof(stat_i));
 
@@ -512,6 +482,4 @@ void cleanup(void)
 	rm_shm(shm_id_1);
 
 	tst_rmdir();
-
-	TEST_CLEANUP;
 }

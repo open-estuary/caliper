@@ -1,8 +1,11 @@
-#!/bin/bash
+#!/bin/sh
 
 ################################################################################
 ##                                                                            ##
 ## Copyright (c) 2009 FUJITSU LIMITED                                         ##
+##  Author: Shi Weihua <shiwh@cn.fujitsu.com>                                 ##
+## Copyright (c) 2015 Cedric Hnyda <chnyda@suse.com>                          ##
+## Copyright (c) 2015-2016 Cyril Hrubis <chrubis@suse.cz>                     ##
 ##                                                                            ##
 ## This program is free software;  you can redistribute it and#or modify      ##
 ## it under the terms of the GNU General Public License as published by       ##
@@ -15,326 +18,148 @@
 ## for more details.                                                          ##
 ##                                                                            ##
 ## You should have received a copy of the GNU General Public License          ##
-## along with this program;  if not, write to the Free Software               ##
-## Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA    ##
-##                                                                            ##
-## Author: Shi Weihua <shiwh@cn.fujitsu.com>                                  ##
+## along with this program;  if not, write to the Free Software Foundation,   ##
+## Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA           ##
 ##                                                                            ##
 ################################################################################
 
-subsystem=$1			# 1: debug
-				# 2: cpuset
-				# 3: ns
-				# 4: cpu
-				# 5: cpuacct
-				# 6: memory
-				# 7: all
-mount_times=$2			#1: execute once
-				#2: execute 100 times
-subgroup_num=$3			#subgroup number in the same hierarchy
-				#1: 1
-				#2: 100
-subgroup_hiers=$4		#number of subgroup's hierarchy
-				#1: 1
-				#2: 100
-attach_operation=$5		# 1: attach one process to every subcgroup
-				# 2: attach all processes in root group to one subcgroup
-				# 3: attach all processes in root group to every subcgroup
+TCID="cgroup_fj_stress"
+TST_TOTAL=1
 
-usage()
+. cgroup_fj_common.sh
+
+subsystem="$1"
+subgroup_num="$2"
+subgroup_depth="$3"
+attach_operation="$4"
+
+usage_and_exit()
 {
-	echo "usage of cgroup_fj_stress.sh: "
-	echo "  ./cgroup_fj_stress.sh -subsystem -mount_times -subgroup_num -subgroup_hiers -attach_operation"
-	echo "    subsystem's usable number"
-	echo "      1: debug"
-	echo "      2: cpuset"
-	echo "      3: ns"
-	echo "      4: cpu"
-	echo "      5: cpuacct"
-	echo "      6: memory"
-	echo "      7: all"
-	echo "    mount_times's usable number"
-	echo "      1: execute once"
-	echo "      2: execute 100 times"
-	echo "    subgroup_num's usable number"
-	echo "      (subgroup number in the same hierarchy)"
-	echo "      1: 1"
-	echo "      2: 100"
-        echo "    subgroup_hiers's usable number"
-	echo "      (number of subgroup's hierarchy)"
-	echo "      1: 1"
-	echo "      2: 100"
-	echo "    attach_operation's usable number"
-	echo "      1: attach one process to every subcgroup"
-	echo "      2: attach all processes in root group to one subcgroup"
-	echo "      3: attach all processes in root group to every subcgroup"
-        echo "example: ./cgroup_fj_stress.sh 1 1 1 1 1"
-        echo "  will use "debug" to test, will mount once, will create one subgroup in same hierarchy,"
-	echo "  will create one hierarchy, will attach one process to every subcgroup"
+    echo "usage of cgroup_fj_stress.sh: "
+    echo "  ./cgroup_fj_stress.sh subsystem subgroup_num subgroup_depth attach_operation"
+    echo "    subgroup_num"
+    echo "      number of subgroups created in group"
+    echo "    subgroup_depth"
+    echo "      depth of the created tree"
+    echo "    attach_operation"
+    echo "      none - do not attach anything"
+    echo "      one  - move one processe around"
+    echo "      each - attach process to each subgroup"
+    echo "example: ./cgroup_fj_stress.sh cpuset 1 1 one"
+    echo
+    tst_brkm TBROK "$1"
 }
 
-
-exit_parameter()
-{
-	echo "ERROR: Wrong inputed parameter..Exiting test" >> $LOGFILE
-	exit -1;
-}
-
-export TESTROOT=`pwd`
-if [ "$LOGFILE" = "" ]; then
-	LOGFILE="/dev/stdout"
+if [ "$#" -ne "4" ]; then
+    usage_and_exit "Wrong number of parameters, expected 4"
 fi
-export TMPFILE=$TESTROOT/tmp_tasks
-
-. $TESTROOT/cgroup_fj_utility.sh
-
-pid=0;
-release_agent_para=1;
-release_agent_echo=1;
-subsystem_str="debug";
-get_subsystem;
-if [ "$?" -ne "0" ] || [ "$#" -ne "5" ]; then
-	usage;
-	exit_parameter;
-fi
-remount_use_str="";
-noprefix_use_str="";
-release_agent_para_str="";
-ulimit_u=`ulimit -u`
-no_debug=1
-cur_subgroup_path1=""
-cur_subgroup_path2=""
-
-get_subgroup_path1()
-{
-	cur_subgroup_path1=""
-	if [ "$#" -ne 1 ] || [ "$1" -lt 1 ] || [ "$1" -gt $ulimit_u ]; then
-		return;
-	fi
-
-	cur_subgroup_path1="/dev/cgroup/subgroup_$1/"
-}
-
-
-get_subgroup_path2()
-{
-	cur_subgroup_path2=""
-	if [ "$#" -ne 1 ] || [ "$1" -lt 2 ] || [ "$1" -gt $ulimit_u ]; then
-		return;
-	fi
-
-	for i in `seq 2 $1`
-	do
-		cur_subgroup_path2="$cur_subgroup_path2""s/"
-	done
-}
-
-case $mount_times in
-"1" )
-	mount_times=1
-	;;
-"2" )
-	mount_times=100
-	;;
-*  )
-	usage;
-	exit_parameter;
-	;;
-esac
 
 case $subgroup_num in
-"1" )
-	subgroup_num=1
-	;;
-"2" )
-	subgroup_num=100
-	;;
-*  )
-	usage;
-	exit_parameter;
-	;;
+    ''|*[!0-9]*) usage_and_exit "Number of subgroups must be possitive integer";;
+    *) ;;
 esac
 
-case $subgroup_hiers in
-"1" )
-	subgroup_hiers=1
-	;;
-"2" )
-	subgroup_hiers=100
-	;;
-*  )
-	usage;
-	exit_parameter;
-	;;
+case $subgroup_depth in
+    ''|*[!0-9]*) usage_and_exit "Depth of the subgroup tree must be possitive integer";;
+    *) ;;
 esac
 
-##########################  main   #######################
-echo "-------------------------------------------------------------------------" >> $LOGFILE
-echo "case no : $CASENO2" >> $LOGFILE
-echo `date` >> $LOGFILE
+case $attach_operation in
+    'none'|'one'|'each');;
+    *) usage_and_exit "Invalid attach operation: $attach_operation";;
+esac
 
-setup;
+setup
 
-echo "INFO: now we begin to stress test no $CASENO2 ..." >> $LOGFILE
+export TMPFILE=./tmp_tasks.$$
 
-mount_cgroup;
+count=0
 
-$TESTROOT/cgroup_fj_proc &
-pid=$!
+build_subgroups()
+{
+    local cur_path="$1"
+    local cur_depth="$2"
+    local i
 
-cpus=0
-mems=0
-exist_cpuset=0
-exist_cpuset=`grep -w cpuset /proc/cgroups | cut -f1`;
-if [ $subsystem -eq 2 ] || [ $subsystem -eq 7 ] ; then
-	if [ "$exist_cpuset" != "" ]; then
-		cpus=`cat /dev/cgroup/cpuset.cpus`
-		mems=`cat /dev/cgroup/cpuset.mems`
-	fi
-fi
+    if [ "$cur_depth" -gt "$subgroup_depth" ]; then
+        return
+    fi
 
-mkdir_subgroup;
+    create_subgroup "$cur_path"
+    count=$((count+1))
 
-# cpuset.cpus and cpuset.mems should be specified with suitable value
-# before attachint operation if subsystem is cpuset
-if [ $subsystem -eq 2 ] || [ $subsystem -eq 7 ] ; then
-	if [ "$exist_cpuset" != "" ]; then
-		do_echo 1 1 "$cpus" /dev/cgroup/subgroup_1/cpuset.cpus;
-		do_echo 1 1 "$mems" /dev/cgroup/subgroup_1/cpuset.mems;
-	fi
-fi
+    for i in $(seq 1 $subgroup_num); do
+         build_subgroups "$cur_path/$i" $((cur_depth+1))
+    done
+}
 
-if [ $mount_times -ne 1 ]; then
-	count=0
-	for i in `seq 1 $mount_times`
-	do
-		do_echo 1 1 $pid /dev/cgroup/subgroup_1/tasks
-		if [ $subsystem -eq 3 ] || [ $subsystem -eq 7 ] ; then
-			do_kill 1 1 9 $pid
-			$TESTROOT/cgroup_fj_proc &
-			pid=$!
-		else
-			do_echo 1 1 $pid /dev/cgroup/tasks
-		fi
-		setup;
-		$TESTROOT/cgroup_fj_proc &
-		pid=$!
-		mount_cgroup;
-		mkdir_subgroup;
-		if [ $subsystem -eq 2 ] || [ $subsystem -eq 7 ] ; then
-			if [ "$exist_cpuset" != "" ]; then
-				do_echo 1 1 "$cpus" /dev/cgroup/subgroup_1/cpuset.cpus;
-				do_echo 1 1 "$mems" /dev/cgroup/subgroup_1/cpuset.mems;
-			fi
-		fi
-		let "count = $count + 1"
-		echo "$count .. OK" >> $LOGFILE
-	done
-	echo "...executed $count times" >> $LOGFILE
+attach_task()
+{
+    local cur_path="$1"
+    local cur_depth="$2"
+    local ppid="$3"
+    local i
+
+    if [ "$cur_depth" -gt "$subgroup_depth" ]; then
+        return
+    fi
+
+    if [ -z "$ppid" ]; then
+        cgroup_fj_proc&
+        pid=$!
+    else
+        pid="$ppid"
+    fi
+
+    if ! attach_and_check "$pid" "$cur_path"; then
+            fail=1
+    fi
+
+    for i in $(seq 1 $subgroup_num); do
+         local new_path="$cur_path/$i"
+         attach_task "$new_path" $((cur_depth+1)) "$ppid"
+    done
+
+    if [ -n "$ppid" ]; then
+        if ! attach_and_check "$pid" "$cur_path"; then
+            fail=1
+        fi
+    fi
+}
+
+start_path="$mount_point/ltp"
+
+tst_resm TINFO "Creating subgroups ..."
+
+build_subgroups "$start_path" 0
+
+tst_resm TINFO "... mkdired $count times"
+
+case $attach_operation in
+"one" )
+    cgroup_fj_proc &
+    pid=$!
+
+    tst_resm TINFO "Moving one task around"
+    attach_task "$start_path" 0 "$pid"
+    ROD kill -9 "$pid"
+    wait "$pid"
+    ;;
+"each" )
+    tst_resm TINFO "Attaching task to each subgroup"
+    attach_task "$start_path" 0
+    ROD killall -9 "cgroup_fj_proc"
+    # Wait for attached tasks to terminate
+    wait
+    ;;
+*  )
+    ;;
+esac
+
+if [ -n "$fail" ]; then
+    tst_resm TFAIL "Attaching tasks failed!"
 else
-	get_subgroup_path2 $subgroup_hiers
-	count=0
-	pathes[1]=""
-	for i in `seq 1 $subgroup_num`
-	do
-		get_subgroup_path1 $i
-		do_mkdir 1 1 $cur_subgroup_path1
-		if [ $subsystem -eq 2 ] || [ $subsystem -eq 7 ] ; then
-			if [ "$exist_cpuset" != "" ]; then
-				do_echo 1 1 "$cpus" "$cur_subgroup_path1""cpuset.cpus";
-				do_echo 1 1 "$mems" "$cur_subgroup_path1""cpuset.mems";
-			fi
-		fi
-		let "count = $count + 1"
-		pathes[$count]="$cur_subgroup_path1"
-		for j in `seq 2 $subgroup_hiers`
-		do
-			get_subgroup_path2 $j
-			do_mkdir 1 1 "$cur_subgroup_path1""$cur_subgroup_path2" 1
-			if [ $subsystem -eq 2 ] || [ $subsystem -eq 7 ] ; then
-				if [ "$exist_cpuset" != "" ]; then
-					do_echo 1 1 "$cpus" "$cur_subgroup_path1""$cur_subgroup_path2""cpuset.cpus";
-					do_echo 1 1 "$mems" "$cur_subgroup_path1""$cur_subgroup_path2""cpuset.mems";
-				fi
-			fi
-			let "count = $count + 1"
-			pathes[$count]="$cur_subgroup_path1""$cur_subgroup_path2"
-		done
-	done
-	echo "...mkdired $count times" >> $LOGFILE
-
-	sleep 1
-
-	case $attach_operation in
-	"1" )
-		for i in `seq 1 $count`
-		do
-			do_echo 1 1 $pid "${pathes[$i]}""tasks"
-		done
-		do_echo 1 1 $pid /dev/cgroup/tasks
-		;;
-	"2" )
-		pathes2[0]="/dev/cgroup/"
-		pathes2[1]="${pathes[$count]}"
-		pathes2[3]="/dev/cgroup/"
-		for i in `seq 1 $nlines`
-		do
-			j=$i
-			let "j = $j + 1"
-			cat "${pathes2[$i]}tasks" > $TMPFILE
-			nlines=`cat "$TMPFILE" | wc -l`
-			if [ $no_debug -ne 1 ]; then
-				echo "DEBUG: move $nlines processes from "$i"th path to "$j"th"
-			fi
-			for k in `seq 1 $nlines`
-			do
-				cur_pid=`sed -n "$k""p" $TMPFILE`
-				if [ -e /proc/$cur_pid/ ];then
-					do_echo 0 1 "$cur_pid" "${pathes[$j]}tasks"
-				fi
-			done
-		done
-		;;
-	"3" )
-		count2=$count
-		let "count2 = $count2 + 1"
-		pathes[0]="/dev/cgroup/"
-		pathes[$count2]="/dev/cgroup/"
-		for i in `seq 0 $count`
-		do
-			j=$i
-			let "j = $j + 1"
-			cat "${pathes[$i]}tasks" > $TMPFILE
-			nlines=`cat "$TMPFILE" | wc -l`
-			if [ $no_debug -ne 1 ]; then
-				echo "DEBUG: move $nlines processes from "$i"th path to "$j"th"
-			fi
-			for k in `seq 1 $nlines`
-			do
-				cur_pid=`sed -n "$k""p" $TMPFILE`
-				if [ -e /proc/$cur_pid/ ];then
-					do_echo 0 1 "$cur_pid" "${pathes[$j]}tasks"
-				fi
-			done
-		done
-		;;
-	*  )
-		;;
-	esac
-	reclaim_foundling;
-	for i in `seq 1 $count`
-	do
-		j=i
-		let "j = $count - $j + 1"
-		do_rmdir 1 1 ${pathes[$j]}
-	done
+    tst_resm TPASS "All done!"
 fi
 
-do_rmdir 0 1 /dev/cgroup/subgroup_*
-
-sleep 1
-
-cleanup;
-do_kill 1 1 9 $pid
-sleep 1
-exit 0;
+tst_exit

@@ -56,10 +56,8 @@
  */
 
 #include "test.h"
-#include "usctest.h"
 
 #include "ipcmsg.h"
-#include "libtestsuite.h"
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -75,11 +73,7 @@ void do_child_uclinux(void);
 char *TCID = "msgrcv05";
 int TST_TOTAL = 1;
 
-int exp_enos[] = { EINTR, 0 };	/* 0 terminated list of expected errnos */
-
 int msg_q_1 = -1;		/* The message queue id created in setup */
-
-int sync_pipes[2];
 
 MSGBUF rcv_buf;
 pid_t c_pid;
@@ -87,19 +81,14 @@ pid_t c_pid;
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 #ifdef UCLINUX
 	maybe_run_child(&do_child_uclinux, "d", &msg_q_1);
 #endif
 
 	setup();		/* global setup */
-
-	if (sync_pipe_create(sync_pipes, PIPE_NAME) == -1)
-		tst_brkm(TBROK, cleanup, "sync_pipe_create failed");
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		tst_count = 0;
@@ -124,20 +113,7 @@ int main(int ac, char **av)
 			do_child();
 #endif
 		} else {
-
-			if (sync_pipe_wait(sync_pipes) == -1)
-				tst_brkm(TBROK, cleanup,
-					 "sync_pipe_wait failed");
-
-			if (sync_pipe_close(sync_pipes, PIPE_NAME) == -1)
-				tst_brkm(TBROK, cleanup,
-					 "sync_pipe_close failed");
-
-			/* After son has been created, give it a chance to execute the
-			 * msgrcv command before we continue. Without this sleep, on SMP machine
-			 * the father kill could be executed before the son msgrcv.
-			 */
-			sleep(1);
+			TST_PROCESS_STATE_WAIT(cleanup, c_pid, 'S');
 
 			/* send a signal that must be caught to the child */
 			if (kill(c_pid, SIGHUP) == -1)
@@ -154,12 +130,6 @@ int main(int ac, char **av)
 
 void do_child(void)
 {
-	if (sync_pipe_notify(sync_pipes) == -1)
-		tst_brkm(TBROK, cleanup, "sync_pipe_notify failed");
-
-	if (sync_pipe_close(sync_pipes, PIPE_NAME) == -1)
-		tst_brkm(TBROK, cleanup, "sync_pipe_close failed");
-
 	TEST(msgrcv(msg_q_1, &rcv_buf, MSGSIZE, 1, 0));
 
 	if (TEST_RETURN != -1)
@@ -192,9 +162,6 @@ void sighandler(int sig)
  */
 void do_child_uclinux(void)
 {
-	if (sync_pipe_create(sync_pipes, PIPE_NAME) == -1)
-		tst_brkm(TBROK, cleanup, "sync_pipe_create failed");
-
 	tst_sig(FORK, sighandler, cleanup);
 
 	do_child();
@@ -208,9 +175,6 @@ void setup(void)
 {
 
 	tst_sig(FORK, sighandler, cleanup);
-
-	/* Set up the expected error numbers for -e option */
-	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 
@@ -238,11 +202,5 @@ void cleanup(void)
 	rm_queue(msg_q_1);
 
 	tst_rmdir();
-
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }

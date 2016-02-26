@@ -96,13 +96,11 @@
 #include <sys/utsname.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "fallocate.h"
 
 #define BLOCKS_WRITTEN 12
 #define HOLE_SIZE_IN_BLOCKS 12
 #define DEFAULT_MODE 0
-#define FALLOC_FL_KEEP_SIZE 1	//Need to be removed once the glibce support is provided
 #define TRUE 0
 
 void get_blocksize(int);
@@ -228,13 +226,11 @@ int main(int ac, char **av)
 {
 	int test_index = 0;
 	int lc;
-	const char *msg;
 
 	/***************************************************************
 	 * parse standard options
 	***************************************************************/
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	/* perform global test setup, call setup() function */
 	setup();
@@ -255,7 +251,6 @@ int main(int ac, char **av)
 					tst_brkm(TCONF, cleanup,
 						 "fallocate system call is not implemented");
 				}
-				TEST_ERROR_LOG(TEST_ERRNO);
 				tst_resm(TFAIL | TTERRNO,
 					 "fallocate(%s, %d, %" PRId64 ", %"
 					 PRId64 ") failed", fname,

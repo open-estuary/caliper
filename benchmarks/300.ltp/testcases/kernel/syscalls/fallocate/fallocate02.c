@@ -38,7 +38,6 @@
 #include <sys/utsname.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 #include "fallocate.h"
 
@@ -88,11 +87,8 @@ int main(int ac, char **av)
 {
 	int lc;
 	int i;
-	const char *msg;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -157,8 +153,6 @@ static void fallocate_verify(int i)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	if (fdw > 0)
 		SAFE_CLOSE(NULL, fdw);
 	if (fdr > 0)

@@ -115,16 +115,12 @@
 #include <string.h>
 #include <signal.h>
 #include "test.h"
-#include "usctest.h"
 
 void setup();
 void cleanup();
-extern void do_file_setup(char *);
 
 char *TCID = "rename02";
 int TST_TOTAL = 1;
-
-int exp_enos[] = { 0, 0 };
 
 int fd;
 char fname[255], mname[255];
@@ -132,15 +128,10 @@ char fname[255], mname[255];
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
-
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -153,7 +144,6 @@ int main(int ac, char **av)
 
 		/* check return code */
 		if (TEST_RETURN == -1) {
-			TEST_ERROR_LOG(TEST_ERRNO);
 			tst_resm(TFAIL, "rename(%s, %s) Failed, errno=%d : %s",
 				 fname, mname, TEST_ERRNO,
 				 strerror(TEST_ERRNO));
@@ -165,7 +155,7 @@ int main(int ac, char **av)
 					 "unlink(%s) Failed, errno=%d : %s",
 					 mname, errno, strerror(errno));
 			}
-			do_file_setup(fname);
+			SAFE_TOUCH(cleanup, fname, 0700, NULL);
 		}
 	}
 
@@ -188,8 +178,7 @@ void setup(void)
 
 	sprintf(fname, "./tfile_%d", getpid());
 	sprintf(mname, "./rnfile_%d", getpid());
-	do_file_setup(fname);
-
+	SAFE_TOUCH(cleanup, fname, 0700, NULL);
 }
 
 /***************************************************************
@@ -198,11 +187,6 @@ void setup(void)
  ***************************************************************/
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	tst_rmdir();
 }

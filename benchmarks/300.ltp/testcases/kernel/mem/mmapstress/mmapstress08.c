@@ -33,7 +33,6 @@
 #include <stdio.h>
 /*****	LTP Port	*****/
 #include "test.h"
-#include "usctest.h"
 #define FAILED 0
 #define PASSED 1
 
@@ -107,13 +106,13 @@ extern long sysconf(int name);
 }
 
 /*****  LTP Port        *****/
-void ok_exit()
+void ok_exit(void)
 {
 	tst_resm(TPASS, "Test passed\n");
 	tst_exit();
 }
 
-int anyfail()
+int anyfail(void)
 {
 	tst_brkm(TFAIL, NULL, "Test failed\n");
 }

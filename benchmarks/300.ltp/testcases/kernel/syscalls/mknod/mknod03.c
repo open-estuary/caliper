@@ -80,7 +80,6 @@
 #include <sys/stat.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #define LTPUSER		"nobody"
 #define MODE_RWX	S_IFIFO | S_IRWXU | S_IRWXG | S_IRWXO
@@ -105,14 +104,9 @@ void cleanup();			/* cleanup function for the test */
 int main(int ac, char **av)
 {
 	int lc;
-	int fflag;		/* functionality flag variable */
-	const char *msg;
+	int fflag;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -201,7 +195,7 @@ int main(int ac, char **av)
  */
 void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	/* Capture unexpected signals */
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
@@ -303,11 +297,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	/*
 	 * Restore the effective uid of the process changed in the

@@ -22,7 +22,6 @@
 #include <unistd.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "common_timers.h"
 
 static void setup(void);
@@ -56,8 +55,6 @@ int testcases[] = {
 char *TCID = "clock_settime03";
 int TST_TOTAL = ARRAY_SIZE(testcases);
 
-static int exp_enos[] = { EINVAL, EFAULT, EPERM, 0 };
-
 char nobody_uid[] = "nobody";
 struct passwd *ltpuser;
 static struct timespec spec, *temp, saved;
@@ -65,10 +62,8 @@ static struct timespec spec, *temp, saved;
 int main(int ac, char **av)
 {
 	int lc, i;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -165,12 +160,11 @@ static void setup(void)
 {
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	if (ltp_syscall(__NR_clock_gettime, CLOCK_REALTIME, &saved) < 0)
 		tst_brkm(TBROK, NULL, "Clock gettime failed");
 
-	TEST_EXP_ENOS(exp_enos);
 	spec.tv_sec = 1;
 	spec.tv_nsec = 0;
 
@@ -179,5 +173,4 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 }

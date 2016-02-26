@@ -103,7 +103,6 @@
 #include <sys/mount.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 #include "tst_fs_type.h"
 
@@ -229,12 +228,9 @@ static void *fork_thread(void *arg)
 int main(int argc, char *argv[])
 {
 	int i, lc;
-	const char *msg;
 
 	workers = sysconf(_SC_NPROCESSORS_ONLN);
-	msg = parse_opts(argc, argv, options, help);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, options, help);
 
 	setup();
 
@@ -366,7 +362,7 @@ static void setup(void)
 	tst_resm(TINFO, "using %d workers.", workers);
 
 	tst_sig(FORK, DEF_HANDLER, NULL);
-	tst_require_root(NULL);
+	tst_require_root();
 
 	TEST_PAUSE;
 
@@ -431,11 +427,9 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	free(buffer);
 
-	if (mount_flag && umount(MNT_POINT) < 0)
+	if (mount_flag && tst_umount(MNT_POINT) < 0)
 		tst_resm(TWARN | TERRNO, "umount device:%s failed", device);
 
 	free(worker);

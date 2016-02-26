@@ -35,13 +35,16 @@
 #include <string.h>
 #include <unistd.h>
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 
 char *TCID = "mmap15";
 int TST_TOTAL = 1;
 
-#define HIGH_ADDR	(void *)(1L << 53)
+#ifdef __ia64__
+# define HIGH_ADDR (void *)(0xa000000000000000UL)
+#else
+# define HIGH_ADDR (void *)(1L << 53)
+#endif
 
 static long map_sz;
 
@@ -51,16 +54,13 @@ static void cleanup(void);
 int main(int ac, char **av)
 {
 	int lc, fd;
-	const char *msg;
 	void *addr;
 
 #if __WORDSIZE == 32
 	tst_brkm(TCONF, NULL, "This test is only for 64bit");
 #endif
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -98,7 +98,7 @@ int main(int ac, char **av)
 
 static void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_tmpdir();
 
@@ -109,6 +109,5 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 	tst_rmdir();
 }

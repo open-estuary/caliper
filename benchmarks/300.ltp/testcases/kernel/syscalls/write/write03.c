@@ -52,11 +52,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include "test.h"
-#include "usctest.h"
 #include <sys/mman.h>
-
-/* 0 terminated list of expected errnos */
-int exp_enos[] = { 14, 0 };
 
 char *TCID = "write03";
 int TST_TOTAL = 1;
@@ -73,14 +69,11 @@ char filename[100];
 int main(int argc, char **argv)
 {
 	int lc;
-	const char *msg;
 
 	char wbuf[BUFSIZ], rbuf[BUFSIZ];
 	int fd;
 
-	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	/* global setup */
 	setup();
@@ -112,7 +105,6 @@ int main(int argc, char **argv)
 			tst_resm(TFAIL, "write(2) failed to fail");
 			cleanup();
 		}
-		TEST_ERROR_LOG(errno);
 		close(fd);
 
 		if ((fd = open(filename, O_RDONLY)) == -1) {
@@ -157,8 +149,6 @@ void setup(void)
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
-	TEST_EXP_ENOS(exp_enos);
-
 	/* Pause if that option was specified
 	 * TEST_PAUSE contains the code to fork the test with the -i option.
 	 * You want to make sure you do this before you create your temporary
@@ -185,11 +175,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	unlink(filename);
 	tst_rmdir();

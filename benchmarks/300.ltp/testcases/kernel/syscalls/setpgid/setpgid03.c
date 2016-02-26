@@ -37,14 +37,11 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include "test.h"
-#include "usctest.h"
 
 #define TEST_APP "setpgid03_child"
 
 char *TCID = "setpgid03";
 int TST_TOTAL = 1;
-
-static struct tst_checkpoint checkpoint;
 
 static void do_child(void);
 static void setup(void);
@@ -56,10 +53,8 @@ int main(int ac, char **av)
 	int status;
 	int rval;
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 #ifdef UCLINUX
 	maybe_run_child(&do_child, "");
 #endif
@@ -83,7 +78,7 @@ int main(int ac, char **av)
 #endif
 		}
 
-		TST_CHECKPOINT_PARENT_WAIT(cleanup, &checkpoint);
+		TST_SAFE_CHECKPOINT_WAIT(cleanup, 0);
 		rval = setpgid(child_pid, getppid());
 		if (rval == -1 && errno == EPERM) {
 			tst_resm(TPASS, "setpgid failed with EPERM");
@@ -92,7 +87,7 @@ int main(int ac, char **av)
 				"retval %d, errno %d, expected errno %d",
 				rval, errno, EPERM);
 		}
-		TST_CHECKPOINT_SIGNAL_CHILD(cleanup, &checkpoint);
+		TST_SAFE_CHECKPOINT_WAKE(cleanup, 0);
 
 		if (wait(&status) < 0)
 			tst_resm(TFAIL | TERRNO, "wait() for child 1 failed");
@@ -112,7 +107,7 @@ int main(int ac, char **av)
 			exit(127);
 		}
 
-		TST_CHECKPOINT_PARENT_WAIT(cleanup, &checkpoint);
+		TST_SAFE_CHECKPOINT_WAIT(cleanup, 0);
 		rval = setpgid(child_pid, getppid());
 		if (rval == -1 && errno == EACCES) {
 			tst_resm(TPASS, "setpgid failed with EACCES");
@@ -121,7 +116,7 @@ int main(int ac, char **av)
 				"retval %d, errno %d, expected errno %d",
 				rval, errno, EACCES);
 		}
-		TST_CHECKPOINT_SIGNAL_CHILD(cleanup, &checkpoint);
+		TST_SAFE_CHECKPOINT_WAKE(cleanup, 0);
 
 		if (wait(&status) < 0)
 			tst_resm(TFAIL | TERRNO, "wait() for child 2 failed");
@@ -142,9 +137,9 @@ static void do_child(void)
 		exit(2);
 	}
 
-	TST_CHECKPOINT_SIGNAL_PARENT(&checkpoint);
+	TST_SAFE_CHECKPOINT_WAKE(NULL, 0);
 
-	TST_CHECKPOINT_CHILD_WAIT(&checkpoint);
+	TST_SAFE_CHECKPOINT_WAIT(NULL, 0);
 
 	exit(0);
 }
@@ -155,8 +150,7 @@ static void setup(void)
 
 	tst_tmpdir();
 
-	TST_CHECKPOINT_CREATE(&checkpoint);
-	checkpoint.timeout = 10000;
+	TST_CHECKPOINT_INIT(tst_rmdir);
 
 	umask(0);
 
@@ -166,6 +160,4 @@ static void setup(void)
 static void cleanup(void)
 {
 	tst_rmdir();
-
-	TEST_CLEANUP;
 }

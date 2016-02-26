@@ -93,17 +93,14 @@
 #include <pwd.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #define TEST_FILE       "testfile"
 
 char nobody_uid[] = "nobody";
 struct passwd *ltpuser;
-extern struct passwd *my_getpwnam(char *);
 
 char *TCID = "fstat05";
 int TST_TOTAL = 1;
-int exp_enos[] = { EFAULT, 0 };
 
 int fildes;			/* testfile descriptor */
 
@@ -134,10 +131,8 @@ int main(int ac, char **av)
 	struct stat stat_buf;	/* stat structure buffer */
 	struct stat *ptr_str;
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	/* Buffer points outside user's accessible address space. */
 	ptr_str = &stat_buf;	/* if it was for conformance testing */
@@ -147,9 +142,6 @@ int main(int ac, char **av)
 	 * Invoke setup function
 	 */
 	setup();
-
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -164,7 +156,6 @@ int main(int ac, char **av)
 
 		/* Check return code from fstat(2) */
 		if (TEST_RETURN == -1) {
-			TEST_ERROR_LOG(TEST_ERRNO);
 			if (TEST_ERRNO == EFAULT)
 				tst_resm(TPASS,
 					 "fstat failed with EFAULT as expected");
@@ -204,7 +195,7 @@ void setup(void)
 {
 	int i;
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	/*
 	 * Capture unexpected signals SIGSEGV included
@@ -240,11 +231,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	if (close(fildes) == -1)
 		tst_brkm(TBROK | TERRNO, cleanup, "close(%s) failed",

@@ -68,7 +68,6 @@
 #include <sched.h>
 #include <sys/resource.h>
 #include "test.h"
-#include "usctest.h"
 
 static void setup();
 static void cleanup();
@@ -82,11 +81,9 @@ int main(int ac, char **av)
 {
 
 	int lc, i;
-	const char *msg;
 	struct rusage usage;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -120,5 +117,4 @@ void setup(void)
 
 void cleanup(void)
 {
-	TEST_CLEANUP;
 }

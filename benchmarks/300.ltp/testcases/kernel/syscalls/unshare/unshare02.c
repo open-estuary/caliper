@@ -54,7 +54,6 @@
 #include <stdio.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "config.h"
 
 char *TCID = "unshare02";
@@ -84,7 +83,6 @@ int TST_TOTAL = 2;
 void cleanup(void)
 {
 
-	TEST_CLEANUP;
 	tst_rmdir();
 
 	/* Exit with appropriate TEST_RETURNurn code. */
@@ -122,10 +120,8 @@ int main(int ac, char **av)
 	pid_t pid1;
 	int lc;
 	int rval;
-	const char *msg;		/* message TEST_RETURNurned from parse_opts */
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 

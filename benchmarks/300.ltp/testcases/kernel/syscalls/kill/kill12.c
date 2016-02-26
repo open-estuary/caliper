@@ -49,7 +49,6 @@
 //char progname[] = "kill2()";
 /*****  LTP Port        *****/
 #include "test.h"
-#include "usctest.h"
 #define ITER    3
 #define FAILED 0
 #define PASSED 1
@@ -87,11 +86,8 @@ int main(int argc, char **argv)
 	void chsig();
 
 #ifdef UCLINUX
-	const char *msg;
 
-	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	maybe_run_child(&do_child, "dd", &temp, &sig);
 #endif

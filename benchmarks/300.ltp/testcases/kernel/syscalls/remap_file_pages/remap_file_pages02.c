@@ -78,12 +78,11 @@
 #include <linux/unistd.h>
 
 #include "test.h"		/*LTP Specific Include File */
-#include "usctest.h"		/*LTP Specific Include File */
 
 /* Test case defines */
 #define WINDOW_START 0x48000000
 
-size_t page_sz;
+static int page_sz;
 size_t page_words;
 size_t cache_pages;
 size_t cache_sz;
@@ -99,7 +98,6 @@ static void cleanup();
 
 char *TCID = "remap_file_pages02";
 int TST_TOTAL = 4;
-static int exp_enos[] = { EINVAL, 0 };
 
 static char *cache_contents;
 int fd;				/* File descriptor used at the test */
@@ -133,7 +131,6 @@ static struct test_case_t {
 int main(int ac, char **av)
 {
 	int lc, i;
-	const char *msg;
 
 #if defined (__s390__) || (__s390x__) || (__ia64__)
 	/* Disables the test in case the kernel version is lower than 2.6.12 and arch is s390 */
@@ -144,8 +141,7 @@ int main(int ac, char **av)
 	}
 #endif
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -193,7 +189,6 @@ int main(int ac, char **av)
 					 testcase[i].exp_errno,
 					 testcase[i].exp_errval, TEST_ERRNO);
 			}
-			TEST_ERROR_LOG(TEST_ERRNO);
 		}		/* end of test loops */
 	}			/* end of  test looping */
 
@@ -272,9 +267,6 @@ void setup(void)
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
-	/* set the expected erronos */
-	TEST_EXP_ENOS(exp_enos);
-
 	TEST_PAUSE;
 
 	tst_tmpdir();
@@ -336,12 +328,6 @@ void cleanup(void)
 		munmap(data, cache_sz);
 	if (data01)
 		munmap(data01, cache_sz);
-
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	tst_rmdir();
 
