@@ -20,21 +20,25 @@ def ltpResult(content, outfp):
  
     sumTotal = sumPass + sumFail + sumConf + sumBrok
     outfp.write('\nthe total number of testcases:  %d\n'
-		    % (sumTotal))
+		    % (sumTotal))		
+
     outfp.write('the number of testcases passed are: %d\nthe number of failed testcases are: %d\n'
                   % (sumPass, sumFail))
     outfp.write('the number of testcases skipped are: %d\n \n'
 		     % (sumBrok + sumConf))
+
     try:
         score = (0.0 + sumPass) / (sumTotal)
     except Exception:
         score = 0.0
     return score
 
+
 def ltp_parser(content, outfp):
     score = -1
     score = ltpResult(content, outfp)
     return score
+
 
 if __name__ == "__main__":
     fp = open(sys.argv[1], "r")

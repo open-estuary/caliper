@@ -4,13 +4,19 @@ download_dir=$HOME/.caliper
 if [ ! -f $download_dir ]; then
     mkdir -p $download_dir
 fi
-checksum_result=0
+checksum_result=1 # Default download is needed , if exising file is proper rewrite checksum_result=0
 check_sum()
 {
     checksum_source=$1
     md5_file=$2
     if [ x"$checksum_source" = x"" ]; then 
-        echo "Invalidate file!"
+        echo "Please check the download file name"
+        checksum_result=1
+        exit 1
+    fi
+
+    if [ x"$md5_file" = x"" ]; then 
+        echo "Please check the md5sum file name"
         checksum_result=1
         exit 1
     fi
@@ -19,11 +25,10 @@ check_sum()
     check_value=$(md5sum $checksum_source | awk '{print $1}')
     if [ x"$md5_value" != x"$check_value" ]; then
         checksum_result=1
-        echo 'The download files error'
-        exit 1
+        echo "The files are not downloaded properly, checksum error"
     else
-        checksum=0
-        echo "Download $checksum_source successfully"
+        checksum_result=0
+        echo "Downloaded $checksum_source successfully"
     fi
 }
 
@@ -46,36 +51,50 @@ download_file()
 
     download_file=$url_head/$file
     download_sum_file="$download_file".md5sum
-
+#fixme check the url is reachable or not
     pushd $file_store_location
     # Download firstly
     echo "Check the checksum for $file ..."
 
-    # always update the md5sum file
-    wget -c $download_sum_file 2>/dev/null
+    # always delete and then update the md5sum file
+    
+    if [ -f $sum_file ]; then
+    rm $sum_file
+    fi
+
+    wget $download_sum_file 2>/dev/null
+ 
     if [ $? -ne 0 ]; then
         echo "Download the $download_sum_file failed"
         exit 1
     fi
 
-    if [ ! -f $file ]; then
-        wget -c $download_file 2>/dev/null
-        if [ $? -ne 0 ]; then
-            echo "Download the $download_file failed"
-            exit 1
-        fi
+    if [ -f $file ]; then
+	check_sum $file $sum_file
+	
+	if [ $checksum_result -ne 0 ]; then
+		echo "Existing file checksum failed. Downloading the file : $file again ..."
+		rm $file
+	
+	fi
     fi
-
-    check_sum $file $sum_file
-    if [ $checksum_result -ne 0 ]; then
-        echo "Download the $file ..."
-        wget -c $download_file 2>/dev/null
-        if [ $? -ne 0 ]; then
-            rm -rf $file $sum_file 2>/dev/null
-            echo "Download $file failed!"
-            exit 1
-        fi
+ # checksum_result =1 means either the existing file checksum is not ok or the file is not there.   
+  if [ $checksum_result -ne 0 ]; then
+    wget $download_file 2>/dev/null
+    if [ $? -ne 0 ]; then
+	echo "Downloading a fresh copy of file : $file is failed "
+	exit 1
+    else
+         check_sum $file $sum_file
+    	 if [ $checksum_result -ne 0 ]; then
+        	 echo " Check the connectivity, Checksum is not matching for the freshly downloaded file"
+		 exit 1
+	 else	
+	       echo " The file has been updated and checksum found to be ok. "	
+         fi 
     fi
+  fi
+    
     popd
 }
 
