@@ -67,7 +67,6 @@
 #include <string.h>
 #include <unistd.h>
 #include "test.h"
-#include "usctest.h"
 #include "mem.h"
 
 char *TCID = "ksm03";
@@ -85,12 +84,9 @@ option_t ksm_options[] = {
 int main(int argc, char *argv[])
 {
 	int lc;
-	const char *msg;
 	int size = 128, num = 3, unit = 1;
 
-	msg = parse_opts(argc, argv, ksm_options, ksm_usage);
-	if (msg != NULL)
-		tst_brkm(TBROK, tst_exit, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, ksm_options, ksm_usage);
 	setup();
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		tst_count = 0;
@@ -104,7 +100,7 @@ int main(int argc, char *argv[])
 
 void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	if (tst_kvercmp(2, 6, 32) < 0)
 		tst_brkm(TCONF, NULL, "2.6.32 or greater kernel required");
@@ -129,5 +125,4 @@ void cleanup(void)
 				 "%d", merge_across_nodes);
 
 	umount_mem(MEMCG_PATH, MEMCG_PATH_NEW);
-	TEST_CLEANUP;
 }

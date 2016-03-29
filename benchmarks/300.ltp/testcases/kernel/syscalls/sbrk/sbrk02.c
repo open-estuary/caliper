@@ -22,7 +22,6 @@
 #include <errno.h>
 #include <unistd.h>
 #include "test.h"
-#include "usctest.h"
 
 #define INC 16*1024*1024
 
@@ -32,7 +31,6 @@ int TST_TOTAL = 1;
 static void setup(void);
 static void sbrk_verify(void);
 static void cleanup(void);
-static int exp_enos[] = { ENOMEM, 0 };
 
 static long increment = INC;
 
@@ -40,11 +38,8 @@ int main(int argc, char *argv[])
 {
 	int lc;
 	int i;
-	const char *msg;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 
@@ -75,8 +70,6 @@ static void setup(void)
 		increment, ret, sbrk(0));
 
 	errno = 0;
-
-	TEST_EXP_ENOS(exp_enos);
 }
 
 static void sbrk_verify(void)
@@ -93,8 +86,6 @@ static void sbrk_verify(void)
 		return;
 	}
 
-	TEST_ERROR_LOG(TEST_ERRNO);
-
 	if (TEST_ERRNO == ENOMEM) {
 		tst_resm(TPASS | TTERRNO, "sbrk(%ld) failed as expected",
 			 increment);
@@ -107,5 +98,4 @@ static void sbrk_verify(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 }

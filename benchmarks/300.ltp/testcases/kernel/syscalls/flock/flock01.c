@@ -70,13 +70,9 @@
 #include <sys/wait.h>
 #include <sys/file.h>
 #include "test.h"
-#include "usctest.h"
 
 void setup(void);
 void cleanup(void);
-
-/* 0 terminated list of expected errnos */
-int exp_enos[] = { EWOULDBLOCK, EAGAIN, EINVAL, 0 };
 
 char *TCID = "flock01";
 int TST_TOTAL = 3;
@@ -87,20 +83,16 @@ struct test_case_t {
 	int operation;
 	char *opt;
 } test_cases[] = {
-	{
-	LOCK_SH, "Shared Lock"}, {
-	LOCK_UN, "Unlock"}, {
-LOCK_EX, "Exclusive Lock"},};
+	{ LOCK_SH, "Shared Lock" },
+	{ LOCK_UN, "Unlock"},
+	{ LOCK_EX, "Exclusive Lock"}
+};
 
 int main(int argc, char **argv)
 {
 	int lc, i;
-	/* loop counter */
-	const char *msg;
 
-	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	/* global setup */
 	setup();
@@ -116,18 +108,15 @@ int main(int argc, char **argv)
 
 			/* Testing system call */
 			TEST(flock(fd, test_cases[i].operation));
-
 			if (TEST_RETURN == -1) {
-				TEST_ERROR_LOG(TEST_ERRNO);
-				tst_resm(TFAIL,
-					 "flock() failed to get %s, error number=%d : %s",
-					 test_cases[i].opt, TEST_ERRNO,
-					 strerror(TEST_ERRNO));
+				tst_resm(TFAIL | TTERRNO,
+					 "flock() failed to get %s",
+					 test_cases[i].opt);
 				continue;	/*next loop for MTKERNEL  */
 			} else {
 				tst_resm(TPASS,
-					 "flock() succeeded with %s, returned error number=%d",
-					 test_cases[i].opt, TEST_ERRNO);
+					 "flock() succeeded with %s",
+					 test_cases[i].opt);
 			}
 
 		}
@@ -151,8 +140,6 @@ void setup(void)
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
-	TEST_EXP_ENOS(exp_enos);
-
 	/* Pause if that option was specified
 	 * TEST_PAUSE contains the code to fork the test with the -i option.
 	 * You want to make sure you do this before you create your temporary
@@ -167,18 +154,8 @@ void setup(void)
 
 	/* creating temporary file */
 	fd = creat(filename, 0644);
-	if (fd < 0) {
-		tst_resm(TFAIL, "creating a new file failed");
-
-		TEST_CLEANUP;
-
-		/* Removing temp directory */
-		tst_rmdir();
-
-		/* exit with resturn code appropriate for result */
-		tst_exit();
-
-	}
+	if (fd < 0)
+		tst_brkm(TBROK, tst_rmdir, "creating a new file failed");
 }
 
 /*
@@ -188,11 +165,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	unlink(filename);
 	tst_rmdir();

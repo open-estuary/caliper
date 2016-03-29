@@ -61,7 +61,6 @@
 #endif
 
 #include "test.h"
-#include "usctest.h"
 #include "linux_syscall_numbers.h"
 
 char *TCID = "quotactl01";
@@ -104,7 +103,6 @@ struct dqblk dq;
 void cleanup(void)
 {
 
-	TEST_CLEANUP;
 	tst_rmdir();
 
 	if (block_dev) {
@@ -138,13 +136,11 @@ void cleanup(void)
 void setup(void)
 {
 
+	tst_require_root();
+
 	/* Capture signals if any */
 	/* Create temporary directories */
 
-	if (geteuid() != 0) {
-		tst_brkm(TCONF, NULL,
-			 "You must be root in order to execute this test");
-	}
 	if ((quota_loc = malloc(FILENAME_MAX)) == NULL) {
 		tst_brkm(TCONF | TERRNO, NULL,
 			 "couldn't allocate memory for the quota loc buffer");
@@ -219,11 +215,8 @@ int main(int ac, char **av)
 	int ret;
 	int i;
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, (option_t *) opts, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, (option_t *) opts, NULL);
 
 	setup();
 

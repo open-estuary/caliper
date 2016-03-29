@@ -30,7 +30,6 @@
 #include <unistd.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 #include "process_vm.h"
 
@@ -64,13 +63,9 @@ static void help(void);
 int main(int argc, char **argv)
 {
 	int lc, status;
-	const char *msg;
 	int *bufsz_arr;
 
-	msg = parse_opts(argc, argv, options, &help);
-	if (msg != NULL)
-		tst_brkm(TBROK, tst_exit, "OPTION PARSING ERROR - %s"
-			 "use -help", msg);
+	tst_parse_opts(argc, argv, options, &help);
 
 	setup();
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
@@ -252,7 +247,7 @@ static void child_invoke(int *bufsz_arr)
 
 static void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	nr_iovecs = nflag ? SAFE_STRTOL(NULL, nr_opt, 1, IOV_MAX) : 10;
 	bufsz = sflag ? SAFE_STRTOL(NULL, sz_opt, NUM_LOCAL_VECS, LONG_MAX)
@@ -271,7 +266,6 @@ static void setup(void)
 static void cleanup(void)
 {
 	clean_sem(semid);
-	TEST_CLEANUP;
 }
 
 static void help(void)

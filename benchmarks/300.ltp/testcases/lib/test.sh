@@ -134,6 +134,33 @@ tst_check_cmds()
 	done
 }
 
+# tst_retry "command" [times]
+# try run command for specified times, default is 3.
+# Function returns 0 if succeed in RETRIES times or the last retcode the cmd
+# returned
+tst_retry()
+{
+	local cmd="$1"
+	local RETRIES=${2:-"3"}
+	local i=$RETRIES
+
+	while [ $i -gt 0 ]; do
+		eval "$cmd"
+		ret=$?
+		if [ $ret -eq 0 ]; then
+			break
+		fi
+		i=$((i-1))
+		sleep 1
+	done
+
+	if [ $ret -ne 0 ]; then
+		tst_resm TINFO "Failed to execute '$cmd' after $RETRIES retries"
+	fi
+
+	return $ret
+}
+
 # tst_timeout "command arg1 arg2 ..." timeout
 # Runs command for specified timeout (in seconds).
 # Function returns retcode of command or 1 if arguments are invalid.
@@ -175,6 +202,151 @@ tst_timeout()
 	ret=$((ret | $?))
 
 	return $ret
+}
+
+ROD_SILENT()
+{
+	$@ > /dev/null 2>&1
+	if [ $? -ne 0 ]; then
+		tst_brkm TBROK "$@ failed"
+	fi
+}
+
+ROD()
+{
+	local cmd
+	local arg
+	local file
+	local flag
+
+	for arg; do
+		file="${arg#\>}"
+		if [ "$file" != "$arg" ]; then
+			flag=1
+			if [ -n "$file" ]; then
+				break
+			fi
+			continue
+		fi
+
+		if [ -n "$flag" ]; then
+			file="$arg"
+			break
+		fi
+
+		cmd="$cmd $arg"
+	done
+
+	if [ -n "$flag" ]; then
+		$cmd > $file
+	else
+		$@
+	fi
+
+	if [ $? -ne 0 ]; then
+		tst_brkm TBROK "$@ failed"
+	fi
+}
+
+tst_acquire_device()
+{
+	if [ -z ${TST_TMPDIR} ]; then
+		tst_brkm "Use 'tst_tmpdir' before 'tst_acquire_device'"
+	fi
+
+	if [ -n "${LTP_DEV}" ]; then
+		tst_resm TINFO "Using test device LTP_DEV='${LTP_DEV}'"
+		if [ ! -b ${LTP_DEV} ]; then
+			tst_brkm TBROK "${LTP_DEV} is not a block device"
+		fi
+		TST_DEVICE=${LTP_DEV}
+		TST_DEVICE_FLAG=0
+		return
+	fi
+
+	ROD_SILENT dd if=/dev/zero of=test_dev.img bs=1024 count=102400
+
+	TST_DEVICE=$(losetup -f)
+	if [ $? -ne 0 ]; then
+		tst_brkm TBROK "Couldn't find free loop device"
+	fi
+
+	tst_resm TINFO "Found free device '${TST_DEVICE}'"
+
+	ROD_SILENT losetup ${TST_DEVICE} test_dev.img
+
+	TST_DEVICE_FLAG=1
+}
+
+tst_release_device()
+{
+	if [ ${TST_DEVICE_FLAG} -eq 0 ]; then
+		return
+	fi
+
+	losetup -a | grep -q ${TST_DEVICE}
+	if [ $? -eq 0 ]; then
+		losetup -d ${TST_DEVICE}
+		if [ $? -ne 0 ];then
+			tst_resm TWARN "'losetup -d ${TST_DEVICE}' failed"
+		fi
+	fi
+}
+
+tst_mkfs()
+{
+	local fs_type=$1
+	local device=$2
+	local fs_opts=""
+
+	if [ $fs_type = "xfs" -o $fs_type = "jfs" ]; then
+		tst_resm TINFO "Appending '-f' flag to mkfs.$fs_type"
+		fs_opts="-f"
+	fi
+
+	if [ $fs_type = "btrfs" ]; then
+		# check if mkfs.btrfs supports -f option
+		# detect "-f --force" or "-f|--force" because btrfs-progs
+		# changes usage text in commit 3f312d500b73
+		mkfs.btrfs 2>&1 | grep -q '\-f[ |]' >/dev/null
+		if [ $? -eq 0 ]; then
+			tst_resm TINFO "Appending '-f' flag to mkfs.$fs_type"
+			fs_opts="-f"
+		fi
+	fi
+
+	shift 2
+	fs_opts="$fs_opts $@"
+	tst_resm TINFO "Formatting $device with $fs_type extra opts='$fs_opts'"
+
+	ROD_SILENT mkfs.$fs_type $fs_opts $device
+}
+
+tst_umount()
+{
+	local device="$1"
+	local i=0
+
+	if ! grep -q "$device" /proc/mounts; then
+		tst_resm TINFO "The $device is not mounted, skipping umount"
+		return
+	fi
+
+	while [ "$i" -lt 50 ]; do
+		if umount "$device" > /dev/null; then
+			return
+		fi
+
+		i=$((i+1))
+
+		tst_resm TINFO "umount($device) failed, try $i ..."
+		tst_resm TINFO "Likely gvfsd-trash is probing newly mounted "\
+			       "fs, kill it to speed up tests."
+
+		tst_sleep 100ms
+	done
+
+	tst_resm TWARN "Failed to umount($device) after 50 retries"
 }
 
 # Check that test name is set

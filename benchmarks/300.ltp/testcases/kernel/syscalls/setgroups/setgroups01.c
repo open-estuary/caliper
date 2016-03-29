@@ -117,7 +117,6 @@
 #include <grp.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #include "compat_16.h"
 
@@ -133,15 +132,11 @@ GID_T list[NGROUPS];
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 
     /***************************************************************
      * parse standard options
      ***************************************************************/
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
     /***************************************************************
      * perform global setup for test
@@ -162,7 +157,6 @@ int main(int ac, char **av)
 
 		/* check return code */
 		if (TEST_RETURN == -1) {
-			TEST_ERROR_LOG(TEST_ERRNO);
 			tst_resm(TFAIL,
 				 "setgroups(%d, list) Failed, errno=%d : %s",
 				 len, TEST_ERRNO, strerror(TEST_ERRNO));
@@ -184,10 +178,9 @@ int main(int ac, char **av)
 void setup(void)
 {
 
-	tst_sig(NOFORK, DEF_HANDLER, cleanup);
+	tst_require_root();
 
-	if (geteuid() != 0)
-		tst_brkm(TBROK, cleanup, "Must be ROOT to run this test.");
+	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
 	TEST_PAUSE;
 
@@ -205,10 +198,5 @@ void setup(void)
  ***************************************************************/
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }

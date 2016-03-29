@@ -81,7 +81,6 @@
 #include <signal.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #define TEMP_FILE1	"tmp_file1"
 #define TEMP_FILE2	"tmp_file2"
@@ -92,7 +91,6 @@
 
 char *TCID = "lseek10";
 int TST_TOTAL = 3;
-int exp_enos[] = { ESPIPE, EINVAL, EBADF, 0 };
 
 int no_setup();
 int setup1();			/* setup function to test lseek() for ESPIPE */
@@ -124,19 +122,14 @@ void cleanup();			/* cleanup function for the test */
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int fildes;		/* file handle for testfile */
 	int whence;		/* position of file handle in the file */
 	char *test_desc;	/* test specific error message */
 	int ind;		/* counter to test different test conditions */
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
-
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -169,7 +162,6 @@ int main(int ac, char **av)
 					 Test_cases[ind].exp_errno);
 				continue;
 			}
-			TEST_ERROR_LOG(TEST_ERRNO);
 			if (TEST_ERRNO == Test_cases[ind].exp_errno) {
 				tst_resm(TPASS, "lseek() fails, %s, errno:%d",
 					 test_desc, TEST_ERRNO);
@@ -305,11 +297,6 @@ int setup3(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	/* Close the temporary file(s) created in setup1/setup2 */
 	if (close(fd1) < 0) {

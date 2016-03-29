@@ -43,7 +43,6 @@
  *	None
  */
 #include "test.h"
-#include "usctest.h"
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
@@ -66,8 +65,6 @@ static int sysctl(int *name, int nlen, void *oldval, size_t * oldlenp,
 	    { name, nlen, oldval, oldlenp, newval, newlen };
 	return syscall(__NR__sysctl, &args);
 }
-
-#define SIZE(x) sizeof(x)/sizeof(x[0])
 
 struct utsname buf;
 char osname[BUFSIZ];
@@ -100,14 +97,12 @@ struct test_case_t {
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int i;
 	char *comp_string;
 
 	comp_string = NULL;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -118,7 +113,7 @@ int main(int ac, char **av)
 
 		for (i = 0; i < TST_TOTAL; ++i) {
 
-			osnamelth = SIZE(osname);
+			osnamelth = sizeof(osname);
 
 			switch (i) {
 			case 0:
@@ -186,11 +181,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }
 

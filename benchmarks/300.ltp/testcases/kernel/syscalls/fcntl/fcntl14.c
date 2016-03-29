@@ -47,7 +47,6 @@
 #include <errno.h>
 #include <sys/wait.h>
 #include <inttypes.h>
-#include "usctest.h"
 #include "test.h"
 #include "tst_fs_type.h"
 
@@ -559,11 +558,6 @@ static char *argv0;		/* Set by main(), passed to self_exec() */
  */
 void cleanup(void)
 {
-	/*
-	 * print timing status if that option was specified
-	 * print errno log if that option was specified
-	 */
-	TEST_CLEANUP;
 
 	tst_rmdir();
 
@@ -982,11 +976,8 @@ static void testcheck_end(int check_fail, char *msg)
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 #ifdef UCLINUX
 	argv0 = av[0];
 

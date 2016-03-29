@@ -71,18 +71,18 @@
 #include <fcntl.h>
 #include <pwd.h>
 #include <unistd.h>
+
 #include "test.h"
-#include "usctest.h"
+#include "safe_macros.h"
 
 void dochild1();
 void dochild2();
 void setup();
 void cleanup();
-extern struct passwd *my_getpwnam(char *);
 
 #define PERMS		0777
 
-char user1name[] = "nobody";
+static uid_t nobody_uid;
 
 char *TCID = "rmdir03";
 int TST_TOTAL = 1;
@@ -92,12 +92,9 @@ char tstdir2[255];
 char tstdir3[255];
 char tstdir4[255];
 
-int exp_enos[] = { EPERM, EACCES, 0 };	/* List must end with 0 */
-
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	pid_t pid;
 	struct stat buf1;
 	int e_code, status, status2;
@@ -105,9 +102,7 @@ int main(int ac, char **av)
 	/*
 	 * parse standard options
 	 */
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 #ifdef UCLINUX
 	maybe_run_child(&dochild1, "ns", 1, tstdir2);
 	maybe_run_child(&dochild2, "ns", 2, tstdir4);
@@ -117,9 +112,6 @@ int main(int ac, char **av)
 	 * perform global setup for test
 	 */
 	setup();
-
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
 
 	/*
 	 * check looping state if -i option given
@@ -243,20 +235,18 @@ int main(int ac, char **av)
 void dochild1(void)
 {
 	int retval = 0;
-	struct passwd *nobody = my_getpwnam(user1name);
 
 	/* set to nobody */
-	if (seteuid(nobody->pw_uid) == -1) {
+	if (seteuid(nobody_uid) == -1) {
 		retval = 1;
 		tst_brkm(TBROK, cleanup, "setreuid failed to "
-			 "set effective uid to %d", nobody->pw_uid);
+			 "set effective uid to %d", nobody_uid);
 	}
 
 	/* rmdir tstdir2 */
 	TEST(rmdir(tstdir2));
 
 	if (TEST_ERRNO) {
-		TEST_ERROR_LOG(TEST_ERRNO);
 	}
 
 	if (TEST_RETURN != -1) {
@@ -283,20 +273,18 @@ void dochild1(void)
 void dochild2(void)
 {
 	int retval = 0;
-	struct passwd *nobody = my_getpwnam(user1name);
 
 	/* set to nobody */
-	if (seteuid(nobody->pw_uid) == -1) {
+	if (seteuid(nobody_uid) == -1) {
 		retval = 1;
 		tst_brkm(TBROK, cleanup, "setreuid failed to "
-			 "set effective uid to %d", nobody->pw_uid);
+			 "set effective uid to %d", nobody_uid);
 	}
 
 	/* rmdir tstdir4 */
 	TEST(rmdir(tstdir4));
 
 	if (TEST_ERRNO) {
-		TEST_ERROR_LOG(TEST_ERRNO);
 	}
 
 	if (TEST_RETURN != -1) {
@@ -321,7 +309,12 @@ void dochild2(void)
  */
 void setup(void)
 {
-	tst_require_root(NULL);
+	struct passwd *pw;
+
+	tst_require_root();
+
+	pw = SAFE_GETPWNAM(NULL, "nobody");
+	nobody_uid = pw->pw_uid;
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
@@ -344,11 +337,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	/*
 	 * Remove the temporary directory.

@@ -33,7 +33,6 @@
 #include <time.h>
 
 #include "test.h"
-#include "usctest.h"
 
 int rtc_fd = -1;
 char *TCID = "rtc01";
@@ -99,7 +98,10 @@ void read_alarm_test(void)
 
 	ret = ioctl(rtc_fd, RTC_ALM_SET, &rtc_tm);
 	if (ret == -1) {
-		tst_resm(TFAIL, "RTC_ALM_SET ioctl failed");
+		if (errno == EINVAL)
+			tst_resm(TCONF | TERRNO, "RTC_ALM_SET not supported");
+		else
+			tst_resm(TFAIL | TERRNO , "RTC_ALM_SET ioctl failed");
 		return;
 	}
 
@@ -169,7 +171,10 @@ void update_interrupts_test(void)
 	/*Turn on update interrupts */
 	ret = ioctl(rtc_fd, RTC_UIE_ON, 0);
 	if (ret == -1) {
-		tst_resm(TFAIL, "RTC_UIE_ON ioctl failed");
+		if (errno == EINVAL)
+			tst_resm(TCONF | TERRNO, "RTC_UIE_ON not supported");
+		else
+			tst_resm(TFAIL | TERRNO, "RTC_UIE_ON ioctl failed");
 		return;
 	}
 
@@ -211,12 +216,9 @@ void update_interrupts_test(void)
 
 int main(int argc, char *argv[])
 {
-	const char *msg;
-	msg = parse_opts(argc, argv, options, help);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, options, help);
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	if (access(rtc_dev, F_OK) == -1)
 		tst_brkm(TCONF, NULL, "couldn't find rtc device '%s'", rtc_dev);

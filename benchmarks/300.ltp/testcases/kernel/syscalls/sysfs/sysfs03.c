@@ -64,11 +64,11 @@
  *There is no glibc or libc support
  *****************************************************************************/
 
-#include "test.h"
-#include "usctest.h"
 #include <errno.h>
 #include <unistd.h>
 #include <syscall.h>
+#include "test.h"
+#include "linux_syscall_numbers.h"
 
 static void setup();
 static void cleanup();
@@ -79,24 +79,19 @@ int TST_TOTAL = 1;
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
-
-#ifdef __NR_sysfs
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
 		tst_count = 0;
 
-		TEST(syscall(__NR_sysfs, 3));
+		TEST(ltp_syscall(__NR_sysfs, 3));
 
 		/* check return code */
 		if (TEST_RETURN == -1) {
-			TEST_ERROR_LOG(TEST_ERRNO);
 			tst_resm(TFAIL, "sysfs(2) Failed for"
 				 " option 3 and returned"
 				 " %d as error number", TEST_ERRNO);
@@ -104,10 +99,6 @@ int main(int ac, char **av)
 			tst_resm(TPASS, "sysfs(2) Passed for option 3");
 		}
 	}			/*End of TEST_LOOPING */
-#else
-	tst_resm(TWARN,
-		 "This test can only run on kernels that support the sysfs system call");
-#endif
 
 	/*Clean up and exit */
 	cleanup();
@@ -130,10 +121,5 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }

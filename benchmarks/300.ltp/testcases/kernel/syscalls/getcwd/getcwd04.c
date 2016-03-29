@@ -38,8 +38,6 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <unistd.h>
-
-#include "usctest.h"
 #include "test.h"
 #include "safe_macros.h"
 
@@ -58,13 +56,10 @@ int TST_TOTAL = 1;
 int main(int ac, char **av)
 {
 	int status;
-	const char *msg;
 	char cur_cwd[PATH_MAX];
 	pid_t child;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -137,7 +132,5 @@ static void do_child(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	tst_rmdir();
 }

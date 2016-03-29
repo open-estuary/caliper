@@ -46,7 +46,6 @@
 #include "numa_helper.h"
 #include "test.h"
 #include "safe_macros.h"
-#include "usctest.h"
 #include "mem.h"
 
 char *TCID = "ksm06";
@@ -71,11 +70,9 @@ static void usage(void);
 int main(int argc, char *argv[])
 {
 	int lc;
-	const char *msg;
 
-	msg = parse_opts(argc, argv, options, &usage);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PASING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, options, &usage);
+
 	if (n_flag)
 		nr_pages = SAFE_STRTOUL(NULL, n_opt, 0, ULONG_MAX);
 	else
@@ -119,8 +116,6 @@ void cleanup(void)
 	FILE_PRINTF(PATH_KSM "sleep_millisecs",
 			 "%d", sleep_millisecs);
 	FILE_PRINTF(PATH_KSM "run", "%d", run);
-
-	TEST_CLEANUP;
 }
 
 static void usage(void)

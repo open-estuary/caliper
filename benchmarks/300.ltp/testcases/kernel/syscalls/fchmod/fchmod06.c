@@ -41,7 +41,6 @@
 #include <sys/mount.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 
 static int fd1;
@@ -63,7 +62,6 @@ static struct test_case_t {
 
 char *TCID = "fchmod06";
 int TST_TOTAL = ARRAY_SIZE(test_cases);
-static int exp_enos[] = { EPERM, EBADF, EROFS, 0 };
 
 static void setup(void);
 static void cleanup(void);
@@ -71,16 +69,11 @@ static void cleanup(void);
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int i;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
-
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -122,7 +115,7 @@ static void setup(void)
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	TEST_PAUSE;
 
@@ -171,15 +164,13 @@ static void cleanup(void)
 	if (seteuid(0))
 		tst_resm(TWARN | TERRNO, "seteuid(0) failed");
 
-	TEST_CLEANUP;
-
 	if (fd1 > 0 && close(fd1))
 		tst_resm(TWARN | TERRNO, "close(fd1) failed");
 
 	if (fd3 > 0 && close(fd3))
 		tst_resm(TWARN | TERRNO, "close(fd1) failed");
 
-	if (mount_flag && umount("mntpoint") < 0) {
+	if (mount_flag && tst_umount("mntpoint") < 0) {
 		tst_brkm(TBROK | TERRNO, NULL,
 			 "umount device:%s failed", device);
 	}

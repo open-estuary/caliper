@@ -61,10 +61,6 @@ char *TCID = "shmat02";
 char nobody_uid[] = "nobody";
 struct passwd *ltpuser;
 
-int exp_enos[] = { EINVAL, EACCES, 0 };	/* 0 terminated list of */
-
-					/* expected errnos      */
-
 int shm_id_1 = -1;
 int shm_id_2 = -1;
 int shm_id_3 = -1;
@@ -105,15 +101,12 @@ static void setup_tc(int i, struct test_case_t *tc)
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int i;
 	struct test_case_t *tc;
 
 	tc = NULL;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	tc = malloc(sizeof(struct test_case_t));
 	if (tc == NULL)
@@ -157,7 +150,7 @@ void setup(void)
 {
 	key_t shmkey2;
 
-	tst_require_root(NULL);
+	tst_require_root();
 	ltpuser = getpwnam(nobody_uid);
 	if (ltpuser == NULL)
 		tst_brkm(TBROK | TERRNO, NULL, "getpwnam failed");
@@ -165,8 +158,6 @@ void setup(void)
 		tst_brkm(TBROK | TERRNO, NULL, "setuid failed");
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
-
-	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 
@@ -194,11 +185,5 @@ void cleanup(void)
 	rm_shm(shm_id_3);
 
 	tst_rmdir();
-
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }

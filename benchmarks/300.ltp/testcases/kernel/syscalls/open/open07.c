@@ -65,7 +65,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "test.h"
-#include "usctest.h"
 
 static void setup(void);
 static void cleanup(void);
@@ -79,8 +78,6 @@ char *TCID = "open07";
 int TST_TOTAL = 5;
 
 static int fd1, fd2;
-
-static int exp_enos[] = { ELOOP, 0 };
 
 static struct test_case_t {
 	char *desc;
@@ -106,16 +103,11 @@ static struct test_case_t {
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int i;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
-
-	TEST_EXP_ENOS(exp_enos);
 
 	/* run the setup routines for the individual tests */
 	for (i = 0; i < TST_TOTAL; i++) {
@@ -134,7 +126,6 @@ int main(int ac, char **av)
 					tst_resm(TFAIL, "open succeeded "
 						 "unexpectedly");
 				}
-				TEST_ERROR_LOG(TEST_ERRNO);
 
 				if (TEST_ERRNO != TC[i].exp_errno) {
 					tst_resm(TFAIL, "open returned "
@@ -264,7 +255,6 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 	close(fd1);
 	close(fd2);
 

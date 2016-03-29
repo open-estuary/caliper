@@ -107,9 +107,9 @@ execlp01 execlp01
 
 execv01 execv01
 execve01 execve01
-execve02 execve02 -F $LTPROOT/testcases/bin/test3
+execve02 execve02
 execve03 execve03
-execve04 execve04 -F $LTPROOT/testcases/bin/test3
+execve04 execve04
 execve05 execve05 20 $LTPROOT/testcases/bin/execve05 $LTPROOT/testcases/bin/execve05 4
 execvp01 execvp01
 
@@ -164,6 +164,8 @@ fcntl26 fcntl26
 fcntl29 fcntl29
 fcntl30 fcntl30
 fcntl31 fcntl31
+fcntl32 fcntl32
+fcntl33 fcntl33
 
 fdatasync01 fdatasync01
 fdatasync02 fdatasync02
@@ -194,7 +196,6 @@ fpathconf01 fpathconf01
 fstat01 fstat01
 fstat02 fstat02
 fstat03 fstat03
-fstat04 fstat04
 fstat05 fstat05
 
 fstatfs01 fstatfs01
@@ -382,6 +383,7 @@ mmap06 mmap06
 mmap07 mmap07
 mmap08 mmap08
 mmap09 mmap09
+mmap16 mmap16 -i 5
 
 modify_ldt01 modify_ldt01
 modify_ldt02 modify_ldt02
@@ -467,6 +469,7 @@ open09 open09
 open10 open10
 open11 open11
 open12 open12
+open13 open13
 
 pathconf01 pathconf01
 
@@ -495,6 +498,8 @@ pread01 pread01
 pread02 pread02
 pread03 pread03
 
+preadv01 preadv01
+
 profil01 profil01
 
 pselect01 pselect01
@@ -511,6 +516,8 @@ pwrite04 pwrite04
 pwrite01_64 pwrite01_64
 pwrite02_64 pwrite02_64
 pwrite04_64 pwrite04_64
+
+pwritev01 pwritev01
 
 read01 read01
 read02 read02
@@ -741,6 +748,7 @@ signal02 signal02
 signal03 signal03
 signal04 signal04
 signal05 signal05
+signal06 signal06
 
 sigpending02 sigpending02
 

@@ -45,16 +45,12 @@
 #include <errno.h>
 
 #include "test.h"
-#include "usctest.h"
 
 void setup();
 void cleanup();
-extern void do_file_setup(char *);
 
 char *TCID = "rename07";
 int TST_TOTAL = 1;
-
-int exp_enos[] = { ENOTDIR, 0 };	/* List must end with 0 */
 
 int fd;
 char mname[255], fdir[255];
@@ -65,21 +61,16 @@ ino_t oldino, oldino1;
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 
 	/*
 	 * parse standard options
 	 */
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	/*
 	 * perform global setup for test
 	 */
 	setup();
-
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
 
 	/*
 	 * check looping state if -i option given
@@ -97,8 +88,6 @@ int main(int ac, char **av)
 				 fdir, mname);
 			continue;
 		}
-
-		TEST_ERROR_LOG(TEST_ERRNO);
 
 		if (TEST_ERRNO != ENOTDIR) {
 			tst_resm(TFAIL, "Expected ENOTDIR got %d", TEST_ERRNO);
@@ -147,10 +136,7 @@ void setup(void)
 	olddev = buf1.st_dev;
 	oldino = buf1.st_ino;
 
-	/*
-	 * create "new" file
-	 */
-	do_file_setup(mname);
+	SAFE_TOUCH(cleanup, mname, 0700, NULL);
 
 	if (stat(mname, &buf2) == -1) {
 		tst_brkm(TBROK, cleanup, "failed to stat file %s in rename()",
@@ -169,11 +155,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	/*
 	 * Remove the temporary directory.

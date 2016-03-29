@@ -78,7 +78,6 @@
 #include <inttypes.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #define _XOPEN_SOURCE 500
 #define TEMPFILE	"pwrite_file"
@@ -102,11 +101,9 @@ void check_file_contents();	/* function to verify the contents of file */
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int nwrite;		/* no. of bytes written by pwrite() */
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -323,13 +320,7 @@ void check_file_contents(void)
  */
 void cleanup(void)
 {
-	int count;		/* index for the loop */
-
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
+	int count;
 
 	/* Free the memory allocated for the write buffer */
 	for (count = 0; count < NBUFS; count++) {

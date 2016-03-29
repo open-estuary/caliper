@@ -58,14 +58,11 @@
 #include <sys/wait.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #include "ipcmsg.h"
 
 char *TCID = "msgctl05";
 int TST_TOTAL = 1;
-
-int exp_enos[] = { EPERM, 0 };	/* 0 terminated list of expected errnos */
 
 int msg_q_1 = -1;		/* The message queue id created in setup */
 uid_t ltp_uid;			/* The user ID for a non root user */
@@ -75,12 +72,10 @@ struct msqid_ds q_buf;
 
 int main(int ac, char **av)
 {
-	const char *msg;
 	pid_t pid;
 	void do_child(void);
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();		/* global setup */
 
@@ -137,8 +132,6 @@ void do_child(void)
 				continue;
 			}
 
-			TEST_ERROR_LOG(TEST_ERRNO);
-
 			switch (TEST_ERRNO) {
 			case EPERM:
 				tst_resm(TPASS, "expected error = %d : %s",
@@ -159,12 +152,9 @@ void do_child(void)
  */
 void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
-
-	/* Set up the expected error numbers for -e option */
-	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 
@@ -192,10 +182,5 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }

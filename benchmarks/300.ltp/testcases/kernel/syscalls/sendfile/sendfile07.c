@@ -53,8 +53,6 @@
 #include <fcntl.h>
 #include <sys/sendfile.h>
 #include <sys/socket.h>
-
-#include "usctest.h"
 #include "test.h"
 
 #ifndef OFF_T
@@ -77,11 +75,8 @@ void setup(void);
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;		/* parse_opts() return message */
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -97,8 +92,6 @@ int main(int ac, char **av)
 			tst_resm(TFAIL, "call succeeded unexpectedly");
 			continue;
 		}
-
-		TEST_ERROR_LOG(TEST_ERRNO);
 
 		if (TEST_ERRNO != EAGAIN) {
 			tst_resm(TFAIL, "sendfile returned unexpected "
@@ -194,8 +187,6 @@ void cleanup(void)
 	if (ignored_fd)
 		close(ignored_fd);
 	close(in_fd);
-
-	TEST_CLEANUP;
 
 	/* delete the test directory created in setup() */
 	tst_rmdir();

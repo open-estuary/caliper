@@ -11,36 +11,52 @@
  * Steps:
  * 1.  Create a thread using pthread_create()
  * 2.  Compare the thread ID of 'main' to the thread ID of the newly created
- *     thread. They should be different.
+ *     thread. They should be different but process IDs are the same.
  */
 
 #include <pthread.h>
 #include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 #include "posixtest.h"
 
-void *a_thread_func()
-{
+static int pid;
 
-	pthread_exit(0);
+static void *a_thread_func()
+{
+	pid = getpid();
+
 	return NULL;
 }
 
 int main(void)
 {
 	pthread_t main_th, new_th;
+	int ret, ppid;
 
-	if (pthread_create(&new_th, NULL, a_thread_func, NULL) != 0) {
-		perror("Error creating thread\n");
+	ret = pthread_create(&new_th, NULL, a_thread_func, NULL);
+	if (ret) {
+		fprintf(stderr, "pthread_create(): %s\n", strerror(ret));
 		return PTS_UNRESOLVED;
 	}
 
-	/* Obtain the thread ID of this main function */
 	main_th = pthread_self();
 
-	/* Compare the thread ID of the new thread to the main thread.
-	 * They should be different.  If not, the test fails. */
 	if (pthread_equal(new_th, main_th) != 0) {
 		printf("Test FAILED: A new thread wasn't created\n");
+		return PTS_FAIL;
+	}
+
+	ret = pthread_join(new_th, NULL);
+	if (ret) {
+		fprintf(stderr, "pthread_join(): %s\n", strerror(ret));
+		return PTS_UNRESOLVED;
+	}
+
+	ppid = getpid();
+
+	if (pid != ppid) {
+		printf("Test FAILED: Pids are different %i != %i\n", pid, ppid);
 		return PTS_FAIL;
 	}
 

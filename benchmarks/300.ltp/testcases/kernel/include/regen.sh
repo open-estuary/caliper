@@ -44,7 +44,8 @@ cat << EOF > "${output_pid}"
 	} \\
 	if (__ret == -1 && errno == ENOSYS) { \\
 		tst_brkm(TCONF, CLEANUP, \\
-			"syscall " #NR " not supported on your arch"); \\
+			"syscall(%d) " #NR " not supported on your arch", \\
+			NR); \\
 		errno = ENOSYS; \\
 	} \\
 	__ret; \\
@@ -69,13 +70,11 @@ for arch in $(cat "${srcdir}/order") ; do
 		nr="__NR_$1"
 		shift
 		if [ $# -eq 0 ] ; then
-			err "invalid line found"
+			err "invalid line found: $line"
 		fi
-		cat <<-EOF
-		# ifndef ${nr}
-		#  define ${nr} $*
-		# endif
-		EOF
+		echo "# ifndef ${nr}"
+		echo "#  define ${nr} $*"
+		echo "# endif"
 	done < "${srcdir}/${arch}.in"
 	echo "#endif"
 	echo
@@ -97,11 +96,9 @@ echo "/* Common stubs */"
 echo "#define __LTP__NR_INVALID_SYSCALL -1" >> "${output_pid}"
 for nr in $(awk '{print $1}' "${srcdir}/"*.in | sort -u) ; do
 	nr="__NR_${nr}"
-	cat <<-EOF
-	# ifndef ${nr}
-	#  define ${nr} __LTP__NR_INVALID_SYSCALL
-	# endif
-	EOF
+	echo "# ifndef ${nr}"
+	echo "#  define ${nr} __LTP__NR_INVALID_SYSCALL"
+	echo "# endif"
 done
 echo "#endif"
 ) >> "${output_pid}._footer"

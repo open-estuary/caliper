@@ -163,6 +163,8 @@ int dump_data(FILE * stream, const char *buff, const size_t buff_siz,
 			fprintf(stream, "%s\n", obuff);
 			break;
 		default:
+			FREE(ibuff);
+			FREE(obuff);
 			return (-1);
 		}
 	}
@@ -173,7 +175,7 @@ int dump_data(FILE * stream, const char *buff, const size_t buff_siz,
 
 int do_dump(child_args_t * args)
 {
-	size_t NumBytes = 0;
+	ssize_t NumBytes = 0;
 	OFF_T TargetLBA, TotalBytes = 0;
 	char *buff;
 	fd_t fd;
@@ -190,12 +192,14 @@ int do_dump(child_args_t * args)
 		pMsg(ERR, args, "could not open %s.\n", args->device);
 		pMsg(ERR, args, "%s: Error = %u\n", args->device,
 		     GETLASTERROR());
+		FREE(buff);
 		return (-1);
 	}
 
 	TargetLBA = Seek(fd, args->start_lba * BLK_SIZE);
 	if (TargetLBA != (args->start_lba * (OFF_T) BLK_SIZE)) {
 		pMsg(ERR, args, "Could not seek to start position.\n");
+		FREE(buff);
 		CLOSE(fd);
 		return (-1);
 	}

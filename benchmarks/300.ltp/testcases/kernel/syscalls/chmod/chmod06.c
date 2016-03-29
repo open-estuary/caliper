@@ -57,7 +57,6 @@
 #include <sys/mount.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 
 #define MODE_RWX	(S_IRWXU|S_IRWXG|S_IRWXO)
@@ -101,7 +100,6 @@ struct test_case_t {
 
 char *TCID = "chmod06";
 int TST_TOTAL = ARRAY_SIZE(tc);
-int exp_enos[] = {EPERM, EACCES, EFAULT, ENAMETOOLONG, ENOENT, ENOTDIR, 0};
 
 static char *bad_addr = 0;
 
@@ -111,16 +109,11 @@ static void cleanup(void);
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int i;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
-
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		tst_count = 0;
@@ -174,7 +167,7 @@ void setup(void)
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	TEST_PAUSE;
 
@@ -224,12 +217,10 @@ void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	if (chmod(DIR_TEMP, MODE_RWX) == -1)
 		tst_resm(TBROK | TERRNO, "chmod(%s) failed", DIR_TEMP);
 
-	if (mount_flag && umount(MNT_POINT) < 0) {
+	if (mount_flag && tst_umount(MNT_POINT) < 0) {
 		tst_brkm(TBROK | TERRNO, NULL,
 			 "umount device:%s failed", device);
 	}

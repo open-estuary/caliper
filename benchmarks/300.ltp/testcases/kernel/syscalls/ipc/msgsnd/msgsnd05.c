@@ -60,10 +60,8 @@
  */
 
 #include "test.h"
-#include "usctest.h"
 
 #include "ipcmsg.h"
-#include "libtestsuite.h"
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -79,31 +77,22 @@ void do_child_uclinux(void);
 char *TCID = "msgsnd05";
 int TST_TOTAL = 1;
 
-int exp_enos[] = { EINTR, 0 };	/* 0 terminated list of expected errnos */
-
 int msg_q_1 = -1;		/* The message queue id created in setup */
-
-int sync_pipes[2];
 
 MSGBUF msg_buf;
 
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	pid_t c_pid;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 #ifdef UCLINUX
 	maybe_run_child(&do_child_uclinux, "d", &msg_q_1);
 #endif
 
 	setup();		/* global setup */
-
-	if (sync_pipe_create(sync_pipes, PIPE_NAME) == -1)
-		tst_brkm(TBROK, cleanup, "sync_pipe_create failed");
 
 	/* The following loop checks looping state if -i option given */
 
@@ -132,26 +121,12 @@ int main(int ac, char **av)
 #else
 			do_child();
 #endif
-		} else {	/* parent */
-
-			if (sync_pipe_wait(sync_pipes) == -1)
-				tst_brkm(TBROK, cleanup,
-					 "sync_pipe_wait failed");
-
-			if (sync_pipe_close(sync_pipes, PIPE_NAME) == -1)
-				tst_brkm(TBROK, cleanup,
-					 "sync_pipe_close failed");
-
-			/* After son has been created, give it a chance to execute the
-			 * msgsnd command before we continue. Without this sleep, on SMP machine
-			 * the father kill could be executed before the son msgsnd.
-			 */
-			sleep(2);
+		} else {
+			TST_PROCESS_STATE_WAIT(cleanup, c_pid, 'S');
 
 			/* send a signal that must be caught to the child */
-			if (kill(c_pid, SIGHUP) == -1) {
+			if (kill(c_pid, SIGHUP) == -1)
 				tst_brkm(TBROK, cleanup, "kill failed");
-			}
 
 			waitpid(c_pid, NULL, 0);
 		}
@@ -167,20 +142,12 @@ int main(int ac, char **av)
  */
 void do_child(void)
 {
-	if (sync_pipe_notify(sync_pipes) == -1)
-		tst_brkm(TBROK, cleanup, "sync_pipe_notify failed");
-
-	if (sync_pipe_close(sync_pipes, PIPE_NAME) == -1)
-		tst_brkm(TBROK, cleanup, "sync_pipe_close failed");
-
 	TEST(msgsnd(msg_q_1, &msg_buf, MSGSIZE, 0));
 
 	if (TEST_RETURN != -1) {
 		tst_resm(TFAIL, "call succeeded when error expected");
 		exit(-1);
 	}
-
-	TEST_ERROR_LOG(TEST_ERRNO);
 
 	switch (TEST_ERRNO) {
 	case EINTR:
@@ -214,9 +181,6 @@ void do_child_uclinux(void)
 	/* initialize the message buffer */
 	init_buf(&msg_buf, MSGTYPE, MSGSIZE);
 
-	if (sync_pipe_create(sync_pipes, PIPE_NAME) == -1)
-		tst_brkm(TBROK, cleanup, "sync_pipe_create failed");
-
 	tst_sig(FORK, sighandler, cleanup);
 
 	do_child();
@@ -230,9 +194,6 @@ void setup(void)
 {
 	/* capture signals in our own handler */
 	tst_sig(FORK, sighandler, cleanup);
-
-	/* Set up the expected error numbers for -e option */
-	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 
@@ -269,11 +230,5 @@ void cleanup(void)
 	rm_queue(msg_q_1);
 
 	tst_rmdir();
-
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }

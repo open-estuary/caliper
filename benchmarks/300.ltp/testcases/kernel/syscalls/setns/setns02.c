@@ -42,7 +42,6 @@
 #include <string.h>
 #include "config.h"
 #include "test.h"
-#include "usctest.h"
 #include "linux_syscall_numbers.h"
 #include "safe_macros.h"
 
@@ -163,11 +162,8 @@ static void test_flag(int clone_flag, int ns_flag, int (*fn) (void *arg))
 int main(int argc, char *argv[])
 {
 	int lc;
-	const char *msg;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, tst_exit, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
@@ -190,7 +186,7 @@ static void setup(void)
 {
 	char tmp[PATH_MAX];
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	/* runtime check if syscall is supported */
 	ltp_syscall(__NR_setns, -1, 0);
@@ -220,7 +216,6 @@ static void cleanup(void)
 		close(ns_uts_fd);
 
 	shmctl(shmid, IPC_RMID, NULL);
-	TEST_CLEANUP;
 }
 #else
 int main(int argc, char *argv[])

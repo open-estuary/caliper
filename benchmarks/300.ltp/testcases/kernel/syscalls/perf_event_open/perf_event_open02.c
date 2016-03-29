@@ -70,7 +70,6 @@ The -v flag makes it print out the values of each counter.
 #endif
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 #include "linux_syscall_numbers.h"
 
@@ -101,11 +100,8 @@ static int hwfd[MAX_CTRS], tskfd[MAX_CTRS];
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 
-	msg = parse_opts(ac, av, options, help);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, options, help);
 
 	setup();
 
@@ -272,8 +268,6 @@ static void setup(void)
 static void cleanup(void)
 {
 	int i;
-
-	TEST_CLEANUP;
 
 	for (i = 0; i < n; i++) {
 		if (hwfd[i] > 0 && close(hwfd[i]) == -1)

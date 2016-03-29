@@ -60,13 +60,9 @@
 #include <wait.h>
 #include <sys/mman.h>
 #include "test.h"
-#include "usctest.h"
 
 void setup(void);
 void cleanup(void);
-
-/* 0 terminated list of expected errnos */
-int exp_enos[] = { 9, 14, 32, 0 };
 
 char *TCID = "write05";
 int TST_TOTAL = 1;
@@ -78,15 +74,12 @@ char *bad_addr = 0;
 int main(int argc, char **argv)
 {
 	int lc;
-	const char *msg;
 
 	char pbuf[BUFSIZ];
 	int pipefildes[2];
 	int status, pid;
 
-	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	/* global setup */
 	setup();
@@ -102,7 +95,6 @@ int main(int argc, char **argv)
 		if (write(-1, pbuf, 1) != -1) {
 			tst_resm(TFAIL, "write of invalid fd passed");
 		} else {
-			TEST_ERROR_LOG(errno);
 			if (errno != EBADF) {
 				tst_resm(TFAIL, "expected EBADF got %d", errno);
 			}
@@ -122,7 +114,6 @@ int main(int argc, char **argv)
 				 "succeeded, but should have failed");
 			cleanup();
 		} else {
-			TEST_ERROR_LOG(errno);
 			if (errno != EFAULT) {
 				tst_resm(TFAIL, "write() returned illegal "
 					 "errno: expected EFAULT, got %d",
@@ -166,11 +157,9 @@ int main(int argc, char **argv)
 				WTERMSIG(status) == SIGPIPE) {
 				tst_resm(TFAIL, "child set SIGPIPE in exit");
 			} else if (WEXITSTATUS(status) != 0) {
-				TEST_ERROR_LOG(WEXITSTATUS(status));
 				tst_resm(TFAIL, "exit status from child "
 					 "expected 0 got %d", status >> 8);
 			} else {
-				TEST_ERROR_LOG(EPIPE);
 				tst_resm(TPASS, "received EPIPE as expected.");
 			}
 			tst_resm(TINFO, "Exit Block 3");
@@ -189,8 +178,6 @@ void setup(void)
 {
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
-
-	TEST_EXP_ENOS(exp_enos);
 
 	/* Pause if that option was specified
 	 * TEST_PAUSE contains the code to fork the test with the -i option.
@@ -219,11 +206,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	/* Close the file descriptor befor removing the file */
 	close(fd);

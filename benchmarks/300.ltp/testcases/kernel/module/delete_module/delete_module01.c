@@ -26,7 +26,6 @@
 
 #include <errno.h>
 #include "test.h"
-#include "usctest.h"
 #include "tst_module.h"
 #include "safe_macros.h"
 #include "linux_syscall_numbers.h"
@@ -45,11 +44,8 @@ static int module_loaded;
 int main(int argc, char **argv)
 {
 	int lc;
-	const char *msg;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 
@@ -81,7 +77,7 @@ static void setup(void)
 {
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	TEST_PAUSE;
 }
@@ -90,5 +86,4 @@ static void cleanup(void)
 {
 	if (module_loaded == 1)
 		tst_module_unload(NULL, MODULE_NAME_KO);
-	TEST_CLEANUP;
 }

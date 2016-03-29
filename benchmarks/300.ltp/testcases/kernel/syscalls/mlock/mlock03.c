@@ -37,7 +37,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "test.h"
-#include "usctest.h"
 
 #define KB 1024
 
@@ -50,14 +49,12 @@ static void cleanup(void);
 int main(int argc, char *argv[])
 {
 	int lc;
-	const char *msg;
 	long from, to;
 	long first = -1, last = -1;
 	char b[KB];
 	FILE *fp;
 
-	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 
@@ -111,7 +108,7 @@ int main(int argc, char *argv[])
 
 void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 	TEST_PAUSE;
@@ -119,5 +116,4 @@ void setup(void)
 
 void cleanup(void)
 {
-	TEST_CLEANUP;
 }

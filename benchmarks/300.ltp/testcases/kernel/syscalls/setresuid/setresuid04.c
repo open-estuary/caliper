@@ -51,7 +51,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include "test.h"
-#include "usctest.h"
 #include <pwd.h>
 #include "compat_16.h"
 
@@ -60,8 +59,6 @@ int TST_TOTAL = 1;
 char nobody_uid[] = "nobody";
 char testfile[256] = "";
 struct passwd *ltpuser;
-
-int exp_enos[] = { EACCES, 0 };
 
 int fd = -1;
 
@@ -72,13 +69,9 @@ void do_master_child();
 int main(int ac, char **av)
 {
 	pid_t pid;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 	setup();
-
-	TEST_EXP_ENOS(exp_enos);
 
 	pid = FORK_OR_VFORK();
 	if (pid < 0)
@@ -150,8 +143,6 @@ void do_master_child(void)
 				exit(TFAIL);
 			}
 
-			TEST_ERROR_LOG(TEST_ERRNO);
-
 			if (TEST_ERRNO == EACCES) {
 				printf("open failed with EACCES as expected\n");
 				exit(TPASS);
@@ -200,7 +191,7 @@ void do_master_child(void)
  */
 void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	ltpuser = getpwnam(nobody_uid);
 
@@ -227,12 +218,6 @@ void setup(void)
 void cleanup(void)
 {
 	close(fd);
-
-	/*
-	 * print timing status if that option was specified
-	 * print errno log if that option was specified
-	 */
-	TEST_CLEANUP;
 
 	tst_rmdir();
 

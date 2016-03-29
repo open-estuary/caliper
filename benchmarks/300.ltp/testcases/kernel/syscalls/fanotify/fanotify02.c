@@ -35,7 +35,6 @@
 #include <string.h>
 #include <sys/syscall.h>
 #include "test.h"
-#include "usctest.h"
 #include "linux_syscall_numbers.h"
 #include "fanotify.h"
 #include "safe_macros.h"
@@ -67,10 +66,8 @@ static char event_buf[EVENT_BUF_LEN];
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -81,12 +78,13 @@ int main(int ac, char **av)
 
 		if (fanotify_mark(fd_notify, FAN_MARK_ADD, FAN_ACCESS |
 				    FAN_MODIFY | FAN_CLOSE | FAN_OPEN |
-				    FAN_EVENT_ON_CHILD, AT_FDCWD, ".") < 0) {
+				    FAN_EVENT_ON_CHILD | FAN_ONDIR, AT_FDCWD,
+				  ".") < 0) {
 			tst_brkm(TBROK | TERRNO, cleanup,
 			    "fanotify_mark (%d, FAN_MARK_ADD, FAN_ACCESS | "
 			    "FAN_MODIFY | FAN_CLOSE | FAN_OPEN | "
-			    "FAN_EVENT_ON_CHILD, AT_FDCWD, '.') failed",
-			    fd_notify);
+			    "FAN_EVENT_ON_CHILD | FAN_ONDIR, AT_FDCWD, '.') "
+			    "failed", fd_notify);
 		}
 
 		/*
@@ -248,7 +246,6 @@ static void cleanup(void)
 	if (close(fd_notify) == -1)
 		tst_resm(TWARN, "close(%d) failed", fd_notify);
 
-	TEST_CLEANUP;
 	tst_rmdir();
 }
 

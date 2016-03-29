@@ -13,12 +13,15 @@ import re
 import logging
 import datetime
 import subprocess
-
+import socket
 try:
     import caliper.common as common
 except ImportError:
     import common
-
+#for ltp
+from caliper.server.hosts import abstract_ssh
+#import caliper.server.utils as server_utils
+#for ltp 
 from caliper.server import crash_handle
 from caliper.client.shared import error
 from caliper.server import utils as server_utils
@@ -27,6 +30,7 @@ from caliper.client.shared import caliper_path
 from caliper.client.shared.settings import settings
 from caliper.server.run import write_results
 from caliper.client.shared.caliper_path import folder_ope as Folder
+
 
 
 def get_server_command(kind_bench, section_name):
@@ -82,6 +86,33 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
                                 str(starttime)[:19],
                                 Folder.caliper_log_file),
                             shell=True)
+    bench_test = "ltp"
+    if  bench_name == bench_test:
+	 tar_ip = settings.get_value('CLIENT', 'ip', type=str) 
+	 target.run("if [[ ! -e /mnt/ltp ]]; then mkdir -p /mnt/ltp; fi")
+# fix me , now that we create the folder, why not we mount it directly here
+	 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	 try:
+# fix me , getting host ip to be optimised
+		s.connect(("8.8.8.8", 80) )
+	 except Exception:
+		logging.debug("Socket connection failed during ltp pre-requisite check" )
+	 host_ip = s.getsockname()[0]
+	 try:	
+	 	xyz = target.run("mount -t nfs %s:/opt/caliper_nfs /mnt/ltp" % (host_ip) )
+	 except Exception:
+		try:
+			xyz = target.run("umount /mnt/ltp/")
+			xyz = target.run("mount -t nfs %s:/opt/caliper_nfs /mnt/ltp" % (host_ip) )
+		except Exception:
+			logging.debug("Unable to mount")
+			return result
+   	 readme_file=log_bench+"_README"
+    	 resultltp = subprocess.call("touch %s"
+					%(readme_file),shell=True)
+    	 resultltp = subprocess.call("echo 'The categorization of ltp in caliper is\nCATEGORY\t\t\t\t\t\tSCENARIOS OF LTP\n\n[command]\t\t\t\t\t\tcommands\n[cpu]\t\t\t\t\t\tsched,cpuhotplug\n[memory]\t\t\t\t\t\tmm.numa,hugetlb\n[dio]\t\t\t\t\t\tdio,io,dma_thread_diotest,timers\n[filesystem]\t\t\t\t\t\tfilecaps,fs,fs_bind,fs_ext4,fs_perms_simple,fs_readonly\n[kernel/\t\t\t\t\t\tsyscalls,controllers,pty,containers,admin_tools,modules,can\n[proc]\t\t\t\t\t\tipc,hyperthreading,nptl,cap_bounds,connectors,pipes\n\n\nltp_output.log contains the screenshot of complete ltp execution and ltp_parser.log contains the information regarding the number of tests executed and among them which all have passed failed or skipped.\n\nFor more information regarding a particular category please see ltp_<category>_output.log which contains the output screen and parser log for that particular category' >> %s"
+		%(readme_file),shell=True)
+    
     # for each command in run config file, read the config for the benchmark
     for i in range(0, len(sections_run)):
         flag = 0
@@ -93,7 +124,9 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
         except Exception:
             logging.debug("no value for the %s" % sections_run[i])
             continue
-
+	if bench_name == bench_test:
+	    subsection = sections_run[i].split(" ")[1] 
+	    subsection_file = log_bench + "_" + subsection + "_output.log"
         if os.path.exists(tmp_parser_file):
             os.remove(tmp_parser_file)
         if os.path.exists(tmp_log_file):
@@ -109,45 +142,68 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
         except Exception, e:
             logging.info(e)
             crash_handle.main()
+            if bench_name == bench_test:
+                 xyz = subprocess.call("mv /opt/caliper_nfs/ltp_log/* %s "
+                                % (Folder.exec_dir), shell=True)
             server_utils.file_copy(logfile, tmp_log_file, 'a+')
-            os.remove(tmp_log_file)
+            if os.path.exists(tmp_log_file):
+                os.remove(tmp_log_file)
             run_flag = server_utils.get_fault_tolerance_config(
                                 'fault_tolerance', 'run_error_continue')
             if run_flag == 1:
-                continue
+              continue
             else:
-                return result
+              return result
         else:
+            if bench_name == bench_test:
+                xyz = subprocess.call("mv /opt/caliper_nfs/ltp_log/* %s "
+                                % (Folder.exec_dir), shell=True)
+                if os.path.exists(subsection_file):
+                    server_utils.file_copy(tmp_log_file,subsection_file, 'a+')
             server_utils.file_copy(logfile, tmp_log_file, 'a+')
             if flag != 1:
                 logging.info("There is wrong when running the command \"%s\""
                                 % command)
-                os.remove(tmp_log_file)
+                if os.path.exists(tmp_log_file):	
+                    os.remove(tmp_log_file)
                 crash_handle.main()
 
                 run_flag = server_utils.get_fault_tolerance_config(
                                 'fault_tolerance', 'run_error_continue')
                 if run_flag == 1:
-                    continue
+                    if bench_name != bench_test:
+                       continue
                 else:
                     return result
         # parser the result in the tmp_log_file, the result is the output of
         # running the command
         try:
             logging.debug("Parsering the result of command: %s" % command)
-            parser_result = parser_case(kind_bench, bench_name, parser_file,
-                                        parser, tmp_log_file,
+            if bench_name == bench_test:
+                outfp = open(tmp_parser_file, "w")
+                outfp.write("%s" %(subsection))
+                outfp.close()		
+                parser_result = parser_case(kind_bench, bench_name, parser_file,
+                                        parser, subsection_file,
+                                        tmp_parser_file)
+            else:
+                parser_result = parser_case(kind_bench, bench_name, parser_file,
+                                        parser,tmp_log_file,
                                         tmp_parser_file)
         except Exception, e:
             logging.info("There's wrong when parsering the result of \" %s \""
                             % sections_run[i])
             logging.info(e)
-            os.remove(tmp_parser_file)
-            os.remove(tmp_log_file)
+            if os.path.exists(tmp_parser_file):
+                os.remove(tmp_parser_file)
+            if os.path.exists(tmp_log_file):
+                os.remove(tmp_log_file)
         else:
             server_utils.file_copy(parser_result_file, tmp_parser_file, "a+")
-            os.remove(tmp_parser_file)
-            os.remove(tmp_log_file)
+            if os.path.exists(tmp_parser_file):
+                os.remove(tmp_parser_file)
+            if os.path.exists(tmp_log_file):
+                os.remove(tmp_log_file)
             if (parser_result <= 0):
                 continue
 
@@ -418,7 +474,7 @@ def parser_case(kind_bench, bench_name, parser_file, parser, infile, outfile):
     if not os.path.exists(infile):
         return -1
     result = 0
-    fp = open(outfile, "w")
+    fp = open(outfile, 'a+')
     # the parser function defined in the config file is to filter the output.
     # get the abspth of the parser.py which is defined in the config files.
     # changed by Elaine Aug 8-10
@@ -449,7 +505,12 @@ def parser_case(kind_bench, bench_name, parser_file, parser, infile, outfile):
             infp = open(infile, "r")
             outfp = open(outfile, 'a+')
             contents = infp.read()
-            for content in re.findall("BEGIN TEST(.*?)\[status\]", contents,
+
+	    if  bench_name == "ltp": 
+                 result = methodToCall(contents, outfp)
+	    else:
+
+              for content in re.findall("BEGIN TEST(.*?)\[status\]", contents,
                                         re.DOTALL):
                 try:
                     # call the parser function to filter the output
@@ -567,11 +628,12 @@ def caliper_run(target_exec_dir, target):
             build_name = sections[i]+'_'+target_arch+'.suc'
             build_suc = os.path.join(Folder.build_dir, build_name)
             if not os.path.exists(build_suc):
-                continue
+		      continue
             build_host_name = sections[i] + '_' + \
                     server_utils.get_local_machine_arch() + '.fail'
             if os.path.exists(build_host_name):
                 continue
+
 
             # try to resolve the configuration of the configuration file
             try:
@@ -590,6 +652,12 @@ def caliper_run(target_exec_dir, target):
                 logging.info("Running %s Exception" % sections[i])
                 crash_handle.main()
                 print_format()
+                if sections[i]== "ltp":
+                    try:
+                        xyz = target.run("umount /mnt/ltp/")
+                    except Exception:
+                        xyz = target.run("fuser -km /mnt/ltp")
+                        xyz = target.run("umount /mnt/ltp/")
                 run_flag = server_utils.get_fault_tolerance_config(
                                 'fault_tolerance', 'run_error_continue')
                 if run_flag == 1:
@@ -598,6 +666,13 @@ def caliper_run(target_exec_dir, target):
                     return result
             else:
                 logging.info("Running %s Finished" % sections[i])
+                if sections[i] == "ltp":
+                    try:
+                         xyz = target.run("umount /mnt/ltp/")
+                    except Exception:
+                         xyz = target.run("fuser -km /mnt/ltp/")
+                         xyz = target.run("umount /mnt/ltp/")
+			
                 print_format()
     return 0
 

@@ -43,7 +43,6 @@
 #include <string.h>
 #include <unistd.h>
 #include "test.h"
-#include "usctest.h"
 
 char *TCID = "thp01";
 int TST_TOTAL = 1;
@@ -66,11 +65,8 @@ int main(int argc, char **argv)
 {
 	int i, lc, st;
 	pid_t pid;
-	const char *msg;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 
@@ -120,5 +116,4 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 }

@@ -32,6 +32,7 @@
 
 #include "config.h"
 #include "global.h"
+#include <compiler.h>
 #ifdef HAVE_SYS_PRCTL_H
 # include <sys/prctl.h>
 #endif
@@ -311,7 +312,7 @@ int main(int argc, char **argv)
 
 	errrange = errtag = 0;
 	umask(0);
-	nops = sizeof(ops) / sizeof(ops[0]);
+	nops = ARRAY_SIZE(ops);
 	ops_end = &ops[nops];
 	myprog = argv[0];
 	while ((c = getopt(argc, argv, "cd:e:f:i:l:n:p:rs:vwzHSX")) != -1) {
@@ -400,7 +401,7 @@ int main(int argc, char **argv)
 
 	make_freq_table();
 
-	while ((loopcntr <= loops) || (loops == 0) && !should_stop) {
+	while (((loopcntr <= loops) || (loops == 0)) && !should_stop) {
 		if (!dirname) {
 			/* no directory specified */
 			if (!nousage)
@@ -511,11 +512,13 @@ int main(int argc, char **argv)
 			while (wait(&stat) > 0 && !should_stop) {
 				continue;
 			}
-			action.sa_flags = SA_RESTART;
-			sigaction(SIGTERM, &action, 0);
-			kill(-getpid(), SIGTERM);
-			while (wait(&stat) > 0)
-				continue;
+			if (should_stop) {
+				action.sa_flags = SA_RESTART;
+				sigaction(SIGTERM, &action, 0);
+				kill(-getpid(), SIGTERM);
+				while (wait(&stat) > 0)
+					continue;
+			}
 		}
 #ifndef NO_XFS
 		if (errtag != 0) {
@@ -1064,7 +1067,7 @@ void namerandpad(int id, char *buf, int i)
 
 	if (namerand == 0)
 		return;
-	bucket = (id ^ namerand) % (sizeof(buckets) / sizeof(buckets[0]));
+	bucket = (id ^ namerand) % ARRAY_SIZE(buckets);
 	padmod = buckets[bucket] + 1 - i;
 	if (padmod <= 0)
 		return;
@@ -1546,7 +1549,7 @@ void attr_set_f(int opno, long r)
 	if (!get_fname(FT_ANYm, r, &f, NULL, NULL, &v))
 		append_pathname(&f, ".");
 	sprintf(aname, "a%x", nameseq++);
-	li = (int)(random() % (sizeof(lengths) / sizeof(lengths[0])));
+	li = (int)(random() % ARRAY_SIZE(lengths));
 	len = (int)(random() % lengths[li]);
 	if (len == 0)
 		len = 1;

@@ -32,7 +32,6 @@
 #include <errno.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "lapi/fcntl.h"
 #include "linux_syscall_numbers.h"
 
@@ -62,7 +61,6 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 	tst_rmdir();
 }
 

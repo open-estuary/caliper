@@ -65,7 +65,6 @@
 #include <errno.h>
 #include <linux/utsname.h>
 #include "test.h"
-#include "usctest.h"
 
 #define MAX_NAME_LEN __NEW_UTS_LEN
 
@@ -81,10 +80,8 @@ int main(int ac, char **av)
 {
 
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -131,11 +128,5 @@ void setup(void)
  */
 void cleanup(void)
 {
-
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }

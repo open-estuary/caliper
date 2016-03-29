@@ -136,7 +136,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include "test.h"
-#include "usctest.h"
 
 #define CHAR_SET_FAILED	"0"	/*Set up failing status transferred through the pipe.   */
 #define CHAR_SET_PASSED	"1"	/*Set up passing status transferred through the pipe.   */
@@ -204,8 +203,6 @@ void cleanup();
 char *TCID = "kill02";
 int TST_TOTAL = 2;
 
-int exp_enos[] = { 0 };		/* Array of expected errnos */
-
 #ifdef UCLINUX
 static char *argv0;
 void childA_rout_uclinux();
@@ -215,10 +212,8 @@ void childB_rout_uclinux();
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 #ifdef UCLINUX
 	argv0 = av[0];
@@ -723,9 +718,6 @@ void setup(void)
 			 "signal(SIGCLD, SIG_IGN) failed");
 	}
 
-	/* Indicate which errnos are expected */
-	TEST_EXP_ENOS(exp_enos);
-
 	TEST_PAUSE;
 
 	/*
@@ -870,10 +862,5 @@ void chld1_kill(void)
  ***************************************************************/
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }

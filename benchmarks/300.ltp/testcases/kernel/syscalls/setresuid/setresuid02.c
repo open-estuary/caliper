@@ -62,7 +62,6 @@
 #include <pwd.h>
 #include <stdlib.h>
 #include "test.h"
-#include "usctest.h"
 #include <errno.h>
 #include <sys/wait.h>
 #include "compat_16.h"
@@ -113,12 +112,8 @@ uid_verify(struct passwd *ru, struct passwd *eu, struct passwd *su, char *);
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -179,7 +174,7 @@ int main(int ac, char **av)
  */
 void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
@@ -212,11 +207,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }
 

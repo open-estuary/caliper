@@ -44,7 +44,6 @@
 #include <unistd.h>
 #include "config.h"
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 #include "linux_syscall_numbers.h"
 
@@ -106,7 +105,7 @@ static int find_msg(int fd, const char *text_to_find, char *buf, int bufsize,
 	}
 
 	while (1) {
-		TEST(read(f, msg, sizeof(msg)));
+		TEST(read(f, msg, MAX_MSGSIZE));
 		if (TEST_RETURN < 0) {
 			if (TEST_ERRNO == EAGAIN)
 				/* there are no more messages */
@@ -215,7 +214,8 @@ static int timed_read_kmsg(int fd, int timeout_sec)
 		 * pipe to let parent know that it didn't block */
 		close(pipefd[0]);
 		while (1) {
-			write(pipefd[1], "", 1);
+			if (write(pipefd[1], "", 1) == -1)
+				tst_brkm(TBROK|TERRNO, NULL, "write to pipe");
 			TEST(read(fd, msg, MAX_MSGSIZE));
 			if (TEST_RETURN == 0)
 				break;
@@ -420,7 +420,7 @@ static void test_messages_overwritten(void)
 	int i, fd;
 	char msg[MAX_MSGSIZE];
 	unsigned long first_seqno, seqno;
-	char filler_str[] = MSG_PREFIX"FILLER MESSAGE TO OVERWRITE OTHERS\n";
+	char filler_str[] = "<7>"MSG_PREFIX"FILLER MESSAGE TO OVERWRITE OTHERS\n";
 
 	/* Keep injecting messages until we overwrite first one.
 	 * We know first message is overwritten when its seqno changes */
@@ -558,11 +558,8 @@ static void test_seek(void)
 int main(int argc, char *argv[])
 {
 	int lc;
-	const char *msg;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, tst_exit, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
@@ -581,7 +578,7 @@ int main(int argc, char *argv[])
 
 static void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 	if (tst_kvercmp(3, 5, 0) < 0)
 		tst_brkm(TCONF, NULL, "This test requires kernel"
 			" >= 3.5.0");
@@ -591,5 +588,4 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 }

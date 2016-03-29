@@ -66,7 +66,6 @@
 #include <errno.h>
 #include <sched.h>
 #include "test.h"
-#include "usctest.h"
 
 #define FIFO_OR_RR_PRIO 5
 #define OTHER_PRIO 0
@@ -97,10 +96,8 @@ int main(int ac, char **av)
 {
 
 	int lc, i;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -161,12 +158,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 }
 
 /*

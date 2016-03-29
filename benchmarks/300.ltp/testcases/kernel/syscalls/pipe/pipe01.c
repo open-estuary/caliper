@@ -47,7 +47,6 @@
 #include <errno.h>
 #include <string.h>
 #include "test.h"
-#include "usctest.h"
 
 char *TCID = "pipe01";
 int TST_TOTAL = 1;
@@ -69,15 +68,13 @@ ssize_t safe_read(int fd, void *buf, size_t count)
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 
 	int fildes[2];		/* fds for pipe read and write */
 	char wrbuf[BUFSIZ], rebuf[BUFSIZ];
 	int red, written;	/* no. of chars read/written to pipe */
 	int greater, length;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -145,9 +142,4 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 }

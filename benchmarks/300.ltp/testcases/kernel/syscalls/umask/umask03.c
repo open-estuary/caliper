@@ -50,7 +50,6 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include "test.h"
-#include "usctest.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -65,7 +64,6 @@ void cleanup(void);
 int main(int argc, char **argv)
 {
 	int lc;
-	const char *msg;
 
 	struct stat statbuf;
 	int mskval = 0000;
@@ -73,8 +71,7 @@ int main(int argc, char **argv)
 	int fildes, i;
 	unsigned low9mode;
 
-	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();		/* global setup */
 
@@ -144,11 +141,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified
-	 * print errno log if that option was specified
-	 */
-	TEST_CLEANUP;
 
 	/*
 	 * cleanup the temporary files and the temporary directory

@@ -45,7 +45,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "test.h"
-#include "usctest.h"
 
 static void setup(void);
 static void cleanup(void);
@@ -67,10 +66,8 @@ static char *bad_addr = NULL;
 int main(int argc, char **argv)
 {
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 
@@ -82,10 +79,6 @@ int main(int argc, char **argv)
 		 * path points to the current directory
 		 */
 		TEST(rmdir("."));
-
-		if (TEST_RETURN == -1) {
-			TEST_ERROR_LOG(TEST_ERRNO);
-		}
 
 		if (TEST_RETURN == -1) {
 			if (TEST_ERRNO & (EBUSY | ENOTEMPTY)) {
@@ -129,7 +122,6 @@ int main(int argc, char **argv)
 		TEST(rmdir(bad_addr));
 
 		if (TEST_RETURN == -1) {
-			TEST_ERROR_LOG(TEST_ERRNO);
 		}
 
 		if (TEST_RETURN == -1) {
@@ -157,7 +149,6 @@ int main(int argc, char **argv)
 		TEST(rmdir(get_high_address()));
 
 		if (TEST_RETURN == -1) {
-			TEST_ERROR_LOG(TEST_ERRNO);
 		}
 
 		if (TEST_RETURN == -1) {
@@ -192,7 +183,6 @@ int main(int argc, char **argv)
 		TEST(rmdir(dir_name));
 
 		if (TEST_RETURN == -1) {
-			TEST_ERROR_LOG(TEST_ERRNO);
 			tst_resm(TFAIL,
 				 "rmdir(\"%s\") failed when it should have passed. Returned %d : %s",
 				 dir_name, TEST_ERRNO, strerror(TEST_ERRNO));
@@ -242,7 +232,5 @@ void setup(void)
 
 void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	tst_rmdir();
 }

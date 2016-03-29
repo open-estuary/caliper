@@ -33,7 +33,6 @@
 #include <sys/utsname.h>
 #include <signal.h>
 #include "test.h"
-#include "usctest.h"
 #include "linux_syscall_numbers.h"
 #include "safe_macros.h"
 #include "tst_fs_type.h"
@@ -50,8 +49,6 @@ int TST_TOTAL = 4;
 static uid_t nobody_uid;
 static int do_swapoff;
 static long fs_type;
-
-static int exp_enos[] = { EPERM, EINVAL, ENOENT, EBUSY, 0 };
 
 static struct test_case_t {
 	char *err_desc;
@@ -98,10 +95,8 @@ static void verify_swapon(struct test_case_t *test)
 int main(int ac, char **av)
 {
 	int lc, i;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -131,9 +126,7 @@ static void setup(void)
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
-	TEST_EXP_ENOS(exp_enos);
-
-	tst_require_root(NULL);
+	tst_require_root();
 
 	nobody = SAFE_GETPWNAM(cleanup, "nobody");
 	nobody_uid = nobody->pw_uid;
@@ -165,8 +158,6 @@ static void setup(void)
 
 void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	if (do_swapoff && ltp_syscall(__NR_swapoff, "alreadyused"))
 		tst_resm(TWARN | TERRNO, "swapoff(alreadyused) failed");
 

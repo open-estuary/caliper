@@ -56,8 +56,6 @@
 #include <netinet/in.h>
 
 #include "test.h"
-#include "usctest.h"
-#include "msg_common.h"
 
 char *TCID = "recvmsg01";
 int testno;
@@ -183,8 +181,6 @@ struct test_case_t {		/* test case structure */
 
 int TST_TOTAL = sizeof(tdat) / sizeof(tdat[0]);
 
-int exp_enos[] = { EBADF, ENOTSOCK, EFAULT, EINVAL, 0 };
-
 #ifdef UCLINUX
 static char *argv0;
 #endif
@@ -192,18 +188,14 @@ static char *argv0;
 int main(int argc, char *argv[])
 {
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 #ifdef UCLINUX
 	argv0 = argv[0];
 	maybe_run_child(&do_child, "dd", &sfd, &ufd);
 #endif
 
 	setup();
-
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); ++lc) {
 		tst_count = 0;
@@ -241,7 +233,6 @@ int main(int argc, char *argv[])
 					 TEST_RETURN, tdat[testno].retval,
 					 TEST_ERRNO, tdat[testno].experrno);
 			} else {
-				TEST_ERROR_LOG(TEST_ERRNO);
 				tst_resm(TPASS, "%s successful",
 					 tdat[testno].desc);
 			}
@@ -280,7 +271,6 @@ void cleanup(void)
 		(void)kill(pid, SIGKILL);	/* kill server */
 	if (tmpsunpath[0] != '\0')
 		(void)unlink(tmpsunpath);
-	TEST_CLEANUP;
 	tst_rmdir();
 
 }

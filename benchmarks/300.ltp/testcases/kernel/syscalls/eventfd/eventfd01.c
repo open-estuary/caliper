@@ -58,7 +58,6 @@
 #include <unistd.h>
 
 #include "test.h"
-#include "usctest.h"
 #define CLEANUP cleanup
 #include "linux_syscall_numbers.h"
 
@@ -657,11 +656,9 @@ static void overflow_read_test(int evfd)
 int main(int argc, char **argv)
 {
 	int lc;
-	const char *msg;
 	int fd;
 
-	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 
@@ -720,7 +717,5 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	tst_rmdir();
 }

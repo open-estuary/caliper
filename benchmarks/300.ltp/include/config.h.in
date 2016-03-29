@@ -27,6 +27,10 @@
    0 if you don't. */
 #undef HAVE_DECL_CLOCK_REALTIME_COARSE
 
+/* Define to 1 if you have the declaration of `IFLA_NET_NS_PID', and to 0 if
+   you don't. */
+#undef HAVE_DECL_IFLA_NET_NS_PID
+
 /* Define to 1 if you have the declaration of `MADV_MERGEABLE', and to 0 if
    you don't. */
 #undef HAVE_DECL_MADV_MERGEABLE
@@ -82,6 +86,9 @@
 /* Define to 1 if you have the <dmapi.h> header file. */
 #undef HAVE_DMAPI_H
 
+/* Define to 1 if the system has the type `enum kcmp_type'. */
+#undef HAVE_ENUM_KCMP_TYPE
+
 /* Define to 1 if you have the `fallocate' function. */
 #undef HAVE_FALLOCATE
 
@@ -103,6 +110,9 @@
 
 /* Define to 1 if you have the `io_set_eventfd' function. */
 #undef HAVE_IO_SET_EVENTFD
+
+/* Define to 1 if you have the `kcmp' function. */
+#undef HAVE_KCMP
 
 /* Define to 1 if you have libacl installed. */
 #undef HAVE_LIBACL
@@ -139,6 +149,9 @@
 
 /* Define to 1 if you have the <linux/ptrace.h> header file. */
 #undef HAVE_LINUX_PTRACE_H
+
+/* Define to 1 if having a valid linux/random.h */
+#undef HAVE_LINUX_RANDOM_H
 
 /* Define to 1 if you have the <linux/securebits.h> header file. */
 #undef HAVE_LINUX_SECUREBITS_H
@@ -200,8 +213,14 @@
 /* Define to 1 if you have struct perf_event_attr */
 #undef HAVE_PERF_EVENT_ATTR
 
+/* Define to 1 if you have the `preadv' function. */
+#undef HAVE_PREADV
+
 /* Define to 1 if you have the <pthread.h> header file. */
 #undef HAVE_PTHREAD_H
+
+/* Define to 1 if you have the `pwritev' function. */
+#undef HAVE_PWRITEV
 
 /* Define to 1 if you have quota v1 */
 #undef HAVE_QUOTAV1
@@ -214,6 +233,9 @@
 
 /* Define to 1 if you have the `renameat' function. */
 #undef HAVE_RENAMEAT
+
+/* Define to 1 if you have the `renameat2' function. */
+#undef HAVE_RENAMEAT2
 
 /* Define to 1 if you have the <selinux/selinux.h> header file. */
 #undef HAVE_SELINUX_SELINUX_H

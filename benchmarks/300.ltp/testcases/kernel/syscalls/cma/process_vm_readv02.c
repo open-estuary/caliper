@@ -28,7 +28,6 @@
 #include <unistd.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 #include "process_vm.h"
 
@@ -49,11 +48,8 @@ static void cleanup(void);
 int main(int argc, char **argv)
 {
 	int lc, status;
-	const char *msg;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, tst_exit, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
@@ -154,7 +150,7 @@ static void child_invoke(void)
 
 static void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 #if !defined(__NR_process_vm_readv)
 	tst_brkm(TCONF, NULL, "process_vm_readv does not exist "
@@ -168,5 +164,4 @@ static void setup(void)
 static void cleanup(void)
 {
 	clean_sem(semid);
-	TEST_CLEANUP;
 }

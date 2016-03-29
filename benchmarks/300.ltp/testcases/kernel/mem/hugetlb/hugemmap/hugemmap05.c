@@ -48,7 +48,7 @@
 #include <string.h>
 #include <ctype.h>
 #include "test.h"
-#include "usctest.h"
+#include "hugetlb.h"
 
 #define PROTECTION		(PROT_READ | PROT_WRITE)
 #define PATH_MEMINFO		"/proc/meminfo"
@@ -113,14 +113,11 @@ static void init_sys_sz_paths(void);
 int main(int argc, char *argv[])
 {
 	int lc;
-	const char *msg;
 
 	init_hugepagesize();
 	init_sys_sz_paths();
 
-	msg = parse_opts(argc, argv, options, usage);
-	if (msg != NULL)
-		tst_brkm(TBROK, tst_exit, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, options, usage);
 	if (opt_sysfs) {
 		strncpy(path, path_sys_sz_huge, strlen(path_sys_sz_huge) + 1);
 		strncpy(pathover, path_sys_sz_over,
@@ -166,8 +163,10 @@ static void overcommit(void)
 			tst_brkm(TBROK | TERRNO, cleanup, "open");
 		addr = mmap(ADDR, (long)(length / 2 * hugepagesize), PROTECTION,
 			    FLAGS, fd, 0);
-		if (addr == MAP_FAILED)
+		if (addr == MAP_FAILED) {
+			close(fd);
 			tst_brkm(TBROK | TERRNO, cleanup, "mmap");
+		}
 	}
 
 	if (opt_sysfs) {
@@ -257,7 +256,7 @@ static void cleanup(void)
 		fd = open(PATH_SHMMAX, O_WRONLY);
 		if (fd == -1)
 			tst_resm(TWARN | TERRNO, "open");
-		if (write(fd, shmmax, strlen(shmmax)) != strlen(shmmax))
+		if (write(fd, shmmax, strlen(shmmax)) != (ssize_t)strlen(shmmax))
 			tst_resm(TWARN | TERRNO, "write");
 		close(fd);
 	}
@@ -266,7 +265,7 @@ static void cleanup(void)
 		tst_resm(TWARN | TERRNO, "open");
 	tst_resm(TINFO, "restore nr_hugepages to %s.", nr_hugepages);
 	if (write(fd, nr_hugepages,
-		  strlen(nr_hugepages)) != strlen(nr_hugepages))
+		  strlen(nr_hugepages)) != (ssize_t)strlen(nr_hugepages))
 		tst_resm(TWARN | TERRNO, "write");
 	close(fd);
 
@@ -276,7 +275,7 @@ static void cleanup(void)
 	tst_resm(TINFO, "restore nr_overcommit_hugepages to %s.",
 		 nr_overcommit_hugepages);
 	if (write(fd, nr_overcommit_hugepages, strlen(nr_overcommit_hugepages))
-	    != strlen(nr_overcommit_hugepages))
+	    != (ssize_t)strlen(nr_overcommit_hugepages))
 		tst_resm(TWARN | TERRNO, "write");
 	close(fd);
 
@@ -288,7 +287,6 @@ static void cleanup(void)
 		tst_resm(TINFO, "shmdt cleaning");
 		shmctl(shmid, IPC_RMID, NULL);
 	}
-	TEST_CLEANUP;
 	tst_rmdir();
 }
 
@@ -298,7 +296,7 @@ static void setup(void)
 	int fd;
 	struct stat stat_buf;
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	if (stat(pathover, &stat_buf) == -1) {
 		if (errno == ENOENT || errno == ENOTDIR)
@@ -326,7 +324,7 @@ static void setup(void)
 				tst_brkm(TBROK | TERRNO, cleanup, "open");
 			snprintf(buf, BUFSIZ, "%ld",
 				 (long)(length / 2 * hugepagesize));
-			if (write(fd, buf, strlen(buf)) != strlen(buf))
+			if (write(fd, buf, strlen(buf)) != (ssize_t)strlen(buf))
 				tst_brkm(TBROK | TERRNO, cleanup,
 					 "failed to change shmmax.");
 		}
@@ -350,7 +348,7 @@ static void setup(void)
 	if (lseek(fd, 0, SEEK_SET) == -1)
 		tst_brkm(TBROK | TERRNO, cleanup, "lseek");
 	snprintf(buf, BUFSIZ, "%zd", size);
-	if (write(fd, buf, strlen(buf)) != strlen(buf))
+	if (write(fd, buf, strlen(buf)) != (ssize_t)strlen(buf))
 		tst_brkm(TBROK | TERRNO, cleanup,
 			 "failed to change nr_hugepages.");
 	close(fd);
@@ -374,7 +372,7 @@ static void setup(void)
 	if (lseek(fd, 0, SEEK_SET) == -1)
 		tst_brkm(TBROK | TERRNO, cleanup, "lseek");
 	snprintf(buf, BUFSIZ, "%zd", size);
-	if (write(fd, buf, strlen(buf)) != strlen(buf))
+	if (write(fd, buf, strlen(buf)) != (ssize_t)strlen(buf))
 		tst_brkm(TBROK | TERRNO, cleanup,
 			 "failed to change nr_hugepages.");
 	close(fd);
@@ -444,6 +442,7 @@ static int checksys(char *path, char *string, int value)
 	if (atoi(buf) != value) {
 		tst_resm(TFAIL, "%s is not %d but %d.", string, value,
 			 atoi(buf));
+		fclose(fp);
 		return 1;
 	}
 	fclose(fp);
@@ -471,6 +470,7 @@ static void init_hugepagesize(void)
 {
 	FILE *fp;
 
+	check_hugepage();
 	memset(buf, -1, BUFSIZ);
 	fp = fopen(PATH_MEMINFO, "r");
 	if (fp == NULL)
@@ -479,6 +479,7 @@ static void init_hugepagesize(void)
 		if (lookup(line, "Hugepagesize")) {
 			tst_resm(TINFO, "Hugepagesize is %s kB", buf);
 			hugepagesize = atoi(buf) * 1024;
+			fclose(fp);
 			return;
 		}
 	}

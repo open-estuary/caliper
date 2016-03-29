@@ -240,7 +240,7 @@ def draw_radar(file_lists, store_folder, kind=1):
     legend = plt.legend(labels, loc=(0.9, 0.95), labelspacing=0.1)
 
     plt.setp(legend.get_texts(), fontsize='small')
-    plt.figtext(0.5, 0.965, 'rawing Radar Diagram for Caliper',
+    plt.figtext(0.5, 0.965, 'Drawing Radar Diagram for Caliper',
                 ha='center', color='black', weight='bold', size='large')
 
     path_name = os.path.join(store_folder, '_'.join([category,

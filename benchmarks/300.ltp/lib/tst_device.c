@@ -24,6 +24,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
+#include <sys/mount.h>
 #include <errno.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -85,6 +86,11 @@ static int find_free_loopdev(void)
 	switch (errno) {
 	case ENOENT:
 	break;
+	case EACCES:
+		tst_resm(TINFO | TERRNO,
+		         "Not allowed to open " LOOP_CONTROL_FILE ". "
+			 "Are you root?");
+	break;
 	default:
 		tst_resm(TBROK | TERRNO, "Failed to open " LOOP_CONTROL_FILE);
 	}
@@ -144,30 +150,32 @@ static void attach_device(void (*cleanup_fn)(void),
 
 static void detach_device(void (*cleanup_fn)(void), const char *dev)
 {
-	int dev_fd, err, i;
+	int dev_fd, ret, i;
 
 	dev_fd = SAFE_OPEN(cleanup_fn, dev, O_RDONLY);
 
-	/* keep trying to clear LOOPDEV fd if EBUSY, a quick succession
+	/* keep trying to clear LOOPDEV until we get ENXIO, a quick succession
 	 * of attach/detach might not give udev enough time to complete */
 	for (i = 0; i < 40; i++) {
-		if (ioctl(dev_fd, LOOP_CLR_FD, 0) == 0) {
+		ret = ioctl(dev_fd, LOOP_CLR_FD, 0);
+
+		if (ret && (errno == ENXIO)) {
 			close(dev_fd);
 			return;
 		}
-		if (errno != EBUSY) {
-			err = errno;
-			close(dev_fd);
-			tst_brkm(TBROK, cleanup_fn,
-				"ioctl(%s, LOOP_CLR_FD, 0) failed: %s",
-				dev, tst_strerrno(err));
+
+		if (ret && (errno != EBUSY)) {
+			tst_resm(TWARN,
+				 "ioctl(%s, LOOP_CLR_FD, 0) unexpectedly failed with: %s",
+				 dev, tst_strerrno(errno));
 		}
+
 		usleep(50000);
 	}
 
 	close(dev_fd);
 	tst_brkm(TBROK, cleanup_fn,
-		"ioctl(%s, LOOP_CLR_FD, 0) EBUSY for too long",	dev);
+		"ioctl(%s, LOOP_CLR_FD, 0) no ENXIO for too long", dev);
 }
 
 const char *tst_acquire_device(void (cleanup_fn)(void))
@@ -198,7 +206,7 @@ const char *tst_acquire_device(void (cleanup_fn)(void))
 		return dev;
 	}
 
-	if (tst_fill_file(DEV_FILE, 0, 1024, 20480)) {
+	if (tst_fill_file(DEV_FILE, 0, 1024, 102400)) {
 		tst_brkm(TBROK | TERRNO, cleanup_fn,
 		         "Failed to create " DEV_FILE);
 
@@ -227,4 +235,31 @@ void tst_release_device(void (cleanup_fn)(void), const char *dev)
 	detach_device(cleanup_fn, dev);
 
 	device_acquired = 0;
+}
+
+int tst_umount(const char *path)
+{
+	int err, ret, i;
+
+	for (i = 0; i < 50; i++) {
+		ret = umount(path);
+		err = errno;
+
+		if (!ret)
+			return 0;
+
+		tst_resm(TINFO, "umount('%s') failed with %s, try %2i...",
+		         path, tst_strerrno(err), i+1);
+
+		if (i == 0 && err == EBUSY) {
+			tst_resm(TINFO, "Likely gvfsd-trash is probing newly "
+			         "mounted fs, kill it to speed up tests.");
+		}
+
+		usleep(100000);
+	}
+
+	tst_resm(TWARN, "Failed to umount('%s') after 50 retries", path);
+	errno = err;
+	return -1;
 }

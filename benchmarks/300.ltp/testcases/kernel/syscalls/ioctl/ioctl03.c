@@ -47,7 +47,6 @@
 #include <linux/if_tun.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #ifndef TUNGETFEATURES
 #define TUNGETFEATURES _IOR('T', 207, unsigned int)
@@ -66,7 +65,6 @@ int TST_TOTAL = 1;
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 	tst_rmdir();
 }
 
@@ -94,7 +92,7 @@ int main(void)
 	unsigned int features, i;
 
 	setup();
-	tst_require_root(NULL);
+	tst_require_root();
 
 	int netfd = open("/dev/net/tun", O_RDWR);
 	if (netfd < 0)

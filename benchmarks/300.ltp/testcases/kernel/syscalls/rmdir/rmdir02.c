@@ -55,7 +55,6 @@
 #include <sys/mount.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 
 #define DIR_MODE	(S_IRWXU | S_IRWXG | S_IRWXO)
@@ -99,21 +98,14 @@ static void cleanup(void);
 
 char *TCID = "rmdir02";
 int TST_TOTAL = ARRAY_SIZE(test_cases);
-static int exp_enos[] = { ENOTEMPTY, ENAMETOOLONG, ENOENT, ENOTDIR,
-			EFAULT, ELOOP, EROFS, EBUSY, 0 };
 
 int main(int ac, char **av)
 {
 	int i, lc;
-	const char *msg;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
-
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		tst_count = 0;
@@ -131,7 +123,7 @@ static void setup(void)
 	int i;
 	const char *fs_type;
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -193,8 +185,6 @@ static void rmdir_verify(struct test_case_t *tc)
 		return;
 	}
 
-	TEST_ERROR_LOG(TEST_ERRNO);
-
 	if (TEST_ERRNO == tc->exp_errno) {
 		tst_resm(TPASS | TTERRNO, "rmdir() failed as expected");
 	} else {
@@ -206,9 +196,7 @@ static void rmdir_verify(struct test_case_t *tc)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
-	if (mount_flag && umount(MNTPOINT) == -1)
+	if (mount_flag && tst_umount(MNTPOINT) == -1)
 		tst_resm(TWARN | TERRNO, "umount %s failed", MNTPOINT);
 
 	if (device)

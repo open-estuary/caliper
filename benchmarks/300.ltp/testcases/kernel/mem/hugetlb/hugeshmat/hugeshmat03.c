@@ -57,7 +57,7 @@
  *	test must be run at root
  */
 
-#include "ipcshm.h"
+#include "hugetlb.h"
 #include "safe_macros.h"
 #include "mem.h"
 
@@ -80,13 +80,10 @@ static void do_child(void);
 
 int main(int ac, char **av)
 {
-	const char *msg;
 	int status;
 	pid_t pid;
 
-	msg = parse_opts(ac, av, options, &help);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, options, NULL);
 
 	if (sflag)
 		hugepages = SAFE_STRTOL(NULL, nr_opt, 0, LONG_MAX);
@@ -133,7 +130,8 @@ void setup(void)
 {
 	long hpage_size;
 
-	tst_require_root(NULL);
+	tst_require_root();
+	check_hugepage();
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 	tst_tmpdir();
 
@@ -143,21 +141,19 @@ void setup(void)
 
 	shm_size = hpage_size * hugepages / 2;
 	update_shm_size(&shm_size);
-	shmkey = getipckey();
+	shmkey = getipckey(cleanup);
 	shm_id_1 = shmget(shmkey, shm_size,
 			  SHM_HUGETLB | SHM_RW | IPC_CREAT | IPC_EXCL);
 	if (shm_id_1 == -1)
 		tst_brkm(TBROK | TERRNO, cleanup, "shmget");
 
-	ltp_uid = getuserid(ltp_user);
+	ltp_uid = getuserid(cleanup, ltp_user);
 
 	TEST_PAUSE;
 }
 
 void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	rm_shm(shm_id_1);
 
 	set_sys_tune("nr_hugepages", orig_hugepages, 0);

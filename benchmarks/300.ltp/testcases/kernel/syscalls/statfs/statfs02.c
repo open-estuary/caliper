@@ -40,19 +40,9 @@
 #include <sys/mman.h>
 #include <errno.h>
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 
 char *TCID = "statfs02";
-
-static int exp_enos[] = {
-	ENOTDIR, ENOENT, ENAMETOOLONG,
-#if !defined(UCLINUX)
-	EFAULT,
-#endif
-	ELOOP,
-	0
-};
 
 static int fd;
 
@@ -87,16 +77,11 @@ static void statfs_verify(const struct test_case_t *);
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int i;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
-
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		tst_count = 0;
@@ -138,8 +123,6 @@ static void statfs_verify(const struct test_case_t *test)
 		return;
 	}
 
-	TEST_ERROR_LOG(TEST_ERRNO);
-
 	if (TEST_ERRNO == test->exp_error) {
 		tst_resm(TPASS | TTERRNO, "expected failure");
 	} else {
@@ -152,8 +135,6 @@ static void cleanup(void)
 {
 	if (fd > 0)
 		close(fd);
-
-	TEST_CLEANUP;
 
 	tst_rmdir();
 }

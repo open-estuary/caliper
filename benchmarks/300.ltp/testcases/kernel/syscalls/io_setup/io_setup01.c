@@ -23,7 +23,6 @@
 
 #include "config.h"
 #include "test.h"
-#include "usctest.h"
 
 char *TCID = "io_setup01";
 
@@ -36,7 +35,6 @@ int TST_TOTAL = 4;
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 }
 
 static void setup(void)
@@ -57,13 +55,11 @@ static void setup(void)
 int main(int argc, char *argv[])
 {
 	int lc;
-	const char *msg;
 
 	io_context_t ctx;
 	int expected_return;
 
-	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 

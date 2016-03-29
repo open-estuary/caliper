@@ -79,31 +79,23 @@
 #include <unistd.h>
 
 #include "test.h"
-#include "usctest.h"
+#include "safe_macros.h"
 
 void setup();
 void cleanup();
-extern void do_file_setup(char *);
-extern struct passwd *my_getpwnam(char *);
 
 #define PERMS		0700
-
-char user1name[] = "nobody";
-char user2name[] = "bin";
 
 char *TCID = "rename09";
 int TST_TOTAL = 1;
 
 char fdir[255], mdir[255];
 char fname[255], mname[255];
-struct passwd *nobody, *bin;
-
-int exp_enos[] = { EACCES, 0 };	/* List must end with 0 */
+uid_t nobody_uid, bin_uid;
 
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int rval;
 	pid_t pid, pid1;
 	int status;
@@ -111,16 +103,12 @@ int main(int ac, char **av)
 	/*
 	 * parse standard options
 	 */
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	/*
 	 * perform global setup for test
 	 */
 	setup();
-
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
 
 	/*
 	 * check looping state if -i option given
@@ -135,12 +123,12 @@ int main(int ac, char **av)
 
 		if (pid == 0) {	/* first child */
 			/* set to nobody */
-			rval = setreuid(nobody->pw_uid, nobody->pw_uid);
+			rval = setreuid(nobody_uid, nobody_uid);
 			if (rval < 0) {
 				tst_resm(TWARN, "setreuid failed to "
 					 "to set the real uid to %d and "
 					 "effective uid to %d",
-					 nobody->pw_uid, nobody->pw_uid);
+					 nobody_uid, nobody_uid);
 				perror("setreuid");
 				exit(1);
 			}
@@ -153,7 +141,7 @@ int main(int ac, char **av)
 			}
 
 			/* create "old" file under it */
-			do_file_setup(fname);
+			SAFE_TOUCH(cleanup, fname, 0700, NULL);
 
 			exit(0);
 		}
@@ -171,7 +159,7 @@ int main(int ac, char **av)
 
 		if (pid1 == 0) {	/* second child */
 			/* set to bin */
-			if ((rval = seteuid(bin->pw_uid)) == -1) {
+			if ((rval = seteuid(bin_uid)) == -1) {
 				tst_resm(TWARN, "seteuid() failed");
 				perror("setreuid");
 				exit(1);
@@ -184,8 +172,7 @@ int main(int ac, char **av)
 				exit(1);
 			}
 
-			/* create the new file */
-			do_file_setup(mname);
+			SAFE_TOUCH(cleanup, mname, 0700, NULL);
 
 			/* rename "old" to "new" */
 			TEST(rename(fname, mname));
@@ -193,8 +180,6 @@ int main(int ac, char **av)
 				tst_resm(TFAIL, "call succeeded unexpectedly");
 				continue;
 			}
-
-			TEST_ERROR_LOG(TEST_ERRNO);
 
 			if (TEST_ERRNO != EACCES) {
 				tst_resm(TFAIL, "Expected EACCES got %d",
@@ -246,7 +231,14 @@ int main(int ac, char **av)
  */
 void setup(void)
 {
-	tst_require_root(NULL);
+	struct passwd *pw;
+
+	tst_require_root();
+
+	pw = SAFE_GETPWNAM(NULL, "nobody");
+	nobody_uid = pw->pw_uid;
+	pw = SAFE_GETPWNAM(NULL, "bin");
+	bin_uid = pw->pw_uid;
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
@@ -261,9 +253,6 @@ void setup(void)
 	sprintf(mdir, "rndir_%d", getpid());
 	sprintf(fname, "%s/tfile_%d", fdir, getpid());
 	sprintf(mname, "%s/rnfile_%d", mdir, getpid());
-
-	nobody = my_getpwnam(user1name);
-	bin = my_getpwnam(user2name);
 }
 
 /*
@@ -272,11 +261,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	/*
 	 * Remove the temporary directory.

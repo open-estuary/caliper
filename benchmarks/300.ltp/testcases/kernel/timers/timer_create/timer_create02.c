@@ -70,7 +70,6 @@
 #include <signal.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "common_timers.h"
 
 void setup(void);
@@ -82,8 +81,7 @@ static struct sigevent evp, *evp_ptr;
 
 int main(int ac, char **av)
 {
-	int lc, i, j;		/* loop counter */
-	const char *msg;
+	int lc, i, j;
 	kernel_timer_t created_timer_id;	/* holds the returned timer_id */
 	char *message[3] = {
 		"SIGEV_SIGNAL",
@@ -92,8 +90,7 @@ int main(int ac, char **av)
 	};
 	const char *mrstr = "MONOTONIC_RAW";
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -177,9 +174,4 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 }

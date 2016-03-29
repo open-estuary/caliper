@@ -44,7 +44,6 @@
 #include <errno.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "linux_syscall_numbers.h"
 #include "lapi/rt_sigaction.h"
 
@@ -58,7 +57,6 @@ static volatile sig_atomic_t sig_count;
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 	tst_rmdir();
 }
 
@@ -82,11 +80,8 @@ int main(int ac, char **av)
 
 	sigset_t set, oset;
 	int lc;
-	const char *msg;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 

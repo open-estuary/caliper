@@ -21,7 +21,6 @@
 #include "ptrace.h"
 
 #include "test.h"
-#include "usctest.h"
 #include "spawn_ptrace_child.h"
 #include "config.h"
 
@@ -167,10 +166,8 @@ int main(int argc, char *argv[])
 	size_t i;
 	long ret;
 	int saved_errno;
-	const char *msg;
 
-	if ((msg = parse_opts(argc, argv, NULL, NULL)))
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	make_a_baby(argc, argv);
 

@@ -76,14 +76,13 @@
 #include <sys/mman.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #define TEMPFILE	"mmapfile"
 
 char *TCID = "munmap02";
 int TST_TOTAL = 1;
 
-size_t page_sz;			/* system page size */
+static size_t page_sz;
 char *addr;			/* addr of memory mapped region */
 int fildes;			/* file descriptor for tempfile */
 unsigned int map_len;		/* length of the region to be mapped */
@@ -97,10 +96,8 @@ void sig_handler();		/* signal catching function */
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -168,10 +165,7 @@ void setup(void)
 	TEST_PAUSE;
 
 	/* Get the system page size */
-	if ((page_sz = getpagesize()) < 0) {
-		tst_brkm(TBROK, cleanup,
-			 "getpagesize() fails to get system page size");
-	}
+	page_sz = getpagesize();
 
 	/*
 	 * Get the length of the open file to be mapped into process
@@ -260,11 +254,6 @@ void sig_handler(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	/*
 	 * get the start address and length of the portion of

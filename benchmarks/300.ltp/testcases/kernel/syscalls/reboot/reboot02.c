@@ -78,7 +78,6 @@
 #include <linux/reboot.h>
 #include <pwd.h>
 #include "test.h"
-#include "usctest.h"
 
 #define INVALID_PARAMETER 100
 
@@ -90,7 +89,6 @@ char *TCID = "reboot02";
 int TST_TOTAL = 2;
 char nobody_uid[] = "nobody";
 struct passwd *ltpuser;
-static int exp_enos[] = { EINVAL, EPERM, 0 };
 
 static struct test_case_t {
 	char *err_desc;		/*error description */
@@ -106,10 +104,8 @@ int main(int ac, char **av)
 {
 
 	int lc, i;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -152,8 +148,6 @@ int main(int ac, char **av)
 					 testcase[i].exp_errno,
 					 testcase[i].exp_errval, TEST_ERRNO);
 			}
-
-			TEST_ERROR_LOG(TEST_ERRNO);
 		}		/*End of TEST LOOPS */
 	}
 
@@ -184,12 +178,9 @@ int setup_test(void)
 /* setup() - performs all ONE TIME setup for this test */
 void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
-
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 
@@ -201,10 +192,5 @@ void setup(void)
 */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }

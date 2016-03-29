@@ -19,7 +19,6 @@
 #include <sched.h>
 #include <sys/wait.h>
 #include "test.h"
-#include "usctest.h"
 #include "clone_platform.h"
 #include "safe_macros.h"
 #include "linux_syscall_numbers.h"
@@ -82,12 +81,9 @@ int TST_TOTAL = ARRAY_SIZE(test_cases);
 
 int main(int ac, char **av)
 {
-	const char *msg;
 	int i, lc;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
@@ -117,8 +113,6 @@ static void cleanup(void)
 	free(child_stack);
 
 	tst_rmdir();
-
-	TEST_CLEANUP;
 }
 
 static long clone_child(const struct test_case *t, int use_tst)

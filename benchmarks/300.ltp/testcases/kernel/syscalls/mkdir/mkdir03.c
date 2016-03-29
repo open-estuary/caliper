@@ -30,7 +30,6 @@
 #include <sys/mount.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 
 static void setup(void);
@@ -56,9 +55,6 @@ static char long_dir[PATH_MAX+2];
 static char loop_dir[PATH_MAX] = ".";
 static const char *device;
 
-static int exp_enos[] = { EFAULT, ENAMETOOLONG, EEXIST, ENOENT,
-			  ENOTDIR, ELOOP, EROFS, 0 };
-
 static struct test_case_t {
 	char *pathname;
 	int mode;
@@ -81,11 +77,8 @@ int TST_TOTAL = ARRAY_SIZE(TC);
 int main(int ac, char **av)
 {
 	int i, lc;
-	const char *msg;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -104,11 +97,9 @@ static void setup(void)
 	int i;
 	const char *fs_type;
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
-
-	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 
@@ -161,8 +152,6 @@ static void mkdir_verify(struct test_case_t *tc)
 		return;
 	}
 
-	TEST_ERROR_LOG(TEST_ERRNO);
-
 	if (TEST_ERRNO == tc->exp_errno) {
 		tst_resm(TPASS | TTERRNO, "mkdir() failed as expected");
 	} else {
@@ -174,9 +163,7 @@ static void mkdir_verify(struct test_case_t *tc)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
-	if (mount_flag && umount(MNT_POINT) < 0)
+	if (mount_flag && tst_umount(MNT_POINT) < 0)
 		tst_resm(TWARN | TERRNO, "umount device:%s failed", device);
 
 	if (device)

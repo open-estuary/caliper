@@ -93,7 +93,6 @@
 #include <asm/atomic.h>
 #include <linux/module.h>
 #include "test.h"
-#include "usctest.h"
 
 #ifndef PAGE_SIZE
 #define PAGE_SIZE sysconf(_SC_PAGE_SIZE)
@@ -155,12 +154,9 @@ int TST_TOTAL = sizeof(tdat) / sizeof(tdat[0]);
 int main(int argc, char **argv)
 {
 	int lc;
-	const char *msg;
 	size_t buflen = sizeof(out_buf);
 
-	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	tst_tmpdir();
 	setup();
@@ -346,7 +342,7 @@ void setup(void)
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	if (tst_kvercmp(2, 5, 48) >= 0)
 		tst_brkm(TCONF, NULL, "This test will not work on "
@@ -373,6 +369,5 @@ void cleanup(void)
 	 * print errno log if that option was specified.
 	 */
 
-	TEST_CLEANUP;
 	tst_rmdir();
 }

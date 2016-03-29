@@ -26,7 +26,6 @@
 #include <sys/wait.h>
 
 #include "test.h"
-#include "usctest.h"
 
 char *TCID = "wait01";
 int TST_TOTAL = 1;
@@ -37,11 +36,8 @@ static void cleanup(void);
 int main(int argc, char **argv)
 {
 	int lc;
-	const char *msg;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 
@@ -82,5 +78,4 @@ static void wait_verify(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 }

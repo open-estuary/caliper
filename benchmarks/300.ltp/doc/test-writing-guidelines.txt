@@ -195,7 +195,7 @@ const char *dataroot = tst_dataroot();
 -------------------------------------------------------------------------------
 
 Datafiles can also be accessed as '$LTPROOT/testcases/data/$TCID/...',
-but '$LTP_DATAROOT' and 'tst_dataroot()' are preffered as these can be used
+but '$LTP_DATAROOT' and 'tst_dataroot()' are preferred as these can be used
 when running testcases directly in git tree as well as from install
 location.
 
@@ -238,7 +238,6 @@ Let's start with an example, following code is a simple test for a getenv().
  */
 
 #include "test.h"
-#include "usctest.h"
 
 char *TCID = "getenv01";
 int TST_TOTAL = 2;
@@ -264,7 +263,7 @@ static void test(void)
 			tst_resm(TPASS, "getenv(" TEST_ENV ") = '"
 			         TEST_ENV_VAL "'");
 		else
-			tst_resm(TFAIL, "getenv(" TEST_ENV "} = '%s', "
+			tst_resm(TFAIL, "getenv(" TEST_ENV ") = '%s', "
 			         "expected '" TEST_ENV_VAL "'", ret);
 	} else {
 		tst_resm(TFAIL, "getenv(" TEST_ENV ") = NULL");
@@ -280,11 +279,9 @@ static void test(void)
 
 int main(int argc, char *argv[])
 {
-	const char *msg;
 	int lc;
 
-	if ((msg = parse_opts(argc, argv, NULL, NULL)))
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 
@@ -320,8 +317,24 @@ WARNING: Don't use 'tst_brkm()' in 'cleanup()' unless you really want to exit
          the cleanup prematurely. See discussion below for further
 	 information.
 
-The 'parse_opts()' parses the test command line arguments, it's important to
-use it even if the test has no (other than default) parameters.
+[source,c]
+-------------------------------------------------------------------------------
+typedef struct {
+        char *option;   /* Valid option string (one option only) like "a:"  */
+        int  *flag;     /* Pointer to location to set true if option given  */
+        char **arg;     /* Pointer to location to place argument, if needed */
+} option_t;
+
+void tst_parse_opts(int argc, char *argv[], const option_t *user_optarg,
+                    void (*user_help)(void));
+-------------------------------------------------------------------------------
+
+The 'tst_parse_opts()' parses the test command line arguments, it's important
+to use it even if the test has no (other than default) parameters.
+
+Test specific parameters can be passed to the function by the 'NULL' terminated
+'user_optarg' array as far as they don't conflict with the parameters used by
+the test library (these can be listed by passing '-h' to a LTP testcase).
 
 The last important thing is the 'TEST_LOOPING()' macro, each test has standard
 options so that it can be executed N times or for M seconds.
@@ -442,7 +455,7 @@ The 'ttype' can be combined bitwise with 'TERRNO' or 'TTERRNO' to print
 
 [source,c]
 -------------------------------------------------------------------------------
-void tst_require_root(void (*cleanup)(void));
+void tst_require_root(void);
 -------------------------------------------------------------------------------
 
 Abort the test if it's not executed with root privileges. If needed this should
@@ -632,53 +645,68 @@ void tst_record_childstatus(void (*cleanup)(void), pid_t child);
 This function does a 'waitpid()' on child process and record child process's
 return value into the overall test result.
 
+NOTE: As 'waitpid()' is used you may pass '-1' as the child pid if you
+      want to wait for any of the process children.
+
 2.2.8 Fork() and Parent-child synchronization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-As LTP tests are written for Linux, most of the test involves fork()-ing and
-parent-child process synchronization. We have a checkpoint library code
-that works even for two different processes, all they need to is to run with
-the same working directory (they use FIFO for synchronization). The checkpoint
-interface provides two pairs of signal and wait functions. One pair to be used
-to signal child from parent and second to signal parent from child.
+As LTP tests are written for Linux, most of the tests involve fork()-ing and
+parent-child process synchronization. To solve this problem LTP has checkpoint
+library that provides up to page_size / sizeof(uint32_t) wait/wake pairs. The
+checkpoint library expects all synchronized processes to run with the same
+working directory (it uses shared memory backed with a file for futex based
+synchronization).
 
-Checkpoint is represented by 'struct tst_checkpoint', which has to be
-initialized before first usage and FIFO has to be created. This is
-usually done in parent process in single step by calling
-'tst_checkpoint_create()'.
+The library must be initialized with 'TST_CHECKPOINT_INIT()' function (which
+creates a page of shared memory to be used with futexes). The function takes a
+cleanup callback as a parameter which is used to remove the test temporary
+directory before the process exits if something went wrong.
 
-Child processes created via fork() are ready to use tst_checkpoint_*
-synchronization functions, as they inherited already initialized
-'struct tst_checkpoint'.
+IMPORTANT: As the init function creates a file the 'tst_tmpdir()' must be
+           called beforehand to create a temporary directory.
 
-Child processes started via exec*, or any other process can use already
-created FIFO, provided they initialize 'struct tst_checkpoint' first by
-call to 'tst_checkpoint_init()'. This function does not create any FIFO,
-it relies on fact, that it was already created by some other process.
-Note, that if you use multiple FIFOs in this scenario, these should be
-initialized in same order as in process you are sychronizing against.
+[source,c]
+-------------------------------------------------------------------------------
+#include "test.h"
 
-IMPORTANT: Be aware, that following scenario is _NOT_ safe when using
-           only single checkpoint. You are advised to use two checkpoints
-           in this case.
+TST_SAFE_CHECKPOINT_WAIT(cleanup_fn, id)
 
-* tst_checkpoint_signal_child() followed by tst_checkpoint_parent_wait()
+TST_SAFE_CHECKPOINT_WAKE(cleanup_fn, id)
 
-             parent            |            child
--------------------------------+-------------------------------
-                               | tst_checkpoint_child_wait()
-                               |   blocking read, waits until
-                               |   parent opens write side
-tst_checkpoint_signal_child()  |
-  NONBLOCK write               |
-                               |   child is now able to read
-                               |   from FIFO
-tst_checkpoint_parent_wait()   |
-  NONBLOCK read parent able to |
-  read from FIFO and can race  |
-  with read in child           |
-                               | tst_checkpoint_signal_parent()
--------------------------------+--------------------------------
+TST_SAFE_CHECKPOINT_WAKE2(cleanup_fn, id, nr_wake)
+
+TST_SAFE_CHECKPOINT_WAKE_AND_WAIT(cleanup_fn, id)
+-------------------------------------------------------------------------------
+
+The checkpoint interface provides pair of wake and wait functions. The 'id' is
+unsigned integer which specifies checkpoint to wake/wait for.
+
+The 'TST_SAFE_CHECKPOINT_WAIT()' suspends process execution until it's woken
+up or until timeout is reached.
+
+The 'TST_SAFE_CHECKPOINT_WAKE()' wakes one process waiting on the checkpoint.
+If no process is waiting the function retries until it success or until
+timeout is reached.
+
+If timeout has been reached process exits with appropriate error message (uses
+'tst_brkm()').
+
+The 'TST_SAFE_CHECKPOINT_WAKE2()' does the same as
+'TST_SAFE_CHECKPOINT_WAKE()' but can be used to wake precisely 'nr_wake'
+processes.
+
+The 'TST_SAFE_CHECKPOINT_WAKE_AND_WAIT()' is a shorthand for doing wake and
+then immediately waiting on the same checkpoint.
+
+Child processes created via fork() are ready to use the checkpoint
+synchronization functions, as they inherited the mapped page automatically.
+
+Child processes started via exec*, or any other processes must initialize the
+checkpoint by calling 'TST_CHECKPOINT_INIT()' before usage.
+
+IMPORTANT: The call to 'TST_CHECKPOINT_INIT()' from the child process must pass
+           'NULL' pointer as a cleanup callback.
 
 For the details of the interface, look into the 'include/tst_checkpoint.h' and
 'lib/tests/tst_checkpoint_*'.
@@ -727,7 +755,7 @@ There are certain cases where the test needs a kernel part and userspace part,
 happily, LTP can build a kernel module and then insert it to the kernel on test
 start for you. See 'testcases/kernel/device-drivers/block' for details.
 
-2.2.11 Usefull macros
+2.2.11 Useful macros
 ^^^^^^^^^^^^^^^^^^^^^
 
 [source,c]
@@ -775,7 +803,7 @@ below:
 	case TST_NFS_MAGIC:
 	case TST_TMPFS_MAGIC:
 	case TST_RAMFS_MAGIC:
-		tst_brkm(TCONF, cleanup, "Test not supported on %s filesytem",
+		tst_brkm(TCONF, cleanup, "Test not supported on %s filesystem",
 		         tst_fs_type_name(type));
 	break;
 	}
@@ -950,7 +978,10 @@ int tst_fs_fill_subdirs(void (*cleanup)(void), const char *dir);
 
 Try to get maximum number of subdirectories in directory.
 
-NOTE: This number depends on the filesystem 'dir' is on.
+NOTE: This number depends on the filesystem 'dir' is on. For current kernel,
+subdir limit is not available for all filesystems (available for ext2, ext3,
+minix, sysv and more). If the test runs on some other filesystems, like ramfs,
+tmpfs, it will not even try to reach the limit and return 0.
 
 This function uses 'mkdir(2)' to create directories in 'dir' until it gets
 'EMLINK' or creates 65535 directories. If the limit is hit, the maximum number
@@ -975,6 +1006,139 @@ pid_t tst_get_unused_pid(void (*cleanup)(void));
 -------------------------------------------------------------------------------
 
 Return a 'PID' value not used by the OS or any process within it.
+
+2.2.19 Umounting devices
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+[source,c]
+-------------------------------------------------------------------------------
+#include "test.h"
+
+int tst_umount(const char *path);
+-------------------------------------------------------------------------------
+
+Since various desktop deamons (gvfsd-trash is known for that) may be stupid
+enough to probe all newly mounted filesystem which results in 'umount(2)'
+failing with 'EBUSY' LTP library includes 'tst_umount()' function that behaves
+exactly as 'umount(2)' but retries several times on a failure.
+
+IMPORTANT: All testcases should use 'tst_umount()' instead of 'umount(2)' to
+           umount filesystems.
+
+2.2.20 Running executables
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[source,c]
+-------------------------------------------------------------------------------
+#include "test.h"
+
+int tst_run_cmd(void (cleanup_fn)(void),
+               const char *const argv[],
+	       const char *stdout_path,
+	       const char *stderr_path,
+	       int pass_exit_val);
+-------------------------------------------------------------------------------
+
+'tst_run_cmd' is a wrapper for 'vfork() + execvp()' which provides a way
+to execute an external program.
+
+'argv[]' is a NULL-terminated array of strings starting with the program name
+which is followed by optional arguments.
+
+A non-zero 'pass_exit_val' makes 'tst_run_cmd' return the program exit code to
+the caller. A zero for 'pass_exit_val' makes 'tst_run_cmd' exit the tests
+on failure and call 'cleanup_fn' (if not NULL) beforehand.
+
+'stdout_path' and 'stderr_path' determine where to redirect the program
+stdout and stderr I/O streams.
+
+.Example
+[source,c]
+-------------------------------------------------------------------------------
+#include "test.h"
+
+const char *const cmd[] = { "ls", "-l", NULL };
+
+...
+	/* Store output of 'ls -l' into log.txt */
+	tst_run_cmd(cleanup, cmd, "log.txt", NULL, 0);
+...
+-------------------------------------------------------------------------------
+
+2.2.21 Measuring elapsed time and helper functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+[source,c]
+-------------------------------------------------------------------------------
+#include "test.h"
+
+void tst_timer_check(clockid_t clk_id);
+
+void tst_timer_start(clockid_t clk_id);
+
+void tst_timer_stop(void);
+
+struct timespec tst_timer_elapsed(void);
+
+long long tst_timer_elapsed_ms(void);
+
+long long tst_timer_elapsed_us(void);
+-------------------------------------------------------------------------------
+
+The 'tst_timer_check()' function checks if specified 'clk_id' is suppored and
+exits the test with 'TCONF' otherwise. It's expected to be used in test
+'setup()' before any resources that needs to be cleaned up are initialized,
+hence it does not include a cleanup function parameter.
+
+The 'tst_timer_start()' marks start time and stores the 'clk_id' for further
+use.
+
+The 'tst_timer_stop()' marks the stop time using the same 'clk_id' as last
+call to 'tst_timer_start()'.
+
+The 'tst_timer_elapsed*()' returns time difference between the timer start and
+last timer stop in several formats and units.
+
+IMPORTANT: The timer functions use 'clock_gettime()' internally which needs to
+           be linked with '-lrt' on older glibc. Please do not forget to add
+	   'LDLIBS+=-lrt' in Makefile.
+
+[source,c]
+-------------------------------------------------------------------------------
+long long tst_timespec_to_us(struct timespec t);
+long long tst_timespec_to_ms(struct timespec t);
+
+struct timeval tst_us_to_timeval(long long us);
+struct timeval tst_ms_to_timeval(long long ms);
+
+int tst_timespec_lt(struct timespec t1, struct timespec t2);
+
+struct timespec tst_timespec_add_us(struct timespec t, long long us);
+
+struct timespec tst_timespec_diff(struct timespec t1, struct timespec t2);
+long long tst_timespec_diff_us(struct timespec t1, struct timespec t2);
+long long tst_timespec_diff_ms(struct timespec t1, struct timespec t2);
+
+struct timespec tst_timespec_abs_diff(struct timespec t1, struct timespec t2);
+long long tst_timespec_abs_diff_us(struct timespec t1, struct timespec t2);
+long long tst_timespec_abs_diff_ms(struct timespec t1, struct timespec t2);
+-------------------------------------------------------------------------------
+
+The first four functions are simple inline conversion functions.
+
+The 'tst_timespec_lt()' function returns non-zero if 't1' is earlier than
+'t2'.
+
+The 'tst_timespec_add_us()' function adds 'us' microseconds to the timespec
+'t'. The 'us' is expected to be positive.
+
+The 'tst_timespec_diff*()' functions returns difference between two times, the
+'t1' is expected to be later than 't2'.
+
+The 'tst_timespec_abs_diff*()' functions returns absolute value of difference
+between two times.
+
+NOTE: All conversions to ms and us rounds the value.
 
 2.3 Writing a testcase in shell
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1008,7 +1172,7 @@ ret=$?
 if [ $ret -eq 0 ]; then
 	tst_resm TPASS "true returned 0"
 else
-	tst_resm TFAIL "true rturned $ret"
+	tst_resm TFAIL "true returned $ret"
 fi
 
 tst_exit
@@ -1025,7 +1189,7 @@ WARNING: Do not forget to add the 'tst_exit' at the end of the test,
 2.3.2 Basic test interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Following functions similar to the LTP C intearface are available.
+Following functions similar to the LTP C interface are available.
 
 * tst_resm()
 * tst_brkm()
@@ -1034,10 +1198,74 @@ Following functions similar to the LTP C intearface are available.
 * tst_tmpdir()
 * tst_rmdir()
 * tst_fs_has_free()
+* tst_mkfs()
+* tst_acquire_device()
+* tst_release_device()
 
 There is one more function called 'tst_check_cmds()' that gets unspecified
 number of parameters and asserts that each parameter is a name of an
 executable in '$PATH' and exits the test with 'TCONF' on first missing.
+
+tst_sleep
++++++++++
+
+Albeit there is a sleep command available basically everywhere not all
+implementations can support sleeping for less than one second. And most of the
+time sleeping for a second is too much. Therefore LTP includes 'tst_sleep'
+that can sleep for defined amount of seconds, miliseconds or microseconds.
+
+[source,sh]
+-------------------------------------------------------------------------------
+# sleep for 100 miliseconds
+tst_sleep 100ms
+-------------------------------------------------------------------------------
+
+ROD and ROD_SILENT
+++++++++++++++++++
+
+These functions supply the 'SAFE_MACROS' used in C although they work and are
+named differently.
+
+[source,sh]
+-------------------------------------------------------------------------------
+ROD_SILENT command arg1 arg2 ...
+
+# is shorthand for:
+
+command arg1 arg2 ... > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+        tst_brkm TBROK "..."
+fi
+
+
+
+ROD command arg1 arg2 ...
+
+# is shorthand for:
+
+ROD arg1 arg2 ...
+if [ $? -ne 0 ]; then
+        tst_brkm TBROK "..."
+fi
+-------------------------------------------------------------------------------
+
+WARNING: Keep in mind that output redirection (to a file) happens in the
+         caller rather than in the ROD function and cannot be checked for
+         write errors by the ROD function.
+
+As a matter of a fact doing +ROD echo a > /proc/cpuinfo+ would work just fine
+since the 'ROD' function will only get the +echo a+ part that will run just
+fine.
+
+[source,sh]
+-------------------------------------------------------------------------------
+# Redirect output to a file with ROD
+ROD echo foo \> bar
+-------------------------------------------------------------------------------
+
+Note the '>' is escaped with '\', this causes that the '>' and filename are
+passed to the 'ROD' function as parameters and the 'ROD' function contains
+code to split '$@' on '>' and redirects the output to the file.
 
 .tst_fs_has_free
 [source,sh]
@@ -1054,10 +1282,33 @@ fi
 ...
 -------------------------------------------------------------------------------
 
-The tst_fs_has_free shell interface returns 0 if the specified free space is
+The 'tst_fs_has_free' shell interface returns 0 if the specified free space is
 satisfied, 1 if not, and 2 on error.
 
 The second argument supports suffixes kB, MB and GB, the default unit is Byte.
+
+.tst_retry
+[source,sh]
+-------------------------------------------------------------------------------
+#!/bin/sh
+
+...
+
+# Retry ping command three times
+tst_retry "ping -c 1 127.0.0.1"
+
+if [ $? -ne 0 ]; then
+	tst_resm TFAIL "Failed to ping 127.0.0.1"
+else
+	tst_resm TPASS "Successfully pinged 127.0.0.1"
+fi
+
+...
+-------------------------------------------------------------------------------
+
+The 'tst_retry' function allows you to retry a command after waiting small
+amount of time until it succeeds or until given amount of retries has been
+reached (default is three attempts).
 
 2.3.3 Cleanup
 ^^^^^^^^^^^^^
@@ -1165,6 +1416,15 @@ if the file doesn't have write permission bits set (the same holds for R_OK
 too). For sysfs files you can use 'open()' as a workaround to check file
 read/write permissions. It might not work for other filesystems, for these you
 have to use 'stat()', 'lstat()' or 'fstat()'.
+
+3.3 umount() EBUSY
+~~~~~~~~~~~~~~~~~~
+
+Various desktop deamons (gvfsd-trash is known for that) may be stupid enough
+to probe all newly mounted filesystem which results in 'umount(2)' failing
+with 'EBUSY'; use 'tst_umount()' described in 2.2.19 that retries in this case
+instead of plain 'umount(2)'.
+
 
 4. Test Contribution Checklist
 ------------------------------

@@ -47,7 +47,6 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include "test.h"
-#include "usctest.h"
 #include "netdefs.h"
 
 #define	MAXPACKET	4096	/* max packet size */
@@ -207,7 +206,7 @@ int main(int argc, char *argv[])
 		while (1) {
 
 			len = sizeof(packet);
-			size_t cc;
+			ssize_t cc;
 			socklen_t fromlen;
 
 			/* Receive packet from socket */
@@ -239,7 +238,7 @@ int echopkt(int datalen, int npackets)
 	static uint8_t outpack[MAXPACKET];
 	register icmp_t *icp = (icmp_t *) outpack;
 	int i;
-	size_t cc;
+	ssize_t cc;
 
 	register u_char *datap = &outpack[8];
 
@@ -282,7 +281,7 @@ int echopkt(int datalen, int npackets)
 		if (i < 0 || i != cc) {
 			if (i < 0)
 				perror("sendto");
-			tst_resm(TINFO, "wrote %s %d chars, ret=%d",
+			tst_resm(TINFO, "wrote %s %zd chars, ret=%d",
 				 hostname, cc, i);
 			fflush(stdout);
 		}

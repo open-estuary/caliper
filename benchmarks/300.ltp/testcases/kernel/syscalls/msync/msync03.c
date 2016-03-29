@@ -44,7 +44,6 @@
 #include <sys/resource.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 
 #define INV_SYNC	-1
@@ -84,16 +83,12 @@ static void msync_verify(struct test_case_t *tc);
 
 char *TCID = "msync03";
 int TST_TOTAL = ARRAY_SIZE(test_cases);
-static int exp_enos[] = { EBUSY, EINVAL, ENOMEM, 0 };
 
 int main(int ac, char **av)
 {
 	int i, lc;
-	const char *msg;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -115,8 +110,6 @@ static void setup(void)
 	struct rlimit rl;
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
-
-	TEST_EXP_ENOS(exp_enos);
 
 	tst_tmpdir();
 
@@ -157,8 +150,6 @@ static void msync_verify(struct test_case_t *tc)
 		return;
 	}
 
-	TEST_ERROR_LOG(TEST_ERRNO);
-
 	if (TEST_ERRNO == tc->exp_errno) {
 		tst_resm(TPASS | TTERRNO, "msync failed as expected");
 	} else {
@@ -171,8 +162,6 @@ static void msync_verify(struct test_case_t *tc)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	if (addr1 && munmap(addr1, page_sz) < 0)
 		tst_resm(TWARN | TERRNO, "munmap() failed");
 

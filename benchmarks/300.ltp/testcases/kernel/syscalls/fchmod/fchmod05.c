@@ -87,7 +87,6 @@
 #include <pwd.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #define MODE_RWX	(S_IRWXU | S_IRWXG | S_IRWXO)
 #define PERMS		043777
@@ -104,14 +103,9 @@ int main(int ac, char **av)
 {
 	struct stat stat_buf;	/* stat struct */
 	int lc;
-	const char *msg;
 	mode_t dir_mode;	/* mode permissions set on test directory */
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -170,7 +164,7 @@ void setup(void)
 	struct passwd *nobody_u;
 	struct group *bin_group;
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
@@ -230,10 +224,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	/* Close the test directory opened in the setup() */
 	if (close(fd) == -1) {

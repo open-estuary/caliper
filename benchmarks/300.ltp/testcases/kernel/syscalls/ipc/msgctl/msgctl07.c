@@ -42,7 +42,6 @@
 #include <wait.h>
 #include <stdio.h>
 #include "test.h"
-#include "usctest.h"
 #include "ipcmsg.h"
 #include <stdlib.h>
 #include <unistd.h>
@@ -77,10 +76,8 @@ int main(int argc, char *argv[])
 	sighandler_t alrm();
 
 #ifdef UCLINUX
-	const char *msg;
 
-	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	maybe_run_child(&do_child_1, "ndd", 1, &msqid, &c1_msgp.type);
 	maybe_run_child(&do_child_2, "ndddd", 2, &msqid, &c1_msgp.type,
@@ -302,6 +299,8 @@ void setup(void)
 {
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
+	tst_require_root();
+
 	TEST_PAUSE;
 
 	tst_tmpdir();
@@ -310,6 +309,4 @@ void setup(void)
 void cleanup(void)
 {
 	tst_rmdir();
-
-	TEST_CLEANUP;
 }

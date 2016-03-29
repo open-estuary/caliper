@@ -30,7 +30,6 @@
 #include <unistd.h>
 #include <errno.h>
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 
 char *TCID = "setegid01";
@@ -44,11 +43,8 @@ static gid_t nobody_gid;
 int main(int argc, char **argv)
 {
 	int lc;
-	const char *msg;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "Option parsing error - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 
@@ -65,7 +61,7 @@ static void setup(void)
 {
 	struct passwd *nobody;
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -125,5 +121,4 @@ static void setegid_verify(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 }

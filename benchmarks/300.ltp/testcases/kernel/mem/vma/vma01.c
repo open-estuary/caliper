@@ -51,7 +51,6 @@
 #include <string.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #define MAPS_FILE "/proc/self/maps"
 
@@ -70,12 +69,9 @@ static void *p;
 
 int main(int argc, char **argv)
 {
-	const char *msg;
 	int lc;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	ps = sysconf(_SC_PAGE_SIZE);
 	setup();
@@ -214,5 +210,4 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 }

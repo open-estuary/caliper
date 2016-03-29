@@ -57,8 +57,6 @@
 #if HAVE_NUMAIF_H
 #include <numaif.h>
 #endif
-
-#include "usctest.h"
 #include "test.h"
 #include "linux_syscall_numbers.h"
 #include "include_j_h.h"
@@ -333,7 +331,6 @@ TEST_END:
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 	tst_rmdir();
 }
 

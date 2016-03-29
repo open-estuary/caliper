@@ -58,10 +58,8 @@
  */
 
 #include "test.h"
-#include "usctest.h"
 
 #include "ipcmsg.h"
-#include "libtestsuite.h"
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -77,11 +75,7 @@ void do_child_uclinux(void);
 char *TCID = "msgrcv06";
 int TST_TOTAL = 1;
 
-int exp_enos[] = { EIDRM, 0 };	/* 0 terminated list of expected errnos */
-
 int msg_q_1 = -1;		/* The message queue id created in setup */
-
-int sync_pipes[2];
 
 MSGBUF rcv_buf;
 pid_t c_pid;
@@ -89,19 +83,14 @@ pid_t c_pid;
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 #ifdef UCLINUX
 	maybe_run_child(&do_child_uclinux, "d", &msg_q_1);
 #endif
 
 	setup();		/* global setup */
-
-	if (sync_pipe_create(sync_pipes, PIPE_NAME) == -1)
-		tst_brkm(TBROK, cleanup, "sync_pipe_create failed");
 
 	/* The following loop checks looping state if -i option given */
 
@@ -142,17 +131,8 @@ int main(int ac, char **av)
 #else
 			do_child();
 #endif
-		} else {	/* parent */
-
-			if (sync_pipe_wait(sync_pipes) == -1)
-				tst_brkm(TBROK, cleanup,
-					 "sync_pipe_wait failed");
-
-			if (sync_pipe_close(sync_pipes, PIPE_NAME) == -1)
-				tst_brkm(TBROK, cleanup,
-					 "sync_pipe_close failed");
-
-			sleep(1);
+		} else {
+			TST_PROCESS_STATE_WAIT(cleanup, c_pid, 'S');
 
 			/* remove the queue */
 			rm_queue(msg_q_1);
@@ -169,20 +149,12 @@ int main(int ac, char **av)
  */
 void do_child(void)
 {
-	if (sync_pipe_notify(sync_pipes) == -1)
-		tst_brkm(TBROK, cleanup, "sync_pipe_notify failed");
-
-	if (sync_pipe_close(sync_pipes, PIPE_NAME) == -1)
-		tst_brkm(TBROK, cleanup, "sync_pipe_close failed");
-
 	TEST(msgrcv(msg_q_1, &rcv_buf, MSGSIZE, 1, 0));
 
 	if (TEST_RETURN != -1) {
 		tst_resm(TFAIL, "call succeeded when error expected");
 		exit(-1);
 	}
-
-	TEST_ERROR_LOG(TEST_ERRNO);
 
 	switch (TEST_ERRNO) {
 	case EIDRM:
@@ -211,9 +183,6 @@ void do_child(void)
  */
 void do_child_uclinux(void)
 {
-	if (sync_pipe_create(sync_pipes, PIPE_NAME) == -1)
-		tst_brkm(TBROK, cleanup, "sync_pipe_create failed");
-
 	tst_sig(FORK, SIG_IGN, cleanup);
 
 	do_child();
@@ -227,9 +196,6 @@ void setup(void)
 {
 
 	tst_sig(FORK, SIG_IGN, cleanup);
-
-	/* Set up the expected error numbers for -e option */
-	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 
@@ -249,11 +215,5 @@ void cleanup(void)
 {
 
 	tst_rmdir();
-
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }

@@ -29,12 +29,9 @@
 #include <wait.h>
 
 #include "test.h"
-#include "usctest.h"
 
 char *TCID = "pause02";
 int TST_TOTAL = 1;
-
-static int exp_enos[] = {EINTR, 0};
 static pid_t cpid;
 
 static void do_child(void);
@@ -44,11 +41,9 @@ static void cleanup(void);
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int status;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 #ifdef UCLINUX
 	maybe_run_child(&do_child, "");
@@ -109,7 +104,7 @@ int main(int ac, char **av)
 
 			continue;
 		}
-			
+
 		tst_resm(TFAIL, "Pause was not interrupted");
 	}
 
@@ -136,12 +131,10 @@ static void do_child(void)
 
 	TEST(pause());
 
-	TEST_ERROR_LOG(TEST_ERRNO);
-
 	if (TEST_RETURN == -1) {
 		if (TEST_ERRNO == EINTR)
 			exit(0);
-			
+
 		fprintf(stderr, "Child: Pause returned -1 but errno is %d (%s)\n",
 		        TEST_ERRNO, strerror(TEST_ERRNO));
 		exit(1);
@@ -156,11 +149,8 @@ static void setup(void)
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
 	TEST_PAUSE;
-	
-	TEST_EXP_ENOS(exp_enos);
 }
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 }

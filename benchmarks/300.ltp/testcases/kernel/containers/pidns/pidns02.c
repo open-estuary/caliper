@@ -50,13 +50,11 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
-#include "usctest.h"
 #include "test.h"
-#define CLEANUP cleanup
 #include "libclone.h"
 #include "pidns_helper.h"
 
-char *TCID = "pid_namespace2";
+char *TCID = "pidns02";
 int TST_TOTAL = 1;
 
 #define PGID	1
@@ -88,7 +86,7 @@ int child_fn1(void *vtest)
 
 static void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 	check_newpid();
 }
 
@@ -100,9 +98,9 @@ int main(int argc, char *argv[])
 
 	TEST(do_clone_unshare_test(T_CLONE, CLONE_NEWPID, child_fn1, NULL));
 	if (TEST_RETURN == -1) {
-		tst_brkm(TFAIL | TTERRNO, CLEANUP, "clone failed");
+		tst_brkm(TFAIL | TTERRNO, NULL, "clone failed");
 	} else if ((wait(&status)) == -1) {
-		tst_brkm(TFAIL | TERRNO, CLEANUP, "wait failed");
+		tst_brkm(TFAIL | TERRNO, NULL, "wait failed");
 	}
 
 	if (WIFEXITED(status) && WEXITSTATUS(status) != 0) {
@@ -112,17 +110,6 @@ int main(int argc, char *argv[])
 			 WTERMSIG(status));
 	}
 
-	CLEANUP();
 	tst_exit();
 
-}
-
-/*
- * CLEANUP() -	performs all ONE TIME CLEANUP for this test at
- *		completion or premature exit.
- */
-void cleanup()
-{
-	/* Clean the test testcase as LTP wants */
-	TEST_CLEANUP;
 }

@@ -91,7 +91,6 @@
 #include <linux/module.h>
 #include <sys/mman.h>
 #include "test.h"
-#include "usctest.h"
 
 #ifndef PAGE_SIZE
 #define PAGE_SIZE sysconf(_SC_PAGE_SIZE)
@@ -114,7 +113,6 @@ struct test_case_t {		/* test case structure */
 };
 
 char *TCID = "query_module03";
-static int exp_enos[] = { ENOSPC, EFAULT, 0 };
 
 static int testno;
 static char out_buf[PAGE_SIZE];
@@ -153,11 +151,8 @@ int TST_TOTAL = sizeof(tdat) / sizeof(tdat[0]);
 int main(int argc, char **argv)
 {
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	tst_tmpdir();
 	setup();
@@ -176,7 +171,6 @@ int main(int argc, char **argv)
 					  tdat[testno].which, tdat[testno].buf,
 					  tdat[testno].bufsize,
 					  tdat[testno].ret_size));
-			TEST_ERROR_LOG(TEST_ERRNO);
 			if ((TEST_RETURN == EXP_RET_VAL) &&
 			    (TEST_ERRNO == tdat[testno].experrno)) {
 				tst_resm(TPASS, "Expected %s, errno: %d",
@@ -243,14 +237,11 @@ void setup(void)
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	if (tst_kvercmp(2, 5, 48) >= 0)
 		tst_brkm(TCONF, NULL, "This test will not work on "
 			 "kernels after 2.5.48");
-
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
 
 	/* Pause if that option was specified
 	 * TEST_PAUSE contains the code to fork the test with the -c option.
@@ -277,6 +268,5 @@ void cleanup(void)
 	 * print timing stats if that option was specified.
 	 * print errno log if that option was specified.
 	 */
-	TEST_CLEANUP;
 	tst_rmdir();
 }

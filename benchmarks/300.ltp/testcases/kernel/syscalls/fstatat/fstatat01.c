@@ -54,7 +54,6 @@
 #include <string.h>
 #include <signal.h>
 #include "test.h"
-#include "usctest.h"
 #include "linux_syscall_numbers.h"
 
 #define TEST_CASES 6
@@ -111,7 +110,6 @@ int myfstatat(int dirfd, const char *filename, struct stat *statbuf, int flags)
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int i;
 
 	if ((tst_kvercmp(2, 6, 16)) < 0)
@@ -119,8 +117,7 @@ int main(int ac, char **av)
 			 "This test can only run on kernels that are 2.6.16 and "
 			 "higher");
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -210,6 +207,4 @@ void cleanup(void)
 	unlink(testfile3);
 	unlink(testfile);
 	rmdir(pathname);
-
-	TEST_CLEANUP;
 }

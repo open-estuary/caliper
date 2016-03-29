@@ -52,7 +52,6 @@
 #include <netinet/in.h>
 
 #include "test.h"
-#include "usctest.h"
 
 char *TCID = "bind01";
 int testno;
@@ -104,17 +103,11 @@ struct test_case_t {		/* test case structure */
 
 int TST_TOTAL = sizeof(tdat) / sizeof(tdat[0]);
 
-int exp_enos[] = { EFAULT, EINVAL, ENOTSOCK, EADDRINUSE, EADDRNOTAVAIL, 0 };
-
 int main(int argc, char *argv[])
 {
 	int lc;
-	const char *msg;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL) {
-		tst_brkm(TBROK, 0, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 
@@ -129,7 +122,6 @@ int main(int argc, char *argv[])
 			if (TEST_RETURN > 0) {
 				TEST_RETURN = 0;
 			} else {
-				TEST_ERROR_LOG(TEST_ERRNO);
 			}
 			if (TEST_RETURN != tdat[testno].retval ||
 			    (TEST_RETURN < 0 &&
@@ -153,8 +145,6 @@ int main(int argc, char *argv[])
 
 void setup(void)
 {
-	/* set expected errnos for -e option */
-	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;		/* if -p option specified */
 
@@ -180,8 +170,6 @@ void setup(void)
 
 void cleanup(void)
 {
-	TEST_CLEANUP;
-
 }
 
 void setup0(void)

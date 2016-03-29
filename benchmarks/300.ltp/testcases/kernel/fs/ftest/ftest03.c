@@ -64,7 +64,6 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include "test.h"
-#include "usctest.h"
 #include "libftest.h"
 
 char *TCID = "ftest03";
@@ -103,10 +102,8 @@ static int local_flag;
 int main(int ac, char *av[])
 {
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -298,6 +295,7 @@ static void dotest(int testers, int me, int fd)
 	struct iovec val_iovec[MAXIOVCNT];
 	struct iovec zero_iovec[MAXIOVCNT];
 	int w_ioveclen;
+	struct stat stat;
 
 	nchunks = max_size / csize;
 	whenmisc = 0;
@@ -442,6 +440,10 @@ static void dotest(int testers, int me, int fd)
 						tst_resm(TINFO,
 							 "\tTest[%d]: last_trunc = 0x%x.",
 							 me, last_trunc);
+						fstat(fd, &stat);
+						tst_resm(TINFO,
+							 "\tStat: size=%llx, ino=%x",
+							 stat.st_size, (unsigned)stat.st_ino);
 						sync();
 						ft_dumpiov(&r_iovec[i]);
 						ft_dumpbits(bits,
@@ -476,6 +478,10 @@ static void dotest(int testers, int me, int fd)
 						tst_resm(TINFO,
 							 "\tTest[%d]: last_trunc = 0x%x.",
 							 me, last_trunc);
+						fstat(fd, &stat);
+						tst_resm(TINFO,
+							 "\tStat: size=%llx, ino=%x",
+							 stat.st_size, (unsigned)stat.st_ino);
 						sync();
 						ft_dumpiov(&r_iovec[i]);
 						ft_dumpbits(bits,

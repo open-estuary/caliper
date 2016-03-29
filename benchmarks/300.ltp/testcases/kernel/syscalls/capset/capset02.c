@@ -81,7 +81,6 @@
 #include <string.h>
 #include <unistd.h>
 #include "test.h"
-#include "usctest.h"
 #include "linux_syscall_numbers.h"
 
 /**************************************************************************/
@@ -105,7 +104,6 @@ static void child_func(void);
 static pid_t child_pid = -1;
 
 char *TCID = "capset02";
-static int exp_enos[] = { EFAULT, EINVAL, EPERM, 0 };
 
 static struct __user_cap_header_struct header;
 static struct __user_cap_data_struct data;
@@ -132,10 +130,8 @@ int main(int ac, char **av)
 {
 
 	int lc, i;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 #ifdef UCLINUX
 	maybe_run_child(&child_func, "");
 #endif
@@ -178,8 +174,7 @@ int main(int ac, char **av)
 
 void setup(void)
 {
-
-	TEST_EXP_ENOS(exp_enos);
+	tst_require_root();
 
 	TEST_PAUSE;
 
@@ -198,7 +193,6 @@ void cleanup(void)
 		kill(child_pid, SIGTERM);
 		wait(NULL);
 	}
-	TEST_CLEANUP;
 }
 
 void child_func(void)

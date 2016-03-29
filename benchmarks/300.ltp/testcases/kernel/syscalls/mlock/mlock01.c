@@ -50,7 +50,6 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include "test.h"
-#include "usctest.h"
 
 void setup();
 void setup1(int);
@@ -58,8 +57,6 @@ void cleanup();
 
 char *TCID = "mlock01";
 int TST_TOTAL = 4;
-
-int exp_enos[] = { 0 };
 
 void *addr1;
 
@@ -84,21 +81,17 @@ struct test_case_t {
 int main(int ac, char **av)
 {
 	int lc, i;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
-
-	TEST_EXP_ENOS(exp_enos);
 
 	/*
 	 * FIXME (garrcoop): this should really test out whether or not the
 	 * process's mappable address space is indeed accessible by the
 	 * current user, instead of needing to be run by root all the time.
 	 */
-	tst_require_root(NULL);
+	tst_require_root();
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -149,6 +142,4 @@ void setup1(int len)
 
 void cleanup(void)
 {
-	TEST_CLEANUP;
-
 }

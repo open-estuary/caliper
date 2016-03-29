@@ -52,7 +52,6 @@
 #include <string.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 #include "tst_module.h"
 
@@ -77,8 +76,6 @@ void cleanup(void)
 
 	if (unlink(DEVICE_NAME) && (errno != ENOENT))
 		tst_brkm(TBROK | TERRNO, NULL, "unlink failed");
-
-	TEST_CLEANUP;
 }
 
 
@@ -88,7 +85,7 @@ void setup(void)
 	struct stat st;
 	unsigned int i, valid_node_created;
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	if (tst_kvercmp(2, 6, 0) < 0) {
 		tst_brkm(TCONF, NULL,

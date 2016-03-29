@@ -58,7 +58,6 @@
 #include <errno.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "linux_syscall_numbers.h"
 #include "ltp_signal.h"
 
@@ -89,7 +88,6 @@ int TST_TOTAL = 1;
 void cleanup(void)
 {
 
-	TEST_CLEANUP;
 	tst_rmdir();
 
 }
@@ -125,12 +123,8 @@ int main(int argc, char *argv[])
 	sigset_t ss;
 	int fd, fl;
 	int lc;
-	const char *msg;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(argc, argv, NULL, NULL);
 	if ((tst_kvercmp(2, 6, 27)) < 0) {
 		tst_brkm(TCONF,
 			 NULL,

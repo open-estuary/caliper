@@ -20,7 +20,8 @@
  *   Date:  20/05/2011
  */
 
-#define _GNU_SOURCE
+#include "affinity.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <pthread.h>
@@ -28,7 +29,6 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <posixtest.h>
-#include <affinity.h>
 
 /* Priorities for the threads, must be unique, non-zero, and ordered */
 #define PRIO_HIGH	20
@@ -150,9 +150,9 @@ int main(void)
 	status = PTS_UNRESOLVED;
 
 
-	rc = set_affinity(0);
+	rc = set_affinity_single();
 	if (rc)
-		FAIL_AND_EXIT("set_affinity", errno);
+		FAIL_AND_EXIT("set_affinity_single", errno);
 
 	sp.sched_priority = PRIO_MAIN;
 	rc = pthread_setschedparam(pthread_self(), SCHED_FIFO, &sp);

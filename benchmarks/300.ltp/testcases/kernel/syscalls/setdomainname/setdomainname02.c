@@ -77,7 +77,6 @@
  *********************************************************************/
 
 #include "test.h"
-#include "usctest.h"
 
 #include <errno.h>
 #include <sys/utsname.h>
@@ -89,9 +88,6 @@ static void setup(void);
 
 char *TCID = "setdomainname02";
 int TST_TOTAL = 3;
-
-static int exp_enos[] = { EINVAL, EFAULT, 0 };	/* 0 terminated list of *
-						 * expected errnos */
 
 static char old_domain_name[MAX_NAME_LEN];
 static struct test_case_t {
@@ -109,13 +105,9 @@ static struct test_case_t {
 
 int main(int ac, char **av)
 {
-	int lc, ind;		/* loop counter */
-	const char *msg;
+	int lc, ind;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL))
-	    != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();		/* global setup */
 
@@ -144,7 +136,6 @@ int main(int ac, char **av)
 					 test_cases[ind].exp_errno,
 					 TEST_ERRNO, strerror(TEST_ERRNO));
 			}
-			TEST_ERROR_LOG(TEST_ERRNO);
 		}
 	}
 
@@ -159,11 +150,9 @@ int main(int ac, char **av)
  */
 void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
-
-	TEST_EXP_ENOS(exp_enos);
 
 	/* Save current domainname */
 	if ((getdomainname(old_domain_name, MAX_NAME_LEN)) < 0) {
@@ -181,12 +170,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	/* Restore domain name */
 	if ((setdomainname(old_domain_name, sizeof(old_domain_name)))

@@ -52,7 +52,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "test.h"
-#include "usctest.h"
 
 #define F_RGETLK 10		/* kludge code */
 #define F_RSETLK 11		/* kludge code */
@@ -74,10 +73,7 @@ int main(int ac, char **av)
 {
 	int fail = 0;
 
-	const char *msg;
-
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();		/* global setup */
 
@@ -163,8 +159,6 @@ void cleanup(void)
 
 	if (close(fd) == -1)
 		tst_resm(TWARN | TERRNO, "close failed");
-
-	TEST_CLEANUP;
 
 	tst_rmdir();
 

@@ -29,7 +29,6 @@
 #include <fcntl.h>
 #include <sys/mount.h>
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 #include "lapi/mkdirat.h"
 
@@ -49,8 +48,6 @@ static const char *device;
 static int mount_flag_dir;
 static int mount_flag_cur;
 
-static int exp_enos[] = { ELOOP, EROFS, 0 };
-
 static struct test_case_t {
 	int *dirfd;
 	char *pathname;
@@ -69,11 +66,8 @@ int main(int ac, char **av)
 {
 	int lc;
 	int i;
-	const char *msg;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -92,7 +86,7 @@ static void setup(void)
 	int i;
 	const char *fs_type;
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -137,8 +131,6 @@ static void setup(void)
 			 "mount device:%s failed", device);
 	}
 	mount_flag_cur = 1;
-
-	TEST_EXP_ENOS(exp_enos);
 }
 
 static void mkdirat_verify(const struct test_case_t *test)
@@ -151,8 +143,6 @@ static void mkdirat_verify(const struct test_case_t *test)
 		return;
 	}
 
-	TEST_ERROR_LOG(TEST_ERRNO);
-
 	if (TEST_ERRNO == test->exp_errno) {
 		tst_resm(TPASS | TTERRNO, "mkdirat() failed as expected");
 	} else {
@@ -164,12 +154,10 @@ static void mkdirat_verify(const struct test_case_t *test)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
-	if (mount_flag_dir && umount("mntpoint") < 0)
+	if (mount_flag_dir && tst_umount("mntpoint") < 0)
 		tst_resm(TWARN | TERRNO, "umount device:%s failed", device);
 
-	if (mount_flag_cur && umount("test_dir/mntpoint") < 0)
+	if (mount_flag_cur && tst_umount("test_dir/mntpoint") < 0)
 		tst_resm(TWARN | TERRNO, "umount device:%s failed", device);
 
 	if (device)

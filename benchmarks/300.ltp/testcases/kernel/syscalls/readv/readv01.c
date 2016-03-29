@@ -34,7 +34,6 @@
 #include <errno.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 
 #define	CHUNK		64
@@ -58,11 +57,9 @@ static void cleanup(void);
 int main(int ac, char **av)
 {
 	int lc, i, fail;
-	const char *msg;
 	char *vec;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -120,8 +117,6 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	if (fd > 0)
 		close(fd);
 

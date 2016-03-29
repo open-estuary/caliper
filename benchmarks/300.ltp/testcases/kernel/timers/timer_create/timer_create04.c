@@ -73,15 +73,9 @@
 #include <signal.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "common_timers.h"
 
 void setup(void);
-
-char *TCID = "timer_create04";	/* Test program identifier.    */
-int TST_TOTAL;			/* Total number of test cases. */
-
-static int exp_enos[] = { EINVAL, EFAULT, 0 };
 
 int testcase[6] = {
 	EINVAL,			/* MAX_CLOCKS     */
@@ -90,24 +84,21 @@ int testcase[6] = {
 	EFAULT			/* bad timer_id   */
 };
 
+char *TCID = "timer_create04";	/* Test program identifier.    */
+int TST_TOTAL = ARRAY_SIZE(testcase);
+
 /*
  * cleanup() - Performs one time cleanup for this test at
  * completion or premature exit
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }
 
 int main(int ac, char **av)
 {
 	int lc, i;
-	const char *msg;
 	kernel_timer_t timer_id, *temp_id;	/* stores the returned timer_id */
 	struct sigevent *temp_ev;	/* used for bad address test case */
 
@@ -120,8 +111,7 @@ int main(int ac, char **av)
 		CLOCK_THREAD_CPUTIME_ID
 	};
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	TST_TOTAL = sizeof(testcase) / sizeof(testcase[0]);
 
@@ -192,9 +182,6 @@ void setup(void)
 {
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
-
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 }

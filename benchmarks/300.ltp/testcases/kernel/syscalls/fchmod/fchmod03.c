@@ -80,7 +80,6 @@
 #include <pwd.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #define FILE_MODE       (S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)
 #define PERMS		01777
@@ -100,11 +99,9 @@ int main(int ac, char **av)
 {
 	struct stat stat_buf;	/* stat struct. */
 	int lc;
-	const char *msg;
 	mode_t file_mode;	/* mode permissions set on testfile */
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -145,7 +142,7 @@ void setup(void)
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	ltpuser = getpwnam(nobody_uid);
 	if (ltpuser == NULL)
@@ -168,8 +165,6 @@ void setup(void)
 
 void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	if (close(fd) == -1)
 		tst_resm(TWARN | TERRNO, "close failed");
 

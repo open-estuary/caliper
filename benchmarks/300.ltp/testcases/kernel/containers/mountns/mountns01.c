@@ -41,7 +41,6 @@
 #include <stdio.h>
 #include <errno.h>
 #include "test.h"
-#include "usctest.h"
 #include "libclone.h"
 #include "safe_macros.h"
 #include "safe_file_ops.h"
@@ -58,13 +57,12 @@ int child_func(void *arg)
 {
 	int ret = 0;
 
-	TST_CHECKPOINT_CHILD_WAIT(&checkpoint2);
+	TST_SAFE_CHECKPOINT_WAIT(NULL, 0);
 
 	if (access(DIRA"/B", F_OK) == -1)
 		ret = 2;
 
-	TST_CHECKPOINT_SIGNAL_PARENT(&checkpoint1);
-	TST_CHECKPOINT_CHILD_WAIT(&checkpoint2);
+	TST_SAFE_CHECKPOINT_WAKE_AND_WAIT(NULL, 0);
 
 	/* bind mounts DIRB to DIRA making contents of DIRB visible
 	 * in DIRA */
@@ -73,8 +71,7 @@ int child_func(void *arg)
 		return 1;
 	}
 
-	TST_CHECKPOINT_SIGNAL_PARENT(&checkpoint1);
-	TST_CHECKPOINT_CHILD_WAIT(&checkpoint2);
+	TST_SAFE_CHECKPOINT_WAKE_AND_WAIT(NULL, 0);
 
 	umount(DIRA);
 	return ret;
@@ -103,20 +100,18 @@ static void test(void)
 	 * in DIRA */
 	SAFE_MOUNT(cleanup, DIRB, DIRA, "none", MS_BIND, NULL);
 
-	TST_CHECKPOINT_SIGNAL_CHILD(cleanup, &checkpoint2);
-	TST_CHECKPOINT_PARENT_WAIT(cleanup, &checkpoint1);
+	TST_SAFE_CHECKPOINT_WAKE_AND_WAIT(cleanup, 0);
 
 	SAFE_UMOUNT(cleanup, DIRA);
 
-	TST_CHECKPOINT_SIGNAL_CHILD(cleanup, &checkpoint2);
-	TST_CHECKPOINT_PARENT_WAIT(cleanup, &checkpoint1);
+	TST_SAFE_CHECKPOINT_WAKE_AND_WAIT(cleanup, 0);
 
 	if (access(DIRA"/B", F_OK) == 0)
 		tst_resm(TPASS, "shared mount in child passed");
 	else
 		tst_resm(TFAIL, "shared mount in child failed");
 
-	TST_CHECKPOINT_SIGNAL_CHILD(cleanup, &checkpoint2);
+	TST_SAFE_CHECKPOINT_WAKE(cleanup, 0);
 
 
 	SAFE_WAIT(cleanup, &status);
@@ -137,12 +132,9 @@ static void test(void)
 
 int main(int argc, char *argv[])
 {
-	const char *msg;
 	int lc;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 

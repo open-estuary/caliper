@@ -23,7 +23,6 @@
 #define  _GNU_SOURCE
 #include <sys/wait.h>
 #include "test.h"
-#include "usctest.h"
 #include "ipcmsg.h"
 
 
@@ -45,12 +44,9 @@ int TST_TOTAL = ARRAY_SIZE(testfunc);
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int i;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -173,5 +169,4 @@ static void wait4child(pid_t child, char *tst_flag)
 
 void cleanup(void)
 {
-	TEST_CLEANUP;
 }

@@ -72,7 +72,6 @@
 #include <pwd.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #define TESTFILE	"testfile"
 #define SYMFILE		"slink_file"
@@ -82,7 +81,7 @@
 char *TCID = "readlink01";
 int TST_TOTAL = 1;
 
-int exp_val;			/* strlen of testfile */
+const int exp_val = sizeof(TESTFILE) - 1;	/* strlen of testfile */
 
 void setup();
 void cleanup();
@@ -94,10 +93,8 @@ int main(int ac, char **av)
 {
 	char buffer[MAX_SIZE];	/* temporary buffer to hold symlink contents */
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -156,7 +153,7 @@ void setup(void)
 {
 	int fd;			/* file handle for testfile */
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	if ((ltpuser = getpwnam(nobody_uid)) == NULL) {
 		tst_brkm(TBROK, cleanup, "getpwname(nobody_uid) failed ");
@@ -186,9 +183,6 @@ void setup(void)
 		tst_brkm(TBROK | TERRNO, cleanup, "symlink(%s, %s) failed",
 			 TESTFILE, SYMFILE);
 	}
-
-	/* Get the strlen of testfile */
-	exp_val = strlen(TESTFILE);
 }
 
 /*
@@ -199,11 +193,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	tst_rmdir();
 

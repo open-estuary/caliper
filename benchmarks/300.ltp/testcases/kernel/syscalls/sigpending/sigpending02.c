@@ -53,7 +53,6 @@
 #include <string.h>
 #include <signal.h>
 #include "test.h"
-#include "usctest.h"
 
 void setup();
 void help();
@@ -62,21 +61,15 @@ void cleanup();
 char *TCID = "sigpending02";
 int TST_TOTAL = 1;
 
-int exp_enos[] = { EFAULT, 0 };
-
 /***********************************************************************
  * Main
  ***********************************************************************/
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	sigset_t *sigset;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
     /***************************************************************
      * perform global setup for test
@@ -85,9 +78,6 @@ int main(int ac, char **av)
 
 	/* set sigset to point to an invalid location */
 	sigset = (sigset_t *) - 1;
-
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
 
     /***************************************************************
      * check looping state
@@ -103,7 +93,6 @@ int main(int ac, char **av)
 
 		/* check return code */
 		if (TEST_RETURN == -1) {
-			TEST_ERROR_LOG(TEST_ERRNO);
 			if (TEST_ERRNO != EFAULT)
 				tst_brkm(TFAIL, cleanup,
 					 "sigpending() Failed with wrong "
@@ -151,6 +140,4 @@ void setup(void)
  ***************************************************************/
 void cleanup(void)
 {
-	TEST_CLEANUP;
-
 }

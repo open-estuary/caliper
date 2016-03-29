@@ -1,6 +1,6 @@
 #!/bin/bash
-
-url='http://7xjz0v.com1.z0.glb.clouddn.com/caliper_tools'
+url='www.estuarydev.org/caliper'
+#url='http://7xjz0v.com1.z0.glb.clouddn.com/caliper_tools'
 filename='kernel-dev.tar.gz'
 
 build_compile() {

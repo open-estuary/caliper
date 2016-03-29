@@ -36,7 +36,6 @@
 #include <signal.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 #include "compat_16.h"
 
@@ -117,11 +116,8 @@ static void verify_fchown(struct test_case *t)
 int main(int ac, char **av)
 {
 	int lc, i;
-	const char *msg;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -136,7 +132,7 @@ int main(int ac, char **av)
 
 static void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -152,8 +148,6 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	if (fd1 > 0 && close(fd1))
 		tst_resm(TWARN | TERRNO, "Failed to close fd1");
 

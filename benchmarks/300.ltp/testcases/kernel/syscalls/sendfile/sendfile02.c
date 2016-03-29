@@ -56,8 +56,6 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <inttypes.h>
-
-#include "usctest.h"
 #include "test.h"
 
 #ifndef OFF_T
@@ -204,11 +202,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	close(out_fd);
 	/* delete the test directory created in setup() */
@@ -276,11 +269,8 @@ int main(int ac, char **av)
 {
 	int i;
 	int lc;
-	const char *msg;		/* parse_opts() return message */
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 #ifdef UCLINUX
 	argv0 = av[0];
 	maybe_run_child(&do_child, "");

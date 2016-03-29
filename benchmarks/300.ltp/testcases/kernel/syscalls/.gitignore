@@ -103,16 +103,22 @@
 /eventfd2/eventfd2_02
 /eventfd2/eventfd2_03
 /execl/execl01
+/execl/execl01_child
 /execle/execle01
+/execle/execle01_child
 /execlp/execlp01
+/execlp/execlp01_child
 /execv/execv01
+/execv/execv01_child
 /execve/execve01
+/execve/execve01_child
 /execve/execve02
 /execve/execve03
 /execve/execve04
+/execve/execve_child
 /execve/execve05
-/execve/test3
 /execvp/execvp01
+/execvp/execvp01_child
 /exit/exit01
 /exit/exit02
 /exit_group/exit_group01
@@ -129,6 +135,7 @@
 /fallocate/fallocate01
 /fallocate/fallocate02
 /fallocate/fallocate03
+/fallocate/fallocate04
 /fchdir/fchdir01
 /fchdir/fchdir02
 /fchdir/fchdir03
@@ -214,6 +221,10 @@
 /fcntl/fcntl30_64
 /fcntl/fcntl31
 /fcntl/fcntl31_64
+/fcntl/fcntl32
+/fcntl/fcntl32_64
+/fcntl/fcntl33
+/fcntl/fcntl33_64
 /fdatasync/fdatasync01
 /fdatasync/fdatasync02
 /flock/flock01
@@ -244,8 +255,6 @@
 /fstat/fstat02_64
 /fstat/fstat03
 /fstat/fstat03_64
-/fstat/fstat04
-/fstat/fstat04_64
 /fstat/fstat05
 /fstat/fstat05_64
 /fstatat/fstatat01
@@ -304,6 +313,7 @@
 /getgroups/getgroups03_16
 /getgroups/getgroups04
 /getgroups/getgroups04_16
+/gethostbyname_r/gethostbyname_r01
 /gethostid/gethostid01
 /gethostname/gethostname01
 /getitimer/getitimer01
@@ -320,6 +330,10 @@
 /getppid/getppid02
 /getpriority/getpriority01
 /getpriority/getpriority02
+/getrandom/getrandom01
+/getrandom/getrandom02
+/getrandom/getrandom03
+/getrandom/getrandom04
 /getresgid/getresgid01
 /getresgid/getresgid02
 /getresgid/getresgid03
@@ -352,6 +366,7 @@
 /inotify/inotify03
 /inotify/inotify04
 /inotify/inotify05
+/inotify/inotify06
 /inotify_init/inotify_init1_01
 /inotify_init/inotify_init1_02
 /io_cancel/io_cancel01
@@ -390,6 +405,7 @@
 /ipc/msgrcv/msgrcv05
 /ipc/msgrcv/msgrcv06
 /ipc/msgrcv/msgrcv07
+/ipc/msgrcv/msgrcv08
 /ipc/msgsnd/msgsnd01
 /ipc/msgsnd/msgsnd02
 /ipc/msgsnd/msgsnd03
@@ -428,6 +444,8 @@
 /ipc/shmget/shmget04
 /ipc/shmget/shmget05
 /keyctl/keyctl01
+/kcmp/kcmp01
+/kcmp/kcmp02
 /kill/kill01
 /kill/kill02
 /kill/kill03
@@ -533,6 +551,7 @@
 /mmap/mmap13
 /mmap/mmap14
 /mmap/mmap15
+/mmap/mmap16
 /modify_ldt/modify_ldt01
 /modify_ldt/modify_ldt02
 /modify_ldt/modify_ldt03
@@ -604,6 +623,7 @@
 /open/open11
 /open/open12
 /open/open12_child
+/open/open13
 /openat/openat01
 /openat/openat02
 /openat/openat02_child
@@ -627,6 +647,7 @@
 /pipe2/pipe2_01
 /pipe2/pipe2_02
 /poll/poll01
+/poll/poll02
 /ppoll/ppoll01
 /prctl/prctl01
 /prctl/prctl02
@@ -636,6 +657,8 @@
 /pread/pread02_64
 /pread/pread03
 /pread/pread03_64
+/preadv/preadv01
+/preadv/preadv01_64
 /profil/profil01
 /pselect/pselect01
 /pselect/pselect01_64
@@ -655,6 +678,8 @@
 /pwrite/pwrite02_64
 /pwrite/pwrite04
 /pwrite/pwrite04_64
+/pwritev/pwritev01
+/pwritev/pwritev01_64
 /quotactl/quotactl01
 /quotactl/quotactl02
 /read/read01
@@ -698,6 +723,8 @@
 /rename/rename13
 /rename/rename14
 /renameat/renameat01
+/renameat2/renameat201
+/renameat2/renameat202
 /rmdir/rmdir01
 /rmdir/rmdir02
 /rmdir/rmdir03
@@ -718,6 +745,8 @@
 /sched_get_priority_min/sched_get_priority_min01
 /sched_get_priority_min/sched_get_priority_min02
 /sched_getaffinity/sched_getaffinity01
+/sched_getattr/sched_getattr01
+/sched_getattr/sched_getattr02
 /sched_getparam/sched_getparam01
 /sched_getparam/sched_getparam02
 /sched_getparam/sched_getparam03
@@ -727,6 +756,7 @@
 /sched_rr_get_interval/sched_rr_get_interval02
 /sched_rr_get_interval/sched_rr_get_interval03
 /sched_setaffinity/sched_setaffinity01
+/sched_setattr/sched_setattr01
 /sched_setparam/sched_setparam01
 /sched_setparam/sched_setparam02
 /sched_setparam/sched_setparam03
@@ -738,6 +768,7 @@
 /select/select01
 /select/select02
 /select/select03
+/select/select04
 /send/send01
 /sendfile/sendfile02
 /sendfile/sendfile02_64
@@ -883,6 +914,7 @@
 /signal/signal03
 /signal/signal04
 /signal/signal05
+/signal/signal06
 /signalfd/signalfd01
 /signalfd4/signalfd4_01
 /signalfd4/signalfd4_02
@@ -989,6 +1021,9 @@
 /umount/umount01
 /umount/umount02
 /umount/umount03
+/umount2/umount2_01
+/umount2/umount2_02
+/umount2/umount2_03
 /uname/uname01
 /uname/uname02
 /uname/uname03

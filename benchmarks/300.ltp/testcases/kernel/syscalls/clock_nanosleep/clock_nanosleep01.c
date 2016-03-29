@@ -58,7 +58,6 @@
 #include "../utils/include_j_h.h"
 
 #include "test.h"
-#include "usctest.h"
 #include "linux_syscall_numbers.h"
 
 char *TCID = "clock_nanosleep01";
@@ -98,7 +97,6 @@ void sighandler(int sig)
 void cleanup(void)
 {
 
-	TEST_CLEANUP;
 	tst_rmdir();
 
 }
@@ -364,10 +362,8 @@ int main(int ac, char **av)
 	int result = RESULT_OK;
 	int i;
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 

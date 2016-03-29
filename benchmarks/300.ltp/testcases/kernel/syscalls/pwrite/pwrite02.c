@@ -38,7 +38,6 @@
 #include <fcntl.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 
 #define TEMPFILE	"pwrite_file"
@@ -50,13 +49,6 @@ static char write_buf[K1];
 
 static void setup(void);
 static void cleanup(void);
-
-static int exp_enos[] = {
-	ESPIPE, EINVAL, EBADF,
-#if !defined(UCLINUX)
-	EFAULT,
-#endif
-0 };
 
 static void test_espipe(void);
 static void test_einval(void);
@@ -79,10 +71,8 @@ int TST_TOTAL = ARRAY_SIZE(testfunc);
 int main(int ac, char **av)
 {
 	int i, lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -128,8 +118,6 @@ static void setup(void)
 	if (signal(SIGXFSZ, sighandler) == SIG_ERR)
 		tst_brkm(TBROK, cleanup, "signal() failed");
 
-	TEST_EXP_ENOS(exp_enos);
-
 	TEST_PAUSE;
 
 	tst_tmpdir();
@@ -143,8 +131,6 @@ static void print_test_result(int err, int exp_errno)
 		tst_resm(TFAIL, "call succeeded unexpectedly");
 		return;
 	}
-
-	TEST_ERROR_LOG(err);
 
 	if (err == exp_errno) {
 		tst_resm(TPASS, "pwrite failed as expected: %d - %s",
@@ -224,7 +210,5 @@ static void test_efault(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	tst_rmdir();
 }

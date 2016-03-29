@@ -69,12 +69,10 @@
 #include <errno.h>
 
 #include "test.h"
-#include "usctest.h"
 
 void setup();
 void setup2();
 void cleanup();
-extern void do_file_setup(char *);
 
 char *TCID = "rename03";
 int TST_TOTAL = 2;
@@ -100,14 +98,12 @@ struct test_case_t {
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int i;
 
 	/*
 	 * parse standard options
 	 */
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 	/*
 	 * perform global setup for test
 	 */
@@ -207,8 +203,7 @@ void setup(void)
  */
 void setup2(void)
 {
-	/* create the old file */
-	do_file_setup(fname);
+	SAFE_TOUCH(cleanup, fname, 0700, NULL);
 
 	if (stat(fname, &buf1) == -1) {
 		tst_brkm(TBROK, cleanup, "failed to stat file %s"
@@ -220,8 +215,7 @@ void setup2(void)
 	f_olddev = buf1.st_dev;
 	f_oldino = buf1.st_ino;
 
-	/* create another file */
-	do_file_setup(mname);
+	SAFE_TOUCH(cleanup, mname, 0700, NULL);
 
 	/* create "old" directory */
 	if (mkdir(fdir, 00770) == -1) {
@@ -248,11 +242,6 @@ void setup2(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	/*
 	 * Remove the temporary directory.

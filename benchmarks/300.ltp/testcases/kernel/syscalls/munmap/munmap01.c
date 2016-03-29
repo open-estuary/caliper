@@ -75,7 +75,6 @@
 #include <sys/mman.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #define TEMPFILE	"mmapfile"
 
@@ -93,10 +92,8 @@ void sig_handler();		/* signal catching function */
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -152,7 +149,7 @@ int main(int ac, char **av)
  */
 void setup(void)
 {
-	size_t page_sz;		/* system page size */
+	size_t page_sz;
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -164,10 +161,7 @@ void setup(void)
 	TEST_PAUSE;
 
 	/* Get the system page size */
-	if ((page_sz = getpagesize()) < 0) {
-		tst_brkm(TBROK, cleanup,
-			 "getpagesize() fails to get system page size");
-	}
+	page_sz = getpagesize();
 
 	/*
 	 * Get the length of the open file to be mapped into process
@@ -246,11 +240,6 @@ void sig_handler(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	/* Close the temporary file */
 	if (close(fildes) < 0) {

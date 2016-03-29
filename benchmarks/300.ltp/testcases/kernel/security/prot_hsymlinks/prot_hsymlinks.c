@@ -43,7 +43,6 @@
 #include <signal.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 #include "safe_file_ops.h"
 
@@ -191,12 +190,9 @@ int main(int argc, char *argv[])
 
 static void setup(int argc, char *argv[])
 {
-	const char *msg;
-	msg = parse_opts(argc, argv, options, &help);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, options, &help);
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	if (tst_kvercmp(3, 7, 0) < 0)
 		tst_brkm(TCONF, NULL,
@@ -290,7 +286,6 @@ static void cleanup(void)
 	}
 
 	tst_rmdir();
-	TEST_CLEANUP;
 }
 
 static int get_protected_hlinks(void)

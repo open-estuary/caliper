@@ -95,7 +95,6 @@
 #include "ptrace.h"
 
 #include "test.h"
-#include "usctest.h"
 
 static void do_child(void);
 static void setup(void);
@@ -114,13 +113,11 @@ int main(int ac, char **av)
 {
 
 	int lc;
-	const char *msg;
 	pid_t child_pid;
 	int status;
 	struct sigaction parent_act;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 #ifdef UCLINUX
 	maybe_run_child(&do_child, "d", &i);
 #endif
@@ -264,12 +261,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }
 

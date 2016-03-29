@@ -45,7 +45,6 @@
 #include <unistd.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 
 static void setup(void);
@@ -84,11 +83,8 @@ long rwflags[] = {
 int main(int argc, char *argv[])
 {
 	int lc, i;
-	const char *msg;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 
@@ -114,7 +110,7 @@ int main(int argc, char *argv[])
 				tst_resm(TPASS, "mount(2) passed with "
 					 "rwflag = %ld", rwflags[i]);
 
-			TEST(umount(mntpoint));
+			TEST(tst_umount(mntpoint));
 			if (TEST_RETURN != 0)
 				tst_brkm(TBROK | TTERRNO, cleanup,
 					 "umount(2) failed for %s", mntpoint);
@@ -349,7 +345,7 @@ static void setup(void)
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_tmpdir();
 
@@ -378,8 +374,6 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	if (device)
 		tst_release_device(NULL, device);
 

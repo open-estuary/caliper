@@ -82,7 +82,6 @@
 #include <fcntl.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #define TEMPFILE	"mremapfile"
 
@@ -98,11 +97,9 @@ void cleanup();			/* cleanup function for the test */
 
 int main(int ac, char **av)
 {
-	const char *msg;
 	int ind;		/* counter variable */
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	tst_count = 0;
 
@@ -227,11 +224,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	/* Unmap the mapped memory */
 	if (munmap(addr, newsize) != 0)

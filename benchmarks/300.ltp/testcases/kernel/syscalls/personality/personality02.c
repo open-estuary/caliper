@@ -62,7 +62,6 @@
  */
 
 #include "test.h"
-#include "usctest.h"
 
 #include <errno.h>
 #include <linux/personality.h>
@@ -82,11 +81,9 @@ int TST_TOTAL = 1;
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int start_pers;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();		/* global setup */
 
@@ -111,8 +108,6 @@ int main(int ac, char **av)
 			tst_resm(TPASS, "call to personality() with a "
 				 "bad personality passed");
 		}
-
-		TEST_ERROR_LOG(TEST_ERRNO);
 
 		/*
 		 * set our personality back to PER_LINUX
@@ -144,9 +139,4 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 }

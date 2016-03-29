@@ -44,7 +44,6 @@
 #include <signal.h>
 #include <setjmp.h>
 #include "test.h"
-#include "usctest.h"
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -79,11 +78,6 @@ __asm("main");
 
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }
 

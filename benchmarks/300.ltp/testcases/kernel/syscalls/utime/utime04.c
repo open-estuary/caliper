@@ -80,7 +80,7 @@
 #include <signal.h>
 
 #include "test.h"
-#include "usctest.h"
+#include "safe_macros.h"
 
 #define TEMP_FILE	"tmp_file"
 #define FILE_MODE	S_IRUSR | S_IRGRP | S_IROTH
@@ -88,7 +88,6 @@
 
 char *TCID = "utime04";
 int TST_TOTAL = 1;
-int exp_enos[] = { 0 };
 
 struct utimbuf times;		/* struct. buffer for utime() */
 
@@ -99,20 +98,12 @@ int main(int ac, char **av)
 {
 	struct stat stat_buf;	/* struct buffer to hold file info. */
 	int lc;
-	const char *msg;
 	time_t modf_time, access_time;
 	/* file modification/access time */
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
-
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -126,20 +117,13 @@ int main(int ac, char **av)
 		TEST(utime(TEMP_FILE, &times));
 
 		if (TEST_RETURN == -1) {
-			TEST_ERROR_LOG(TEST_ERRNO);
-			tst_resm(TFAIL, "utime(%s) Failed, errno=%d : %s",
-				 TEMP_FILE, TEST_ERRNO, strerror(TEST_ERRNO));
+			tst_resm(TFAIL|TTERRNO, "utime(%s) failed", TEMP_FILE);
 		} else {
 			/*
 			 * Get the modification and access times of
 			 * temporary file using stat(2).
 			 */
-			if (stat(TEMP_FILE, &stat_buf) < 0) {
-				tst_brkm(TFAIL, cleanup,
-					 "stat(2) of %s failed, "
-					 "error:%d", TEMP_FILE,
-					 TEST_ERRNO);
-			}
+			SAFE_STAT(cleanup, TEMP_FILE, &stat_buf);
 			modf_time = stat_buf.st_mtime;
 			access_time = stat_buf.st_atime;
 
@@ -172,7 +156,7 @@ void setup(void)
 {
 	int fildes;		/* file handle for temp file */
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -181,18 +165,10 @@ void setup(void)
 	tst_tmpdir();
 
 	/* Creat a temporary file under above directory */
-	if ((fildes = creat(TEMP_FILE, FILE_MODE)) == -1) {
-		tst_brkm(TBROK, cleanup,
-			 "creat(%s, %#o) Failed, errno=%d :%s",
-			 TEMP_FILE, FILE_MODE, errno, strerror(errno));
-	}
+	fildes = SAFE_CREAT(cleanup, TEMP_FILE, FILE_MODE);
 
 	/* Close the temporary file created */
-	if (close(fildes) < 0) {
-		tst_brkm(TBROK, cleanup,
-			 "close(%s) Failed, errno=%d : %s:",
-			 TEMP_FILE, errno, strerror(errno));
-	}
+	SAFE_CLOSE(cleanup, fildes);
 
 	/* Initialize the modification and access time in the times arg */
 	times.actime = NEW_TIME;
@@ -208,11 +184,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	tst_rmdir();
 

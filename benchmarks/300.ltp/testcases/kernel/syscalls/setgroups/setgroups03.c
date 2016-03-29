@@ -73,7 +73,6 @@
 #include <grp.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #include "compat_16.h"
 
@@ -83,9 +82,7 @@ char nobody_uid[] = "nobody";
 struct passwd *ltpuser;
 
 TCID_DEFINE(setgroups03);
-int TST_TOTAL = 2;		/* Total number of test conditions */
-
-int exp_enos[] = { EINVAL, EPERM, 0 };
+int TST_TOTAL = 2;
 
 GID_T *groups_list;		/* Array to hold gids for getgroups() */
 
@@ -108,14 +105,12 @@ struct test_case_t {		/* test case struct. to hold ref. test cond's */
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int gidsetsize;		/* total no. of groups */
 	int i;
 	char *test_desc;	/* test specific error message */
 	int ngroups_max = sysconf(_SC_NGROUPS_MAX);	/* max no. of groups in the current system */
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	groups_list = malloc(ngroups_max * sizeof(GID_T));
 	if (groups_list == NULL) {
@@ -124,9 +119,6 @@ int main(int ac, char **av)
 	}
 
 	setup();
-
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -154,8 +146,6 @@ int main(int ac, char **av)
 				continue;
 			}
 
-			TEST_ERROR_LOG(TEST_ERRNO);
-
 			if (TEST_ERRNO == Test_cases[i].exp_errno) {
 				tst_resm(TPASS,
 					 "setgroups(%d) fails, %s, errno=%d",
@@ -182,7 +172,7 @@ int main(int ac, char **av)
  */
 void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -228,9 +218,5 @@ int setup1(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }

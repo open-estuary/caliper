@@ -56,7 +56,6 @@
 #include <string.h>
 #include <errno.h>
 #include "test.h"
-#include "usctest.h"
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -79,11 +78,8 @@ int main(int ac, char **av)
 	char link2[BUFSIZ];
 	int n;
 	int lc;
-	const char *msg;		/* parse_opts() return message */
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -216,9 +212,6 @@ void cleanup(void)
 {
 	/* remove the test directory */
 	tst_rmdir();
-
-	/* print timing stats if that option was specified */
-	TEST_CLEANUP;
 }
 
 char *getpwd(void)

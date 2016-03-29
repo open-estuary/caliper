@@ -43,14 +43,8 @@
 #include <signal.h>
 #include "config.h"
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
-
-union semun {
-	int val;
-	struct semid_ds *buf;
-	unsigned short int *array;
-};
+#include "lapi/semun.h"
 
 char *TCID = "sendmsg02";
 
@@ -202,12 +196,9 @@ static void help(void)
 int main(int argc, char *argv[])
 {
 	int lc;
-	const char *msg;
 	long seconds;
 
-	msg = parse_opts(argc, argv, options, &help);
-	if (msg != NULL)
-		tst_brkm(TBROK, tst_exit, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, options, &help);
 	setup();
 
 	seconds = tflag ? SAFE_STRTOL(NULL, t_opt, 1, LONG_MAX) : 15;
@@ -221,7 +212,7 @@ int main(int argc, char *argv[])
 
 static void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 	tst_tmpdir();
 
 	sem_id = semget(IPC_PRIVATE, 1, IPC_CREAT | S_IRWXU);
@@ -233,7 +224,6 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 	semctl(sem_id, 0, IPC_RMID);
 	tst_rmdir();
 }

@@ -30,7 +30,6 @@
 #include <fcntl.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 #include "lapi/timerfd.h"
 
@@ -54,17 +53,13 @@ int TST_TOTAL = ARRAY_SIZE(test_cases);
 static void setup(void);
 static void timerfd_gettime_verify(const struct test_case_t *);
 static void cleanup(void);
-static int exp_enos[] = { EBADF, EFAULT, EINVAL, 0 };
 
 int main(int argc, char *argv[])
 {
 	int lc;
-	const char *msg;
 	int i;
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 
@@ -86,8 +81,6 @@ static void setup(void)
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
 	TEST_PAUSE;
-
-	TEST_EXP_ENOS(exp_enos);
 
 	tst_tmpdir();
 
@@ -119,8 +112,6 @@ static void timerfd_gettime_verify(const struct test_case_t *test)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	if (clockfd > 0)
 		close(clockfd);
 

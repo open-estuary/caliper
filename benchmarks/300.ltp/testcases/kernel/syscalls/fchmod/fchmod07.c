@@ -74,7 +74,6 @@
 #include <signal.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #define FILE_MODE	S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
 #define TESTFILE	"testfile"
@@ -92,17 +91,12 @@ int main(int ac, char **av)
 {
 	struct stat stat_buf;	/* stat(2) struct contents */
 	int lc;
-	const char *msg;
 	int ind;		/* counter variable for chmod(2) tests */
 	int mode;		/* file mode permission */
 
 	TST_TOTAL = sizeof(Modes) / sizeof(int);
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -190,10 +184,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 	/* Close the TESTFILE opened in the setup() */
 	if (close(fd) == -1) {

@@ -36,7 +36,6 @@
 #include <pwd.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "compat_16.h"
 
 TCID_DEFINE(setreuid07);
@@ -54,10 +53,8 @@ static void do_master_child(void);
 int main(int ac, char **av)
 {
 	pid_t pid;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, cleanup, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -127,8 +124,6 @@ static void do_master_child(void)
 				exit(TFAIL);
 			}
 
-			TEST_ERROR_LOG(TEST_ERRNO);
-
 			if (TEST_ERRNO == EACCES) {
 				printf("open failed with EACCES as expected\n");
 				exit(TPASS);
@@ -170,7 +165,7 @@ static void do_master_child(void)
 
 static void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	ltpuser = getpwnam("nobody");
 	if (ltpuser == NULL)
@@ -194,8 +189,6 @@ static void setup(void)
 static void cleanup(void)
 {
 	close(fd);
-
-	TEST_CLEANUP;
 
 	tst_rmdir();
 }

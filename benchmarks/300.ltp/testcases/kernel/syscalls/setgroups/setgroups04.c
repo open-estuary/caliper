@@ -68,15 +68,13 @@
 #include <grp.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #include "compat_16.h"
 
 TCID_DEFINE(setgroups04);
 int TST_TOTAL = 1;
 
-GID_T groups_list[NGROUPS];	/* Array to hold gids for getgroups() */
-int exp_enos[] = { EFAULT, 0 };
+GID_T groups_list[NGROUPS];
 
 void setup();			/* setup function for the test */
 void cleanup();			/* cleanup function for the test */
@@ -86,18 +84,13 @@ void cleanup();			/* cleanup function for the test */
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int gidsetsize;		/* total no. of groups */
 	char *test_desc;	/* test specific error message */
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	/* Perform setup for test */
 	setup();
-
-	/* set the expected errnos... */
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -116,19 +109,17 @@ int main(int ac, char **av)
 		if (TEST_RETURN != -1) {
 			tst_resm(TFAIL, "setgroups() returned %ld, "
 				 "expected -1, errno=%d", TEST_RETURN,
-				 exp_enos[0]);
+				 EFAULT);
 		} else {
 
-			TEST_ERROR_LOG(TEST_ERRNO);
-
-			if (TEST_ERRNO == exp_enos[0]) {
+			if (TEST_ERRNO == EFAULT) {
 				tst_resm(TPASS,
 					 "setgroups() fails with expected "
 					 "error EFAULT errno:%d", TEST_ERRNO);
 			} else {
 				tst_resm(TFAIL, "setgroups() fails, %s, "
 					 "errno=%d, expected errno=%d",
-					 test_desc, TEST_ERRNO, exp_enos[0]);
+					 test_desc, TEST_ERRNO, EFAULT);
 			}
 		}
 
@@ -154,7 +145,7 @@ int main(void)
  */
 void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -167,9 +158,5 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }

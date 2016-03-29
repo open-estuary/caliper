@@ -74,7 +74,6 @@
 
 #include <errno.h>
 #include "test.h"
-#include "usctest.h"
 #include "linux_syscall_numbers.h"
 
 /**************************************************************************/
@@ -93,7 +92,6 @@ static void cleanup();
 static void test_setup(int);
 
 char *TCID = "capget02";
-static int exp_enos[] = { EFAULT, EINVAL, ESRCH, 0 };
 
 static struct __user_cap_header_struct header;
 static struct __user_cap_data_struct data;
@@ -122,10 +120,8 @@ int main(int ac, char **av)
 {
 
 	int lc, i;
-	const char *msg;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -162,8 +158,6 @@ void setup(void)
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
-	TEST_EXP_ENOS(exp_enos);
-
 	TEST_PAUSE;
 
 }
@@ -174,8 +168,6 @@ void setup(void)
  */
 void cleanup(void)
 {
-	TEST_CLEANUP;
-
 }
 
 void test_setup(int i)

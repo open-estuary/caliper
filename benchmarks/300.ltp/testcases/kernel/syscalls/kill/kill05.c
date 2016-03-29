@@ -79,7 +79,6 @@
 #include <unistd.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 
 extern void rm_shm(int);
@@ -95,20 +94,16 @@ int shmid1 = -1;
 extern key_t semkey;
 int *flag;
 
-int exp_enos[] = { EPERM, 0 };
-
 extern int getipckey();
 
 #define TEST_SIG SIGKILL
 
 int main(int ac, char **av)
 {
-	const char *msg;
 	pid_t pid;
 	int status;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 #ifdef UCLINUX
 	maybe_run_child(&do_child, "");
 #endif
@@ -153,8 +148,6 @@ void do_master_child(char **av)
 	char user2name[] = "bin";
 
 	struct passwd *ltpuser1, *ltpuser2;
-
-	TEST_EXP_ENOS(exp_enos);
 
 	tst_count = 0;
 
@@ -225,7 +218,7 @@ void do_child(void)
 
 void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	TEST_PAUSE;
 
@@ -243,8 +236,6 @@ void setup(void)
 
 void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	rm_shm(shmid1);
 
 	tst_rmdir();

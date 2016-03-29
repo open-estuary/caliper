@@ -59,7 +59,6 @@
 #include <fcntl.h>
 #include <sys/mount.h>
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 
 #define	TEST_FILE	"test_dir"
@@ -105,23 +104,16 @@ static struct test_case_t {
 
 char *TCID = "creat06";
 int TST_TOTAL = ARRAY_SIZE(TC);
-static int exp_enos[] = { EISDIR, ENAMETOOLONG, ENOENT, ENOTDIR,
-			  EFAULT, EACCES, ELOOP, EROFS, 0 };
 static struct passwd *ltpuser;
 
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int i;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
-
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -160,7 +152,7 @@ static void setup(void)
 {
 	const char *fs_type;
 
-	tst_require_root(NULL);
+	tst_require_root();
 
 	ltpuser = SAFE_GETPWNAM(cleanup, "nobody");
 
@@ -216,9 +208,7 @@ static void test6_cleanup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
-	if (mount_flag && umount("mntpoint") < 0) {
+	if (mount_flag && tst_umount("mntpoint") < 0) {
 		tst_brkm(TBROK | TERRNO, NULL,
 			 "umount device:%s failed", device);
 	}

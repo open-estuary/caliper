@@ -51,7 +51,6 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include "test.h"
-#include "usctest.h"
 #include <fcntl.h>
 
 char *TCID = "chroot02";
@@ -67,11 +66,9 @@ void cleanup(void);
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int pid, status, retval;
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
 
@@ -120,7 +117,7 @@ int main(int ac, char **av)
  */
 void setup(void)
 {
-	tst_require_root(NULL);
+	tst_require_root();
 
 	tst_tmpdir();
 	if ((fileHandle = creat(TMP_FILENAME, 0777)) == -1)
@@ -146,7 +143,6 @@ void cleanup(void)
 	 */
 	close(fileHandle);
 
-	TEST_CLEANUP;
 	tst_rmdir();
 
 }

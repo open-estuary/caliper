@@ -26,7 +26,6 @@
 #include <fcntl.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 #include "getdents.h"
 
@@ -83,11 +82,12 @@ struct testcase testcases[] = {
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int rval, fd;
 	struct linux_dirent64 *dirp64;
 	struct linux_dirent *dirp;
 	void *buf;
+
+	tst_parse_opts(ac, av, options, &help);
 
 	/* The buffer is allocated to make sure it's suitably aligned */
 	buf = malloc(BUFSIZE);
@@ -97,9 +97,6 @@ int main(int ac, char **av)
 
 	dirp64 = buf;
 	dirp = buf;
-
-	if ((msg = parse_opts(ac, av, options, &help)) != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -239,7 +236,5 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
 	tst_rmdir();
 }

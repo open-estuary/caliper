@@ -51,7 +51,6 @@
 #include <wait.h>
 #include <sys/types.h>
 #include "test.h"
-#include "usctest.h"
 
 void setup(void);
 void cleanup(void);
@@ -61,8 +60,6 @@ int TST_TOTAL = 2;
 
 int pgid_0, pgid_1;
 #define BADPID -99
-
-int exp_enos[] = { ESRCH, 0 };
 
 struct test_case_t {
 	int *id;
@@ -80,16 +77,10 @@ int main(int ac, char **av)
 {
 	int lc;
 	int i;
-	const char *msg;		/* message returned by parse_opts */
 
-	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-	}
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
-
-	/* set up the expected errnos */
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		/* reset tst_count in case we are looping */
@@ -104,8 +95,6 @@ int main(int ac, char **av)
 				tst_resm(TFAIL, "call succeeded unexpectedly");
 				continue;
 			}
-
-			TEST_ERROR_LOG(TEST_ERRNO);
 
 			if (TEST_ERRNO == TC[i].error) {
 				tst_resm(TPASS, "expected failure - "
@@ -144,10 +133,5 @@ void setup(void)
  */
 void cleanup(void)
 {
-	/*
-	 * print timing stats if that option was specified.
-	 * print errno log if that option was specified.
-	 */
-	TEST_CLEANUP;
 
 }

@@ -66,12 +66,9 @@ struct robust_list_head {
 #endif
 
 #include "test.h"
-#include "usctest.h"
 
 char *TCID = "set_robust_list01";
 int TST_TOTAL = 2;
-
-int exp_enos[] = { EINVAL, 0 };
 
 void setup(void);
 void cleanup(void);
@@ -81,18 +78,13 @@ int main(int argc, char **argv)
 #ifdef __NR_set_robust_list
 	int lc;
 #endif
-	const char *msg;
 #ifdef __NR_set_robust_list
 	struct robust_list_head head;
 	size_t len;		/* size of structure struct robust_list_head */
 	int retval;
 #endif
 
-	msg = parse_opts(argc, argv, NULL, NULL);
-	if (msg != NULL) {
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
-
-	}
+	tst_parse_opts(argc, argv, NULL, NULL);
 
 	setup();
 
@@ -161,13 +153,9 @@ int main(int argc, char **argv)
 
 void setup(void)
 {
-	TEST_EXP_ENOS(exp_enos);
-
 	TEST_PAUSE;
 }
 
 void cleanup(void)
 {
-	TEST_CLEANUP;
-
 }

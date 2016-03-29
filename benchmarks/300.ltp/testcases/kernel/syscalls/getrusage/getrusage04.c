@@ -50,7 +50,6 @@
 #include <time.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 #include "lapi/posix_clocks.h"
 
@@ -85,12 +84,9 @@ int main(int argc, char *argv[])
 	struct rusage usage;
 	unsigned long ulast, udelta, slast, sdelta;
 	int i, lc;
-	const char *msg;
 	char msg_string[BUFSIZ];
 
-	msg = parse_opts(argc, argv, child_options, fusage);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(argc, argv, child_options, fusage);
 
 #if (__powerpc__) || (__powerpc64__) || (__s390__) || (__s390x__)
 	tst_brkm(TCONF, NULL, "This test is not designed for current system");
@@ -201,8 +197,9 @@ static void setup(void)
 {
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
-	if (tst_is_virt(VIRT_XEN))
-		tst_brkm(TCONF, NULL, "This testcase is not supported on Xen.");
+	if (tst_is_virt(VIRT_XEN) || tst_is_virt(VIRT_KVM))
+		tst_brkm(TCONF, NULL, "This testcase is not supported on this"
+		        " virtual machine.");
 
 	BIAS_MAX = guess_timer_resolution();
 
@@ -211,5 +208,4 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
 }

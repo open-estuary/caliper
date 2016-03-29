@@ -54,7 +54,6 @@
 #include <sys/syscall.h>
 
 #include "test.h"
-#include "usctest.h"
 
 #ifndef SOCK_NONBLOCK
 #define SOCK_NONBLOCK O_NONBLOCK
@@ -84,7 +83,6 @@ char *TCID = "socketpair02";
 void cleanup(void)
 {
 
-	TEST_CLEANUP;
 	tst_rmdir();
 }
 
@@ -127,7 +125,7 @@ int main(int argc, char *argv[])
 	if (socketpair(PF_UNIX, SOCK_STREAM, 0, fds) == -1) {
 		tst_brkm(TFAIL, cleanup, "socketpair(0) failed");
 	}
-	for (i = 0; i < (sizeof(fds) / sizeof(fds[0])); i++) {
+	for (i = 0; i < ARRAY_SIZE(fds); i++) {
 		fl = fcntl(fds[i], F_GETFL);
 		if (fl == -1) {
 			tst_brkm(TBROK, cleanup, "fcntl failed");
@@ -143,7 +141,7 @@ int main(int argc, char *argv[])
 	if (socketpair(PF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, fds) == -1) {
 		tst_brkm(TFAIL, cleanup, "socketpair(SOCK_NONBLOCK) failed");
 	}
-	for (i = 0; i < (sizeof(fds) / sizeof(fds[0])); i++) {
+	for (i = 0; i < ARRAY_SIZE(fds); i++) {
 		fl = fcntl(fds[i], F_GETFL);
 		if (fl == -1) {
 			tst_brkm(TBROK, cleanup, "fcntl failed");

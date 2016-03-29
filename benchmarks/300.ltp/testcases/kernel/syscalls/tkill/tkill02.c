@@ -46,7 +46,6 @@
 #include <sys/syscall.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "linux_syscall_numbers.h"
 
 char *TCID = "tkill02";
@@ -77,7 +76,6 @@ static pid_t unused_tid;
 void cleanup(void)
 {
 
-	TEST_CLEANUP;
 	tst_rmdir();
 }
 

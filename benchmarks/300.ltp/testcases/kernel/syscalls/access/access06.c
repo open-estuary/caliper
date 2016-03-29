@@ -35,7 +35,6 @@
 #include <pwd.h>
 
 #include "test.h"
-#include "usctest.h"
 #include "safe_macros.h"
 
 static void setup(void);
@@ -60,21 +59,15 @@ static struct test_case_t {
 
 char *TCID = "access06";
 int TST_TOTAL = ARRAY_SIZE(test_cases);
-static int exp_enos[] = { EROFS, 0 };
 
 int main(int ac, char **av)
 {
 	int lc;
-	const char *msg;
 	int i;
 
-	msg = parse_opts(ac, av, NULL, NULL);
-	if (msg != NULL)
-		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	tst_parse_opts(ac, av, NULL, NULL);
 
 	setup();
-
-	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		tst_count = 0;
@@ -91,7 +84,7 @@ static void setup(void)
 {
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
-	tst_require_root(NULL);
+	tst_require_root();
 	tst_tmpdir();
 
 	fs_type = tst_dev_fs_type();
@@ -143,9 +136,7 @@ static void access_verify(int i)
 
 static void cleanup(void)
 {
-	TEST_CLEANUP;
-
-	if (mount_flag && umount(MNT_POINT) < 0) {
+	if (mount_flag && tst_umount(MNT_POINT) < 0) {
 		tst_resm(TWARN | TERRNO,
 			 "umount device:%s failed", device);
 	}
