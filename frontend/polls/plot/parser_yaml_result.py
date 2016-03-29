@@ -249,7 +249,10 @@ class DrawPicture:
             # compute the length of the x axis
             for i in range(0, len(label_total)):
                 ind = na.array(range(key_length))+0.5
-                width = 0.20
+                # skd++  commented and updated to handle more than 5 platforms in the graph 
+                # fixme: better solution?
+                # width = 0.20 
+                width = 0.10 
                 rect_item = ax.bar(ind+i*width, data_total[i], width,
                                     color=color_total[i])
                 rects.append(rect_item)
