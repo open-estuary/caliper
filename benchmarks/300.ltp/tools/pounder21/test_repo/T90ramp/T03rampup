@@ -1,1 +1,3 @@
-ramp_wait
+#!/bin/bash
+
+sleep 30

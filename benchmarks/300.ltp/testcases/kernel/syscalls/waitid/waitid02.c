@@ -47,6 +47,7 @@
 #include <sys/stat.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "linux_syscall_numbers.h"
 
 struct testcase_t {
@@ -144,6 +145,7 @@ struct testcase_t tdat[] = {
 
 char *TCID = "waitid02";
 static int TST_TOTAL = ARRAY_SIZE(tdat);
+static struct tst_checkpoint checkpoint;
 
 static void makechild(struct testcase_t *t, void (*childfn)(void))
 {
@@ -173,13 +175,13 @@ static void dummy_child(void)
 
 static void waiting_child(void)
 {
-	TST_SAFE_CHECKPOINT_WAIT(NULL, 0);
+	TST_CHECKPOINT_CHILD_WAIT(&checkpoint);
 }
 
 static void stopped_child(void)
 {
 	kill(getpid(), SIGSTOP);
-	TST_SAFE_CHECKPOINT_WAIT(NULL, 0);
+	TST_CHECKPOINT_CHILD_WAIT(&checkpoint);
 }
 
 static void setup2(struct testcase_t *t)
@@ -189,7 +191,7 @@ static void setup2(struct testcase_t *t)
 
 static void cleanup2(struct testcase_t *t)
 {
-	TST_SAFE_CHECKPOINT_WAKE(cleanup, 0);
+	TST_CHECKPOINT_SIGNAL_CHILD(cleanup, &checkpoint);
 	wait4child(t->child);
 }
 
@@ -214,7 +216,7 @@ static void setup5(struct testcase_t *t)
 static void cleanup5(struct testcase_t *t)
 {
 	kill(t->child, SIGCONT);
-	TST_SAFE_CHECKPOINT_WAKE(cleanup, 0);
+	TST_CHECKPOINT_SIGNAL_CHILD(cleanup, &checkpoint);
 	wait4child(t->child);
 }
 
@@ -230,7 +232,7 @@ static void setup6(struct testcase_t *t)
 
 static void cleanup6(struct testcase_t *t)
 {
-	TST_SAFE_CHECKPOINT_WAKE(cleanup, 0);
+	TST_CHECKPOINT_SIGNAL_CHILD(cleanup, &checkpoint);
 	wait4child(t->child);
 }
 
@@ -238,11 +240,12 @@ static void setup(void)
 {
 	TEST_PAUSE;
 	tst_tmpdir();
-	TST_CHECKPOINT_INIT(tst_rmdir);
+	TST_CHECKPOINT_CREATE(&checkpoint);
 }
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 	tst_rmdir();
 	tst_exit();
 }
@@ -285,8 +288,11 @@ static void test_waitid(struct testcase_t *t)
 int main(int ac, char **av)
 {
 	int lc, testno;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 	for (lc = 0; TEST_LOOPING(lc); ++lc) {

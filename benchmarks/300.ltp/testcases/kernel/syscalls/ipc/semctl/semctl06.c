@@ -57,6 +57,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include "test.h"
+#include "usctest.h"
 #include <wait.h>
 #include "ipcsem.h"
 
@@ -104,8 +105,9 @@ int main(int argc, char **argv)
 	int count, child, status, nwait;
 
 #ifdef UCLINUX
-	
-	tst_parse_opts(argc, argv, NULL, NULL);
+	const char *msg;
+	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	argv0 = argv[0];
 	maybe_run_child(&do_child, "dS", &id_uclinux, &maxsemstring);
@@ -395,4 +397,5 @@ void setup(void)
 void cleanup(void)
 {
 	tst_rmdir();
+	TEST_CLEANUP;
 }

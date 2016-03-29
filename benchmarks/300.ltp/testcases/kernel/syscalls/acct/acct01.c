@@ -37,6 +37,7 @@
 #include <sys/mount.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 #define DIR_MODE	(S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP| \
@@ -82,15 +83,22 @@ static struct test_case_t {
 char *TCID = "acct01";
 int TST_TOTAL = ARRAY_SIZE(test_cases);
 static struct passwd *ltpuser;
+static int exp_enos[] = { EISDIR, EACCES, ENOENT, ENOTDIR, EPERM,
+			  ELOOP, ENAMETOOLONG, EROFS, 0 };
 
 int main(int argc, char *argv[])
 {
 	int lc;
+	const char *msg;
 	int i;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		tst_count = 0;
@@ -118,7 +126,7 @@ static void setup(void)
 {
 	int fd;
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	check_acct_in_kernel();
 
@@ -207,10 +215,12 @@ static void cleanup2(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	if (acct(NULL) == -1)
 		tst_resm(TWARN | TERRNO, "acct(NULL) failed");
 
-	if (mount_flag && tst_umount("mntpoint") < 0) {
+	if (mount_flag && umount("mntpoint") < 0) {
 		tst_resm(TWARN | TERRNO,
 			 "umount device:%s failed", device);
 	}

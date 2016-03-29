@@ -51,6 +51,7 @@
 
 #include "config.h"
 #include "test.h"
+#include "usctest.h"
 
 TCID_DEFINE(modify_ldt01);
 int TST_TOTAL = 1;
@@ -94,6 +95,7 @@ void setup(void);
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
 	void *ptr;
 	int retval, func;
@@ -101,7 +103,9 @@ int main(int ac, char **av)
 	int flag;
 	int seg[4];
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	setup();		/* global setup */
 
@@ -248,6 +252,11 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing status if that option was specified.
+	 * print errno log if that option was specified
+	 */
+	TEST_CLEANUP;
 
 }
 

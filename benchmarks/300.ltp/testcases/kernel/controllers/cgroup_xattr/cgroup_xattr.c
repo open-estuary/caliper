@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015 Oracle and/or its affiliates. All Rights Reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All Rights Reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -36,6 +36,7 @@
 #include <errno.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 char *TCID = "cgroup_xattr";
@@ -63,10 +64,9 @@ struct tst_key {
 };
 
 /* only security.* & trusted.* are valid key names */
-static struct tst_key tkeys[] = {
-	{ .name = "security.",		.good = 1,	},
+static const struct tst_key tkeys[] = {
 	{ .name = "trusted.test",	.good = 1,	},
-	{ .name = "trusted.",		.good = 1,	},
+	{ .name = "security.",		.good = 1,	},
 	{ .name = "user.",		.good = 0,	},
 	{ .name = "system.",		.good = 0,	},
 };
@@ -141,9 +141,12 @@ static void help(void)
 
 void setup(int argc, char *argv[])
 {
-	tst_parse_opts(argc, argv, options, help);
+	const char *msg;
+	msg = parse_opts(argc, argv, options, help);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	if (access("/proc/cgroups", F_OK) == -1)
 		tst_brkm(TCONF, NULL, "Kernel doesn't support cgroups");
@@ -151,20 +154,6 @@ void setup(int argc, char *argv[])
 	if (tst_kvercmp(3, 7, 0) < 0) {
 		tst_brkm(TCONF, NULL,
 			"Test must be run with kernel 3.7 or newer");
-	}
-
-	if (tst_kvercmp(3, 15, 0) >= 0) {
-		/* In kernel v3.15 cgroup was converted to kernfs
-		 * that doesn't provide simple security namespace handlers.
-		 * Setting just 'security.' should return EOPNOTSUPP.
-		 */
-		unsigned int i;
-		for (i = 0; i < ARRAY_SIZE(tkeys); ++i) {
-			if (!strcmp(tkeys[i].name, "security.")) {
-				tkeys[i].good = 0;
-				break;
-			}
-		}
 	}
 
 	int value_size = DEFAULT_VALUE_SIZE;
@@ -256,6 +245,7 @@ static void cleanup(void)
 	}
 
 	tst_rmdir();
+	TEST_CLEANUP;
 }
 
 int mount_cgroup(void)
@@ -285,11 +275,8 @@ int mount_cgroup(void)
 		 * additional "xattr" option. In that case, mount will succeed,
 		 * but xattr won't be supported in the new mount anyway.
 		 * Should be removed as soon as a fix committed to upstream.
-		 *
-		 * But not applicable for kernels >= 3.15 where xattr supported
-		 * natively.
 		 */
-		if (hier != 0 && tst_kvercmp(3, 15, 0) < 0)
+		if (hier != 0)
 			continue;
 
 		int i, found = 0;
@@ -339,7 +326,7 @@ int mount_cgroup(void)
 
 static int set_xattrs(const char *file)
 {
-	unsigned int i, err, fail, res = 0;
+	int i, err, fail, res = 0;
 
 	for (i = 0; i < ARRAY_SIZE(tkeys); ++i) {
 		err = setxattr(file, tkeys[i].name,
@@ -361,7 +348,7 @@ static int set_xattrs(const char *file)
 
 static int get_xattrs(const char *file)
 {
-	unsigned int i, fail, res = 0;
+	int i, fail, res = 0;
 
 	for (i = 0; i < ARRAY_SIZE(tkeys); ++i) {
 		/* get value size */
@@ -384,7 +371,7 @@ static int get_xattrs(const char *file)
 				"Can't get buffer of key %s",
 				tkeys[i].name);
 		}
-		fail = val.size != (size_t)size ||
+		fail = val.size != size ||
 			strncmp(val.buf, xval, val.size) != 0;
 		res |= fail;
 

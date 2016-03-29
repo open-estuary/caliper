@@ -50,11 +50,16 @@
 #define UNIT_TEST	0
 #endif
 
+/* The timing information block. */
+struct tblock tblock = { 0, ((long)-1) >> 1, 0, 0 };
+
 /* Define flags and args for standard options */
+int STD_TIMING_ON = 0;		/* flag indicating to print timing stats */
 static int STD_PAUSE = 0;	/* flag indicating to pause before actual start, */
     /* for contention mode */
 static int STD_INFINITE = 0;	/* flag indciating to loop forever */
 int STD_LOOP_COUNT = 1;		/* number of iterations */
+int STD_ERRNO_LOG = 0;		/* flag indicating to do errno logging */
 
 static float STD_LOOP_DURATION = 0.0;	/* duration value in fractional seconds */
 static float STD_LOOP_DELAY = 0.0;	/* loop delay value in fractional seconds */
@@ -87,11 +92,13 @@ static struct std_option_t {
 	char *flag;
 	char **arg;
 } std_options[] = {
+	{"e", "  -e      Turn on errno logging\n", NULL, NULL},
 	{"h", "  -h      Show this help screen\n", NULL, NULL},
 	{"i:", "  -i n    Execute test n times\n", NULL, NULL},
 	{"I:", "  -I x    Execute test for x seconds\n", NULL, NULL},
 	{"p", "  -p      Pause for SIGUSR1 before starting\n", NULL, NULL},
 	{"P:", "  -P x    Pause for x seconds between iterations\n", NULL, NULL},
+	{"t", "  -t      Turn on syscall timing\n", NULL, NULL},
 #ifdef UCLINUX
 	{"C:",
 	      "  -C ARG  Run the child process with arguments ARG (for internal use)\n",
@@ -109,6 +116,13 @@ struct usc_bigstack_t {
 
 static struct usc_bigstack_t *STD_bigstack = NULL;
 
+/*
+ * Counter of errnos returned (-e option).  Indexed by errno.
+ * Make the array USC_MAX_ERRNO long.  That is the first Fortran
+ * Lib errno.  No syscall should return an errno that high.
+ */
+int STD_ERRNO_LIST[USC_MAX_ERRNO];
+
 /* define the string length for Mesg and Mesg2 strings */
 #define STRLEN 2048
 
@@ -119,8 +133,10 @@ static void usc_recressive_func();
  * Define bits for options that might have env variable default
  */
 #define OPT_iteration		01
+#define OPT_nofunccheck		02
 #define OPT_duration		04
 #define OPT_delay		010
+#define OPT_copies		020
 
 #ifdef UCLINUX
 /* Allocated and used in self_exec.c: */
@@ -225,6 +241,12 @@ const char *parse_opts(int ac, char **av, const option_t * user_optarr,
 			break;
 		case 'p':	/* Pause for SIGUSR1 */
 			STD_PAUSE = 1;
+			break;
+		case 't':	/* syscall timing */
+			STD_TIMING_ON = 1;
+			break;
+		case 'e':	/* errno loggin */
+			STD_ERRNO_LOG = 1;
 			break;
 		case 'h':	/* Help */
 			print_help(uhf);
@@ -468,6 +490,8 @@ const char *parse_opts(int ac, char **av, const option_t * user_optarr,
 	printf("STD_LOOP_DELAY      = %f\n", STD_LOOP_DELAY);
 	printf("STD_LOOP_COUNT      = %d\n", STD_LOOP_COUNT);
 	printf("STD_INFINITE        = %d\n", STD_INFINITE);
+	printf("STD_TIMING_ON       = %d\n", STD_TIMING_ON);
+	printf("STD_ERRNO_LOG       = %d\n", STD_ERRNO_LOG);
 	printf("STD_PAUSE           = %d\n", STD_PAUSE);
 #endif
 
@@ -665,6 +689,12 @@ static void usc_recressive_func(int cnt, int max, struct usc_bigstack_t bstack)
 int Help = 0;
 int Help2 = 0;
 char *ptr;
+
+/*
+ * Code from usctest.h that not part of this file since we are the library.
+ */
+
+struct usc_errno_t TEST_VALID_ENO[USC_MAX_ERRNO];
 
 long TEST_RETURN;
 int TEST_ERRNO;

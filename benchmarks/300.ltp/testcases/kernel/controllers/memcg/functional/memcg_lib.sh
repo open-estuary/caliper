@@ -242,11 +242,12 @@ test_proc_kill()
 
 # Test limit_in_bytes will be aligned to PAGESIZE
 # $1 - user input value
-# $2 - use mem+swap limitation
+# $2 - expected value
+# $3 - use mem+swap limitation
 test_limit_in_bytes()
 {
 	echo $1 > memory.limit_in_bytes
-	if [ $2 -eq 1 ]; then
+	if [ $3 -eq 1 ]; then
 		if [ -e memory.memsw.limit_in_bytes ]; then
 			echo $1 > memory.memsw.limit_in_bytes
 			limit=`cat memory.memsw.limit_in_bytes`
@@ -258,10 +259,7 @@ test_limit_in_bytes()
 		limit=`cat memory.limit_in_bytes`
 	fi
 
-	# Kernels prior to 3.19 were rounding up but newer kernels
-	# are rounding down
-	if [ \( $(($PAGESIZE*($1/$PAGESIZE))) -eq $limit \) \
-	    -o \( $(($PAGESIZE*(($1+$PAGESIZE-1)/$PAGESIZE))) -eq $limit \) ]; then
+	if [ $limit -eq $2 ]; then
 		result $PASS "input=$1, limit_in_bytes=$limit"
 	else
 		result $FAIL "input=$1, limit_in_bytes=$limit"

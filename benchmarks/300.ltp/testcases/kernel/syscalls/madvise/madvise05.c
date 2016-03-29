@@ -28,6 +28,7 @@
 #include <errno.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 #define ALLOC_SIZE (32 * 1024 * 1024)
@@ -41,9 +42,12 @@ int TST_TOTAL = 1;
 int main(int argc, char *argv[])
 {
 	int lc;
+	const char *msg = NULL;
 	void *p;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -82,4 +86,5 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 }

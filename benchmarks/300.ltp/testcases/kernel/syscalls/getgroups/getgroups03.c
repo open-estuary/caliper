@@ -40,6 +40,7 @@
 #include <pwd.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "compat_16.h"
 
 #define TESTUSER "root"
@@ -58,9 +59,11 @@ static void cleanup(void);
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int gidsetsize = NGROUPS;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -129,7 +132,7 @@ static int readgroups(GID_T groups[NGROUPS])
 
 static void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -243,4 +246,5 @@ static void verify_groups(int ret_ngroups)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 }

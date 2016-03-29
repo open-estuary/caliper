@@ -37,6 +37,7 @@
 #include <sys/mount.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 char *TCID = "rename11";
@@ -57,6 +58,8 @@ static const char *device;
 static const char *fs_type;
 static int mount_flag;
 
+static int exp_enos[] = { ELOOP, EROFS, EMLINK, 0 };
+
 static void cleanup(void);
 static void setup(void);
 static void test_eloop(void);
@@ -70,8 +73,11 @@ int TST_TOTAL = ARRAY_SIZE(testfunc);
 int main(int ac, char **av)
 {
 	int lc, i;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -92,9 +98,11 @@ static void setup(void)
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_tmpdir();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 
@@ -185,7 +193,9 @@ static void test_emlink(void)
 
 static void cleanup(void)
 {
-	if (mount_flag && tst_umount(MNTPOINT) < 0)
+	TEST_CLEANUP;
+
+	if (mount_flag && umount(MNTPOINT) < 0)
 		tst_resm(TWARN | TERRNO, "umount device:%s failed", device);
 
 	if (device)

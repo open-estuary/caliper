@@ -71,7 +71,7 @@
 #include <errno.h>
 #include  <syscall.h>
 #include "test.h"
-#include "linux_syscall_numbers.h"
+#include "usctest.h"
 
 #define INVALID_OPTION 100
 static void setup();
@@ -79,19 +79,24 @@ static void cleanup();
 
 char *TCID = "sysfs04";
 int TST_TOTAL = 1;
+static int exp_enos[] = { EINVAL, 0 };
 
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+#ifdef __NR_sysfs
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
 		tst_count = 0;
-		TEST(ltp_syscall(__NR_sysfs, INVALID_OPTION));
+		TEST(syscall(__NR_sysfs, INVALID_OPTION));
 
 		/* check return code */
 		if ((TEST_RETURN == -1) && (TEST_ERRNO == EINVAL)) {
@@ -102,7 +107,13 @@ int main(int ac, char **av)
 				 " expected error; %d, errno"
 				 " : EINVAL and got %d", EINVAL, TEST_ERRNO);
 		}
+
+		TEST_ERROR_LOG(TEST_ERRNO);
 	}
+#else
+	tst_resm(TWARN,
+		 "This test can only run on kernels that support the sysfs system call");
+#endif
 
 	/*Clean up and exit */
 	cleanup();
@@ -116,6 +127,9 @@ void setup(void)
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
+	/*set the expected errnos */
+	TEST_EXP_ENOS(exp_enos);
+
 	TEST_PAUSE;
 }
 
@@ -125,5 +139,10 @@ void setup(void)
 */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }

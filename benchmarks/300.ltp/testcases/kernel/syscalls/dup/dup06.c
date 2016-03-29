@@ -33,6 +33,7 @@
 #include <sys/stat.h>
 #include <sys/param.h>
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "dup06";
 int TST_TOTAL = 1;
@@ -57,9 +58,11 @@ int main(int ac, char **av)
 	int min;
 	int freefds;
 	int lc;
+	const char *msg;
 	const char *pfilname = "dup06";
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 

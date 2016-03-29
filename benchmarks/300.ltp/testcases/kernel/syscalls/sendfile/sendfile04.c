@@ -56,6 +56,7 @@
 #include <sys/mman.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include "usctest.h"
 #include "test.h"
 
 #ifndef OFF_T
@@ -129,6 +130,8 @@ void do_sendfile(int prot, int pass_unmapped_buffer)
 	if (TEST_RETURN != -1) {
 		tst_resm(TFAIL, "call succeeded unexpectedly");
 	} else {
+		TEST_ERROR_LOG(TEST_ERRNO);
+
 		if (TEST_ERRNO != EFAULT) {
 			tst_resm(TFAIL, "sendfile returned unexpected "
 				 "errno, expected: %d, got: %d",
@@ -200,6 +203,11 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	close(out_fd);
 	/* delete the test directory created in setup() */
@@ -267,8 +275,11 @@ int main(int ac, char **av)
 {
 	int i;
 	int lc;
+	const char *msg;		/* parse_opts() return message */
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 #ifdef UCLINUX
 	argv0 = av[0];
 	maybe_run_child(&do_child, "");

@@ -25,6 +25,7 @@
 #include <errno.h>
 #include <mqueue.h>
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "mq_notify02";
 static void setup(void);
@@ -40,15 +41,21 @@ static struct test_case_t {
 
 int TST_TOTAL = ARRAY_SIZE(test_cases);
 static void mq_notify_verify(struct test_case_t *);
+static int exp_enos[] = { EINVAL, 0 };
 
 int main(int argc, char **argv)
 {
 	int lc;
 	int i;
+	const char *msg;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		tst_count = 0;
@@ -86,4 +93,5 @@ static void mq_notify_verify(struct test_case_t *test)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 }

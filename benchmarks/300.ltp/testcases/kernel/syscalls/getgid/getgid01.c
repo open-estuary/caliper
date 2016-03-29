@@ -41,6 +41,7 @@
 #include <string.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "compat_16.h"
 
 static void setup(void);
@@ -49,13 +50,19 @@ static void cleanup(void);
 TCID_DEFINE(getgid01);
 int TST_TOTAL = 1;
 
+static int exp_enos[] = { 0, 0 };
+
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -83,4 +90,5 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 }

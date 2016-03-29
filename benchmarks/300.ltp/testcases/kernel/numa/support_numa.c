@@ -39,6 +39,7 @@
 #include <limits.h>
 #include <string.h>
 #include "test.h"
+#include "usctest.h"
 
 /* Global Variables */
 #define MB (1<<20)

@@ -99,7 +99,8 @@ void fc_set_num_totalthreads(ffsb_config_t * fc, int num)
 
 void fc_set_callout(ffsb_config_t * fc, char *callout)
 {
-	free(fc->callout);
+	if (fc->callout)
+		free(fc->callout);
 	fc->callout = ffsb_strdup(callout);
 }
 

@@ -49,6 +49,7 @@
 #include <sched.h>
 #include <stdio.h>
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "sched_getscheduler01";
 int TST_TOTAL = 3;
@@ -74,10 +75,13 @@ struct test_case_t {
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;		/* message returned by parse_opts */
+
 	int i;
 	struct sched_param param;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -117,7 +121,7 @@ int main(int ac, char **av)
 void setup(void)
 {
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -126,4 +130,6 @@ void setup(void)
 
 void cleanup(void)
 {
+
+	TEST_CLEANUP;
 }

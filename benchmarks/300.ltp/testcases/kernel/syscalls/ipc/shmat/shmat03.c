@@ -61,6 +61,8 @@
 char *TCID = "shmat03";
 int TST_TOTAL = 1;
 
+int exp_enos[] = { EACCES, 0 };	/* 0 terminated list of expected errnos */
+
 int shm_id_1 = -1;
 
 void *addr;			/* for result of shmat-call */
@@ -72,9 +74,12 @@ static void do_child(void);
 
 int main(int ac, char **av)
 {
+	const char *msg;
 	int pid;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();		/* global setup */
 
@@ -131,6 +136,8 @@ static void do_child(void)
 			continue;
 		}
 
+		TEST_ERROR_LOG(TEST_ERRNO);
+
 		switch (TEST_ERRNO) {
 		case EACCES:
 			tst_resm(TPASS | TTERRNO, "expected failure");
@@ -148,9 +155,12 @@ static void do_child(void)
  */
 void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
+
+	/* Set up the expected error numbers for -e option */
+	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 
@@ -180,5 +190,10 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }

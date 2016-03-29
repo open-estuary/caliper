@@ -37,6 +37,7 @@
 
 /** LTP Port **/
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "sysconf01";
 int TST_TOTAL = 56;

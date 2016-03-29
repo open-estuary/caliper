@@ -81,8 +81,10 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <sys/kdaemon.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "linux_syscall_numbers.h"
 
 char *TCID = "bdflush01";
@@ -91,6 +93,7 @@ int TST_TOTAL = 1;
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
 	tst_rmdir();
 }
 
@@ -103,8 +106,10 @@ void setup(void)
 int main(int ac, char **av)
 {
 	long data;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, cleanup, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 

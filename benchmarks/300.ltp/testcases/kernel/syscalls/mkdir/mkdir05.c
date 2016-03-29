@@ -31,6 +31,7 @@
 #include <unistd.h>
 #include <pwd.h>
 #include "test.h"
+#include "usctest.h"
 
 void setup();
 void cleanup();
@@ -48,12 +49,15 @@ char tstdir1[100];
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	struct stat buf;
 
 	/*
 	 * parse standard options
 	 */
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	/*
 	 * perform global setup for test
@@ -117,7 +121,7 @@ int main(int ac, char **av)
  */
 void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	ltpuser = getpwnam(nobody_uid);
 	if (setuid(ltpuser->pw_uid) == -1) {
@@ -140,6 +144,11 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	/*
 	 * Remove the temporary directory.

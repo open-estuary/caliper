@@ -112,12 +112,15 @@
 #include <signal.h>
 #include <string.h>
 #include "test.h"
+#include "usctest.h"
 
 void setup();
 void cleanup();
 
 char *TCID = "fchmod01";
 int TST_TOTAL = 1;
+
+int exp_enos[] = { 0, 0 };
 
 char fname[255];
 int fd;
@@ -126,10 +129,14 @@ char *buf = "davef";
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -173,6 +180,8 @@ void setup(void)
  ***************************************************************/
 void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	if (close(fd) == -1)
 		tst_brkm(TWARN | TERRNO, cleanup, "close failed");
 

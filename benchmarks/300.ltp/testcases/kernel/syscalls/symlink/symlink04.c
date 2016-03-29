@@ -76,6 +76,7 @@
 #include <signal.h>
 #include <sys/stat.h>
 #include "test.h"
+#include "usctest.h"
 
 #define  TESTFILE	"testfile"
 #define  SYMFILE	"slink_file"
@@ -83,6 +84,7 @@
 
 char *TCID = "symlink04";
 int TST_TOTAL = 1;
+int exp_enos[] = { 0 };
 
 void setup();
 void cleanup();
@@ -91,10 +93,18 @@ int main(int ac, char **av)
 {
 	struct stat stat_buf;	/* stat structure buffer */
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+
+	}
 
 	setup();
+
+	/* set the expected errnos... */
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -107,6 +117,7 @@ int main(int ac, char **av)
 		TEST(symlink(TESTFILE, SYMFILE));
 
 		if (TEST_RETURN == -1) {
+			TEST_ERROR_LOG(TEST_ERRNO);
 			tst_resm(TFAIL, "symlink(%s, %s) Failed, errno=%d : %s",
 				 TESTFILE, SYMFILE, TEST_ERRNO,
 				 strerror(TEST_ERRNO));
@@ -190,6 +201,11 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	tst_rmdir();
 

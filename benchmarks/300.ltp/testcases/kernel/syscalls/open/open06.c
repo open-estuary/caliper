@@ -32,6 +32,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "open06";
 int TST_TOTAL = 1;
@@ -41,13 +42,20 @@ static void cleanup(void);
 
 static char fname[100] = "fifo";
 
+static int exp_enos[] = { ENXIO, 0 };
+
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		tst_count = 0;
@@ -57,6 +65,8 @@ int main(int ac, char **av)
 			tst_resm(TFAIL, "open(2) succeeded unexpectedly");
 			continue;
 		}
+
+		TEST_ERROR_LOG(TEST_ERRNO);
 
 		if (TEST_ERRNO != ENXIO)
 			tst_resm(TFAIL, "Expected ENXIO got %d", TEST_ERRNO);
@@ -84,6 +94,8 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	unlink(fname);
 
 	tst_rmdir();

@@ -51,6 +51,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <mqueue.h>
+#include "usctest.h"
 #include "test.h"
 #include "linux_syscall_numbers.h"
 #include "libclone.h"
@@ -106,6 +107,8 @@ static void cleanup(void)
 	}
 	remove_pipe(father_to_child);
 	remove_pipe(child_to_father);
+
+	TEST_CLEANUP;
 }
 
 static void cleanup_child(void)
@@ -234,7 +237,7 @@ int child_fn(void *arg)
 
 static void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 	check_newpid();
 }
 

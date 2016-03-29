@@ -37,6 +37,7 @@
 #include <errno.h>
 #include <sys/wait.h>
 #include "test.h"
+#include "usctest.h"
 #define FAILED 0
 #define PASSED 1
 
@@ -311,12 +312,12 @@ static int checkchars(int fd, char val, int n)
 }
 
 /*****	**	LTP Port	**	*****/
-int anyfail(void)
+int anyfail()
 {
 	tst_brkm(TFAIL, tst_rmdir, "Test failed\n");
 }
 
-void ok_exit(void)
+void ok_exit()
 {
 	tst_resm(TPASS, "Test passed\n");
 	tst_rmdir();

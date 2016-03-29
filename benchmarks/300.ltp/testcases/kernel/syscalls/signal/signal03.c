@@ -56,6 +56,7 @@
  */
 
 #include "test.h"
+#include "usctest.h"
 
 #include <errno.h>
 #include <signal.h>
@@ -63,6 +64,15 @@
 void cleanup(void);
 void setup(void);
 void sighandler(int);
+
+char *TCID = "signal03";
+int TST_TOTAL;
+
+typedef void (*sighandler_t) (int);
+
+sighandler_t Tret;
+
+int fail = 0;
 
 int siglist[] = { SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGTRAP, SIGABRT, SIGIOT,
 	SIGBUS, SIGFPE, SIGUSR1, SIGSEGV, SIGUSR2, SIGPIPE, SIGALRM,
@@ -78,22 +88,16 @@ int siglist[] = { SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGTRAP, SIGABRT, SIGIOT,
 #endif
 };
 
-char *TCID = "signal03";
-int TST_TOTAL = ARRAY_SIZE(siglist);
-
-typedef void (*sighandler_t) (int);
-
-sighandler_t Tret;
-
-int fail = 0;
-
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	pid_t pid;
 	int i, rval;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	setup();		/* global setup */
 
@@ -158,6 +162,7 @@ void sighandler(int sig)
  */
 void setup(void)
 {
+	TST_TOTAL = sizeof(siglist) / sizeof(int);
 	/* capture signals in our own handler */
 	tst_sig(NOFORK, sighandler, cleanup);
 
@@ -170,5 +175,10 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }

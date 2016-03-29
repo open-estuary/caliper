@@ -29,6 +29,7 @@
 #include <sys/wait.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "compat_16.h"
 
 TCID_DEFINE(setreuid04);
@@ -54,7 +55,8 @@ struct test_data_t {
 &nobody.pw_uid, &nobody.pw_uid, &nobody, &nobody,
 		    "After setreuid(-1, -1),"},};
 
-int TST_TOTAL = ARRAY_SIZE(test_data);
+/*int TST_TOTAL = sizeof(test_data)/sizeof(test_data[0]);*/
+int TST_TOTAL = 2;
 
 static void setup(void);
 static void cleanup(void);
@@ -63,8 +65,10 @@ static void uid_verify(struct passwd *, struct passwd *, char *);
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -110,7 +114,7 @@ int main(int ac, char **av)
 
 static void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
@@ -128,6 +132,8 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
+
 }
 
 static void uid_verify(struct passwd *ru, struct passwd *eu, char *when)

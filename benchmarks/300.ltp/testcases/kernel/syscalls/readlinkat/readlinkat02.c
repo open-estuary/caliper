@@ -33,6 +33,7 @@
 #include <errno.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 #include "lapi/readlinkat.h"
 #include "linux_syscall_numbers.h"
@@ -57,6 +58,7 @@ static struct test_case_t {
 
 char *TCID = "readlinkat02";
 int TST_TOTAL = ARRAY_SIZE(test_cases);
+static int exp_enos[] = { EINVAL, ENOTDIR, 0 };
 static void setup(void);
 static void cleanup(void);
 static void readlinkat_verify(const struct test_case_t *);
@@ -64,8 +66,11 @@ static void readlinkat_verify(const struct test_case_t *);
 int main(int argc, char **argv)
 {
 	int i, lc;
+	const char *msg;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -82,6 +87,8 @@ int main(int argc, char **argv)
 static void setup(void)
 {
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
+
+	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 
@@ -115,8 +122,7 @@ static void readlinkat_verify(const struct test_case_t *test)
 
 static void cleanup(void)
 {
-	close(dir_fd);
-	close(file_fd);
+	TEST_CLEANUP;
 
 	tst_rmdir();
 }

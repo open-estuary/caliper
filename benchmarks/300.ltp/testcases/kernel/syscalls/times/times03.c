@@ -51,11 +51,13 @@
 #include <wait.h>
 #include <time.h>
 #include "test.h"
+#include "usctest.h"
 #include <signal.h>
 #include <stdint.h>
 
 char *TCID = "times03";
 int TST_TOTAL = 1;
+int exp_enos[] = { 0 };
 
 volatile int timeout;		/* Did we timeout in alarm() ? */
 
@@ -67,12 +69,15 @@ void cleanup(void);
 
 int main(int argc, char **argv)
 {
+	const char *msg;
+
 	struct tms buf1, buf2;
 	time_t start_time, end_time;
 	int pid2, status;
 	struct sigaction sa;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -170,6 +175,7 @@ int main(int argc, char **argv)
 				 "failed in child");
 		}
 		if (times(&buf2) == -1) {
+			TEST_ERROR_LOG(TEST_ERRNO);
 			tst_resm(TFAIL | TTERRNO, "times failed");
 		}
 		if (buf1.tms_utime > buf2.tms_utime)
@@ -232,6 +238,9 @@ void setup(void)
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
+	/* set the expected errnos... */
+	TEST_EXP_ENOS(exp_enos);
+
 	/* Pause if that option was specified
 	 * TEST_PAUSE contains the code to fork the test with the -c option.
 	 */
@@ -245,5 +254,10 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }

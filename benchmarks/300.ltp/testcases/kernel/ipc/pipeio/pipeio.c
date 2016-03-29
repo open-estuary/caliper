@@ -52,8 +52,8 @@
 #include "tlibio.h"
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
-#include "lapi/semun.h"
 
 char *TCID = "pipeio";
 int TST_TOTAL = 1;
@@ -124,7 +124,11 @@ static int write_fd;
 static int empty_read;
 static int sem_id;
 
-static union semun u;
+static union semun {
+	int val;
+	struct semid_ds *buf;
+	unsigned short int *array;
+} u;
 
 int main(int ac, char *av[])
 {
@@ -488,6 +492,8 @@ static void setup(int argc, char *argv[])
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	SAFE_FREE(writebuf);
 	SAFE_FREE(readbuf);
 
@@ -713,8 +719,6 @@ static void do_parent(void)
 			}
 		}
 	}
-
-	SAFE_CLOSE(cleanup, read_fd);
 }
 
 static void usage(void)

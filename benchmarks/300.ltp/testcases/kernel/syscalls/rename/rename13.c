@@ -65,9 +65,11 @@
 #include <errno.h>
 
 #include "test.h"
+#include "usctest.h"
 
 void setup();
 void cleanup();
+extern void do_file_setup(char *);
 
 char *TCID = "rename13";
 int TST_TOTAL = 1;
@@ -81,11 +83,13 @@ ino_t oldino;
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
 	/*
 	 * parse standard options
 	 */
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	/*
 	 * perform global setup for test
@@ -166,7 +170,8 @@ void setup(void)
 	sprintf(fname, "./tfile_%d", getpid());
 	sprintf(mname, "./rnfile_%d", getpid());
 
-	SAFE_TOUCH(cleanup, fname, 0700, NULL);
+	/* create the "old" file */
+	do_file_setup(fname);
 
 	if (stat(fname, &buf1) == -1) {
 		tst_brkm(TBROK, cleanup, "failed to stat file %s"
@@ -191,6 +196,11 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	/*
 	 * Remove the temporary directory.

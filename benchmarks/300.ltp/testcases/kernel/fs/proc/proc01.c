@@ -44,6 +44,7 @@
 #endif
 
 #include "test.h"
+#include "usctest.h"
 
 #define MAX_BUFF_SIZE 65536
 #define MAX_FUNC_NAME 256
@@ -107,7 +108,6 @@ static const struct mapping known_issues[] = {
 	{"read", "/proc/fs/nfsd/.getfs", EINVAL},
 	{"read", "/proc/fs/nfsd/.getfd", EINVAL},
 	{"read", "/proc/self/net/rpc/use-gss-proxy", EAGAIN},
-	{"read", "/proc/sys/net/ipv6/conf/*/stable_secret", EIO},
 	{"", "", 0}
 };
 
@@ -181,6 +181,7 @@ static int found_errno(const char *syscall, const char *obj, int tmperr)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 	tst_rmdir();
 }
 
@@ -365,7 +366,7 @@ static long readproc(const char *obj)
 		/* Skip files does not honor O_NONBLOCK. */
 		for (i = 0; error_nonblock[i][0] != '\0'; i++) {
 			if (!strcmp(obj, error_nonblock[i])) {
-				tst_resm(TINFO, "%s: does not honor "
+				tst_resm(TWARN, "%s: does not honor "
 					 "O_NONBLOCK", obj);
 				return 0;
 			}
@@ -430,9 +431,12 @@ static long readproc(const char *obj)
 
 int main(int argc, char *argv[])
 {
+	const char *msg;
 	int lc;
 
-	tst_parse_opts(argc, argv, options, help);
+	msg = parse_opts(argc, argv, options, help);
+	if (msg != NULL)
+		tst_brkm(TBROK, cleanup, "OPTION PARSING ERROR - %s", msg);
 
 	if (opt_buffsize) {
 		size_t bs;

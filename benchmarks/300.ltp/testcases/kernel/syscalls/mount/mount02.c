@@ -43,6 +43,7 @@
 #include <sys/stat.h>
 #include <sys/fcntl.h>
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 static void setup(void);
@@ -97,6 +98,12 @@ static struct test_case {
 
 int TST_TOTAL = ARRAY_SIZE(tc);
 
+static int exp_enos[] = {
+	ENODEV, ENOTBLK, EBUSY, EBUSY, EINVAL,
+	EINVAL, EINVAL, EFAULT, EFAULT, ENAMETOOLONG,
+	ENOENT, ENOENT, ENOTDIR, 0
+};
+
 static void verify_mount(struct test_case *tc)
 {
 	if (tc->setup)
@@ -127,8 +134,11 @@ cleanup:
 int main(int ac, char **av)
 {
 	int lc, i;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -164,17 +174,15 @@ static void close_umount(void)
 
 static void do_umount(void)
 {
-	if (tst_umount(mntpoint))
+	if (umount(mntpoint))
 		tst_brkm(TBROK | TERRNO, cleanup, "Failed to umount(mntpoint)");
 }
 
 static void setup(void)
 {
-	dev_t dev;
-
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_tmpdir();
 
@@ -192,18 +200,20 @@ static void setup(void)
 
 	memset(path, 'a', PATH_MAX + 1);
 
-	dev = makedev(1, 3);
-	if (mknod(char_dev, S_IFCHR | FILE_MODE, dev)) {
+	if (mknod(char_dev, S_IFCHR | FILE_MODE, 0)) {
 		tst_brkm(TBROK | TERRNO, cleanup,
-			 "failed to mknod(char_dev, S_IFCHR | FILE_MODE, %lu)",
-			 dev);
+		         "failed to mknod(char_dev, S_IFCHR | FILE_MODE, 0)");
 	}
+
+	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 }
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	if (device)
 		tst_release_device(NULL, device);
 

@@ -49,9 +49,12 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "pipe04";
 int TST_TOTAL = 1;
+
+int exp_enos[] = { EBADF, 0 };
 
 int fildes[2];			/* fds for pipe read and write */
 
@@ -75,6 +78,7 @@ ssize_t safe_read(int fd, void *buf, size_t count)
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	pid_t c1pid, c2pid;
 	int wtstatus;
 	int bytesread;
@@ -82,7 +86,8 @@ int main(int ac, char **av)
 
 	char rbuf[BUFSIZ];
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 #ifdef UCLINUX
 	maybe_run_child(&c1func, "ndd", 1, &fildes[0], &fildes[1]);
 	maybe_run_child(&c2func, "ndd", 2, &fildes[0], &fildes[1]);
@@ -216,6 +221,11 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 }
 
 void c1func(void)

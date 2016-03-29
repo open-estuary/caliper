@@ -35,6 +35,7 @@
 #include <unistd.h>
 #include "config.h"
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 #include "linux_syscall_numbers.h"
 
@@ -128,9 +129,12 @@ static void test_invalid_fd(void)
 
 int main(int argc, char *argv[])
 {
+	const char *msg;
 	int lc;
 
-	tst_parse_opts(argc, argv, options, NULL);
+	msg = parse_opts(argc, argv, options, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
@@ -144,7 +148,7 @@ int main(int argc, char *argv[])
 
 static void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 	tst_tmpdir();
 
 	/* check if readahead syscall is supported */
@@ -155,6 +159,7 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 	tst_rmdir();
 }
 

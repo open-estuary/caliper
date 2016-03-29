@@ -47,6 +47,7 @@
 #include <pwd.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 #define MODE_RWX	(S_IRWXU | S_IRWXG | S_IRWXO)
@@ -92,14 +93,21 @@ static void cleanup(void);
 
 char *TCID = "readlink03";
 int TST_TOTAL = ARRAY_SIZE(test_cases);
+static int exp_enos[] = { EACCES, EINVAL, ENAMETOOLONG, ENOENT,
+							ENOTDIR, ELOOP, 0 };
 
 int main(int ac, char **av)
 {
 	int i, lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		tst_count = 0;
@@ -117,7 +125,7 @@ void setup(void)
 	struct passwd *ltpuser;
 	int i;
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -166,6 +174,8 @@ void readlink_verify(struct test_case_t *tc)
 		return;
 	}
 
+	TEST_ERROR_LOG(TEST_ERRNO);
+
 	if (TEST_ERRNO == tc->exp_errno) {
 		tst_resm(TPASS | TTERRNO, "readlink() failed as expected");
 	} else {
@@ -184,6 +194,8 @@ void cleanup(void)
 {
 	if (seteuid(0) == -1)
 		tst_resm(TWARN | TERRNO, "seteuid(0) failed");
+
+	TEST_CLEANUP;
 
 	tst_rmdir();
 }

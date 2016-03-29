@@ -46,6 +46,7 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include "test.h"
+#include "usctest.h"
 #include <fcntl.h>
 #include "safe_macros.h"
 
@@ -53,9 +54,11 @@ char *TCID = "chroot03";
 
 static int fd;
 static char fname[255];
-static char nonexistent_dir[100] = "testdir";
+static char good_dir[100] = "/tmp/testdir";
 static char bad_dir[] = "abcdefghijklmnopqrstmnopqrstuvwxyzabcdefghijklmnopqrstmnopqrstuvwxyzabcdefghijklmnopqrstmnopqrstuvwxyzabcdefghijklmnopqrstmnopqrstuvwxyzabcdefghijklmnopqrstmnopqrstuvwxyzabcdefghijklmnopqrstmnopqrstuvwxyzabcdefghijklmnopqrstmnopqrstuvwxyzabcdefghijklmnopqrstmnopqrstuvwxyz";
 static char symbolic_dir[] = "sym_dir1";
+
+static int exp_enos[] = { ENAMETOOLONG, ENOENT, ENOTDIR, EFAULT, ELOOP, 0 };
 
 struct test_case_t {
 	char *dir;
@@ -78,7 +81,7 @@ struct test_case_t {
 	     * does not exist.
 	     */
 	{
-	nonexistent_dir, ENOENT},
+	good_dir, ENOENT},
 #if !defined(UCLINUX)
 	    /*
 	     * attempt to chroot to a path pointing to an invalid address
@@ -101,10 +104,15 @@ int main(int ac, char **av)
 {
 	int lc;
 	int i;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		tst_count = 0;
@@ -147,6 +155,12 @@ static void setup(void)
 	if (fd == -1)
 		tst_brkm(TBROK, cleanup, "Failed to creat a temp file");
 
+	/*
+	 * set up good_dir to test whether chroot() is setting ENOENT if the
+	 * directory does not exist.
+	 */
+	(void)sprintf(good_dir, "%s.%d", good_dir, getpid());
+
 #if !defined(UCLINUX)
 	bad_addr = mmap(0, 1, PROT_NONE,
 			MAP_PRIVATE_EXCEPT_UCLINUX | MAP_ANONYMOUS, 0, 0);
@@ -166,5 +180,6 @@ static void setup(void)
 static void cleanup(void)
 {
 	close(fd);
+	TEST_CLEANUP;
 	tst_rmdir();
 }

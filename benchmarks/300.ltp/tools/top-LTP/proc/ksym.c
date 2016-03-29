@@ -289,7 +289,8 @@ open_again:
 	close(fd);
 	return;
 hell:
-	free(buf);
+	if (buf)
+		free(buf);
 	*bufp = NULL;
 	*roomp = 0;		/* this function will never work again */
 	total = 0;

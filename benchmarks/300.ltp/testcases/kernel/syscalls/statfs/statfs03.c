@@ -54,11 +54,14 @@
 #include <errno.h>
 #include <stdio.h>
 #include "test.h"
+#include "usctest.h"
 #include <pwd.h>
 
 char *TCID = "statfs03";
 int TST_TOTAL = 1;
 int fileHandle = 0;
+
+int exp_enos[] = { EACCES, 0 };
 
 char nobody_uid[] = "nobody";
 struct passwd *ltpuser;
@@ -73,10 +76,15 @@ void cleanup(void);
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+	/* set up the expected errnos */
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -89,6 +97,8 @@ int main(int ac, char **av)
 
 		} else {
 
+			TEST_ERROR_LOG(TEST_ERRNO);
+
 			if (TEST_ERRNO == EACCES) {
 				tst_resm(TPASS, "expected failure - "
 					 "errno = %d : %s", TEST_ERRNO,
@@ -96,7 +106,7 @@ int main(int ac, char **av)
 			} else {
 				tst_resm(TFAIL, "unexpected error - %d : %s - "
 					 "expected %d", TEST_ERRNO,
-					 strerror(TEST_ERRNO), EACCES);
+					 strerror(TEST_ERRNO), exp_enos[0]);
 			}
 		}
 	}
@@ -111,7 +121,7 @@ int main(int ac, char **av)
 void setup(void)
 {
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -159,6 +169,8 @@ void cleanup(void)
 	 * print errno log if that option was specified.
 	 */
 	close(fileHandle);
+
+	TEST_CLEANUP;
 
 	/* delete the test directory created in setup() */
 	tst_rmdir();

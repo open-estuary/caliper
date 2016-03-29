@@ -73,6 +73,7 @@
 #include <string.h>
 
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "open11";
 
@@ -331,8 +332,11 @@ int main(int argc, char *argv[])
 	int i;
 	int fd;
 	int ret;
+	const char *msg;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, tst_exit, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -366,7 +370,7 @@ static void setup(void)
 	int fd;
 	int ret;
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_tmpdir();
 
@@ -416,5 +420,6 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 	tst_rmdir();
 }

@@ -38,6 +38,7 @@
 #include <sys/file.h>
 #include <sys/wait.h>
 #include "test.h"
+#include "usctest.h"
 
 #define FILE_NAME "flock03"
 
@@ -56,14 +57,18 @@ static void childfunc_uc(void)
 char *TCID = "flock03";
 int TST_TOTAL = 3;
 
+static struct tst_checkpoint checkpoint;
+
 int main(int argc, char **argv)
 {
 	int lc;
+	const char *msg;
 	pid_t pid;
 	int status;
 	int fd;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 #ifdef UCLINUX
 	maybe_run_child(&childfunc_uc, "ds", &fd_uc, FILE_NAME);
@@ -77,18 +82,19 @@ int main(int argc, char **argv)
 		fd = open(FILE_NAME, O_RDWR);
 
 		if (fd == -1)
-			tst_brkm(TFAIL | TERRNO, cleanup,
-				 "parent failed to open the file");
+			tst_brkm(TFAIL, cleanup, "parent failed to open the"
+				 "file, errno %d", errno);
 
 		pid = FORK_OR_VFORK();
 
 		if (pid == -1)
-			tst_brkm(TFAIL | TERRNO, cleanup, "fork() failed");
+			tst_brkm(TFAIL, cleanup, "fork() failed, errno %d",
+				 errno);
 		if (pid == 0) {
 #ifdef UCLINUX
 			if (self_exec(argv[0], "ds", fd, FILE_NAME) < 0)
-				tst_brkm(TFAIL | TERRNO, cleanup,
-					 "self_exec failed");
+				tst_brkm(TFAIL, cleanup, "self_exec failed, "
+					 "errno &d", errno);
 #else
 			childfunc(fd);
 #endif
@@ -97,13 +103,14 @@ int main(int argc, char **argv)
 		TEST(flock(fd, LOCK_EX | LOCK_NB));
 
 		if (TEST_RETURN != 0)
-			tst_resm(TFAIL | TTERRNO,
-				 "Parent: Initial attempt to flock() failed");
+			tst_resm(TFAIL,
+				 "Parent: Initial attempt to flock() failed, "
+				 "errno %d", TEST_ERRNO);
 		else
 			tst_resm(TPASS,
 				 "Parent: Initial attempt to flock() passed");
 
-		TST_SAFE_CHECKPOINT_WAKE(cleanup, 0);
+		TST_CHECKPOINT_SIGNAL_CHILD(cleanup, &checkpoint);
 
 		if ((waitpid(pid, &status, 0)) < 0) {
 			tst_resm(TFAIL, "wait() failed");
@@ -126,7 +133,7 @@ static void childfunc(int fd)
 {
 	int fd2;
 
-	TST_SAFE_CHECKPOINT_WAIT(NULL, 0);
+	TST_CHECKPOINT_CHILD_WAIT(&checkpoint);
 
 	fd2 = open(FILE_NAME, O_RDWR);
 
@@ -179,11 +186,12 @@ static void setup(void)
 
 	tst_tmpdir();
 
-	TST_CHECKPOINT_INIT(tst_rmdir);
+	TST_CHECKPOINT_CREATE(&checkpoint);
 
 	fd = creat(FILE_NAME, 0666);
 	if (fd < 0) {
 		tst_resm(TBROK, "creating a new file failed");
+		TEST_CLEANUP;
 		cleanup();
 	}
 	close(fd);
@@ -191,5 +199,7 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	tst_rmdir();
 }

@@ -53,7 +53,7 @@ def get_cases_union(file_lists, subItem, subPoint, category=1):
     results = yaml.load(fp)
     fp.close()
     try:
-        test_results = results[utils.RESULT][classify]
+        test_results = results[utils.RESUlt][classify]
         test_points = test_results[subItem].keys()
         test_points = [x for x in test_points if x != utils.TOTAL_SCORE]
         test_cases = test_results[subItem][subPoint][utils.POINT_SCORE].keys()

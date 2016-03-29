@@ -36,6 +36,7 @@
 #include <sys/resource.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 #define NUM 3
@@ -53,6 +54,7 @@ int main(int argc, char *argv[])
 	register int i;
 	int status, count, child, kidpid;
 	int sig, ex;
+	const char *msg;
 
 #ifdef WCOREDUMP
 	int core;
@@ -60,7 +62,9 @@ int main(int argc, char *argv[])
 #endif
 	ex = sig = 0;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 #ifdef UCLINUX
 	maybe_run_child(&do_child, "");
 #endif

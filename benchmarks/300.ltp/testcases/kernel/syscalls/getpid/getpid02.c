@@ -71,6 +71,7 @@
 #include <sys/wait.h>
 
 #include "test.h"
+#include "usctest.h"
 
 void setup();			/* Main setup function of test */
 void cleanup();			/* cleanup function for the test */
@@ -81,12 +82,14 @@ int TST_TOTAL = 1;
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	pid_t proc_id;		/* process id of the test process */
 	pid_t pid;		/* process id of the child process */
 	pid_t pproc_id;		/* parent process id */
 	int status;		/* exit status of child process */
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -134,4 +137,5 @@ void setup(void)
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
 }

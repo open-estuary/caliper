@@ -59,6 +59,10 @@
 char *TCID = "shmget02";
 int TST_TOTAL = 4;
 
+int exp_enos[] = { ENOENT, EEXIST, EINVAL, 0 };	/* 0 terminated list of */
+
+						/* expected errnos      */
+
 int shm_id_1 = -1;
 int shm_nonexisting_key = -1;
 key_t shmkey2;
@@ -89,9 +93,11 @@ struct test_case_t {
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int i;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();		/* global setup */
 
@@ -113,6 +119,8 @@ int main(int ac, char **av)
 				tst_resm(TFAIL, "call succeeded unexpectedly");
 				continue;
 			}
+
+			TEST_ERROR_LOG(TEST_ERRNO);
 
 			if (TEST_ERRNO == TC[i].error) {
 				tst_resm(TPASS, "expected failure - errno = "
@@ -138,6 +146,9 @@ void setup(void)
 {
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
+
+	/* Set up the expected error numbers for -e option */
+	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 
@@ -180,5 +191,11 @@ void cleanup(void)
 	rm_shm(shm_id_1);
 
 	tst_rmdir();
+
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }

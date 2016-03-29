@@ -51,6 +51,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 #define TEST_FILE "testfile"
@@ -94,6 +95,7 @@ static void (*test_func[])(void) = {
 
 char *TCID = "madvise02";
 int TST_TOTAL = ARRAY_SIZE(test_func);
+static int exp_enos[] = { EINVAL, ENOMEM, EBADF, 0 };
 
 static int fd;
 static struct stat st;
@@ -103,10 +105,15 @@ int main(int argc, char *argv[])
 {
 	int lc;
 	int i;
+	const char *msg = NULL;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		tst_count = 0;
@@ -142,6 +149,8 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	if (fd && close(fd) < 0)
 		tst_resm(TWARN | TERRNO, "close failed");
 

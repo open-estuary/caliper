@@ -31,6 +31,7 @@
 #include <sys/mman.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 #define TEST_SYMLINK	"statvfs_symlink"
@@ -56,13 +57,17 @@ static struct test_case_t {
 };
 
 int TST_TOTAL = ARRAY_SIZE(test_cases);
+static int exp_enos[] = { EFAULT, ELOOP, ENAMETOOLONG, ENOENT, ENOTDIR, 0 };
 static void statvfs_verify(const struct test_case_t *);
 
 int main(int argc, char **argv)
 {
 	int i, lc;
+	const char *msg;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -79,6 +84,8 @@ int main(int argc, char **argv)
 static void setup(void)
 {
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
+
+	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 
@@ -115,5 +122,7 @@ static void statvfs_verify(const struct test_case_t *test)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	tst_rmdir();
 }

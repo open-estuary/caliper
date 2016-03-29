@@ -39,6 +39,7 @@
 #include <fcntl.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 #include "lapi/splice.h"
 
@@ -47,6 +48,7 @@ int TST_TOTAL = 1;
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 	tst_rmdir();
 }
 

@@ -39,6 +39,7 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include "test.h"
+#include "usctest.h"
 
 #define mapsize (1 << 14)
 
@@ -64,8 +65,10 @@ int main(int argc, char **argv)
 {
 	int lc;
 	int i;
+	const char *msg;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -75,6 +78,7 @@ int main(int argc, char **argv)
 			TEST(ftruncate(fd, TC[i].newsize));
 
 			if (TEST_RETURN == -1) {
+				TEST_ERROR_LOG(TEST_ERRNO);
 				tst_resm(TFAIL | TTERRNO, "%s", TC[i].desc);
 			} else {
 				tst_resm(TPASS, "%s", TC[i].desc);
@@ -113,6 +117,7 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 	munmap(maddr, mapsize);
 	close(fd);
 	tst_rmdir();

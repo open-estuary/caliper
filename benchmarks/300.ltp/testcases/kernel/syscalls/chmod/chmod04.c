@@ -80,6 +80,7 @@
 #include <pwd.h>
 
 #include "test.h"
+#include "usctest.h"
 
 #define DIR_MODE 	S_IRWXU | S_IRWXG | S_IRWXO
 #define PERMS		01777	/*
@@ -100,9 +101,11 @@ int main(int ac, char **av)
 {
 	struct stat stat_buf;	/* stat struct. */
 	int lc;
+	const char *msg;
 	mode_t dir_mode;	/* mode permissions set on testdirectory */
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -160,7 +163,7 @@ void setup(void)
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
-	tst_require_root();
+	tst_require_root(NULL);
 	ltpuser = getpwnam(nobody_uid);
 	if (setuid(ltpuser->pw_uid) == -1)
 		tst_resm(TINFO | TERRNO, "setuid(%u) failed", ltpuser->pw_uid);
@@ -186,6 +189,10 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	tst_rmdir();
 

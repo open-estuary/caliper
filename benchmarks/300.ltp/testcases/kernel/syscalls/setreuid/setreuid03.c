@@ -28,6 +28,7 @@
 #include <stdlib.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "compat_16.h"
 
 #define FAILED  1
@@ -83,7 +84,7 @@ static struct test_data_t {
 	&nobody.pw_uid, &bin.pw_uid, &fail, &nobody, &nobody,
 		    "After setreuid(nobody, bin),"},};
 
-int TST_TOTAL = ARRAY_SIZE(test_data);
+int TST_TOTAL = sizeof(test_data) / sizeof(test_data[0]);
 
 static void setup(void);
 static void cleanup(void);
@@ -92,8 +93,10 @@ static void uid_verify(struct passwd *, struct passwd *, char *);
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -137,6 +140,7 @@ int main(int ac, char **av)
 			}
 
 			if (TEST_RETURN == -1) {
+				TEST_ERROR_LOG(TEST_ERRNO);
 			}
 			uid_verify(test_data[i].exp_real_usr,
 				   test_data[i].exp_eff_usr,
@@ -150,7 +154,7 @@ int main(int ac, char **av)
 
 static void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
@@ -177,6 +181,7 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 }
 
 static void uid_verify(struct passwd *ru, struct passwd *eu, char *when)

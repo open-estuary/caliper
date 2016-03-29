@@ -47,9 +47,12 @@
 #include <errno.h>
 #include <setjmp.h>
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "pipe05";
 int TST_TOTAL = 1;
+
+int exp_enos[] = { EFAULT, 0 };
 
 intptr_t pipes;
 void setup(void);
@@ -60,11 +63,15 @@ void sig11_handler(int sig);
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	struct sigaction sa, osa;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -89,6 +96,8 @@ int main(int ac, char **av)
 		if (TEST_RETURN != -1) {
 			tst_resm(TFAIL, "call succeeded unexpectedly");
 		}
+
+		TEST_ERROR_LOG(TEST_ERRNO);
 
 		if (TEST_ERRNO != EFAULT) {
 			tst_resm(TFAIL, "unexpected error - %d : %s - "
@@ -131,4 +140,9 @@ void sig11_handler(int sig)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 }

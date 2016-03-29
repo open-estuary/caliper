@@ -67,9 +67,11 @@ int msg_q_1 = -1;		/* to hold the message queue ID */
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	void check_functionality(void);
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();		/* global setup */
 
@@ -182,5 +184,11 @@ void cleanup(void)
 	rm_queue(msg_q_1);
 
 	tst_rmdir();
+
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }

@@ -27,13 +27,9 @@ test_name="$PWD/sysbench-0.5/sysbench/tests/db/oltp.lua"
 echo "max_requests are $max_requests"
 sudo apt-get install libtool autoconf automake -y
 
-#exists=$(ps -aux | grep 'mysqld')
-mysql_version=$(mysql --version | awk '{ print $1"-" $2 ": " $3}')
-exists=$(echo $mysql_version|awk -F":" '{print $1}')
-if [ "$exists"x = "mysql-Ver"x ]; then
-    echo "Found  $mysql_version  installed"
-else
-    echo "The mysql server has not been installed,Please install mysql,Refe caliper documentation"
+exists=$(ps -aux | grep 'mysqld')
+if [ "$exists"x = ""x ]; then
+    echo 'The mysql server has not been installed'
     exit 1
 fi
 

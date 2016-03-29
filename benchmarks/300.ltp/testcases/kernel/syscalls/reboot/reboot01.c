@@ -72,6 +72,7 @@
 #include <unistd.h>
 #include <sys/reboot.h>
 #include "test.h"
+#include "usctest.h"
 #include <errno.h>
 #include <linux/reboot.h>
 
@@ -91,8 +92,10 @@ int main(int ac, char **av)
 {
 
 	int lc, i;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -105,6 +108,7 @@ int main(int ac, char **av)
 			TEST(reboot(flag[i]));
 			/* check return code */
 			if (TEST_RETURN == -1) {
+				TEST_ERROR_LOG(TEST_ERRNO);
 				tst_resm(TFAIL, "reboot(2) Failed for "
 					 "option %s", option_message[i]);
 			} else {
@@ -123,7 +127,7 @@ int main(int ac, char **av)
 /* setup() - performs all ONE TIME setup for this test */
 void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -138,5 +142,10 @@ void setup(void)
 
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }

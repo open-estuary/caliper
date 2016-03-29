@@ -25,6 +25,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "test.h"
+#include "usctest.h"
 
 static void setup(void);
 static void cleanup(void);
@@ -42,8 +43,10 @@ static const char *device;
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -53,18 +56,13 @@ int main(int ac, char **av)
 		TEST(mount(device, mntpoint, fs_type, 0, NULL));
 
 		if (TEST_RETURN != 0) {
+			TEST_ERROR_LOG(TEST_ERRNO);
 			tst_brkm(TBROK, cleanup, "mount(2) Failed errno = %d :"
 				 "%s ", TEST_ERRNO, strerror(TEST_ERRNO));
 		} else {
 			TEST(umount(mntpoint));
-
-			if (TEST_RETURN != 0 && TEST_ERRNO == EBUSY) {
-				tst_resm(TINFO, "umount() failed with EBUSY "
-				         "possibly some daemon (gvfsd-trash) "
-				         "is probing newly mounted dirs");
-			}
-
 			if (TEST_RETURN != 0) {
+				TEST_ERROR_LOG(TEST_ERRNO);
 				tst_brkm(TFAIL, NULL, "umount(2) Failed while "
 					 " unmounting %s errno = %d : %s",
 					 mntpoint, TEST_ERRNO,
@@ -83,7 +81,7 @@ static void setup(void)
 {
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_tmpdir();
 
@@ -106,6 +104,8 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	if (device)
 		tst_release_device(NULL, device);
 

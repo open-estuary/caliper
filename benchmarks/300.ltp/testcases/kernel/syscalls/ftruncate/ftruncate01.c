@@ -75,6 +75,7 @@
 #include <inttypes.h>
 
 #include "test.h"
+#include "usctest.h"
 
 #define TESTFILE	"testfile"	/* file under test */
 #define FILE_MODE	S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
@@ -93,9 +94,14 @@ int main(int ac, char **av)
 {
 	struct stat stat_buf;	/* stat(2) struct contents */
 	int lc;
+	const char *msg;
 	off_t file_length;	/* test file length */
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+
+	}
 
 	setup();
 
@@ -196,6 +202,10 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	/* Close the testfile after writing data into it */
 	if (close(fildes) == -1)

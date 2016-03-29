@@ -73,12 +73,15 @@
 #include <sys/mman.h>
 #include <pwd.h>
 #include "test.h"
+#include "usctest.h"
 
 void setup();
 void cleanup();
 
 char *TCID = "munlock02";
 int TST_TOTAL = 1;
+
+int exp_enos[] = { ENOMEM, 0 };
 
 #define LEN	1024
 
@@ -98,8 +101,11 @@ NULL, 0, ENOMEM, "address range out of address space"},};
 int main(int ac, char **av)
 {
 	int lc, i;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	setup();
 
@@ -115,6 +121,7 @@ int main(int ac, char **av)
 
 			/* check return code */
 			if (TEST_RETURN == -1) {
+				TEST_ERROR_LOG(TEST_ERRNO);
 				if (TEST_ERRNO != TC[i].error)
 					tst_brkm(TFAIL, cleanup,
 						 "munlock() Failed with wrong "
@@ -151,6 +158,9 @@ void setup(void)
 	char *address;
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
+
+	/* set the expected errnos... */
+	TEST_EXP_ENOS(exp_enos);
 
 	TC[0].len = 8 * getpagesize();
 	address = mmap(0, TC[0].len, PROT_READ | PROT_WRITE,
@@ -194,5 +204,7 @@ int main(void)
  */
 void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	return;
 }

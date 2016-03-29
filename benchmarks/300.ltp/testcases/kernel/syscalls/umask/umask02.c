@@ -51,6 +51,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "umask02";
 int TST_TOTAL = 1;
@@ -61,11 +62,14 @@ void cleanup(void);
 int main(int argc, char **argv)
 {
 	int lc;
+	const char *msg;
 
 	int uret = 0, i, mskval = 0000;
 	int failcnt = 0;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	setup();
 
@@ -114,5 +118,10 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }

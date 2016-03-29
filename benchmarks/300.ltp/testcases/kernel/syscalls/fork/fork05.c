@@ -105,6 +105,7 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "fork05";
 

@@ -32,6 +32,7 @@
 #include <time.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "lapi/posix_clocks.h"
 #include "safe_macros.h"
 #include "safe_stdio.h"
@@ -66,13 +67,15 @@ static void cleanup(void)
 
 	if (governor[0] != '\0')
 		FILE_PRINTF(governor, "%s", governor_name);
+
+	TEST_CLEANUP;
 }
 
 static void setup(void)
 {
 	int fd;
 	unsigned int i;
-	tst_require_root();
+	tst_require_root(NULL);
 
 	for (i = 0; i < ARRAY_SIZE(cdrv); ++i) {
 		fd = open(cdrv[i].file, O_RDWR);
@@ -149,12 +152,12 @@ static void test_run(void)
 
 	/* Enable boost */
 	if (boost_value == cdrv[id].off)
-		SAFE_FILE_PRINTF(cleanup, cdrv[id].file, "%s", cdrv[id].on_str);
+		SAFE_FILE_PRINTF(cleanup, cdrv[id].file, cdrv[id].on_str);
 	tst_resm(TINFO, "load CPU0 with boost enabled");
 	boost_time = load_cpu(max_freq_khz);
 
 	/* Disable boost */
-	SAFE_FILE_PRINTF(cleanup, cdrv[id].file, "%s", cdrv[id].off_str);
+	SAFE_FILE_PRINTF(cleanup, cdrv[id].file, cdrv[id].off_str);
 	tst_resm(TINFO, "load CPU0 with boost disabled");
 	boost_off_time = load_cpu(max_freq_khz);
 
@@ -166,7 +169,10 @@ static void test_run(void)
 
 int main(int argc, char *argv[])
 {
-	tst_parse_opts(argc, argv, NULL, NULL);
+	const char *msg;
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 

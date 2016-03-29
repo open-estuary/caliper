@@ -42,7 +42,9 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
+#include "usctest.h"
 #include "test.h"
+#define CLEANUP cleanup
 #include "libclone.h"
 #include "pidns_helper.h"
 
@@ -74,7 +76,7 @@ int child_fn(void *arg)
 	exit_val = 0;
 
 	/* Spawn many children */
-	for (i = 0; i < ARRAY_SIZE(children); i++) {
+	for (i = 0; i < (sizeof(children) / sizeof(children[0])); i++) {
 		switch ((children[i] = fork())) {
 		case -1:
 			perror("fork failed");
@@ -98,7 +100,7 @@ int child_fn(void *arg)
 		exit_val = 1;
 	}
 
-	for (i = 0; i < ARRAY_SIZE(children); i++) {
+	for (i = 0; i < (sizeof(children) / sizeof(children[0])); i++) {
 		if (waitpid(children[i], &status, 0) == -1) {
 			perror("cinit: waitpid failed");
 			kill(children[i], SIGTERM);
@@ -129,7 +131,7 @@ int child_fn(void *arg)
 
 static void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 	check_newpid();
 }
 
@@ -145,7 +147,7 @@ int main(int argc, char *argv[])
 	/* Container creation on PID namespace */
 	TEST(do_clone_unshare_test(T_CLONE, CLONE_NEWPID, child_fn, NULL));
 	if (TEST_RETURN == -1) {
-		tst_brkm(TBROK | TERRNO, NULL, "clone failed");
+		tst_brkm(TBROK | TERRNO, CLEANUP, "clone failed");
 	}
 
 	sleep(1);
@@ -159,6 +161,17 @@ int main(int argc, char *argv[])
 			 "container was signaled with signal = %d",
 			 WTERMSIG(status));
 
+	CLEANUP();
 	tst_exit();
 
+}
+
+/*
+ * cleanup() - performs all ONE TIME cleanup for this test at
+ *             completion or premature exit.
+ */
+void cleanup()
+{
+	/* Clean the test testcase as LTP wants */
+	TEST_CLEANUP;
 }

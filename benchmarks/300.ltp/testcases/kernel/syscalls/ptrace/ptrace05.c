@@ -38,6 +38,7 @@
 #include "ptrace.h"
 
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "ptrace05";
 int TST_TOTAL = 0;

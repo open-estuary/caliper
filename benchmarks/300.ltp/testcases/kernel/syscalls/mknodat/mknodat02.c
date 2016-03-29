@@ -37,6 +37,7 @@
 #include <sys/mount.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 #include "lapi/fcntl.h"
 #include "mknodat.h"
@@ -55,14 +56,14 @@ static void cleanup(void);
 static const char *device;
 static int mount_flag;
 
-static int dir_fd;
+static int dirfd;
 static int curfd = AT_FDCWD;
 
 #define ELOPFILE	"/test_eloop"
 static char elooppathname[sizeof(ELOPFILE) * 43] = ".";
 
 static struct test_case_t {
-	int *dir_fd;
+	int *dirfd;
 	char *pathname;
 	mode_t mode;
 	int exp_errno;
@@ -70,9 +71,9 @@ static struct test_case_t {
 	{ &curfd, "tnode1", FIFOMODE, 0 },
 	{ &curfd, "tnode2", FREGMODE, 0 },
 	{ &curfd, "tnode3", SOCKMODE, 0 },
-	{ &dir_fd, "tnode4", FIFOMODE, EROFS },
-	{ &dir_fd, "tnode5", FREGMODE, EROFS },
-	{ &dir_fd, "tnode6", SOCKMODE, EROFS },
+	{ &dirfd, "tnode4", FIFOMODE, EROFS },
+	{ &dirfd, "tnode5", FREGMODE, EROFS },
+	{ &dirfd, "tnode6", SOCKMODE, EROFS },
 	{ &curfd, elooppathname, FIFOMODE, ELOOP },
 	{ &curfd, elooppathname, FREGMODE, ELOOP },
 	{ &curfd, elooppathname, SOCKMODE, ELOOP },
@@ -82,12 +83,16 @@ static void mknodat_verify(struct test_case_t *tc);
 
 char *TCID = "mknodat";
 int TST_TOTAL = ARRAY_SIZE(test_cases);
+static int exp_enos[] = { EROFS, ELOOP, 0 };
 
 int main(int ac, char **av)
 {
 	int lc, i;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -112,9 +117,11 @@ static void setup(void)
 			 "that are 2.6.16 and higher");
 	}
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
+
+	TEST_EXP_ENOS(exp_enos);
 
 	tst_tmpdir();
 
@@ -137,7 +144,7 @@ static void setup(void)
 			 "mount device:%s failed", device);
 	}
 	mount_flag = 1;
-	dir_fd = SAFE_OPEN(cleanup, MNT_POINT, O_DIRECTORY);
+	dirfd = SAFE_OPEN(cleanup, MNT_POINT, O_DIRECTORY);
 
 	/*
 	 * NOTE: the ELOOP test is written based on that the consecutive
@@ -151,7 +158,7 @@ static void setup(void)
 
 static void mknodat_verify(struct test_case_t *tc)
 {
-	int fd = *(tc->dir_fd);
+	int fd = *(tc->dirfd);
 	char *pathname = tc->pathname;
 	mode_t mode = tc->mode;
 
@@ -176,9 +183,11 @@ static void mknodat_verify(struct test_case_t *tc)
 
 static void cleanup(void)
 {
-	if (dir_fd > 0 && close(dir_fd) < 0)
-		tst_resm(TWARN | TERRNO, "close(%d) failed", dir_fd);
-	if (mount_flag && tst_umount(MNT_POINT) < 0)
+	TEST_CLEANUP;
+
+	if (dirfd > 0 && close(dirfd) < 0)
+		tst_resm(TWARN | TERRNO, "close(%d) failed", dirfd);
+	if (mount_flag && umount(MNT_POINT) < 0)
 		tst_resm(TWARN | TERRNO, "umount device:%s failed", device);
 
 	if (device)

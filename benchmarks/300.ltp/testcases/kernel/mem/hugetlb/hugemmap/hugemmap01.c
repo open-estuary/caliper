@@ -60,7 +60,7 @@
 #include <unistd.h>
 
 #include "test.h"
-#include "hugetlb.h"
+#include "usctest.h"
 #include "safe_macros.h"
 #include "mem.h"
 
@@ -71,16 +71,19 @@ int TST_TOTAL = 1;
 static long *addr;
 static int fildes;
 static char *Hopt;
+static char *nr_opt;
 static long beforetest;
 static long aftertest;
 static long hugepagesmapped;
 static long hugepages = 128;
+static long orig_hugepages;
 
 static void help(void);
 
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int Hflag = 0;
 	long page_sz = 0;
 	int sflag = 0;
@@ -91,7 +94,10 @@ int main(int ac, char **av)
 		{NULL, NULL, NULL}
 	};
 
-	tst_parse_opts(ac, av, options, &help);
+	msg = parse_opts(ac, av, options, &help);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s,"
+			 "use -help", msg);
 
 	if (!Hflag) {
 		tst_tmpdir();
@@ -157,8 +163,7 @@ int main(int ac, char **av)
 void setup(void)
 {
 	TEST_PAUSE;
-	tst_require_root();
-	check_hugepage();
+	tst_require_root(NULL);
 	if (mount("none", Hopt, "hugetlbfs", 0, NULL) < 0)
 		tst_brkm(TBROK | TERRNO, NULL, "mount failed on %s", Hopt);
 
@@ -169,6 +174,8 @@ void setup(void)
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	unlink(TEMPFILE);
 	set_sys_tune("nr_hugepages", orig_hugepages, 0);
 

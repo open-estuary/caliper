@@ -45,7 +45,7 @@
  *
  */
 
-static int create_Result_file(void)
+int create_Result_file()
 {
 
 	int i, nbVal, tabInpi[20000];
@@ -100,7 +100,7 @@ static int create_Result_file(void)
  *	the format of the data is double x   int y
  */
 
-static int create_Data_file(void)
+int create_Data_file()
 {
 	int i, nbVal;
 	double tabDD[20000], tabDI[20000], Inc;

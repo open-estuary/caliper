@@ -48,6 +48,7 @@
 #include <wait.h>
 #include <string.h>
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "pipe10";
 int TST_TOTAL = 1;
@@ -69,6 +70,7 @@ ssize_t safe_read(int fd, void *buf, size_t count)
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
 	int fd[2];		/* fds for pipe read/write */
 	char wrbuf[BUFSIZ], rebuf[BUFSIZ];
@@ -77,7 +79,8 @@ int main(int ac, char **av)
 	int length, greater, forkstat;
 	int retval = 0, status, e_code;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -161,4 +164,9 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 }

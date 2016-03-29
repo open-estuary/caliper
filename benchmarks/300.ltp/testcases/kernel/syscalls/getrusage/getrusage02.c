@@ -71,6 +71,7 @@
 #include <sched.h>
 #include <sys/resource.h>
 #include "test.h"
+#include "usctest.h"
 
 #ifndef RUSAGE_BOTH		/* Removed from user space on RHEL4 */
 #define RUSAGE_BOTH (-2)	/* still works on SuSE      */
@@ -78,6 +79,7 @@
 
 static void setup();
 static void cleanup();
+static int exp_enos[] = { EINVAL, EFAULT, 0 };
 
 char *TCID = "getrusage02";
 
@@ -102,8 +104,10 @@ int main(int ac, char **av)
 {
 
 	int lc, i;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -135,11 +139,15 @@ void setup(void)
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
+	TEST_EXP_ENOS(exp_enos);
+
 	TEST_PAUSE;
 
 }
 
 void cleanup(void)
 {
+
+	TEST_CLEANUP;
 
 }

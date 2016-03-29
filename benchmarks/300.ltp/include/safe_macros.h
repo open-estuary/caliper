@@ -21,15 +21,12 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
-#include <sys/ioctl.h>
 #include <fcntl.h>
 #include <libgen.h>
 #include <stdarg.h>
 #include <unistd.h>
-#include <dirent.h>
 
 #include "safe_stdio.h"
-#include "safe_net.h"
 
 char*	safe_basename(const char *file, const int lineno,
 	    void (*cleanup_fn)(void), char *path);
@@ -47,7 +44,7 @@ int	safe_close(const char *file, const int lineno,
 	safe_close(__FILE__, __LINE__, (cleanup_fn), (fildes))
 
 int	safe_creat(const char *file, const int lineno,
-	    void (*cleanup_fn)(void), const char *pathname, mode_t mode);
+	    void (*cleanup_fn)(void), char *pathname, mode_t mode);
 #define SAFE_CREAT(cleanup_fn, pathname, mode)	\
 	safe_creat(__FILE__, __LINE__, cleanup_fn, (pathname), (mode))
 
@@ -110,12 +107,6 @@ ssize_t	safe_read(const char *file, const int lineno,
 	safe_read(__FILE__, __LINE__, cleanup_fn, (len_strict), (fildes), \
 	    (buf), (nbyte))
 
-ssize_t safe_pread(const char *file, const int lineno, void (*cleanup_fn)(void),
-	    char len_strict, int fildes, void *buf, size_t nbyte, off_t offset);
-#define SAFE_PREAD(cleanup_fn, len_strict, fildes, buf, nbyte, offset)   \
-	safe_pread(__FILE__, __LINE__, cleanup_fn, (len_strict), (fildes), \
-	    (buf), (nbyte), (offset))
-
 int	safe_setegid(const char *file, const int lineno,
 	    void (*cleanup_fn)(void), gid_t egid);
 #define SAFE_SETEGID(cleanup_fn, egid)	\
@@ -169,13 +160,6 @@ ssize_t	safe_write(const char *file, const int lineno,
 #define SAFE_WRITE(cleanup_fn, len_strict, fildes, buf, nbyte)	\
 	safe_write(__FILE__, __LINE__, cleanup_fn, (len_strict), (fildes), \
 	    (buf), (nbyte))
-
-ssize_t safe_pwrite(const char *file, const int lineno, void (cleanup_fn)(void),
-	    char len_strict, int fildes, const void *buf, size_t nbyte,
-	    off_t offset);
-#define SAFE_PWRITE(cleanup_fn, len_strict, fildes, buf, nbyte, offset) \
-	safe_pwrite(__FILE__, __LINE__, cleanup_fn, (len_strict), (fildes), \
-	    (buf), (nbyte), (offset))
 
 long safe_strtol(const char *file, const int lineno,
 	    void (cleanup_fn)(void), char *str, long min, long max);
@@ -312,7 +296,7 @@ static inline int safe_truncate(const char *file, const int lineno,
 
 	return rval;
 }
-#define SAFE_TRUNCATE(cleanup_fn, path, length) \
+#define SAFE_TRUNCATE(cleanup_fn, fd, length) \
 	safe_truncate(__FILE__, __LINE__, cleanup_fn, (path), (length))
 
 static inline int safe_stat(const char *file, const int lineno,
@@ -419,29 +403,6 @@ static inline int safe_setrlimit(const char *file, const int lineno,
 }
 #define SAFE_SETRLIMIT(cleanup_fn, resource, rlim) \
 	safe_setrlimit(__FILE__, __LINE__, (cleanup_fn), (resource), (rlim))
-
-DIR* safe_opendir(const char *file, const int lineno, void (cleanup_fn)(void),
-                  const char *name);
-#define SAFE_OPENDIR(cleanup_fn, name) \
-	safe_opendir(__FILE__, __LINE__, (cleanup_fn), (name))
-
-int safe_closedir(const char *file, const int lineno, void (cleanup_fn)(void),
-                  DIR *dirp);
-#define SAFE_CLOSEDIR(cleanup_fn, dirp) \
-	safe_closedir(__FILE__, __LINE__, (cleanup_fn), (dirp))
-
-struct dirent *safe_readdir(const char *file, const int lineno, void (cleanup_fn)(void),
-                            DIR *dirp);
-#define SAFE_READDIR(cleanup_fn, dirp) \
-	safe_readdir(__FILE__, __LINE__, (cleanup_fn), (dirp))
-
-
-#define SAFE_IOCTL(cleanup_fn, fd, request, ...)             \
-	({int ret = ioctl(fd, request, __VA_ARGS__);         \
-	  ret < 0 ?                                          \
-	   tst_brkm(TBROK | TERRNO, cleanup_fn,              \
-	            "ioctl(%i,%s,...) failed", fd, #request) \
-	 : ret;})
 
 #endif /* __SAFE_MACROS_H__ */
 #endif /* __TEST_H__ */

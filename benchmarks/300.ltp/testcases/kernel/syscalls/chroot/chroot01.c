@@ -47,6 +47,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include "test.h"
+#include "usctest.h"
 #include <pwd.h>
 
 char *TCID = "chroot01";
@@ -54,6 +55,7 @@ int TST_TOTAL = 1;
 int fail;
 
 char path[] = "/tmp";
+int exp_enos[] = { EPERM, 0 };
 
 char nobody_uid[] = "nobody";
 struct passwd *ltpuser;
@@ -64,10 +66,14 @@ void cleanup(void);
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -90,7 +96,7 @@ int main(int ac, char **av)
 
 void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_tmpdir();
 
@@ -108,6 +114,8 @@ void setup(void)
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	if (seteuid(0) == -1)
 		tst_brkm(TBROK | TERRNO, NULL, "setuid(0) failed");
 

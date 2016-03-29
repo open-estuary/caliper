@@ -119,6 +119,7 @@
 #include <unistd.h>
 #include <sys/param.h>		/* for PATH_MAX */
 #include "test.h"
+#include "usctest.h"
 
 void setup();
 void cleanup();
@@ -127,6 +128,8 @@ extern char *get_high_address();
 
 char *TCID = "unlink07";
 int TST_TOTAL = 6;
+
+int exp_enos[] = { 0, 0 };
 
 char *bad_addr = 0;
 
@@ -170,6 +173,7 @@ struct test_case_t {
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	char *fname;
 	char *desc;
 	int ind;
@@ -177,12 +181,17 @@ int main(int ac, char **av)
     /***************************************************************
      * parse standard options
      ***************************************************************/
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
     /***************************************************************
      * perform global setup for test
      ***************************************************************/
 	setup();
+
+	/* set the expected errnos... */
+	TEST_EXP_ENOS(exp_enos);
 
     /***************************************************************
      * check looping state if -c option given
@@ -265,6 +274,12 @@ void cleanup(void)
 {
 	chmod("unwrite_dir", 0777);
 	chmod("unsearch_dir", 0777);
+
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	tst_rmdir();
 

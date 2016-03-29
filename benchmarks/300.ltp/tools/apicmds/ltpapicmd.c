@@ -133,10 +133,8 @@ void apicmd_brk(int argc, char *argv[])
 	}
 	trestype = ident_ttype((argv++)[0]);
 	file_name = (argv++)[0];
-	tst_cat_file(file_name);
 	argv++;
-	tst_brkm(trestype, NULL, "%s", *argv);
-
+	tst_brk(trestype, file_name, NULL, "%s", *argv);
 }
 
 void apicmd_res(int argc, char *argv[])
@@ -155,8 +153,7 @@ void apicmd_res(int argc, char *argv[])
 	}
 	trestype = ident_ttype((argv++)[0]);
 	file_name = (argv++)[0];
-	tst_cat_file(file_name);
-	tst_resm(trestype, "%s", *argv);
+	tst_res(trestype, file_name, "%s", *argv);
 }
 
 void apicmd_brkm(int argc, char *argv[])

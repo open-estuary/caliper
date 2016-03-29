@@ -40,6 +40,7 @@
 #include <net/if.h>
 
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "sockioctl01";
 int testno;
@@ -50,6 +51,7 @@ static struct ifconf ifc;
 static struct ifreq ifr;
 static int sinlen;
 static int optval;
+static int exp_enos[] = {EBADF, EINVAL, EFAULT, 0};
 
 static char buf[8192];
 
@@ -120,8 +122,11 @@ int TST_TOTAL = sizeof(tdat) / sizeof(tdat[0]);
 int main(int argc, char *argv[])
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -131,6 +136,7 @@ int main(int argc, char *argv[])
 			tdat[testno].setup();
 
 			TEST(ioctl(s, tdat[testno].cmd, tdat[testno].arg));
+			TEST_ERROR_LOG(TEST_ERRNO);
 			if (TEST_RETURN != tdat[testno].retval ||
 			    (TEST_RETURN < 0 &&
 			     TEST_ERRNO != tdat[testno].experrno)) {
@@ -153,6 +159,8 @@ int main(int argc, char *argv[])
 
 static void setup(void)
 {
+	TEST_EXP_ENOS(exp_enos);
+
 	TEST_PAUSE;
 
 	sin0.sin_family = AF_INET;
@@ -164,6 +172,8 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	tst_rmdir();
 }
 

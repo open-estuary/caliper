@@ -57,6 +57,7 @@
 #include <inttypes.h>
 #include <limits.h>
 #include "test.h"
+#include "usctest.h"
 #include "linux_syscall_numbers.h"
 #include "rmobj.h"
 #include "safe_macros.h"
@@ -209,6 +210,7 @@ static int mylinkat(int olddirfd, const char *oldfilename, int newdirfd,
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int i;
 
 	if ((tst_kvercmp(2, 6, 16)) < 0) {
@@ -217,7 +219,8 @@ int main(int ac, char **av)
 		exit(0);
 	}
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -339,4 +342,5 @@ void setup(void)
 static void cleanup(void)
 {
 	tst_rmdir();
+	TEST_CLEANUP;
 }

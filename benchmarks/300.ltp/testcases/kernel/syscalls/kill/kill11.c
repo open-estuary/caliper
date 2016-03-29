@@ -39,6 +39,7 @@
 #include <sys/resource.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 #define FAILED 0
@@ -162,8 +163,10 @@ int main(int argc, char **argv)
 {
 	int lc;
 	unsigned int i;
+	const char *msg;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 #ifdef UCLINUX
 	maybe_run_child(&do_child, "dd", &sig);

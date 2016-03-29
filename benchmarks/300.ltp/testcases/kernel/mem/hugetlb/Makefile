@@ -21,7 +21,7 @@ top_srcdir		?= ../../../..
 include	$(top_srcdir)/include/mk/env_pre.mk
 
 LIBDIR			:= lib
-LIB			:= $(LIBDIR)/libhugetlb.a
+LIB			:= $(LIBDIR)/libipc_hugetlb.a
 FILTER_OUT_DIRS		:= $(LIBDIR)
 
 $(LIBDIR):

@@ -21,6 +21,7 @@
 
 #include <unistd.h>
 #include "test.h"
+#include "usctest.h"
 #include <errno.h>
 #include <stdlib.h>
 #include "config.h"
@@ -39,8 +40,10 @@ static long fs_type;
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -81,7 +84,7 @@ static void setup(void)
 {
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	TEST_PAUSE;
 
@@ -110,5 +113,7 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	tst_rmdir();
 }

@@ -33,6 +33,7 @@
 #include <string.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 char *TCID = "getrusage03_child";
@@ -64,8 +65,11 @@ int main(int argc, char *argv[])
 	long maxrss_self, maxrss_children, delta;
 	long consume_nr, grand_consume_nr, self_nr, child_nr;
 	struct rusage ru;
+	const char *msg;
 
-	tst_parse_opts(argc, argv, child_options, usage);
+	msg = parse_opts(argc, argv, child_options, usage);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -164,4 +168,5 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 }

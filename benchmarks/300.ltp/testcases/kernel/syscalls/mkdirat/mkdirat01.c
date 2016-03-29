@@ -36,6 +36,7 @@
 #include <string.h>
 #include <signal.h>
 #include "test.h"
+#include "usctest.h"
 #include "lapi/mkdirat.h"
 #include "safe_macros.h"
 
@@ -44,18 +45,18 @@ static void cleanup(void);
 
 static char relpath[256];
 static char abspath[1024];
-static int dir_fd, fd;
+static int dirfd, fd;
 static int fd_invalid = 100;
 static int fd_atcwd = AT_FDCWD;
 
 static struct test_case {
-	int *dir_fd;
+	int *dirfd;
 	const char *name;
 	int exp_ret;
 	int exp_errno;
 } test_cases[] = {
-	{&dir_fd, relpath, 0, 0},
-	{&dir_fd, abspath, 0, 0},
+	{&dirfd, relpath, 0, 0},
+	{&dirfd, abspath, 0, 0},
 	{&fd_atcwd, relpath, 0, 0},
 	{&fd, relpath, -1, ENOTDIR},
 	{&fd_invalid, relpath, -1, EBADF},
@@ -66,7 +67,7 @@ int TST_TOTAL = ARRAY_SIZE(test_cases);
 
 static void verify_mkdirat(struct test_case *test)
 {
-	TEST(mkdirat(*test->dir_fd, test->name, 0600));
+	TEST(mkdirat(*test->dirfd, test->name, 0600));
 
 	if (TEST_RETURN != test->exp_ret) {
 		tst_resm(TFAIL | TTERRNO,
@@ -98,20 +99,22 @@ static void setup_iteration(int i)
 	free(tmpdir);
 
 	SAFE_MKDIR(cleanup, testdir, 0700);
-	dir_fd = SAFE_OPEN(cleanup, testdir, O_DIRECTORY);
+	dirfd = SAFE_OPEN(cleanup, testdir, O_DIRECTORY);
 }
 
 static void cleanup_iteration(void)
 {
-	SAFE_CLOSE(cleanup, dir_fd);
+	SAFE_CLOSE(cleanup, dirfd);
 }
 
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int i;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -144,4 +147,5 @@ static void cleanup(void)
 		close(fd);
 
 	tst_rmdir();
+	TEST_CLEANUP;
 }

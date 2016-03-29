@@ -38,6 +38,8 @@
 char *TCID = "semop02";
 
 static void semop_verify(int i);
+
+static int exp_enos[] = { E2BIG, EACCES, EFAULT, EINVAL, ERANGE, 0 };
 int sem_id_1 = -1;	/* a semaphore set with read & alter permissions */
 int sem_id_2 = -1;	/* a semaphore set without read & alter permissions */
 int bad_id = -1;
@@ -68,9 +70,12 @@ int TST_TOTAL = ARRAY_SIZE(TC);
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int i;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -93,12 +98,14 @@ void setup(void)
 	struct seminfo ipc_buf;
 	union semun arr;
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	ltpuser = SAFE_GETPWNAM(NULL, nobody_uid);
 	SAFE_SETUID(NULL, ltpuser->pw_uid);
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
+
+	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 
@@ -124,7 +131,7 @@ void setup(void)
 			 "couldn't create semaphore in setup");
 	}
 
-	arr.__buf = &ipc_buf;
+	arr.ipc_buf = &ipc_buf;
 	if (semctl(sem_id_1, 0, IPC_INFO, arr) == -1)
 		tst_brkm(TBROK | TERRNO, cleanup, "semctl() IPC_INFO failed");
 
@@ -144,6 +151,8 @@ static void semop_verify(int i)
 		return;
 	}
 
+	TEST_ERROR_LOG(TEST_ERRNO);
+
 	if (TEST_ERRNO == TC[i].error) {
 		tst_resm(TPASS | TTERRNO, "semop failed as expected");
 	} else {
@@ -158,6 +167,8 @@ void cleanup(void)
 	/* if they exist, remove the semaphore resources */
 	rm_sema(sem_id_1);
 	rm_sema(sem_id_2);
+
+	TEST_CLEANUP;
 
 	tst_rmdir();
 }

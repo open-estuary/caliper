@@ -45,6 +45,7 @@
 
 /** LTP Port **/
 #include "test.h"
+#include "usctest.h"
 
 #define FAILED 0
 #define PASSED 1
@@ -71,8 +72,10 @@ int main(int argc, char *argv[])
 	void dochild2();
 
 #ifdef UCLINUX
+	const char *msg;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	maybe_run_child(&dochild1, "n", 1);
 	maybe_run_child(&dochild2, "n", 2);

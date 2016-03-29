@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include "test.h"
+#include "usctest.h"
 #include "common_timers.h"
 
 #define SECONDS_BEFORE_LEAP 2
@@ -48,9 +49,12 @@ static void cleanup(void);
 
 int main(int argc, char **argv)
 {
+	const char *msg;
 	int lc;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -202,7 +206,7 @@ static void run_leapsec(void)
 
 static void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 	tst_sig(NOFORK, DEF_HANDLER, CLEANUP);
 	TEST_PAUSE;
 }
@@ -214,4 +218,5 @@ static void cleanup(void)
 	/* Calls clock_was_set() in kernel to revert inconsistency.
 	 * The only possible EPERM doesn't matter here. */
 	clock_settime(CLOCK_REALTIME, &now);
+	TEST_CLEANUP;
 }

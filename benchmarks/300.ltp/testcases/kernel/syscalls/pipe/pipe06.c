@@ -46,9 +46,12 @@
 #include <fcntl.h>
 #include <errno.h>
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "pipe06";
 int TST_TOTAL = 1;
+
+int exp_enos[] = { EMFILE, 0 };
 
 int pipe_ret, pipes[2];
 void setup(void);
@@ -57,10 +60,14 @@ void cleanup(void);
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -72,6 +79,8 @@ int main(int ac, char **av)
 		if (TEST_RETURN != -1) {
 			tst_resm(TFAIL, "call succeeded unexpectedly");
 		}
+
+		TEST_ERROR_LOG(TEST_ERRNO);
 
 		if (TEST_ERRNO != EMFILE) {
 			tst_resm(TFAIL | TTERRNO, "pipe failed unexpectedly");
@@ -116,4 +125,9 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 }

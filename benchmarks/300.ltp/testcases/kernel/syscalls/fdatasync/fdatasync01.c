@@ -70,6 +70,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include "test.h"
+#include "usctest.h"
 
 static int fd;
 static char filename[30];
@@ -82,8 +83,11 @@ int TST_TOTAL = 1;
 int main(int argc, char **argv)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	setup();
 
@@ -149,6 +153,8 @@ void cleanup(void)
 	 * print errno log if that option was specified.
 	 */
 	close(fd);
+
+	TEST_CLEANUP;
 
 	tst_rmdir();
 

@@ -81,6 +81,7 @@
 #include <errno.h>
 #include <sys/utsname.h>
 #include "test.h"
+#include "usctest.h"
 
 #define LARGE_LENGTH MAX_LENGTH + 1
 #define MAX_LENGTH _UTSNAME_LENGTH - 1
@@ -112,14 +113,19 @@ static struct test_case_t {
 #endif
 };
 
+static int exp_enos[] = { EINVAL, EINVAL, EFAULT, 0 };
+
 int TST_TOTAL = ARRAY_SIZE(testcases);
 
 int main(int ac, char **av)
 {
 	int i;
 	int lc;
+	const char *msg;		/* parse_opts() return message */
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	/* Do initial setup */
 	setup();
@@ -144,6 +150,7 @@ int main(int ac, char **av)
 					 "expected error;  errno: %d : %s",
 					 TEST_ERRNO, strerror(TEST_ERRNO));
 			}
+			TEST_ERROR_LOG(TEST_ERRNO);
 		}
 	}
 	/* do cleanup and exit */
@@ -159,7 +166,9 @@ void setup(void)
 {
 	int ret;
 
-	tst_require_root();
+	tst_require_root(NULL);
+
+	TEST_EXP_ENOS(exp_enos);
 
 	/* capture the signals */
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
@@ -181,6 +190,12 @@ void setup(void)
 void cleanup(void)
 {
 	int ret;
+
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	/* Set the host name back to original name */
 	if ((ret = sethostname(hname, strlen(hname))) < 0) {

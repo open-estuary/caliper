@@ -57,6 +57,7 @@
 #include <errno.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "lapi/fcntl.h"
 #include "linux_syscall_numbers.h"
 
@@ -87,6 +88,7 @@ int TST_TOTAL = 1;
 void cleanup(void)
 {
 
+	TEST_CLEANUP;
 	tst_rmdir();
 }
 

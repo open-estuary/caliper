@@ -51,6 +51,7 @@
 #include <limits.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 static void setup(void);
@@ -140,8 +141,10 @@ static void verify_cloexec(struct tcase *tc)
 int main(int ac, char **av)
 {
 	int lc, i;
+	const char *msg;
 
-	tst_parse_opts(ac, av, options, &help);
+	if ((msg = parse_opts(ac, av, options, &help)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	if (t_opt)
 		exit(test_open(t_opt));
@@ -175,6 +178,8 @@ void setup(void)
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	if (file_fd > 0 && close(file_fd))
 		tst_resm(TWARN | TERRNO, "close(file_fd) failed");
 

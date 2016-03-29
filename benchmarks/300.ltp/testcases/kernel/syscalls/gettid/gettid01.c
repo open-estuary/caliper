@@ -32,6 +32,7 @@
 #include <errno.h>
 
 #include "test.h"
+#include "usctest.h"
 
 void setup();
 void cleanup();
@@ -48,8 +49,10 @@ pid_t my_gettid(void)
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;		/* parse_opts() return message */
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -63,6 +66,7 @@ int main(int ac, char **av)
 		TEST(my_gettid());
 
 		if (TEST_RETURN == -1) {
+			TEST_ERROR_LOG(TEST_ERRNO);
 			tst_resm(TFAIL, "gettid() Failed, errno=%d: %s",
 				 TEST_ERRNO, strerror(TEST_ERRNO));
 		} else {
@@ -93,4 +97,9 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 }

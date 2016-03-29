@@ -370,7 +370,7 @@ int test_peer_addr(int sk, sctp_assoc_t asoc, sockaddr_storage_t *peers, int cou
 	struct sockaddr *sa_addr;
 	socklen_t addrs_size = 0;
 	void *addrbuf;
-	char found[count];
+	char *found = (char *) malloc(count);
 	memset(found, 0, count);
 
 	error = sctp_getpaddrs(sk, asoc, &addrs);

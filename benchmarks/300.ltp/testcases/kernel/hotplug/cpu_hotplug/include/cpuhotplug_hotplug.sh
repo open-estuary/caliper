@@ -27,7 +27,8 @@ migrate_irq()
     CPU=${1#cpu}
     MASK=$((1<<${CPU}))
     IRQS=$2
-    for irq in ${IRQS}; do
+    for irq in ${IRQS}
+      do
       echo $MASK > /proc/irq/${irq}/smp_affinity || \
         tst_resm TINFO "It is NOT permitted to change the IRQ $irq smp_affinity"
     done
@@ -72,9 +73,6 @@ online_cpu()
     if [ ! -w /sys/devices/system/cpu/cpu${CPU}/online ]; then
         return 1
     fi
-
-    cpu_is_online ${CPU} && return 0
-
     $TIME echo 1 > /sys/devices/system/cpu/cpu${CPU}/online
     RC=$?
     report_timing "Online cpu ${CPU}"
@@ -93,9 +91,6 @@ offline_cpu()
     if [ ! -w /sys/devices/system/cpu/cpu${CPU}/online ]; then
         return 1
     fi
-
-    ! cpu_is_online ${CPU} && return 0
-
     $TIME echo 0 > /sys/devices/system/cpu/cpu${CPU}/online
     RC=$?
     report_timing "Offline cpu ${CPU}"
@@ -125,78 +120,11 @@ get_cpus_num()
 #
 get_all_cpus()
 {
-    [ -d /sys/devices/system/cpu ] || return 1
-    (cd /sys/devices/system/cpu; ls -d cpu[0-9]*)
+    [ -d /sys/devices/system/cpu/cpu0 ] || return 1
+    ls -dr /sys/devices/system/cpu/cpu[0-9]* | \
+        sed "s/\/sys\/devices\/system\/cpu\///g" || return 2
 }
 
-# get_present_cpus()
-#
-#  Prints a list of present CPUs, regardless of whether they're
-#  currently online or offline.
-#
-get_present_cpus()
-{
-    local present_mask="/sys/devices/system/cpu/present"
-    local present_cpus=""
-
-    # if sysfs present mask is missing, assume all cpu are present
-    if [ ! -e "$present_mask" ]; then
-        get_all_cpus
-        return
-    fi
-
-    for part in $(cat $present_mask | tr "," " "); do
-        if echo $part | grep -q "-"; then
-            range_low=$(echo $part | cut -d - -f 1)
-            range_high=$(echo $part | cut -d - -f 2)
-        else
-            range_low=$(part)
-            range_high=$(part)
-        fi
-        for cpu in $(seq $range_low $range_high); do
-            if [ -e /sys/devices/system/cpu/cpu$cpu ]; then
-                present_cpus="$present_cpus cpu$cpu"
-            fi
-        done
-    done
-    echo $present_cpus
-}
-
-# get_present_cpus_num()
-#
-#  Prints the number of present CPUs
-#
-get_present_cpus_num()
-{
-    echo $(get_present_cpus | wc -w)
-}
-
-# get_hotplug_cpus()
-#
-#  Prints a list of present hotpluggable CPUs, regardless of whether they're
-#  currently online or offline.
-#
-get_hotplug_cpus()
-{
-    local present_cpus=$(get_present_cpus)
-    local hotplug_cpus=""
-
-    for cpu in $present_cpus; do
-        if [ -e /sys/devices/system/cpu/$cpu/online ]; then
-            hotplug_cpus="$hotplug_cpus $cpu"
-	fi
-    done
-    echo $hotplug_cpus
-}
-
-# get_hotplug_cpus_num()
-#
-#  Prints the number of hotpluggable CPUs
-#
-get_hotplug_cpus_num()
-{
-    echo $(get_hotplug_cpus | wc -w)
-}
 
 # get_all_cpu_states()
 #
@@ -213,18 +141,20 @@ get_all_cpu_states()
 
 # set_all_cpu_states(STATES)
 #
-#  Sets all of the CPU states according to STATES, which must be
+#  Sets all of the CPU states according to $STATE, which must be
 #  of the form "cpuX:Y", where X is the CPU number and Y its state.
 #  Each must be on a separate line.
 #
 set_all_cpu_states()
 {
-    for cpu_state in $1; do
-        cpu=`echo $cpu_state | cut -d: -f 1`
-        state=`echo $cpu_state | cut -d: -f 2`
+    for cpu_state in $STATE; do
+        cpu=`echo $c | cut -d: -f 1`
+        state=`echo $c | cut -d: -f 1`
         if [ $state = 1 ]; then
+            echo "# Re-onlining $cpu"
             online_cpu $cpu
         else
+            echo "# Re-offlining $cpu"
             offline_cpu $cpu
         fi
     done

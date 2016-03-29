@@ -41,6 +41,7 @@
 #include <errno.h>
 #include <limits.h>
 #include "test.h"
+#include "usctest.h"
 
 #include "linux_syscall_numbers.h"
 #ifndef _FILE_OFFSET_BITS
@@ -65,28 +66,12 @@ int defined_advise[] = {
 	POSIX_FADV_NORMAL,
 	POSIX_FADV_SEQUENTIAL,
 	POSIX_FADV_RANDOM,
-	POSIX_FADV_WILLNEED,
-#if defined(__s390__) && __WORDSIZE == 32
-	/* POSIX_FADV_DONTNEED and POSIX_FADV_NOREUSE are 6,7 on 31bit s390,
-	 * but the kernel accepts 4,5 as well and rewrites them internally,
-	 * see Linux kernel commit 068e1b94bbd268f375349f68531829c8b7c210bc
-	 *
-	 * since header definitions are incomplete - posix fcntl.h doesn't care
-	 * and defines them as 4,5 while linux/fadvise.h (which uses 6,7)
-	 * matches only 64bit - we need to hardcode the values here for
-	 * all 4 cases, unfortunately
-	 */
-	4, /* POSIX_FADV_DONTNEED */
-	5, /* POSIX_FADV_NOREUSE */
-	6, /* POSIX_FADV_DONTNEED */
-	7, /* POSIX_FADV_NOREUSE */
-#else
-	POSIX_FADV_DONTNEED,
 	POSIX_FADV_NOREUSE,
-#endif
+	POSIX_FADV_WILLNEED,
+	POSIX_FADV_DONTNEED,
 };
 
-#define defined_advise_total ARRAY_SIZE(defined_advise)
+#define defined_advise_total (sizeof(defined_advise) / sizeof(defined_advise[0]))
 
 #if 0
 /* Too many test cases. */
@@ -114,6 +99,7 @@ static int is_defined_advise(int advise)
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int advise;
 
 	/* Check this system has fadvise64 system which is used
@@ -128,7 +114,8 @@ int main(int ac, char **av)
 	/*
 	 * parse standard options
 	 */
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	/*
 	 * perform global setup for test
@@ -208,6 +195,11 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	if (fd != -1) {
 		close(fd);

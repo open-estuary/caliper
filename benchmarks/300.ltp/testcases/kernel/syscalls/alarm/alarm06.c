@@ -72,6 +72,7 @@
 #include <signal.h>
 
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "alarm06";
 int TST_TOTAL = 1;
@@ -84,13 +85,15 @@ void sigproc(int sig);
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int time_sec1 = 10;	/* time for which 1st alarm is set */
 	int time_sec2 = 0;	/* time for which 2nd alarm is set */
 	int ret_val1, ret_val2;	/* return values for alarm() calls */
 	int sleep_time1 = 5;	/* waiting time for the 1st signal */
 	int sleep_time2 = 10;	/* waiting time for the 2nd signal */
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -153,4 +156,5 @@ void sigproc(int sig)
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
 }

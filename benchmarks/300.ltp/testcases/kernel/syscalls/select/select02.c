@@ -30,25 +30,95 @@
  * http://oss.sgi.com/projects/GenInfo/NoticeExplan/
  *
  */
-/*
+/* $Id: select02.c,v 1.4 2009/03/23 13:36:02 subrata_modak Exp $ */
+/**********************************************************
+ *
+ *    OS Test - Silicon Graphics, Inc.
+ *
+ *    TEST IDENTIFIER   : select02
+ *
+ *    EXECUTED BY       : anyone
+ *
+ *    TEST TITLE        : select of system pipe fds
+ *
+ *    PARENT DOCUMENT   : usctpl01
+ *
+ *    TEST CASE TOTAL   : 1
+ *
+ *    WALL CLOCK TIME   : 1
+ *
+ *    CPU TYPES         : ALL
+ *
  *    AUTHOR            : Richard Logan
+ *
  *    CO-PILOT          : Glen Overby
+ *
  *    DATE STARTED      : 02/24/93
  *
+ *    INITIAL RELEASE   : UNICOS 7.0
+ *
  *    TEST CASES
+ *
  *      1.) select(2) to fd of system pipe with no I/O and small timeout
- */
+ *
+ *    INPUT SPECIFICATIONS
+ *      The standard options for system call tests are accepted.
+ *      (See the parse_opts(3) man page).
+ *
+ *    OUTPUT SPECIFICATIONS
+ *
+ *    DURATION
+ *      Terminates - with frequency and infinite modes.
+ *
+ *    SIGNALS
+ *      Uses SIGUSR1 to pause before test if option set.
+ *      (See the parse_opts(3) man page).
+ *
+ *    RESOURCES
+ *      None
+ *
+ *    ENVIRONMENTAL NEEDS
+ *      No run-time environmental needs.
+ *
+ *    SPECIAL PROCEDURAL REQUIREMENTS
+ *      None
+ *
+ *    INTERCASE DEPENDENCIES
+ *      None
+ *
+ *    DETAILED DESCRIPTION
+ *      This is a Phase I test for the select(2) system call.  It is intended
+ *      to provide a limited exposure of the system call, for now.
+ *
+ *      Setup:
+ *        Setup signal handling.
+ *        Pause for SIGUSR1 if option specified.
+ *
+ *      Test:
+ *       Loop if the proper options are given.
+ *        Execute system call
+ *        Check return code, if system call failed (return=-1)
+ *              Log the errno and Issue a FAIL message.
+ *        Otherwise, Issue a PASS message.
+ *
+ *      Cleanup:
+ *        Print errno log and/or timing stats if options given
+ *
+ *#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#**/
+
 #include <errno.h>
 #include <signal.h>
-#include <fcntl.h>
+#include <fcntl.h>		/* For open system call parameters.  */
 #include <signal.h>
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/time.h>
 
 #include "test.h"
+#include "usctest.h"
 
-static void setup(void);
+void setup();
+void cleanup();
 
 char *TCID = "select02";
 int TST_TOTAL = 1;
@@ -57,20 +127,45 @@ int Fd[2];
 fd_set saved_Readfds, saved_Writefds;
 fd_set Readfds, Writefds;
 
+/***********************************************************************
+ * MAIN
+ ***********************************************************************/
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	struct timeval timeout;
 	long test_time = 0;	/* in usecs */
 
-	tst_parse_opts(ac, av, NULL, NULL);
+    /***************************************************************
+     * parse standard options, and exit if there is an error
+     ***************************************************************/
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
+	}
+
+    /***************************************************************
+     * perform global setup for test
+     ***************************************************************/
 	setup();
 
+    /***************************************************************
+     * check looping state if -c option given
+     ***************************************************************/
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
+
 		tst_count = 0;
 
+		/*
+		 * Assigning the specified seconds within the timeval structure.
+		 */
+
 		test_time = ((lc % 2000) * 100000);	/* 100 milli-seconds */
+
+		/*
+		 * Bound the time to a value less than 60 seconds
+		 */
 
 		if (test_time > 1000000 * 60)
 			test_time = test_time % (1000000 * 60);
@@ -81,9 +176,13 @@ int main(int ac, char **av)
 		Readfds = saved_Readfds;
 		Writefds = saved_Writefds;
 
+		/* Call the system call being tested. */
+
 		TEST(select(5, &Readfds, &Writefds, 0, &timeout));
 
+		/* check return code */
 		if (TEST_RETURN == -1) {
+			TEST_ERROR_LOG(TEST_ERRNO);
 			tst_resm(TFAIL,
 				 "%d select(5, &Readfds, &Writefds, 0, &timeout) failed, errno=%d\n",
 				 lc, errno);
@@ -95,21 +194,51 @@ int main(int ac, char **av)
 
 	}
 
+	cleanup();
 	tst_exit();
 }
 
-static void setup(void)
+/***************************************************************
+ * setup() - performs all ONE TIME setup for this test.
+ ***************************************************************/
+void setup(void)
 {
-	tst_sig(FORK, DEF_HANDLER, NULL);
+
+	tst_sig(FORK, DEF_HANDLER, cleanup);
 
 	TEST_PAUSE;
 
+	/* create a temporary directory and go to it */
+	tst_tmpdir();
+
 	if (pipe(Fd) == -1) {
-		tst_brkm(TBROK, NULL, "pipe(&Fd) failed, errno=%d", errno);
+		tst_brkm(TBROK, cleanup, "pipe(&Fd) failed, errno=%d", errno);
 	}
+
+	/*
+	 * Initializing and assigning the standard output file descriptor to
+	 * fd_set for select.
+	 */
 
 	FD_ZERO(&saved_Readfds);
 	FD_ZERO(&saved_Writefds);
 	FD_SET(Fd[0], &saved_Readfds);
 	FD_SET(Fd[1], &saved_Writefds);
+
+}
+
+/***************************************************************
+ * cleanup() - performs all ONE TIME cleanup for this test at
+ *		completion or premature exit.
+ ***************************************************************/
+void cleanup(void)
+{
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
+
+	tst_rmdir();
+
 }

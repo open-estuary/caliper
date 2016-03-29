@@ -34,6 +34,7 @@
 #include <pwd.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 static void setup(void);
@@ -50,11 +51,15 @@ static int mount_flag;
 
 int TST_TOTAL = 1;
 
+static int exp_enos[] = { EPERM, 0 };
+
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -87,8 +92,9 @@ static void setup(void)
 	struct passwd *ltpuser;
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
+	TEST_EXP_ENOS(exp_enos);
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	ltpuser = SAFE_GETPWNAM(NULL, "nobody");
 
@@ -116,11 +122,12 @@ static void cleanup(void)
 	if (seteuid(0))
 		tst_resm(TWARN | TERRNO, "seteuid(0) failed");
 
-	if (mount_flag && tst_umount(MNTPOINT))
+	if (mount_flag && umount(MNTPOINT))
 		tst_resm(TWARN | TERRNO, "umount() failed");
 
 	if (device)
 		tst_release_device(NULL, device);
 
+	TEST_CLEANUP;
 	tst_rmdir();
 }

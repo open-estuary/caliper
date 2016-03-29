@@ -23,10 +23,13 @@
 #include <errno.h>
 #include <pwd.h>
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 char *TCID = "setegid02";
 int TST_TOTAL = 1;
+
+static int exp_enos[] = { EPERM, 0 };
 static void setup(void);
 static void setegid_verify(void);
 static void cleanup(void);
@@ -36,8 +39,11 @@ static struct passwd *ltpuser;
 int main(int argc, char *argv[])
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -52,7 +58,7 @@ int main(int argc, char *argv[])
 
 static void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -61,6 +67,8 @@ static void setup(void)
 	ltpuser = SAFE_GETPWNAM(cleanup, "nobody");
 
 	SAFE_SETEUID(cleanup, ltpuser->pw_uid);
+
+	TEST_EXP_ENOS(exp_enos);
 }
 
 static void setegid_verify(void)
@@ -84,4 +92,5 @@ static void setegid_verify(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 }

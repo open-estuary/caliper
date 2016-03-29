@@ -386,14 +386,13 @@ static int test_hcd_probe()
 	int rc;
 	struct usb_hcd *hcd = NULL;
 	struct pci_dev *pdev = ltp_usb.pdev;
-	struct pci_device_id *id = NULL;
+	struct pci_device_id *id =
+	    (struct pci_device_id *)pdev->driver->id_table;
 
 	if (!pdev) {
 		printk("tusb: pdev pointer not set\n");
 		return 1;
 	}
-
-	id = (struct pci_device_id *)pdev->driver->id_table;
 
 	if (!id || !id->driver_data) {
 		printk("tusb: id_table not set\n");

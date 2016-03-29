@@ -28,6 +28,7 @@
 #include <sched.h>
 #include <sys/wait.h>
 #include "test.h"
+#include "usctest.h"
 #include "clone_platform.h"
 
 char *TCID = "clone05";
@@ -43,9 +44,12 @@ int main(int ac, char **av)
 {
 
 	int lc, status;
+	const char *msg;
 	void *child_stack;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg	!= NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -86,6 +90,7 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 }
 
 static int child_fn(void *unused __attribute__((unused)))

@@ -45,8 +45,13 @@ do_clean()
 {
 	kill_pid ${WRL_ID}
 
-	# Restore CPU states
-	set_all_cpu_states "$cpu_states"
+	# Turns off the cpus that were off before the test start
+	until [ $CPU_COUNT -eq 0 ]; do
+		offline_cpu=$(eval "echo \$OFFLINE_CPU_${CPU_COUNT}")
+		tst_resm TINFO "CPU = $CPU_COUNT @on = $offline_cpu"
+		offline_cpu $offline_cpu
+		CPU_COUNT=$((CPU_COUNT-1))
+	done
 }
 
 
@@ -111,7 +116,8 @@ LOOP_COUNT=1
 
 tst_check_cmds perl
 
-if [ $(get_present_cpus_num) -lt 2 ]; then
+get_cpus_num
+if [ $? -lt 2 ]; then
 	tst_brkm TCONF "system doesn't have required CPU hotplug support"
 fi
 
@@ -132,8 +138,6 @@ fi
 
 TST_CLEANUP=do_clean
 
-cpu_states=$(get_all_cpu_states)
-
 CPU_COUNT=0
 
 # Start up a process that writes to disk; keep track of its PID
@@ -147,7 +151,7 @@ do
 	IRQ_START=$(cat /proc/interrupts)
 
 	# Attempt to offline all CPUs
-	for cpu in $( get_hotplug_cpus ); do
+	for cpu in $( get_all_cpus ); do
 		if [ "$cpu" = "cpu0" ]; then
 			continue
 		fi
@@ -162,7 +166,7 @@ do
 	done
 
 	# Attempt to online all CPUs
-	for cpu in $( get_hotplug_cpus ); do
+	for cpu in $( get_all_cpus ); do
 		if [ "$cpu" = "cpu0" ]; then
 			continue
 		fi

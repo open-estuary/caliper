@@ -162,6 +162,13 @@ if __name__=="__main__":
             default="", help="specify the location of config file")
     args = parser.parse_args()
     start_time = datetime.datetime.now()
+    remote_host = get_remote_host()
+
+    if args.folder:
+        caliper_path.folder_ope.name = args.folder
+        caliper_path.folder_ope.set_up_path()
+    if not os.path.exists(caliper_path.folder_ope.name):
+        os.makedirs(caliper_path.folder_ope.name)
 
     if args.config_file:
         caliper_path.config_files.name = args.config_file
@@ -172,17 +179,6 @@ if __name__=="__main__":
         if not os.path.exists(caliper_path.config_files.config_dir):
             logging.info("The config_dir does not exists.")
             sys.exit()
-        settings.set_config_files(os.path.join(
-                                caliper_path.config_files.config_dir,
-                                'client_config.cfg'
-                                ))
-    remote_host = get_remote_host()
-
-    if args.folder:
-        caliper_path.folder_ope.name = args.folder
-        caliper_path.folder_ope.set_up_path()
-    if not os.path.exists(caliper_path.folder_ope.name):
-        os.makedirs(caliper_path.folder_ope.name)
 
     if args.build:
         try:

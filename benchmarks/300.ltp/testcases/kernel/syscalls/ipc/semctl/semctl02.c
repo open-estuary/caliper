@@ -56,6 +56,8 @@
 char *TCID = "semctl02";
 int TST_TOTAL = 1;
 
+int exp_enos[] = { EACCES, 0 };	/* 0 terminated list of expected errnos */
+
 char nobody_uid[] = "nobody";
 struct passwd *ltpuser;
 
@@ -64,11 +66,13 @@ int sem_id_1 = -1;
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
 	struct semid_ds sem_ds;
 	union semun un_arg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();		/* global setup */
 
@@ -90,6 +94,8 @@ int main(int ac, char **av)
 			tst_resm(TFAIL, "call succeeded when error expected");
 			continue;
 		}
+
+		TEST_ERROR_LOG(TEST_ERRNO);
 
 		switch (TEST_ERRNO) {
 		case EACCES:
@@ -113,9 +119,12 @@ int main(int ac, char **av)
  */
 void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
+
+	/* Set up the expected error numbers for -e option */
+	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 
@@ -153,5 +162,11 @@ void cleanup(void)
 	rm_sema(sem_id_1);
 
 	tst_rmdir();
+
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }

@@ -55,10 +55,13 @@
 #include <fcntl.h>
 #include<sys/stat.h>
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 char *TCID = "chdir01";
 int TST_TOTAL = 2;
+
+int exp_enos[] = { ENOTDIR, ELOOP, 0 };
 
 void setup(void);
 void cleanup(void);
@@ -74,10 +77,14 @@ int main(int ac, char **av)
 	char *filenames[3];
 
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -155,6 +162,8 @@ void setup(void)
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	tst_rmdir();
 }
 

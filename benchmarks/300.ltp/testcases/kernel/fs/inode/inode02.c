@@ -91,6 +91,7 @@ void (*sigset(int, void (*)(int))) (int);
 
 /** LTP Port **/
 #include "test.h"
+#include "usctest.h"
 
 void setup(void);
 void fail_exit(void);

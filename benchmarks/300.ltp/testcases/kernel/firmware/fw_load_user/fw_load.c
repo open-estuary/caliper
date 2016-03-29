@@ -29,6 +29,7 @@
 #include <string.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 #include "tst_module.h"
 
@@ -102,8 +103,10 @@ static void help(void)
 
 void setup(int argc, char *argv[])
 {
-	
-	tst_parse_opts(argc, argv, options, help);
+	const char *msg;
+	msg = parse_opts(argc, argv, options, help);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	if (nflag) {
 		if (sscanf(narg, "%i", &fw_size) != 1)
@@ -112,7 +115,7 @@ void setup(int argc, char *argv[])
 			tst_brkm(TBROK, NULL, "-n option arg is less than 0");
 	}
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	if (tst_kvercmp(3, 7, 0) < 0) {
 		tst_brkm(TCONF, NULL,
@@ -185,6 +188,8 @@ static void cleanup(void)
 	}
 
 	tst_module_unload(NULL, module_name);
+
+	TEST_CLEANUP;
 }
 
 static void create_firmware(char *const fw_paths[])

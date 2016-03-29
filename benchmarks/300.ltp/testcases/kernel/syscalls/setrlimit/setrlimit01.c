@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "setrlimit01";
 int TST_TOTAL = 1;
@@ -57,8 +58,11 @@ static pid_t pid;
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -289,7 +293,7 @@ static void sighandler(int sig)
 
 static void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	umask(0);
 
@@ -304,6 +308,7 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 	unlink(filename);
 	tst_rmdir();
 }

@@ -36,6 +36,7 @@
 #include <pwd.h>
 
 #include "test.h"
+#include "usctest.h"
 
 #define TESTDIR		"testdir"
 #define TESTFILE	"testdir/testfile"
@@ -55,8 +56,11 @@ int main(int ac, char **av)
 {
 	struct stat stat_buf;
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -89,7 +93,7 @@ static void setup(void)
 	int fd;
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
-	tst_require_root();
+	tst_require_root(NULL);
 
 	ltpuser = getpwnam(nobody_uid);
 	if (ltpuser == NULL)
@@ -125,5 +129,6 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 	tst_rmdir();
 }

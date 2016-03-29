@@ -45,13 +45,16 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
-#include <sys/wait.h>
 #include "ipcsem.h"
+#include "libtestsuite.h"
 
 char *TCID = "semctl01";
+int TST_TOTAL = 13;
 
 static int sem_id_1 = -1;
 static int sem_index;
+
+static int sync_pipes[2];
 
 /*
  * These are the various setup and check functions for the 10 different
@@ -120,32 +123,15 @@ static struct test_case_t {
 	{&sem_id_1, 0, IPC_RMID, func_rmid, SEMUN_CAST & buf, NULL},
 };
 
-int TST_TOTAL = ARRAY_SIZE(TC);
-
-static void kill_all_children(void)
-{
-	int j, status;
-
-	for (j = 0; j < NCHILD; j++) {
-		if (kill(pid_arr[j], SIGKILL) == -1)
-			tst_brkm(TBROK | TERRNO, cleanup, "child kill failed");
-	}
-
-	/*
-	 * make sure children finished before we proceed with next testcase
-	 */
-	for (j = 0; j < NCHILD; j++) {
-		if (wait(&status) == -1)
-			tst_brkm(TBROK | TERRNO, cleanup, "wait() failed");
-	}
-}
-
 int main(int argc, char *argv[])
 {
 	int lc;
-	int i;
+	const char *msg;
+	int i, j;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 #ifdef UCLINUX
 	argv0 = argv[0];
@@ -212,7 +198,11 @@ int main(int argc, char *argv[])
 			switch (TC[i].cmd) {
 			case GETNCNT:
 			case GETZCNT:
-				kill_all_children();
+				for (j = 0; j < NCHILD; j++) {
+					if (kill(pid_arr[j], SIGKILL) == -1)
+						tst_brkm(TBROK, cleanup,
+							 "child kill failed");
+				}
 				break;
 			}
 		}
@@ -313,6 +303,9 @@ static void cnt_setup(int opval)
 	/* set the correct operation */
 	sops.sem_op = opval;
 	for (i = 0; i < NCHILD; i++) {
+		if (sync_pipe_create(sync_pipes, PIPE_NAME) == -1)
+			tst_brkm(TBROK, cleanup, "sync_pipe_create failed");
+
 		/* fork five children to wait */
 		pid = FORK_OR_VFORK();
 		if (pid == -1)
@@ -328,18 +321,42 @@ static void cnt_setup(int opval)
 			child_cnt();
 #endif
 		} else {
-			TST_PROCESS_STATE_WAIT(cleanup, pid, 'S');
+			if (sync_pipe_wait(sync_pipes) == -1)
+				tst_brkm(TBROK, cleanup,
+					 "sync_pipe_wait failed");
+
+			if (sync_pipe_close(sync_pipes, PIPE_NAME) == -1)
+				tst_brkm(TBROK, cleanup,
+					 "sync_pipe_close failed");
+
 			/* save the pid so we can kill it later */
 			pid_arr[i] = pid;
 		}
 	}
+	/* After last son has been created, give it a chance to execute the
+	 * semop command before we continue. Without this sleep, on SMP machine
+	 * the father semctl could be executed before the son semop.
+	 */
+	sleep(1);
 }
 
 static void child_cnt(void)
 {
 #ifdef UCLINUX
 	sops.sem_op = (short int)sem_op;
+	if (sync_pipe_create(sync_pipes, PIPE_NAME) == -1)
+		tst_brkm(TBROK, cleanup, "sync_pipe_create failed");
 #endif
+
+	if (sync_pipe_notify(sync_pipes) == -1)
+		tst_brkm(TBROK, cleanup, "sync_pipe_notify failed");
+
+#ifdef UCLINUX
+	if (sync_pipe_close(sync_pipes, NULL) == -1)
+#else
+	if (sync_pipe_close(sync_pipes, PIPE_NAME) == -1)
+#endif
+		tst_brkm(TBROK, cleanup, "sync_pipe_close failed");
 
 	sops.sem_num = SEM4;
 	sops.sem_flg = 0;
@@ -376,6 +393,9 @@ static void pid_setup(void)
 {
 	int pid;
 
+	if (sync_pipe_create(sync_pipes, PIPE_NAME) == -1)
+		tst_brkm(TBROK, cleanup, "sync_pipe_create failed");
+
 	/*
 	 * Fork a child to do a semop that will pass.
 	 */
@@ -391,22 +411,40 @@ static void pid_setup(void)
 #else
 		child_pid();
 #endif
-	} else {
+	} else {		/* parent */
+		if (sync_pipe_wait(sync_pipes) == -1)
+			tst_brkm(TBROK, cleanup, "sync_pipe_wait failed");
+
+		if (sync_pipe_close(sync_pipes, PIPE_NAME) == -1)
+			tst_brkm(TBROK, cleanup, "sync_pipe_close failed");
+		sleep(1);
 		pid_arr[SEM2] = pid;
-		TST_PROCESS_STATE_WAIT(cleanup, pid, 'Z');
 	}
 }
 
 static void child_pid(void)
 {
+#ifdef UCLINUX
+	if (sync_pipe_create(sync_pipes, PIPE_NAME) == -1)
+		tst_brkm(TBROK, cleanup, "sync_pipe_create failed");
+#endif
+
+	if (sync_pipe_notify(sync_pipes) == -1)
+		tst_brkm(TBROK, cleanup, "sync_pipe_notify failed");
+
+	if (sync_pipe_close(sync_pipes, PIPE_NAME) == -1)
+		tst_brkm(TBROK, cleanup, "sync_pipe_close failed");
+
 	sops.sem_num = SEM2;
 	sops.sem_op = ONE;
 	sops.sem_flg = 0;
+
 	/*
 	 * Do a semop that will increment the semaphore.
 	 */
 	if (semop(sem_id_1, &sops, 1) == -1)
 		tst_resm(TBROK, "semop failed - pid_setup");
+
 	exit(0);
 }
 
@@ -553,8 +591,6 @@ void setup(void)
 
 	tst_tmpdir();
 
-	TST_CHECKPOINT_INIT(tst_rmdir);
-
 	/* get an IPC resource key */
 	semkey = getipckey();
 
@@ -570,4 +606,6 @@ void cleanup(void)
 	rm_sema(sem_id_1);
 
 	tst_rmdir();
+
+	TEST_CLEANUP;
 }

@@ -83,6 +83,7 @@
 #include <inttypes.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 #define TEMP_FILE	"tmp_file"
@@ -93,15 +94,19 @@ int TST_TOTAL = 1;
 char write_buff[BUFSIZ];	/* buffer to hold data */
 int fildes;			/* file handle for temp file */
 
+struct rlimit rlp_orig;		/* resource for original file size limit */
+
 void setup();			/* Main setup function of test */
 void cleanup();			/* cleanup function for the test */
 
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	loff_t offset;		/* Ret value from llseek */
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	offset = -1;
 
@@ -188,6 +193,11 @@ void setup(void)
 
 	tst_tmpdir();
 
+	/* Store the original rlimit */
+	if (getrlimit(RLIMIT_FSIZE, &rlp_orig) == -1)
+		tst_brkm(TBROK, cleanup,
+			 "Cannot get max. file size using getrlimit");
+
 	/* Set limit low, argument is # bytes */
 	rlp.rlim_cur = rlp.rlim_max = 2 * BUFSIZ;
 
@@ -209,5 +219,12 @@ void cleanup(void)
 {
 	SAFE_CLOSE(NULL, fildes);
 
+	TEST_CLEANUP;
+
 	tst_rmdir();
+
+	if (setrlimit(RLIMIT_FSIZE, &rlp_orig) == -1)
+		tst_brkm(TBROK, NULL,
+			 "Cannot reset max. file size using setrlimit");
+
 }

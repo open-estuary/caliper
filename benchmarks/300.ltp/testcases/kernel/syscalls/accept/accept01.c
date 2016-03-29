@@ -31,11 +31,12 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/signal.h>
+#include <sys/ioctl.h>
 
 #include <netinet/in.h>
 
 #include "test.h"
-#include "safe_macros.h"
+#include "usctest.h"
 
 char *TCID = "accept01";
 int testno;
@@ -90,11 +91,16 @@ struct test_case_t {		/* test case structure */
 
 int TST_TOTAL = sizeof(tdat) / sizeof(tdat[0]);
 
+int exp_enos[] = { EBADF, ENOTSOCK, EINVAL, EOPNOTSUPP, 0 };
+
 int main(int ac, char *av[])
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -105,6 +111,7 @@ int main(int ac, char *av[])
 
 			TEST(accept(s, tdat[testno].sockaddr,
 				    tdat[testno].salen));
+			TEST_ERROR_LOG(TEST_ERRNO);
 			if (TEST_RETURN > 0)
 				TEST_RETURN = 0;
 			if (TEST_RETURN != tdat[testno].retval ||
@@ -131,6 +138,8 @@ static void setup(void)
 {
 	TEST_PAUSE;
 
+	TEST_EXP_ENOS(exp_enos);
+
 	/* initialize local sockaddr */
 	sin0.sin_family = AF_INET;
 	sin0.sin_port = 0;
@@ -139,6 +148,7 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 }
 
 static void setup0(void)
@@ -185,5 +195,8 @@ static void setup3(void)
 	int one = 1;
 
 	setup1();
-	SAFE_IOCTL(cleanup, s, FIONBIO, &one);
+	if (ioctl(s, FIONBIO, &one) < 0) {
+		tst_brkm(TBROK, cleanup, "socket ioctl failed for accept "
+			 "test %d: %s", testno, strerror(errno));
+	}
 }

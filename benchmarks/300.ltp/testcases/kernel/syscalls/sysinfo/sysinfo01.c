@@ -72,6 +72,7 @@
 #include <sys/sysinfo.h>
 
 #include "test.h"
+#include "usctest.h"
 
 void setup();
 void cleanup();
@@ -83,12 +84,15 @@ int main(int ac, char **av)
 {
 	struct sysinfo *sys_buf;
 	int lc;
+	const char *msg;
 	float l1, l2, l3;
 	unsigned long l1_up, l2_up, l3_up;
 
 	sys_buf = malloc(sizeof(struct sysinfo));
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	setup();		/* Global setup */
 
@@ -173,4 +177,6 @@ void setup(void)
  */
 void cleanup(void)
 {
+	TEST_CLEANUP;
+
 }

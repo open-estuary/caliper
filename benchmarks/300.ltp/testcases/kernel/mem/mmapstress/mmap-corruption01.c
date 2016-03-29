@@ -52,6 +52,7 @@
 #include <signal.h>
 
 #include "test.h"
+#include "usctest.h"
 
 /* Extern Global Variables */
 extern int tst_count;
@@ -65,7 +66,7 @@ int kPageSize = 4096;
 
 char *usage = "-h hours -m minutes -s secs\n";
 
-int anyfail(void)
+int anyfail()
 {
 	tst_brkm(TFAIL, tst_rmdir, "Test failed\n");
 }
@@ -73,6 +74,7 @@ int anyfail(void)
 int main(int argc, char **argv)
 {
 	char *progname;
+	int status;
 	int count = 0;
 	int i, c;
 	char *fname = "test.mmap-corruption";
@@ -147,7 +149,7 @@ int main(int argc, char **argv)
 	while (1) {
 		unlink(fname);
 		int fd = open(fname, O_CREAT | O_EXCL | O_RDWR, 0600);
-		ftruncate(fd, kMemSize);
+		status = ftruncate(fd, kMemSize);
 
 		mem =
 		    mmap(0, kMemSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd,

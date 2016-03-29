@@ -45,12 +45,12 @@
 #include <errno.h>
 #include <string.h>
 #include "test.h"
+#include "usctest.h"
 #include "linux_syscall_numbers.h"
 #include "inotify.h"
 #include "safe_macros.h"
 
 char *TCID = "inotify04";
-int TST_TOTAL = 4;
 
 #if defined(HAVE_SYS_INOTIFY_H)
 
@@ -60,6 +60,7 @@ int TST_TOTAL = 4;
 /* reasonable guess as to size of 1024 events */
 #define EVENT_BUF_LEN        (EVENT_MAX * (EVENT_SIZE + 16))
 
+int TST_TOTAL = 4;
 
 #define BUF_SIZE 256
 
@@ -103,6 +104,8 @@ static void cleanup(void)
 
 	if (wd_file > 0 && close(wd_file))
 		tst_resm(TWARN, "close(%d) [3] failed", wd_file);
+
+	TEST_CLEANUP;
 
 	tst_rmdir();
 }
@@ -149,12 +152,15 @@ static void setup(void)
 
 int main(int argc, char **argv)
 {
+	const char *msg;
 	int i, test_num, len;
 
 	i = 0;
 	test_num = 0;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -261,6 +267,9 @@ int main(int argc, char **argv)
 	tst_exit();
 }
 #else
+
+int TST_TOTAL;
+
 int main(void)
 {
 	tst_brkm(TCONF, NULL, "system doesn't have required inotify support");

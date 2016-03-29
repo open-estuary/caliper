@@ -54,6 +54,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "test.h"
+#include "usctest.h"
 #include "mem.h"
 
 char *TCID = "swapping01";
@@ -77,8 +78,11 @@ static pid_t pid;
 int main(int argc, char *argv[])
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 #if __WORDSIZE == 32
 	tst_brkm(TCONF, NULL, "test is not designed for 32-bit system.");
@@ -179,4 +183,5 @@ void setup(void)
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
 }

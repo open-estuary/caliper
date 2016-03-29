@@ -115,6 +115,7 @@
 #include <string.h>
 #include <signal.h>
 #include "test.h"
+#include "usctest.h"
 
 void setup();
 void cleanup();
@@ -122,16 +123,23 @@ void cleanup();
 char *TCID = "dup01";
 int TST_TOTAL = 1;
 
+int exp_enos[] = { 0, 0 };
+
 char filename[255];
 int fd;
 
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+	/* set the expected errnos... */
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -144,6 +152,7 @@ int main(int ac, char **av)
 
 		/* check return code */
 		if (TEST_RETURN == -1) {
+			TEST_ERROR_LOG(TEST_ERRNO);
 			tst_resm(TFAIL, "dup(%s) Failed, errno=%d : %s",
 				 filename, TEST_ERRNO, strerror(TEST_ERRNO));
 		} else {
@@ -180,6 +189,8 @@ void setup(void)
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	if (fd != -1)
 		if (close(fd) == -1)
 			tst_resm(TWARN | TERRNO, "closing %s failed", filename);

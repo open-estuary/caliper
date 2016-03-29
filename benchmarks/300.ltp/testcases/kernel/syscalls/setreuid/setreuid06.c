@@ -33,6 +33,7 @@
 #include <sys/stat.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "compat_16.h"
 
 #define INVAL_USER		 (USHRT_MAX-2)
@@ -48,8 +49,10 @@ static void cleanup(void);
 int main(int argc, char **argv)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -60,9 +63,11 @@ int main(int argc, char **argv)
 		if (TEST_RETURN != -1) {
 			tst_resm(TFAIL, "%s did not fail as expected", TCID);
 		} else if (TEST_ERRNO == EPERM) {
+			TEST_ERROR_LOG(TEST_ERRNO);
 			tst_resm(TPASS, "setreuid set errno to EPERM as "
 				 "expected");
 		} else {
+			TEST_ERROR_LOG(TEST_ERRNO);
 			tst_resm(TFAIL, "setreuid FAILED, expected 1 but "
 				 "returned %d", TEST_ERRNO);
 		}
@@ -74,7 +79,7 @@ int main(int argc, char **argv)
 
 static void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
@@ -93,4 +98,5 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 }

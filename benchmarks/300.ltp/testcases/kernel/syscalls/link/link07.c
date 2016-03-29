@@ -36,6 +36,7 @@
 #include <pwd.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 #define MODE_TO S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IXOTH|S_IROTH|S_IWOTH
@@ -54,8 +55,10 @@ int TST_TOTAL = 1;
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -90,7 +93,7 @@ static void setup(void)
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	TEST_PAUSE;
 
@@ -114,5 +117,6 @@ static void cleanup(void)
 	if (seteuid(0))
 		tst_resm(TWARN | TERRNO, "seteuid(o) failed");
 
+	TEST_CLEANUP;
 	tst_rmdir();
 }

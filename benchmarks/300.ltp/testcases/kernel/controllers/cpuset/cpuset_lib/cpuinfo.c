@@ -231,15 +231,11 @@ static int get_sched_domains(void)
 			if (!cpus[ci].sched_domain) {
 				cpus[ci].sched_domain =
 				    bitmask_alloc(cpus_nbits);
-				if (!cpus[ci].sched_domain) {
-					fclose(fp);
+				if (!cpus[ci].sched_domain)
 					return -1;
-				}
 			}
-			if (bitmask_parsehex(str2, cpus[ci].sched_domain)) {
-				fclose(fp);
+			if (bitmask_parsehex(str2, cpus[ci].sched_domain))
 				return -1;
-			}
 		}
 	}
 

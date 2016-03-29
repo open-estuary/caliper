@@ -5,6 +5,7 @@
 #include <sys/capability.h>
 #endif
 #include <sys/prctl.h>
+#include "usctest.h"
 #include "test.h"
 
 #ifndef SECBIT_KEEP_CAPS
@@ -99,7 +100,7 @@ int main(int argc, char *argv[])
 {
 	int ret, whichtest;
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	ret = prctl(PR_GET_KEEPCAPS);
 	if (ret)

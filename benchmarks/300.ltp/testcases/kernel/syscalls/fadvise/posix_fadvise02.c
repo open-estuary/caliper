@@ -40,6 +40,7 @@
 #include <signal.h>
 #include <errno.h>
 #include "test.h"
+#include "usctest.h"
 
 #include "linux_syscall_numbers.h"
 #ifndef _FILE_OFFSET_BITS
@@ -78,6 +79,7 @@ int TST_TOTAL = sizeof(TC) / sizeof(TC[0]);
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int i;
 
 	/* Check this system has fadvise64 system which is used
@@ -92,7 +94,8 @@ int main(int ac, char **av)
 	/*
 	 * parse standard options
 	 */
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	/*
 	 * perform global setup for test
@@ -171,5 +174,10 @@ retry:
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }

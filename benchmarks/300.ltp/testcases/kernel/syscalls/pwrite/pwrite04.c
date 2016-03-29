@@ -38,6 +38,7 @@
 #include <sys/fcntl.h>
 #include <memory.h>
 #include <errno.h>
+#include "usctest.h"
 #include "test.h"
 
 char *TCID = "pwrite04";
@@ -70,12 +71,18 @@ int main(int ac, char *av[])
 	char *wbuf[NBUFS];
 	struct stat statbuf;
 	int lc;
+	const char *msg;
 
 	strcpy(name, DATA_FILE);
 	sprintf(fname, "%s.%d", name, getpid());
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	/*
+	 * parse standard options
+	 */
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_resm(TBROK, "OPTION PARSING ERROR - %s", msg);
 
+	}
 	tst_tmpdir();
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -261,6 +268,11 @@ void l_seek(int fdesc, off_t offset, int whence, off_t checkoff)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	tst_rmdir();
 

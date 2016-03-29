@@ -116,12 +116,15 @@
 #include <string.h>
 #include <signal.h>
 #include "test.h"
+#include "usctest.h"
 
 void setup();
 void cleanup();
 
 char *TCID = "lstat01";
 int TST_TOTAL = 1;
+
+int exp_enos[] = { 0, 0 };
 
 char fname[255], lname[255], symlnk[255], buf[255];
 int fd;
@@ -130,16 +133,21 @@ struct stat statter;
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
     /***************************************************************
      * parse standard options
      ***************************************************************/
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
     /***************************************************************
      * perform global setup for test
      ***************************************************************/
 	setup();
+
+	/* set the expected errnos... */
+	TEST_EXP_ENOS(exp_enos);
 
     /***************************************************************
      * check looping state if -c option given
@@ -155,6 +163,7 @@ int main(int ac, char **av)
 
 		/* check return code */
 		if (TEST_RETURN == -1) {
+			TEST_ERROR_LOG(TEST_ERRNO);
 			tst_resm(TFAIL,
 				 "lstat(%s, &statter) Failed, errno=%d : %s",
 				 symlnk, TEST_ERRNO, strerror(TEST_ERRNO));
@@ -212,6 +221,11 @@ void setup(void)
  ***************************************************************/
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	tst_rmdir();
 

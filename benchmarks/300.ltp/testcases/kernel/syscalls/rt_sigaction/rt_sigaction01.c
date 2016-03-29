@@ -37,6 +37,7 @@
 #include <string.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "linux_syscall_numbers.h"
 #include "lapi/rt_sigaction.h"
 
@@ -46,6 +47,7 @@ int TST_TOTAL = 1;
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 	tst_rmdir();
 }
 
@@ -85,8 +87,11 @@ int main(int ac, char **av)
 	unsigned int flag;
 	int signal;
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -99,7 +104,8 @@ int main(int ac, char **av)
 			for (signal = SIGRTMIN; signal <= SIGRTMAX; signal++) {
 				for (flag = 0;
 				     flag <
-				      ARRAY_SIZE(test_flags); flag++) {
+				     (sizeof(test_flags) /
+				      sizeof(test_flags[0])); flag++) {
 
 					TEST(set_handler
 					     (signal, 0, test_flags[flag]));

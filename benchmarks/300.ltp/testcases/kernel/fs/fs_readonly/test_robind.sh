@@ -123,10 +123,9 @@ setup()
 		mkdir -p $dir
 	done
 
-	# populating the default FS as $LTP_BIG_DEV_FS_TYPE
-	# (or ext3 if it's not set), if FS is not given
+	# populating the default FS as ext3, if FS is not given
 	if [ -z "$*" ]; then
-		FSTYPES=${LTP_BIG_DEV_FS_TYPE:-ext3}
+		FSTYPES="ext3"
 	else
 		FSTYPES="$*"
 	fi
@@ -194,14 +193,17 @@ setup $*
 
 # Executes the tests for differnt FS's
 for fstype in $FSTYPES; do
+	opts="-F"
 	if [ "$fstype" = "reiserfs" ]; then
 		opts="-f --journal-size 513 -q"
-	elif echo "$fstype" | grep -q "ext"; then
-		opts="-F"
+	elif [ "$fstype" = "jfs" ]; then
+		opts="-f"
+	elif [ "$fstype" = "xfs" ]; then
+		opts=""
 	fi
 
 	if [ "$fstype" != "ramfs" ]; then
-		tst_mkfs $fstype $device $opts
+		mkfs.$fstype $opts $device > /dev/null
 	fi
 
 	mount -t $fstype $device  dir1

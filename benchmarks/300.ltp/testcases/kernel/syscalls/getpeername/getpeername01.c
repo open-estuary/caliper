@@ -33,6 +33,7 @@
 #include <netinet/in.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 static struct sockaddr_in server_addr;
@@ -79,15 +80,21 @@ struct test_case_t {
 
 char *TCID = "getpeername01";
 int TST_TOTAL = ARRAY_SIZE(test_cases);
+static int exp_enos[] = { EBADF, ENOTSOCK, ENOTCONN, EFAULT, EINVAL, 0 };
 
 int main(int argc, char *argv[])
 {
 	int lc;
+	const char *msg;
 	int i;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); ++lc) {
 
@@ -101,6 +108,8 @@ int main(int argc, char *argv[])
 			TEST(getpeername(test_cases[i].sockfd,
 					 test_cases[i].sockaddr,
 					 test_cases[i].addrlen));
+
+			TEST_ERROR_LOG(TEST_ERRNO);
 
 			if (TEST_RETURN == test_cases[i].expretval &&
 			    TEST_ERRNO == test_cases[i].experrno) {
@@ -139,6 +148,7 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 }
 
 static void setup2(int i)

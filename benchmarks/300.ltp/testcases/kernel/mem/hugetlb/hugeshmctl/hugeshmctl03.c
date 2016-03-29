@@ -60,10 +60,9 @@
 
 #include <sys/types.h>
 #include <sys/wait.h>
-#include "hugetlb.h"
+#include "ipcshm.h"
 #include "safe_macros.h"
 #include "mem.h"
-#include "hugetlb.h"
 
 char *TCID = "hugeshmctl03";
 int TST_TOTAL = 3;
@@ -100,11 +99,13 @@ static void do_child(void);
 
 int main(int ac, char **av)
 {
+	const char *msg;
 	pid_t pid;
 	int status;
 
-	tst_parse_opts(ac, av, options, NULL);
-
+	msg = parse_opts(ac, av, options, &help);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 	if (sflag)
 		hugepages = SAFE_STRTOL(NULL, nr_opt, 0, LONG_MAX);
 
@@ -156,8 +157,7 @@ void setup(void)
 {
 	long hpage_size;
 
-	tst_require_root();
-	check_hugepage();
+	tst_require_root(NULL);
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 	tst_tmpdir();
 
@@ -167,20 +167,22 @@ void setup(void)
 
 	shm_size = hpage_size * hugepages / 2;
 	update_shm_size(&shm_size);
-	shmkey = getipckey(cleanup);
+	shmkey = getipckey();
 	shm_id_1 = shmget(shmkey, shm_size,
 			  SHM_HUGETLB | IPC_CREAT | IPC_EXCL | SHM_RW);
 	if (shm_id_1 == -1)
 		tst_brkm(TBROK | TERRNO, cleanup, "shmget");
 
 	/* get the userid for a non root user */
-	ltp_uid = getuserid(cleanup, ltp_user);
+	ltp_uid = getuserid(ltp_user);
 
 	TEST_PAUSE;
 }
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	rm_shm(shm_id_1);
 
 	set_sys_tune("nr_hugepages", orig_hugepages, 0);

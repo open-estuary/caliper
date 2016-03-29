@@ -52,7 +52,7 @@
  *	none
  */
 
-#include "hugetlb.h"
+#include "ipcshm.h"
 #include "safe_macros.h"
 #include "mem.h"
 
@@ -81,9 +81,11 @@ static option_t options[] = {
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, options, NULL);
-
+	msg = parse_opts(ac, av, options, &help);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 	if (sflag)
 		hugepages = SAFE_STRTOL(NULL, nr_opt, 0, LONG_MAX);
 
@@ -112,8 +114,7 @@ void setup(void)
 {
 	long hpage_size;
 
-	tst_require_root();
-	check_hugepage();
+	tst_require_root(NULL);
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 	tst_tmpdir();
 
@@ -152,6 +153,8 @@ void setup(void)
 void cleanup(void)
 {
 	int i;
+
+	TEST_CLEANUP;
 
 	for (i = 0; i < num_shms; i++)
 		rm_shm(shm_id_arr[i]);

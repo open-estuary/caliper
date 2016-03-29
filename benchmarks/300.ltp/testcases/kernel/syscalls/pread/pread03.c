@@ -79,6 +79,7 @@
 #include <sys/file.h>
 
 #include "test.h"
+#include "usctest.h"
 
 #define PREAD_TEMPDIR	"test"
 #define K1              2048
@@ -89,7 +90,8 @@ int TST_TOTAL = 1;
 
 char *read_buf[NBUFS];		/* buffer to hold data read from file */
 char test_dir[100];
-int fd1;
+int fd1;			/* file descriptor of temporary file */
+int exp_enos[] = { EISDIR, 0 };
 
 void setup();			/* Main setup function of test */
 void cleanup();			/* cleanup function for the test */
@@ -98,13 +100,17 @@ void init_buffers();		/* function to initialize/allocate buffers */
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	size_t nbytes;		/* no. of bytes to be written */
 	off_t offset;		/* offset position in the specified file */
 	char *test_desc;	/* test specific error message */
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	/* Check for looping state if -i option is given */
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
@@ -124,17 +130,19 @@ int main(int ac, char **av)
 				 TEST_RETURN, EISDIR);
 		}
 
+		TEST_ERROR_LOG(TEST_ERRNO);
+
 		/*
 		 * Verify whether expected errno is set.
 		 */
-		if (TEST_ERRNO == EISDIR) {
+		if (TEST_ERRNO == exp_enos[0]) {
 			tst_resm(TPASS,
 				 "pread() fails with expected error EISDIR errno:%d",
 				 TEST_ERRNO);
 		} else {
 			tst_resm(TFAIL, "pread() fails, %s, unexpected "
 				 "errno:%d, expected:%d\n", test_desc,
-				 TEST_ERRNO, EISDIR);
+				 TEST_ERRNO, exp_enos[0]);
 		}
 	}
 
@@ -212,7 +220,13 @@ void init_buffers(void)
  */
 void cleanup(void)
 {
-	int count;
+	int count;		/* index for the loop */
+
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	/* Free the memory allocated for the read buffer */
 	for (count = 0; count < NBUFS; count++) {

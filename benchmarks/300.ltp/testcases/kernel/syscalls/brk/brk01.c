@@ -41,6 +41,7 @@
 #include <sys/resource.h>
 
 #include "test.h"
+#include "usctest.h"
 
 #ifndef BSIZE
 #define BSIZE  BBSIZE
@@ -62,12 +63,14 @@ long Beg_brk_val;
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int incr;
 	long nbrkpt;		/* new brk point value */
 	long cur_brk_val;	/* current size returned by sbrk */
 	long aft_brk_val;	/* current size returned by sbrk */
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -204,6 +207,8 @@ void setup(void)
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
+
 }
 
 #else

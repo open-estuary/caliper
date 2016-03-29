@@ -40,6 +40,7 @@
 # include <xfs/xqm.h>
 #endif
 #include "test.h"
+#include "usctest.h"
 #include "linux_syscall_numbers.h"
 #include "safe_macros.h"
 
@@ -84,8 +85,11 @@ static struct test_case_t {
 int main(int argc, char *argv[])
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -194,7 +198,7 @@ static void check_getqstat(void)
 static void setup(void)
 {
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	TEST_PAUSE;
 
@@ -216,12 +220,13 @@ static void setup(void)
 
 static void cleanup(void)
 {
-	if (mount_flag && tst_umount(mntpoint) < 0)
+	if (mount_flag && umount(mntpoint) < 0)
 		tst_resm(TWARN | TERRNO, "umount(2) failed");
 
 	if (block_dev)
 		tst_release_device(NULL, block_dev);
 
+	TEST_CLEANUP;
 	tst_rmdir();
 }
 #else

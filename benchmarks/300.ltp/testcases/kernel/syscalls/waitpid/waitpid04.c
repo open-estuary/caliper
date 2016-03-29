@@ -46,9 +46,13 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include "test.h"
+#include "usctest.h"
 
 static void setup(void);
 static void cleanup(void);
+
+/* 0 terminated list of expected errnos */
+static int exp_enos[] = { 10, 22, 0 };
 
 char *TCID = "waitpid04";
 int TST_TOTAL = 1;
@@ -62,8 +66,11 @@ int main(int ac, char **av)
 	int pid, status, ret;
 
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -79,6 +86,7 @@ int main(int ac, char **av)
 			tst_resm(TFAIL, "condition %d test failed",
 				 condition_number);
 		} else {
+			TEST_ERROR_LOG(errno);
 			if (errno != ECHILD) {
 				tst_resm(TFAIL, "waitpid() set invalid "
 					 "errno, expected ECHILD, got: %d",
@@ -100,6 +108,7 @@ int main(int ac, char **av)
 			tst_resm(TFAIL, "condition %d test failed",
 				 condition_number);
 		} else {
+			TEST_ERROR_LOG(errno);
 			if (errno != ECHILD) {
 				tst_resm(TFAIL, "waitpid() set invalid "
 					 "errno, expected ECHILD, got: %d",
@@ -118,6 +127,7 @@ int main(int ac, char **av)
 			tst_resm(TFAIL, "condition %d test failed",
 				 condition_number);
 		} else {
+			TEST_ERROR_LOG(errno);
 			if (errno != EINVAL) {
 				tst_resm(TFAIL, "waitpid() set invalid "
 					 "errno, expected EINVAL, got: %d",
@@ -136,9 +146,12 @@ int main(int ac, char **av)
 
 static void setup(void)
 {
+	TEST_EXP_ENOS(exp_enos);
+
 	TEST_PAUSE;
 }
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 }

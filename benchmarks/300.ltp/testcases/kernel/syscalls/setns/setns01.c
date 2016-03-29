@@ -34,6 +34,7 @@
 #include <string.h>
 #include "config.h"
 #include "test.h"
+#include "usctest.h"
 #include "linux_syscall_numbers.h"
 #include "safe_macros.h"
 
@@ -189,8 +190,11 @@ static void test_setns(struct testcase_t *t)
 int main(int argc, char *argv[])
 {
 	int lc, testno;
+	const char *msg;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, tst_exit, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
@@ -203,7 +207,7 @@ int main(int argc, char *argv[])
 
 static void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	/* runtime check if syscall is supported */
 	ltp_syscall(__NR_setns, -1, 0);
@@ -225,6 +229,7 @@ static void cleanup(void)
 {
 	close_ns_fds();
 	tst_rmdir();
+	TEST_CLEANUP;
 }
 #else
 int main(int argc, char *argv[])

@@ -45,6 +45,7 @@
 #include <sys/mount.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 #define DIR_TEMP		"testdir_1"
@@ -80,6 +81,7 @@ static struct test_case_t {
 
 char *TCID = "mknod07";
 int TST_TOTAL = ARRAY_SIZE(test_cases);
+static int exp_enos[] = { EPERM, EACCES, EROFS, ELOOP, 0 };
 
 static void setup(void);
 static void mknod_verify(const struct test_case_t *test_case);
@@ -88,9 +90,12 @@ static void cleanup(void);
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int i;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -111,9 +116,11 @@ static void setup(void)
 	struct passwd *ltpuser;
 	const char *fs_type;
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
+
+	TEST_EXP_ENOS(exp_enos);
 
 	tst_tmpdir();
 
@@ -171,10 +178,12 @@ static void mknod_verify(const struct test_case_t *test_case)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	if (seteuid(0) == -1)
 		tst_resm(TWARN | TERRNO, "seteuid(0) failed");
 
-	if (mount_flag && tst_umount(MNT_POINT) < 0)
+	if (mount_flag && umount(MNT_POINT) < 0)
 		tst_resm(TWARN | TERRNO, "umount device:%s failed", device);
 
 	if (device)

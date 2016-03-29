@@ -55,6 +55,7 @@
 #include <termio.h>
 #include <termios.h>
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "ioctl01";
 int TST_TOTAL = 5;
@@ -64,6 +65,8 @@ int TST_TOTAL = 5;
 static void setup(void);
 static void cleanup(void);
 static void help(void);
+
+static int exp_enos[] = { EBADF, EFAULT, ENOTTY, ENOTTY, EFAULT, 0 };
 
 static int fd, fd1;
 static int bfd = -1;
@@ -99,6 +102,7 @@ static struct test_case_t {
 static int Devflag;
 static char *devname;
 
+/* for test specific parse_opts options - in this case "-D" */
 static option_t options[] = {
 	{"D:", &Devflag, &devname},
 	{NULL, NULL, NULL}
@@ -108,20 +112,25 @@ int main(int ac, char **av)
 {
 	int lc;
 	int i;
+	const char *msg;
 
-	tst_parse_opts(ac, av, options, &help);
+	msg = parse_opts(ac, av, options, &help);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	if (!Devflag)
 		tst_brkm(TBROK, NULL, "You must specify a tty device with "
 			 "the -D option.");
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	setup();
 
 	fd = open(devname, O_RDWR, 0777);
 	if (fd == -1)
 		tst_brkm(TBROK | TERRNO, cleanup, "Couldn't open %s", devname);
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -136,6 +145,8 @@ int main(int ac, char **av)
 				tst_resm(TFAIL, "call succeeded unexpectedly");
 				continue;
 			}
+
+			TEST_ERROR_LOG(TEST_ERRNO);
 
 			if (TEST_ERRNO == TC[i].error)
 				tst_resm(TPASS | TTERRNO, "failed as expected");
@@ -165,6 +176,7 @@ static void setup(void)
 	tst_tmpdir();
 
 	if (tst_kvercmp(3, 7, 0) < 0) {
+		exp_enos[2] = EINVAL;
 		TC[2].error = EINVAL;
 	}
 
@@ -176,6 +188,8 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	close(fd1);
 
 	tst_rmdir();

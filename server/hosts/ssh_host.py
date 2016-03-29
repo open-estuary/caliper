@@ -87,8 +87,8 @@ class SSHHost(abstract_ssh.AbstractSSHHost):
             raise error.ServRunError("command execution error", result)
 
         return result
-#fixme what should be the ideal timeout value ?
-    def run(self, command, timeout=14400, ignore_status=False,
+
+    def run(self, command, timeout=7200, ignore_status=False,
             stdout_tee=utils.TEE_TO_LOGS,
             stderr_tee=utils.TEE_TO_LOGS, connect_timeout=30, options='',
             stdin=None, verbose=True, args=()):

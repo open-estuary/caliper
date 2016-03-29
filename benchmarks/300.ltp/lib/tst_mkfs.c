@@ -45,7 +45,7 @@ void tst_mkfs(void (cleanup_fn)(void), const char *dev,
 		/*
 		 * The -f option was added to btrfs-progs v3.12
 		 */
-		if (!tst_system("mkfs.btrfs 2>&1 | grep -q '\\-f[ |]'")) {
+		if (!tst_system("mkfs.btrfs 2>&1 | grep '\\-f ' >/dev/null")) {
 			tst_resm(TINFO, "Appending '-f' flag to mkfs.%s",
 				fs_type);
 			argv[pos++] = "-f";
@@ -72,7 +72,7 @@ void tst_mkfs(void (cleanup_fn)(void), const char *dev,
 
 	tst_resm(TINFO, "Formatting %s with %s extra opts='%s'",
 		 dev, fs_type, fs_opts_str);
-	tst_run_cmd(cleanup_fn, argv, "/dev/null", NULL, 0);
+	tst_run_cmd(cleanup_fn, argv, "/dev/null", NULL);
 }
 
 const char *tst_dev_fs_type(void)

@@ -601,7 +601,8 @@ static void update_mask_sizes()
 			nodemask_sz = s2nbits(buf + strlen(nodemask_prefix));
 	}
 done:
-	free(buf);
+	if (buf != NULL)
+		free(buf);
 	if (fp != NULL)
 		fclose(fp);
 	if (cpumask_sz == 0)
@@ -633,7 +634,8 @@ err:
 		bitmask_free(cp->cpus);
 	if (cp && cp->mems)
 		bitmask_free(cp->mems);
-	free(cp);
+	if (cp)
+		free(cp);
 	return NULL;
 }
 
@@ -2586,7 +2588,8 @@ static void add_pidblock(const char *file, struct pidblock **ppbhead)
 err:
 	if (fp)
 		fclose(fp);
-	free(pb);
+	if (pb)
+		free(pb);
 }
 
 static void read_task_file(const char *relpath, struct pidblock **ppbhead)
@@ -2719,7 +2722,8 @@ void cpuset_freepidlist(struct cpuset_pidlist *pl)
 {
 	if (pl && pl->pids)
 		free(pl->pids);
-	free(pl);
+	if (pl)
+		free(pl);
 }
 
 static int __cpuset_move(pid_t pid, const char *path)
@@ -3651,7 +3655,8 @@ eol:
 err:
 	if (elinenum)
 		*elinenum = linenum;
-	free(linebuf);
+	if (linebuf)
+		free(linebuf);
 	return -1;
 }
 

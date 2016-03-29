@@ -36,6 +36,7 @@
 #include <signal.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 #include "lapi/fcntl.h"
 #include "openat.h"
@@ -45,7 +46,7 @@ static void cleanup(void);
 
 char *TCID = "openat01";
 
-static int dir_fd, fd;
+static int dirfd, fd;
 static int fd_invalid = 100;
 static int fd_atcwd = AT_FDCWD;
 
@@ -55,13 +56,13 @@ static int fd_atcwd = AT_FDCWD;
 static char glob_path[256];
 
 static struct test_case {
-	int *dir_fd;
+	int *dirfd;
 	const char *pathname;
 	int exp_ret;
 	int exp_errno;
 } test_cases[] = {
-	{&dir_fd, TEST_FILE, 0, 0},
-	{&dir_fd, glob_path, 0, 0},
+	{&dirfd, TEST_FILE, 0, 0},
+	{&dirfd, glob_path, 0, 0},
 	{&fd, TEST_FILE, -1, ENOTDIR},
 	{&fd_invalid, TEST_FILE, -1, EBADF},
 	{&fd_atcwd, TEST_DIR TEST_FILE, 0, 0}
@@ -71,7 +72,7 @@ int TST_TOTAL = ARRAY_SIZE(test_cases);
 
 static void verify_openat(struct test_case *test)
 {
-	TEST(openat(*test->dir_fd, test->pathname, O_RDWR, 0600));
+	TEST(openat(*test->dirfd, test->pathname, O_RDWR, 0600));
 
 	if ((test->exp_ret == -1 && TEST_RETURN != -1) ||
 	    (test->exp_ret == 0 && TEST_RETURN < 0)) {
@@ -97,9 +98,11 @@ static void verify_openat(struct test_case *test)
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int i;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -123,7 +126,7 @@ static void setup(void)
 	tst_tmpdir();
 
 	SAFE_MKDIR(cleanup, TEST_DIR, 0700);
-	dir_fd = SAFE_OPEN(cleanup, TEST_DIR, O_DIRECTORY);
+	dirfd = SAFE_OPEN(cleanup, TEST_DIR, O_DIRECTORY);
 	fd = SAFE_OPEN(cleanup, TEST_DIR TEST_FILE, O_CREAT | O_RDWR, 0600);
 
 	tmpdir = tst_get_tmpdir();
@@ -139,8 +142,10 @@ static void cleanup(void)
 	if (fd > 0 && close(fd))
 		tst_resm(TWARN | TERRNO, "close(fd) failed");
 
-	if (dir_fd > 0 && close(dir_fd))
-		tst_resm(TWARN | TERRNO, "close(dir_fd) failed");
+	if (dirfd > 0 && close(dirfd))
+		tst_resm(TWARN | TERRNO, "close(dirfd) failed");
 
 	tst_rmdir();
+
+	TEST_CLEANUP;
 }

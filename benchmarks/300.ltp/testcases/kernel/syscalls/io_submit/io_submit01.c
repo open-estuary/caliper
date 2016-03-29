@@ -23,6 +23,7 @@
 
 #include "config.h"
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "io_submit01";
 
@@ -38,6 +39,8 @@ int TST_TOTAL = 3;
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	tst_rmdir();
 }
 
@@ -87,6 +90,7 @@ static void check_result(long exp, long act)
 int main(int argc, char *argv[])
 {
 	int lc;
+	const char *msg;
 
 	int rval, fd;
 	char buf[256];
@@ -94,7 +98,8 @@ int main(int argc, char *argv[])
 	struct iocb *iocbs[1];
 	io_context_t ctx;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 

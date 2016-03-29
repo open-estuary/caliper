@@ -67,6 +67,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "test.h"
+#include "usctest.h"
 #include <errno.h>
 #include "compat_16.h"
 
@@ -74,6 +75,7 @@ TCID_DEFINE(setresuid01);
 
 uid_t nobody_pw_uid, root_pw_uid, bin_pw_uid;
 uid_t neg_one = -1;
+int exp_enos[] = { 0 };
 
 struct passwd nobody, bin, root;
 
@@ -122,8 +124,12 @@ uid_verify(struct passwd *ru, struct passwd *eu, struct passwd *su, char *when);
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+
+	}
 
 	setup();
 
@@ -140,6 +146,7 @@ int main(int ac, char **av)
 				       *test_data[i].sav_uid));
 
 			if (TEST_RETURN == -1) {
+				TEST_ERROR_LOG(TEST_ERRNO);
 				tst_resm(TFAIL, "setresuid(%d, %d, %d) failed",
 					 *test_data[i].real_uid,
 					 *test_data[i].eff_uid,
@@ -163,7 +170,7 @@ int main(int ac, char **av)
  */
 void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
@@ -174,6 +181,9 @@ void setup(void)
 	if (getpwnam("bin") == NULL) {
 		tst_brkm(TBROK, NULL, "bin must be a valid user.");
 	}
+
+	/* set the expected errnos... */
+	TEST_EXP_ENOS(exp_enos);
 
 	root = *(getpwnam("root"));
 	UID16_CHECK((root_pw_uid = root.pw_uid), "setresuid", cleanup)
@@ -197,6 +207,11 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }
 

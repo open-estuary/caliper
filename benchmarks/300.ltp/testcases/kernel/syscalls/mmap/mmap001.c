@@ -29,6 +29,7 @@
 #include <string.h>
 
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "mmap001";
 int TST_TOTAL = 5;
@@ -39,6 +40,8 @@ static char *m_copt;
 static void cleanup(void)
 {
 	free(filename);
+
+	TEST_CLEANUP;
 
 	tst_rmdir();
 }
@@ -81,11 +84,13 @@ option_t options[] = {
 int main(int argc, char *argv[])
 {
 	char *array;
+	const char *msg;
 	int i, lc;
 	int fd;
 	unsigned int pages, memsize;
 
-	tst_parse_opts(argc, argv, options, help);
+	if ((msg = parse_opts(argc, argv, options, help)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	if (m_opt) {
 		memsize = pages = atoi(m_copt);

@@ -46,8 +46,11 @@ do_clean()
 		rm /var/run/hotplug4_$$.pid
 	fi
 
-	# Restore CPU states
-	set_all_cpu_states "$cpu_states"
+	# Turn off the CPUs that were off before the test start
+	until [ $cpu -eq 0 ];do
+		offline_cpu $(eval "echo \$on_${cpu}")
+		cpu=$((cpu-1))
+	done
 }
 
 while getopts c:l: OPTION; do
@@ -63,8 +66,8 @@ done
 
 LOOP_COUNT=1
 
-cpus_num=$(get_present_cpus_num)
-if [ $cpus_num -lt 2 ]; then
+get_cpus_num
+if [ $? -lt 2 ]; then
 	tst_brkm TCONF "system doesn't have required CPU hotplug support"
 fi
 
@@ -79,17 +82,23 @@ fi
 
 TST_CLEANUP=do_clean
 
-cpu_states=$(get_all_cpu_states)
-
 until [ $LOOP_COUNT -gt $HOTPLUG03_LOOPS ]; do
+	cpu=0
+	number_of_cpus=0
 
-	# Turns on all CPUs
-	for i in $( get_hotplug_cpus ); do
+	# Turns on all CPUs and saves their states
+	for i in $( get_all_cpus ); do
+            if [ "$i" = "cpu0" ]; then
+                continue
+            fi
             if ! cpu_is_online $i; then
 				if ! online_cpu $i; then
                     tst_brkm TBROK "Could not online cpu $i"
                 fi
+				cpu=$((cpu+1))
+                eval "on_${cpu}=$i"
             fi
+		number_of_cpus=$((number_of_cpus+1))
 	done
 
 	if ! offline_cpu ${CPU_TO_TEST} ; then
@@ -100,11 +109,11 @@ until [ $LOOP_COUNT -gt $HOTPLUG03_LOOPS ]; do
 	# CPUs we have.  This is to help ensure we've got enough processes
 	# that at least one will migrate to the new CPU.  Store the PIDs
 	# so we can kill them later.
-	number_of_procs=$((cpus_num*2))
-	until [ $number_of_procs -eq 0 ]; do
+	number_of_cpus=$((number_of_cpus*2))
+	until [ $number_of_cpus -eq 0 ]; do
 		cpuhotplug_do_spin_loop > /dev/null 2>&1 &
 		echo $! >> /var/run/hotplug4_$$.pid
-		number_of_procs=$((number_of_procs-1))
+		number_of_cpus=$((number_of_cpus-1))
 	done
 
 	ps aux | head -n 1

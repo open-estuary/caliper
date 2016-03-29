@@ -40,13 +40,19 @@
 #include <sys/msg.h>		/* needed for test              */
 #include <stdio.h>		/* needed by testhead.h         */
 #include "test.h"
+#include "usctest.h"
 #include "ipcmsg.h"
 
 void setup();
 void cleanup();
+/*
+ *  *  * These globals must be defined in the test.
+ *   *   */
 
-char *TCID = "msgctl06";
-int TST_TOTAL = 1;
+char *TCID = "msgctl06";	/* Test program identifier.    */
+int TST_TOTAL = 1;		/* Total number of test cases. */
+
+int exp_enos[] = { 0 };		/* List must end with 0 */
 
 /*
  * msgctl3_t -- union of msgctl(2)'s possible argument # 3 types.
@@ -123,8 +129,6 @@ int main(int argc, char *argv[])
  *   ****************************************************************/
 void setup(void)
 {
-	tst_require_root();
-
 	/* You will want to enable some signal handling so you can capture
 	 * unexpected signals like SIGSEGV.
 	 */
@@ -151,6 +155,12 @@ void setup(void)
 void cleanup(void)
 {
 	int status;
+
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	/*
 	 * Remove the message queue from the system

@@ -59,6 +59,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include "test.h"
+#include "usctest.h"
 
 #define	FAILED		1
 #define	VAL_SEC		100
@@ -69,6 +70,7 @@ char *TCID = "settimeofday01";
 int TST_TOTAL = 1;
 time_t save_tv_sec, save_tv_usec;
 struct timeval tp, tp1, tp2;
+int exp_enos[] = { EFAULT, 0 };
 
 void setup(void);
 void cleanup(void);
@@ -78,9 +80,13 @@ void cleanup(void);
 int main(int argc, char **argv)
 {
 	int lc;
+	const char *msg;
 	suseconds_t delta;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+
+	}
 
 	setup();
 
@@ -89,12 +95,12 @@ int main(int argc, char **argv)
 		/* reset tst_count in case we are looping */
 		tst_count = 0;
 
-		gettimeofday(&tp, NULL);
-		tp.tv_sec += VAL_SEC;
-		tp.tv_usec += VAL_MSEC;
+		tp.tv_sec = VAL_SEC;
+		tp.tv_usec = VAL_MSEC;
 
 		TEST(settimeofday(&tp, NULL));
 		if (TEST_RETURN == -1) {
+			TEST_ERROR_LOG(TEST_ERRNO);
 			tst_resm(TFAIL, "Error Setting Time, errno=%d",
 				 TEST_ERRNO);
 		}
@@ -124,6 +130,7 @@ int main(int argc, char **argv)
 		/* Invalid Args : Error Condition where tp = NULL */
 		TEST(settimeofday((struct timeval *)-1, NULL));
 		if (TEST_RETURN == -1) {
+			TEST_ERROR_LOG(TEST_ERRNO);
 			tst_resm(TPASS, "Test condition %d successful",
 				 condition_number++);
 		} else {
@@ -153,9 +160,12 @@ int main(void)
  */
 void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
+
+	/* set the expected errnos... */
+	TEST_EXP_ENOS(exp_enos);
 
 	/* Pause if that option was specified
 	 * TEST_PAUSE contains the code to fork the test with the -c option.
@@ -185,5 +195,11 @@ void cleanup(void)
 		tst_resm(TWARN, "FATAL COULD NOT RESET THE CLOCK");
 		tst_resm(TFAIL, "Error Setting Time, errno=%d", errno);
 	}
+
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }

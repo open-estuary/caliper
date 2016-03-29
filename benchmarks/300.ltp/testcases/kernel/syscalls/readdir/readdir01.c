@@ -115,7 +115,12 @@
 #include <errno.h>
 #include <string.h>
 #include <signal.h>
+ /* test.h and usctest.h are the two header files that are required by the
+  * quickhit package.  They contain function and macro declarations which you
+  * can use in your test programs
+  */
 #include "test.h"
+#include "usctest.h"
 
  /* The setup and cleanup functions are basic parts of a test case.  These
   * steps are usually put in separate functions for clarity.  The help function
@@ -128,15 +133,25 @@ void cleanup();
 char *TCID = "readdir01";
 int TST_TOTAL = 2;
 
+int exp_enos[] = { 0, 0 };
+
 #define BASENAME	"readdirfile"
 
 char Basename[255];
 char Fname[255];
 int Nfiles = 0;
 
+/* To add command line options you need to declare a structure to pass to
+ * parse_opts().  options is the structure used in this example.  The format is
+ * the string that should be added to optstring in getopt(3), an integer that
+ * will be used as a flag if the option is given, and a pointer to a string that
+ * should receive the optarg parameter from getopt(3).  Here we add a -N
+ * option.  Long options are not supported at this time.
+ */
 char *Nfilearg;
 int Nflag = 0;
 
+/* for test specific parse_opts options */
 option_t options[] = {
 	{"N:", &Nflag, &Nfilearg},	/* -N #files */
 	{NULL, NULL, NULL}
@@ -148,13 +163,23 @@ option_t options[] = {
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int cnt;
 	int nfiles, fd;
 	char fname[255];
 	DIR *test_dir;
 	struct dirent *dptr;
 
-	tst_parse_opts(ac, av, options, &help);
+    /***************************************************************
+     * parse standard options
+     ***************************************************************/
+	/* start off by parsing the command line options.  We provide a function
+	 * that understands many common options to control looping.  If you are not
+	 * adding any new options, pass NULL in place of options and &help.
+	 */
+	if ((msg = parse_opts(ac, av, options, &help)) != 0) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	if (Nflag) {
 		if (sscanf(Nfilearg, "%i", &Nfiles) != 1) {
@@ -169,6 +194,9 @@ int main(int ac, char **av)
 	 * sane.
 	 */
 	setup();
+
+	/* set the expected errnos... */
+	TEST_EXP_ENOS(exp_enos);
 
     /***************************************************************
      * check looping state
@@ -199,7 +227,7 @@ int main(int ac, char **av)
 					 "write(%s, \"hello\\n\", 6) Failed, errno=%d : %s",
 					 fname, errno, strerror(errno));
 			} else if (close(fd) < 0) {
-				tst_resm(TWARN,
+				tst_res(TWARN,
 					"close(%s) Failed, errno=%d : %s",
 					fname, errno, strerror(errno));
 			}
@@ -247,7 +275,7 @@ int main(int ac, char **av)
 			sprintf(fname, "%s%d", Basename, cnt);
 
 			if (unlink(fname) == -1) {
-				tst_resm(TWARN,
+				tst_res(TWARN,
 					"unlink(%s) Failed, errno=%d : %s",
 					Fname, errno, strerror(errno));
 			}
@@ -307,6 +335,11 @@ void setup(void)
  ***************************************************************/
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	/* If you use a temporary directory, you need to be sure you remove it. Use
 	 * tst_rmdir() to do it automatically.$

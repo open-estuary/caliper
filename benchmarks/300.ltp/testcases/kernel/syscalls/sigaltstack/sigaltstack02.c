@@ -78,11 +78,13 @@
 #include <errno.h>
 
 #include "test.h"
+#include "usctest.h"
 
 #define INVAL_FLAGS	9999
 
 char *TCID = "sigaltstack02";
 int TST_TOTAL = 2;
+int exp_enos[] = { EINVAL, ENOMEM, 0 };
 
 stack_t sigstk;			/* signal stack storing struct. */
 
@@ -110,12 +112,19 @@ struct test_case_t {		/* test case struct. to hold diff. test.conds */
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	char *test_desc;	/* test specific error message */
 	int ind;		/* counter to test different test conditions */
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	setup();
+
+	/* set the expected errnos... */
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -131,6 +140,7 @@ int main(int ac, char **av)
 
 			/* Check return code from sigaltstack() */
 			if (TEST_RETURN == -1) {
+				TEST_ERROR_LOG(TEST_ERRNO);
 				if (TEST_ERRNO ==
 				    Test_cases[ind].exp_errno) {
 					tst_resm(TPASS, "stgaltstack() "
@@ -185,6 +195,11 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	free(sigstk.ss_sp);
 

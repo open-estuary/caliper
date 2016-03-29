@@ -66,7 +66,7 @@ safe_close(const char *file, const int lineno, void (*cleanup_fn) (void),
 
 int
 safe_creat(const char *file, const int lineno, void (*cleanup_fn) (void),
-	   const char *pathname, mode_t mode)
+	   char *pathname, mode_t mode)
 {
 	int rval;
 
@@ -252,22 +252,6 @@ ssize_t safe_read(const char *file, const int lineno, void (*cleanup_fn) (void),
 	return rval;
 }
 
-ssize_t safe_pread(const char *file, const int lineno, void (*cleanup_fn)(void),
-		   char len_strict, int fildes, void *buf, size_t nbyte,
-		   off_t offset)
-{
-	ssize_t rval;
-
-	rval = pread(fildes, buf, nbyte, offset);
-	if (rval == -1 || (len_strict && (size_t)rval != nbyte)) {
-		tst_brkm(TBROK | TERRNO, cleanup_fn,
-			 "%s:%d: read(%d,%p,%zu,%ld) failed, returned %zd",
-			 file, lineno, fildes, buf, nbyte, offset, rval);
-	}
-
-	return rval;
-}
-
 int safe_setegid(const char *file, const int lineno, void (*cleanup_fn) (void),
                  gid_t egid)
 {
@@ -414,26 +398,10 @@ ssize_t safe_write(const char *file, const int lineno, void (cleanup_fn) (void),
 	ssize_t rval;
 
 	rval = write(fildes, buf, nbyte);
-	if (rval == -1 || (len_strict && (size_t)rval != nbyte)) {
+	if ((len_strict == 0 && rval == -1) || (size_t)rval != nbyte) {
 		tst_brkm(TBROK | TERRNO, cleanup_fn,
 			 "%s:%d: write(%d,%p,%zu) failed",
 		         file, lineno, fildes, buf, rval);
-	}
-
-	return rval;
-}
-
-ssize_t safe_pwrite(const char *file, const int lineno,
-		    void (cleanup_fn) (void), char len_strict, int fildes,
-		    const void *buf, size_t nbyte, off_t offset)
-{
-	ssize_t rval;
-
-	rval = pwrite(fildes, buf, nbyte, offset);
-	if (rval == -1 || (len_strict && (size_t)rval != nbyte)) {
-		tst_brkm(TBROK | TERRNO, cleanup_fn,
-			 "%s:%d: pwrite(%d,%p,%zu,%ld) failed",
-			 file, lineno, fildes, buf, rval, offset);
 	}
 
 	return rval;
@@ -709,53 +677,5 @@ int safe_umount(const char *file, const int lineno, void (*cleanup_fn)(void),
 			 file, lineno, target);
 	}
 
-	return rval;
-}
-
-DIR* safe_opendir(const char *file, const int lineno, void (cleanup_fn)(void),
-                  const char *name)
-{
-	DIR *rval;
-
-	rval = opendir(name);
-
-	if (!rval) {
-		tst_brkm(TBROK | TERRNO, cleanup_fn,
-		         "%s:%d: opendir(%s) failed", file, lineno, name);
-	}
-
-	return rval;
-}
-
-int safe_closedir(const char *file, const int lineno, void (cleanup_fn)(void),
-                  DIR *dirp)
-{
-	int rval;
-
-	rval = closedir(dirp);
-
-	if (rval) {
-		tst_brkm(TBROK | TERRNO, cleanup_fn,
-		         "%s:%d: closedir(%p) failed", file, lineno, dirp);
-	}
-
-	return rval;
-}
-
-struct dirent *safe_readdir(const char *file, const int lineno, void (cleanup_fn)(void),
-                            DIR *dirp)
-{
-	struct dirent *rval;
-	int err = errno;
-
-	errno = 0;
-	rval = readdir(dirp);
-
-	if (!rval && errno) {
-		tst_brkm(TBROK | TERRNO, cleanup_fn,
-		         "%s:%d: readdir(%p) failed", file, lineno, dirp);
-	}
-
-	errno = err;
 	return rval;
 }

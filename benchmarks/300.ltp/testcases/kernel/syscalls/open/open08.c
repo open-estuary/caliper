@@ -57,6 +57,7 @@
 #include <signal.h>
 #include <pwd.h>
 #include "test.h"
+#include "usctest.h"
 
 static void setup(void);
 static void cleanup(void);
@@ -65,6 +66,9 @@ char *TCID = "open08";
 
 static char nobody_uid[] = "nobody";
 static struct passwd *ltpuser;
+
+static int exp_enos[] = {EEXIST, EISDIR, ENOTDIR, ENAMETOOLONG,
+			 EACCES, EFAULT, 0};
 
 static char *bad_addr;
 
@@ -92,11 +96,16 @@ int TST_TOTAL = sizeof(TC) / sizeof(TC[0]);
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int i;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		tst_count = 0;
@@ -109,6 +118,8 @@ int main(int ac, char **av)
 				tst_resm(TFAIL, "call succeeded unexpectedly");
 				continue;
 			}
+
+			TEST_ERROR_LOG(TEST_ERRNO);
 
 			if (TEST_ERRNO == TC[i].error) {
 				tst_resm(TPASS, "expected failure - "
@@ -130,7 +141,7 @@ static void setup(void)
 {
 	int fildes;
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -170,5 +181,6 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 	tst_rmdir();
 }

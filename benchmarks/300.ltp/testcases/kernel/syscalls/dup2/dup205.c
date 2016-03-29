@@ -37,11 +37,10 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "dup205";
 int TST_TOTAL = 1;
-int *fildes;
-int min;
 int local_flag;
 
 #define PASSED 1
@@ -52,21 +51,31 @@ static void cleanup(void);
 
 int main(int ac, char *av[])
 {
+	int *fildes;
 	int ifile;
 	char pfilname[40];
+	int min;
 	int serrno;
 
 	int lc;
+	const char *msg;
 
 	ifile = -1;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	local_flag = PASSED;
 
 	setup();
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
+
+		min = getdtablesize();	/* get number of files allowed open */
+
+		fildes = malloc((min + 10) * sizeof(int));
+		if (fildes == NULL)
+			tst_brkm(TBROK | TERRNO, cleanup, "malloc error");
 
 		sprintf(pfilname, "./dup205.%d\n", getpid());
 		unlink(pfilname);
@@ -119,16 +128,9 @@ int main(int ac, char *av[])
 static void setup(void)
 {
 	tst_tmpdir();
-
-	min = getdtablesize();	/* get number of files allowed open */
-	fildes = malloc((min + 10) * sizeof(int));
-	if (fildes == NULL)
-		tst_brkm(TBROK | TERRNO, cleanup, "malloc error");
 }
 
 static void cleanup(void)
 {
-	if (fildes != NULL)
-		free(fildes);
 	tst_rmdir();
 }

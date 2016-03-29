@@ -70,9 +70,12 @@ static void check_functionality(int);
 int main(int argc, char *argv[])
 {
 	int lc, i;
+	const char *msg;
 	void *attchaddr;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -238,4 +241,6 @@ void cleanup(void)
 		free(TC);
 
 	tst_rmdir();
+
+	TEST_CLEANUP;
 }

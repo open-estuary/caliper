@@ -69,20 +69,25 @@
 #include <signal.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "common_timers.h"
 
 void setup(void);
-static clockid_t clocks[2] = { CLOCK_REALTIME, CLOCK_MONOTONIC };
 
-char *TCID = "clock_gettime02";
-int TST_TOTAL = ARRAY_SIZE(clocks);
+char *TCID = "clock_gettime02";	/* Test program identifier.    */
+int TST_TOTAL;			/* Total number of test cases. */
 
 int main(int ac, char **av)
 {
 	int lc, i;
+	const char *msg;
 	struct timespec spec;
+	clockid_t clocks[2] = { CLOCK_REALTIME, CLOCK_MONOTONIC };
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+
+	TST_TOTAL = sizeof(clocks) / sizeof(clocks[0]);
 
 	setup();
 
@@ -117,4 +122,9 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 }

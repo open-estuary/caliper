@@ -61,6 +61,7 @@
  */
 
 #include "ipcsem.h"
+#include "libtestsuite.h"
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -68,7 +69,11 @@
 char *TCID = "semop05";
 int TST_TOTAL = 4;
 
+int exp_enos[] = { EINTR, EIDRM, 0 };	/* 0 terminated list of expected errnos */
+
 int sem_id_1 = -1;
+
+int sync_pipes[2];
 
 struct sembuf s_buf;
 
@@ -102,11 +107,13 @@ static int i_uclinux;
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int i;
 	pid_t pid;
 	void do_child();
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 #ifdef UCLINUX
 	maybe_run_child(&do_child_uclinux, "dd", &i_uclinux, &sem_id_1);
@@ -121,6 +128,10 @@ int main(int ac, char **av)
 		tst_count = 0;
 
 		for (i = 0; i < TST_TOTAL; i++) {
+
+			if (sync_pipe_create(sync_pipes, PIPE_NAME) == -1)
+				tst_brkm(TBROK, cleanup,
+					 "sync_pipe_create failed");
 
 			/* initialize the s_buf buffer */
 			s_buf.sem_op = TC[i].op;
@@ -147,8 +158,24 @@ int main(int ac, char **av)
 #else
 				do_child(i);
 #endif
-			} else {
-				TST_PROCESS_STATE_WAIT(cleanup, pid, 'S');
+			} else {	/* parent */
+
+				if (sync_pipe_wait(sync_pipes) == -1)
+					tst_brkm(TBROK, cleanup,
+						 "sync_pipe_wait failed: %d",
+						 errno);
+
+				if (sync_pipe_close(sync_pipes, PIPE_NAME) ==
+				    -1)
+					tst_brkm(TBROK, cleanup,
+						 "sync_pipe_close failed: %d",
+						 errno);
+
+				/* After son has been created, give it a chance to execute the
+				 * semop command before we continue. Without this sleep, on SMP machine
+				 * the father rm_sema/kill could be executed before the son semop.
+				 */
+				sleep(1);
 
 				/*
 				 * If we are testing for EIDRM then remove
@@ -195,6 +222,16 @@ int main(int ac, char **av)
  */
 void do_child(int i)
 {
+#ifdef UCLINUX
+	if (sync_pipe_create(sync_pipes, PIPE_NAME) == -1)
+		tst_brkm(TBROK, cleanup, "sync_pipe_create failed");
+#endif
+	if (sync_pipe_notify(sync_pipes) == -1)
+		tst_brkm(TBROK, cleanup, "sync_pipe_notify failed: %d", errno);
+
+	if (sync_pipe_close(sync_pipes, PIPE_NAME) == -1)
+		tst_brkm(TBROK, cleanup, "sync_pipe_close failed: %d", errno);
+
 	/*
 	 * make the call with the TEST macro
 	 */
@@ -205,6 +242,8 @@ void do_child(int i)
 		tst_resm(TFAIL, "call succeeded when error expected");
 		exit(-1);
 	}
+
+	TEST_ERROR_LOG(TEST_ERRNO);
 
 	if (TEST_ERRNO == TC[i].error) {
 		tst_resm(TPASS, "expected failure - errno = %d"
@@ -253,6 +292,9 @@ void setup(void)
 
 	tst_sig(FORK, sighandler, cleanup);
 
+	/* Set up the expected error numbers for -e option */
+	TEST_EXP_ENOS(exp_enos);
+
 	TEST_PAUSE;
 
 	/*
@@ -275,7 +317,7 @@ void setup(void)
 
 /*
  * cleanup() - performs all the ONE TIME cleanup for this test at completion
- *	       or premature exit.
+ * 	       or premature exit.
  */
 void cleanup(void)
 {
@@ -283,4 +325,11 @@ void cleanup(void)
 	rm_sema(sem_id_1);
 
 	tst_rmdir();
+
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
+
 }

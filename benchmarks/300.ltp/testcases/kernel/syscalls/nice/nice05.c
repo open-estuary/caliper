@@ -115,6 +115,7 @@
 #include <string.h>
 #include <signal.h>
 #include "test.h"
+#include "usctest.h"
 
 void setup();
 void cleanup();
@@ -127,11 +128,15 @@ int val;
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
     /***************************************************************
      * parse standard options
      ***************************************************************/
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+
+	}
 
     /***************************************************************
      * perform global setup for test
@@ -153,6 +158,7 @@ int main(int ac, char **av)
 
 		/* check return code */
 		if (TEST_RETURN == -1) {
+			TEST_ERROR_LOG(TEST_ERRNO);
 			tst_resm(TFAIL, "nice(%d) Failed, errno=%d : %s", val,
 				 TEST_ERRNO, strerror(TEST_ERRNO));
 		} else {
@@ -186,5 +192,10 @@ void setup(void)
  ***************************************************************/
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }

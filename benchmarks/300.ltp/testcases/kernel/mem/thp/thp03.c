@@ -48,6 +48,7 @@
 #include "mem.h"
 #include "safe_macros.h"
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "thp03";
 int TST_TOTAL = 1;
@@ -63,8 +64,11 @@ static long page_size;
 int main(int argc, char **argv)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -113,9 +117,6 @@ static void thp_test(void)
 
 void setup(void)
 {
-	if (access(PATH_THP, F_OK) == -1)
-		tst_brkm(TCONF, NULL, "THP not enabled in kernel?");
-
 	hugepage_size = read_meminfo("Hugepagesize:") * KB;
 	unaligned_size = hugepage_size * 4 - 1;
 	page_size = SAFE_SYSCONF(NULL, _SC_PAGESIZE);
@@ -126,6 +127,7 @@ void setup(void)
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
 }
 
 #else

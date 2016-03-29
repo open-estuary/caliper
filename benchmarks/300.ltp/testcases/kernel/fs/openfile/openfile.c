@@ -36,6 +36,7 @@
 #include <unistd.h>
 
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "openfile01";	/* Test program identifier.    */
 int TST_TOTAL = 1;

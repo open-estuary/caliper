@@ -216,6 +216,7 @@
 #include <stdint.h>
 
 #include "test.h"
+#include "usctest.h"
 
 void setup(void);
 void cleanup(void);
@@ -518,8 +519,15 @@ int main(int argc, char *argv[])
 {
 	struct tcses *tcs_ptr;
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(argc, argv, Options, &help);
+   /***************************************************************
+    * parse standard options, and exit if there is an error
+    ***************************************************************/
+	if ((msg = parse_opts(argc, argv, Options, &help)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+
+	}
 
 	/*
 	 * If the -T option was used, use that TCID or use the default
@@ -1867,6 +1875,10 @@ void setup(void)
  ***************************************************************/
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	tst_rmdir();
 

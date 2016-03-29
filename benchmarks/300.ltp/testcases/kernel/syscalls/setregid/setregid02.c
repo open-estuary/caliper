@@ -32,6 +32,7 @@
 #include <string.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "compat_16.h"
 
 TCID_DEFINE(setregid02);
@@ -40,7 +41,7 @@ static gid_t neg_one = -1;
 
 static struct passwd *ltpuser;
 
-static struct group ltpgroup, root, bin;
+static struct group nobody, root, bin;
 
 /*
  * The following structure contains all test data.  Each structure in the array
@@ -56,32 +57,33 @@ struct test_data_t {
 	char *test_msg;
 } test_data[] = {
 	{
-	&neg_one, &root.gr_gid, EPERM, &ltpgroup, &ltpgroup,
+	&neg_one, &root.gr_gid, EPERM, &nobody, &nobody,
 		    "After setregid(-1, root),"}, {
-	&neg_one, &bin.gr_gid, EPERM, &ltpgroup, &ltpgroup,
+	&neg_one, &bin.gr_gid, EPERM, &nobody, &nobody,
 		    "After setregid(-1, bin)"}, {
-	&root.gr_gid, &neg_one, EPERM, &ltpgroup, &ltpgroup,
+	&root.gr_gid, &neg_one, EPERM, &nobody, &nobody,
 		    "After setregid(root,-1),"}, {
-	&bin.gr_gid, &neg_one, EPERM, &ltpgroup, &ltpgroup,
+	&bin.gr_gid, &neg_one, EPERM, &nobody, &nobody,
 		    "After setregid(bin, -1),"}, {
-	&root.gr_gid, &bin.gr_gid, EPERM, &ltpgroup, &ltpgroup,
+	&root.gr_gid, &bin.gr_gid, EPERM, &nobody, &nobody,
 		    "After setregid(root, bin)"}, {
-	&bin.gr_gid, &root.gr_gid, EPERM, &ltpgroup, &ltpgroup,
+	&bin.gr_gid, &root.gr_gid, EPERM, &nobody, &nobody,
 		    "After setregid(bin, root),"}
 };
 
-int TST_TOTAL = ARRAY_SIZE(test_data);
+int TST_TOTAL = sizeof(test_data) / sizeof(test_data[0]);
 
 static void setup(void);
+static void cleanup(void);
 static void gid_verify(struct group *ru, struct group *eu, char *when);
-static struct group get_group_by_name(const char *name);
-static struct group get_group_by_gid(gid_t gid);
 
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -92,10 +94,11 @@ int main(int ac, char **av)
 
 		for (i = 0; i < TST_TOTAL; i++) {
 			/* Set the real or effective group id */
-			TEST(SETREGID(NULL, *test_data[i].real_gid,
+			TEST(SETREGID(cleanup, *test_data[i].real_gid,
 				      *test_data[i].eff_gid));
 
 			if (TEST_RETURN == -1) {
+				TEST_ERROR_LOG(TEST_ERRNO);
 				if (TEST_ERRNO == test_data[i].exp_errno) {
 					tst_resm(TPASS, "setregid(%d, %d) "
 						 "failed as expected.",
@@ -121,15 +124,17 @@ int main(int ac, char **av)
 				   test_data[i].test_msg);
 		}
 	}
-
+	cleanup();
 	tst_exit();
 }
 
 static void setup(void)
 {
-	tst_require_root();
+	struct group *junk;
 
-	tst_sig(FORK, DEF_HANDLER, NULL);
+	tst_require_root(NULL);
+
+	tst_sig(FORK, DEF_HANDLER, cleanup);
 
 	ltpuser = getpwnam("nobody");
 	if (ltpuser == NULL)
@@ -146,35 +151,25 @@ static void setup(void)
 			 ltpuser->pw_uid);
 	}
 
-	root = get_group_by_name("root");
-	ltpgroup = get_group_by_gid(ltpuser->pw_gid);
-	bin = get_group_by_name("bin");
+#define GET_GID(group)	do {		\
+	junk = getgrnam(#group);	\
+	if (junk == NULL) {		\
+		tst_brkm(TBROK|TERRNO, NULL, "getgrnam(\"%s\") failed", #group); \
+	}				\
+	GID16_CHECK(junk->gr_gid, setregid, NULL); \
+	group = *(junk); \
+} while (0)
+
+	GET_GID(root);
+	GET_GID(nobody);
+	GET_GID(bin);
 
 	TEST_PAUSE;
 }
 
-static struct group get_group_by_name(const char *name)
+static void cleanup(void)
 {
-	struct group *ret = getgrnam(name);
-
-	if (ret == NULL)
-		tst_brkm(TBROK|TERRNO, NULL, "getgrnam(\"%s\") failed", name);
-
-	GID16_CHECK(ret->gr_gid, setregid, NULL);
-
-	return *ret;
-}
-
-static struct group get_group_by_gid(gid_t gid)
-{
-	struct group *ret = getgrgid(gid);
-
-	if (ret == NULL)
-		tst_brkm(TBROK|TERRNO, NULL, "getgrgid(\"%d\") failed", gid);
-
-	GID16_CHECK(ret->gr_gid, setregid, NULL);
-
-	return *ret;
+	TEST_CLEANUP;
 }
 
 void gid_verify(struct group *rg, struct group *eg, char *when)

@@ -28,6 +28,7 @@
 #include <unistd.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "compat_16.h"
 
 #define ROOT_USER	0
@@ -38,16 +39,22 @@ int TST_TOTAL = 1;
 static char nobody_uid[] = "nobody";
 static struct passwd *ltpuser;
 
+static int exp_enos[] = { EPERM, 0 };
+
 static void setup(void);
 static void cleanup(void);
 
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		tst_count = 0;
@@ -58,6 +65,8 @@ int main(int ac, char **av)
 			tst_resm(TFAIL, "call succeeded unexpectedly");
 			continue;
 		}
+
+		TEST_ERROR_LOG(TEST_ERRNO);
 
 		if (TEST_ERRNO == EPERM) {
 			tst_resm(TPASS, "setuid returned errno EPERM");
@@ -73,7 +82,7 @@ int main(int ac, char **av)
 
 static void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	/* Switch to nobody user for correct error code collection */
 	ltpuser = getpwnam(nobody_uid);
@@ -96,4 +105,5 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 }

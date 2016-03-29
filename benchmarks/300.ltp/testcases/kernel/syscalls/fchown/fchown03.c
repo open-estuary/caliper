@@ -39,6 +39,7 @@
 #include <pwd.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 #include "compat_16.h"
 
@@ -61,10 +62,13 @@ int main(int ac, char **av)
 {
 	struct stat stat_buf;
 	int lc;
+	const char *msg;
 	uid_t user_id;
 	gid_t group_id;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -110,7 +114,7 @@ static void setup(void)
 {
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	ltpuser = SAFE_GETPWNAM(cleanup, nobody_uid);
 	SAFE_SETEUID(NULL, ltpuser->pw_uid);
@@ -132,6 +136,8 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	if (fildes > 0 && close(fildes))
 		tst_resm(TWARN | TERRNO, "close(%s) Failed", TESTFILE);
 

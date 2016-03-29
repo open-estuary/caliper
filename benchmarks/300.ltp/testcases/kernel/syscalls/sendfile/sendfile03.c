@@ -50,6 +50,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/sendfile.h>
+#include "usctest.h"
 #include "test.h"
 
 #define FAILED 1
@@ -84,14 +85,21 @@ struct test_case_t {
 		    0, EBADF}
 };
 
+int exp_enos[] = { EBADF, 0 };
+
 int main(int ac, char **av)
 {
 	int i;
 	int lc;
+	const char *msg;		/* parse_opts() return message */
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	/*
 	 * The following loop checks looping state if -c option given
@@ -111,6 +119,8 @@ int main(int ac, char **av)
 				tst_resm(TFAIL, "call succeeded unexpectedly");
 				continue;
 			}
+
+			TEST_ERROR_LOG(TEST_ERRNO);
 
 			if (TEST_ERRNO != testcases[i].exp_errno) {
 				tst_resm(TFAIL, "sendfile returned unexpected "
@@ -172,6 +182,8 @@ void cleanup(void)
 	 */
 	close(out_fd);
 	close(in_fd);
+
+	TEST_CLEANUP;
 
 	/* delete the test directory created in setup() */
 	tst_rmdir();

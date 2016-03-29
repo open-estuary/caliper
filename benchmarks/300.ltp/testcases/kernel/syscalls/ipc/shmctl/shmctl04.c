@@ -57,8 +57,10 @@ int max_ids;
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -73,6 +75,8 @@ int main(int ac, char **av)
 			tst_resm(TPASS, "SHM_INFO call succeeded");
 			continue;
 		}
+
+		TEST_ERROR_LOG(TEST_ERRNO);
 
 		tst_resm(TFAIL, "SHM_INFO call failed with an unexpected error"
 			 " - %d : %s", TEST_ERRNO, strerror(TEST_ERRNO));
@@ -111,5 +115,11 @@ void cleanup(void)
 {
 
 	tst_rmdir();
+
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }

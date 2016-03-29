@@ -30,6 +30,8 @@
 
 setup()
 {
+	tst_check_cmds awk expect ftp vsftpd
+
 	TEST_USER=root
 
 	tvar=${MACHTYPE%-*}

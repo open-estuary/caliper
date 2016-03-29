@@ -61,6 +61,7 @@ benchmark.
 #include <sys/wait.h>
 
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "crash01";
 int TST_TOTAL = 1;
@@ -94,14 +95,19 @@ const int nbytes = 2000;
 /* in % */
 #define BLOCK_TRIGGER 80
 
-void cleanup(void)
+void cleanup()
 {
+	/*
+	 * remove the tmp directory and exit
+	 */
+
+	TEST_CLEANUP;
 
 	tst_rmdir();
 
 }
 
-void setup(void)
+void setup()
 {
 	/*
 	 * setup a default signal hander and a
@@ -114,7 +120,7 @@ void setup(void)
 	TEST_PAUSE;
 }
 
-void help(void)
+void help()
 {
 	printf("  -x      dry run, hexdump random code instead\n");
 	printf("  -v x    verbose level\n");
@@ -149,9 +155,11 @@ void record_status(unsigned int n);
 
 int main(int argc, char *argv[])
 {
+	const char *msg;
 	int lc;
 
-	tst_parse_opts(argc, argv, options, help);
+	if ((msg = parse_opts(argc, argv, options, help)) != NULL)
+		tst_brkm(TBROK, cleanup, "OPTION PARSING ERROR - %s", msg);
 
 	if (v_opt)
 		verbose_level = atoi(v_copt);
@@ -217,7 +225,7 @@ void monitor_fcn(int sig)
 	}
 }
 
-void badboy_fork(void)
+void badboy_fork()
 {
 	int status, pid;
 
@@ -268,7 +276,7 @@ void record_status(unsigned int n)
 }
 
 /* may not work with -c option */
-void summarize_status(void)
+void summarize_status()
 {
 	int i;
 
@@ -304,7 +312,7 @@ void try_one_crash();
 void set_up_signals();
 
 /* badboy "entry" point */
-void badboy_loop(void)
+void badboy_loop()
 {
 	int i;
 
@@ -413,7 +421,7 @@ void my_signal(int sig, void (*func) ())
 	sigaction(sig, &act, 0);
 }
 
-void set_up_signals(void)
+void set_up_signals()
 {
 	my_signal(SIGILL, again_handler);
 #ifdef SIGTRAP
@@ -478,7 +486,7 @@ BADBOY castaway(char *dat)
 	return ((BADBOY) dat);
 }
 
-void compute_badboy(void)
+void compute_badboy()
 {
 	if (incptr == 0) {
 		compute_block_badboy(nbytes);
@@ -498,7 +506,7 @@ void compute_badboy(void)
 	}
 }
 
-void try_one_crash(void)
+void try_one_crash()
 {
 	/* was (nbytes < 0) */
 	if (!x_opt)

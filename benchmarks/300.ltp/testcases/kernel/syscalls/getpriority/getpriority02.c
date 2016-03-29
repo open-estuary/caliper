@@ -77,12 +77,14 @@
 #include <sys/resource.h>
 
 #include "test.h"
+#include "usctest.h"
 
 #define INVAL_PID	-1
 #define INVAL_FLAG      -1
 
 char *TCID = "getpriority02";
 int TST_TOTAL = 4;
+int exp_enos[] = { EINVAL, ESRCH, 0 };
 
 struct test_case_t {		/* test case struct. to hold ref. test cond's */
 	int pro_which;
@@ -104,14 +106,22 @@ void cleanup();			/* cleanup function for the test */
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int ind;		/* counter variable for test case looping */
 	char *test_desc;	/* test specific error message */
 	int which;		/* process priority category */
 	uid_t who;		/* process uid of the test process */
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+
+	}
 
 	setup();
+
+	/* set the expected errnos... */
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -136,6 +146,7 @@ int main(int ac, char **av)
 
 			/* check return code from getpriority(2) */
 			if (TEST_RETURN < 0) {
+				TEST_ERROR_LOG(TEST_ERRNO);
 				if (TEST_ERRNO == Test_cases[ind].exp_errno) {
 					tst_resm(TPASS, "getpriority(2) fails, "
 						 "%s, errno:%d",
@@ -177,5 +188,10 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }

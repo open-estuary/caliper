@@ -43,6 +43,7 @@
 #endif
 
 #include "test.h"
+#include "usctest.h"
 #include "linux_syscall_numbers.h"
 #include "safe_macros.h"
 
@@ -81,8 +82,11 @@ static struct perf_event_attr pe;
 int main(int ac, char **av)
 {
 	int i, lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -195,6 +199,7 @@ static void verify(struct test_case_t *tc)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 }
 
 #else

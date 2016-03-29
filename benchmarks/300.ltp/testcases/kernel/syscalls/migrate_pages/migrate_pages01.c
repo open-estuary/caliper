@@ -43,6 +43,7 @@
 #include <pwd.h>
 #include "config.h"
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 #include "linux_syscall_numbers.h"
 #include "numa_helper.h"
@@ -202,8 +203,11 @@ static void test_invalid_perm(void)
 int main(int argc, char *argv[])
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(argc, argv, options, NULL);
+	msg = parse_opts(argc, argv, options, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
@@ -223,7 +227,7 @@ static void setup(void)
 {
 	int node, ret;
 
-	tst_require_root();
+	tst_require_root(NULL);
 	TEST(ltp_syscall(__NR_migrate_pages, 0, 0, NULL, NULL));
 
 	if (numa_available() == -1)
@@ -251,6 +255,7 @@ static void cleanup(void)
 {
 	free(sane_old_nodes);
 	free(sane_new_nodes);
+	TEST_CLEANUP;
 }
 
 #else /* __NR_migrate_pages */

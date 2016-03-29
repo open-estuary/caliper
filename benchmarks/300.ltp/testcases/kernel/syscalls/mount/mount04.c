@@ -25,6 +25,7 @@
 #include <sys/fcntl.h>
 #include <pwd.h>
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 static void setup(void);
@@ -39,6 +40,8 @@ static const char *fs_type;
 static const char *device;
 
 int TST_TOTAL = 1;
+
+static int exp_enos[] = { EPERM, 0 };
 
 static void verify_mount(void)
 {
@@ -56,7 +59,7 @@ static void verify_mount(void)
 
 	if (TEST_RETURN == 0) {
 		tst_resm(TFAIL, "mount() succeeded unexpectedly");
-		if (tst_umount(mntpoint))
+		if (umount(mntpoint))
 			tst_brkm(TBROK, cleanup, "umount() failed");
 		return;
 	}
@@ -67,8 +70,10 @@ static void verify_mount(void)
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)))
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -88,7 +93,7 @@ static void setup(void)
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_tmpdir();
 
@@ -104,11 +109,15 @@ static void setup(void)
 	SAFE_SETEUID(cleanup, ltpuser->pw_uid);
 	SAFE_MKDIR(cleanup, mntpoint, DIR_MODE);
 
+	TEST_EXP_ENOS(exp_enos);
+
 	TEST_PAUSE;
 }
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	if (seteuid(0))
 		tst_resm(TWARN | TERRNO, "seteuid(0) failed");
 

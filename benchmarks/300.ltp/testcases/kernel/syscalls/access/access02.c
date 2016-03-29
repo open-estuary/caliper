@@ -39,6 +39,7 @@
 #include <pwd.h>
 
 #include "test.h"
+#include "usctest.h"
 
 #define TEMP_FILE	"temp_file"
 #define SYM_FILE	"sym_file"
@@ -79,10 +80,13 @@ int main(int ac, char **av)
 {
 	int lc;
 	int i;
+	const char *msg;
 	mode_t access_mode;
 	char *file_name;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -117,7 +121,7 @@ static void setup(void)
 {
 	int i;
 
-	tst_require_root();
+	tst_require_root(NULL);
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
 	ltpuser = getpwnam(nobody_uid);
@@ -315,6 +319,9 @@ static int access_verify(int i)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
+
+	/* Close the testfile(s) created in the setup()s */
 	if (close(fd1) == -1)
 		tst_brkm(TFAIL | TERRNO, NULL, "close(%s) failed", TEST_FILE1);
 	if (close(fd2) == -1)

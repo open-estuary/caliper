@@ -80,6 +80,7 @@
 #include <pwd.h>
 
 #include "test.h"
+#include "usctest.h"
 
 #define FILE_MODE       S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
 #define PERMS		01777	/*
@@ -100,9 +101,11 @@ int main(int ac, char **av)
 {
 	struct stat stat_buf;
 	int lc;
+	const char *msg;
 	mode_t file_mode;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -144,7 +147,7 @@ void setup(void)
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
-	tst_require_root();
+	tst_require_root(NULL);
 	ltpuser = getpwnam(nobody_uid);
 	if (ltpuser == NULL)
 		tst_brkm(TBROK | TERRNO, NULL, "getpwnam failed");
@@ -180,6 +183,10 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	tst_rmdir();
 

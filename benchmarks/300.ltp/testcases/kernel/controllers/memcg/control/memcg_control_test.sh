@@ -54,9 +54,7 @@ FAIL=1
 # Check if the test process is killed on crossing boundary
 test_proc_kill()
 {
-	cd $TMP
-	mem_process -m $PROC_MEM &
-	cd $OLDPWD
+	( cd $TMP && mem_process -m $PROC_MEM & )
 	sleep 1
 	echo $! > tasks
 

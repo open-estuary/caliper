@@ -51,6 +51,7 @@
 #include <wait.h>
 #include <errno.h>
 #include "test.h"
+#include "usctest.h"
 
 #define	PIPEWRTCNT	100	/* must be an even number */
 
@@ -74,6 +75,7 @@ ssize_t safe_read(int fd, void *buf, size_t count)
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
 	int i, red, wtstatus;
 	int pipefd[2];		/* fds for pipe read/write */
@@ -81,7 +83,8 @@ int main(int ac, char **av)
 	int Acnt = 0, Bcnt = 0;	/* count 'A' and 'B' */
 	int fork_1, fork_2;	/* ret values in parent */
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -211,4 +214,9 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 }

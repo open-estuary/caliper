@@ -37,6 +37,7 @@
 #include <pwd.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 #define NOBODY_USER	99
@@ -48,14 +49,18 @@ static void cleanup(void);
 char *TCID = "link06";
 int TST_TOTAL = 1;
 
+static int exp_enos[] = { EACCES, 0 };
+
 #define OLDPATH "oldpath"
 #define NEWPATH "newpath"
 
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -67,7 +72,7 @@ int main(int ac, char **av)
 		if (TEST_RETURN != -1) {
 			tst_resm(TFAIL, "link() returned %ld,"
 				 "expected -1, errno=%d", TEST_RETURN,
-				 EACCES);
+				 exp_enos[0]);
 		} else {
 			if (TEST_ERRNO == EACCES) {
 				tst_resm(TPASS, "link() fails with expected "
@@ -90,7 +95,7 @@ static void setup(void)
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	TEST_PAUSE;
 
@@ -109,5 +114,6 @@ static void cleanup(void)
 	if (seteuid(0))
 		tst_resm(TWARN | TERRNO, "seteuid(0) failed");
 
+	TEST_CLEANUP;
 	tst_rmdir();
 }

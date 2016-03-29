@@ -50,13 +50,10 @@
 
 char *TCID = "mtest01";
 int TST_TOTAL = 1;
-static sig_atomic_t pid_count;
-static sig_atomic_t sigchld_count;
+int pid_count = 0;
 
-static void handler(int signo)
+void handler(int signo)
 {
-	if (signo == SIGCHLD)
-		sigchld_count++;
 	pid_count++;
 }
 
@@ -80,7 +77,6 @@ int main(int argc, char *argv[])
 	act.sa_flags = 0;
 	sigemptyset(&act.sa_mask);
 	sigaction(SIGRTMIN, &act, 0);
-	sigaction(SIGCHLD, &act, 0);
 
 	while ((c = getopt(argc, argv, "c:b:p:wvh")) != -1) {
 		switch (c) {
@@ -272,7 +268,7 @@ int main(int argc, char *argv[])
 
 			while ((((unsigned long long)pre_mem - post_mem) <
 				(unsigned long long)original_maxbytes) &&
-			       pid_count < pid_cntr && !sigchld_count) {
+			       pid_count < pid_cntr) {
 				sleep(1);
 				sysinfo(&sstats);
 				post_mem =
@@ -284,21 +280,16 @@ int main(int argc, char *argv[])
 				    sstats.freeswap;
 			}
 		}
-
-		if (sigchld_count) {
-			tst_resm(TFAIL, "child process exited unexpectedly");
-		} else if (dowrite) {
-			tst_resm(TPASS, "%llu kbytes allocated and used.",
-				 original_maxbytes / 1024);
-		} else {
-			tst_resm(TPASS, "%llu kbytes allocated only.",
-				 original_maxbytes / 1024);
-		}
-
 		while (pid_list[i] != 0) {
 			kill(pid_list[i], SIGKILL);
 			i++;
 		}
+		if (dowrite)
+			tst_resm(TPASS, "%llu kbytes allocated and used.",
+				 original_maxbytes / 1024);
+		else
+			tst_resm(TPASS, "%llu kbytes allocated only.",
+				 original_maxbytes / 1024);
 	}
 	free(pid_list);
 	tst_exit();

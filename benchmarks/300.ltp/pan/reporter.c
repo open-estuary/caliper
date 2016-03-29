@@ -100,7 +100,7 @@ static int scanner_reporter(SYM tags)
 	 * extract tag names from data
 	 */
 	ntags = NTAGS_START;
-	taglist = malloc(sizeof(char *) * ntags);
+	taglist = (char **)malloc(sizeof(char *) * ntags);
 	tagcount = 0;
 
 	tl = taglist;

@@ -31,7 +31,12 @@
 #include <sys/syscall.h>
 #include <sys/uio.h>
 #include <unistd.h>
-#include "lapi/semun.h"
+
+union semun {
+	int val;
+	struct semid_ds *buf;
+	unsigned short int *array;
+};
 
 static inline ssize_t test_process_vm_readv(pid_t pid,
 		const struct iovec *lvec, unsigned long liovcnt,

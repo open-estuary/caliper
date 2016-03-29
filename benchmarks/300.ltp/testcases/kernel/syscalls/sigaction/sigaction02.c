@@ -55,6 +55,7 @@
 #include <signal.h>
 #include <errno.h>
 #include "test.h"
+#include "usctest.h"
 
 #define SIGBAD 9999
 
@@ -110,9 +111,13 @@ int set_handler(int sig, int sig_to_mask, int flag)
 
 int main(int ac, char **av)
 {
+	const char *msg;		/* message got from parse_opts */
+
 	int ret;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 //test1:
 	testcase_no = 1;
 

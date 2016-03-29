@@ -32,11 +32,11 @@
 static int res = 0;
 static char *progname;
 static pid_t test_pgrp;
-static FILE *out;
+static FILE *tty_fp;
 
 static void int_func(int signum)
 {
-	pounder_fprintf(out,
+	pounder_fprintf(tty_fp,
 			"%s: Killed by interrupt.  Last exit code = %d.\n",
 			progname, res);
 	kill(-test_pgrp, SIGTERM);
@@ -45,7 +45,7 @@ static void int_func(int signum)
 
 static void alarm_func(int signum)
 {
-	pounder_fprintf(out, "%s: Killed by timer.  Last exit code = %d.\n",
+	pounder_fprintf(tty_fp, "%s: Killed by timer.  Last exit code = %d.\n",
 			progname, res);
 	kill(-test_pgrp, SIGTERM);
 	exit(res);
@@ -92,7 +92,14 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	out = stdout;
+	tty_fp = fdopen(3, "w+");
+	if (tty_fp == NULL) {
+		tty_fp = fopen("/dev/tty", "w+");
+		if (tty_fp == NULL) {
+			perror("stdout");
+			exit(2);
+		}
+	}
 
 	if (use_max_failures) {
 		progname = rindex(argv[4], '/');
@@ -129,7 +136,7 @@ int main(int argc, char *argv[])
 	alarm(secs);
 
 	while (1) {
-		pounder_fprintf(out, "%s: %s loop #%d.\n", progname,
+		pounder_fprintf(tty_fp, "%s: %s loop #%d.\n", progname,
 				start_msg, revs++);
 		pid = fork();
 		if (pid == 0) {
@@ -168,22 +175,22 @@ int main(int argc, char *argv[])
 		}
 		// interrogate it
 		if (WIFSIGNALED(stat)) {
-			pounder_fprintf(out, "%s: %s on signal %d.\n",
+			pounder_fprintf(tty_fp, "%s: %s on signal %d.\n",
 					progname, fail_msg, WTERMSIG(stat));
 			res = 255;
 		} else {
 			res = WEXITSTATUS(stat);
 			if (res == 0) {
-				pounder_fprintf(out, "%s: %s.\n", progname,
+				pounder_fprintf(tty_fp, "%s: %s.\n", progname,
 						pass_msg);
 			} else if (res < 0 || res == 255) {
-				pounder_fprintf(out,
+				pounder_fprintf(tty_fp,
 						"CHECK %s: %s with code %d.\n",
 						progname, abort_msg, res);
 				exit(-1);
 				// FIXME: add test to blacklist
 			} else {
-				pounder_fprintf(out,
+				pounder_fprintf(tty_fp,
 						"%s: %s with code %d.\n",
 						progname, fail_msg, res);
 				if (max_failures > 0) {

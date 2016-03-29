@@ -50,6 +50,9 @@
  *	This test must be run as root.
  */
 
+#include "test.h"
+#include "usctest.h"
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -60,30 +63,37 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "test.h"
-#include "safe_macros.h"
-
 char *TCID = "fchdir03";
 int TST_TOTAL = 1;
 
 void setup(void);
 void cleanup(void);
 
+char user1name[] = "nobody";
+
+int exp_enos[] = { EACCES, 0 };
+
 char good_dir[100];
 int fd;
 
-static uid_t nobody_uid;
+struct passwd *ltpuser1;
+
+extern struct passwd *my_getpwnam(char *);
 
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
 	pid_t pid;
 	int status;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		tst_count = 0;
@@ -97,7 +107,7 @@ int main(int ac, char **av)
 			 * so that the ID can be changed back after the
 			 * TEST call is made.
 			 */
-			if (seteuid(nobody_uid) != 0) {
+			if (seteuid(ltpuser1->pw_uid) != 0) {
 				perror("setreuid failed in child #1");
 				exit(1);
 			}
@@ -150,14 +160,9 @@ int main(int ac, char **av)
 
 void setup(void)
 {
-	struct passwd *pw;
-
 	char *cur_dir = NULL;
 
-	tst_require_root();
-
-	pw = SAFE_GETPWNAM(NULL, "nobody");
-	nobody_uid = pw->pw_uid;
+	tst_require_root(NULL);
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
@@ -169,9 +174,13 @@ void setup(void)
 		tst_brkm(TBROK | TERRNO, cleanup, "getcwd failed");
 
 	sprintf(good_dir, "%s.%d", cur_dir, getpid());
+
+	ltpuser1 = my_getpwnam(user1name);
 }
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	tst_rmdir();
 }

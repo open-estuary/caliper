@@ -26,12 +26,15 @@
 #include <sys/statfs.h>
 #include <errno.h>
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 static void setup(void);
 static void cleanup(void);
 
 char *TCID = "fstatfs02";
+
+static int exp_enos[] = { EBADF, EFAULT, 0 };
 
 static struct statfs buf;
 
@@ -57,10 +60,15 @@ int main(int ac, char **av)
 {
 	int lc;
 	int i;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -74,6 +82,8 @@ int main(int ac, char **av)
 				tst_resm(TFAIL, "call succeeded unexpectedly");
 				continue;
 			}
+
+			TEST_ERROR_LOG(TEST_ERRNO);
 
 			if (TEST_ERRNO == TC[i].error) {
 				tst_resm(TPASS, "expected failure - "
@@ -105,6 +115,8 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
+
 #ifndef UCLINUX
 	if (TC[1].fd > 0 && close(TC[1].fd))
 		tst_resm(TWARN | TERRNO, "Failed to close fd");

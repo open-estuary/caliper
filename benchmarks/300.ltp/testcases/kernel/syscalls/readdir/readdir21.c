@@ -39,6 +39,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 #include "linux_syscall_numbers.h"
 #include "lapi/readdir.h"
@@ -74,13 +75,17 @@ static struct test_case_t {
 };
 
 int TST_TOTAL = ARRAY_SIZE(test_cases);
+static int exp_enos[] = { ENOENT, ENOTDIR, 0 };
 static void readdir_verify(const struct test_case_t *);
 
 int main(int argc, char **argv)
 {
 	int i, lc;
+	const char *msg;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -97,6 +102,8 @@ int main(int argc, char **argv)
 static void setup(void)
 {
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
+
+	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 
@@ -137,6 +144,8 @@ static void readdir_verify(const struct test_case_t *test)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	if (dir_fd > 0)
 		close(dir_fd);
 

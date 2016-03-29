@@ -47,6 +47,7 @@
 #include <errno.h>
 #include <unistd.h>		/* for _SC_OPEN_MAX */
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "fork09";
 int TST_TOTAL = 1;
@@ -66,8 +67,11 @@ int main(int ac, char **av)
 	int pid, status, nf;
 
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -172,5 +176,6 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 	tst_rmdir();
 }

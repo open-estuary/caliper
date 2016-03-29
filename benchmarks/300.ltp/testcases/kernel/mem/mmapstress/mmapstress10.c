@@ -31,6 +31,7 @@
 #include <limits.h>
 /*****  LTP Port        *****/
 #include "test.h"
+#include "usctest.h"
 #define FAILED 0
 #define PASSED 1
 
@@ -928,14 +929,14 @@ unsigned int initrand(void)
 }
 
 /*****  LTP Port        *****/
-void ok_exit(void)
+void ok_exit()
 {
 	tst_resm(TPASS, "Test passed\n");
 	tst_rmdir();
 	tst_exit();
 }
 
-int anyfail(void)
+int anyfail()
 {
 	tst_brkm(TFAIL, tst_rmdir, "Test failed\n");
 }

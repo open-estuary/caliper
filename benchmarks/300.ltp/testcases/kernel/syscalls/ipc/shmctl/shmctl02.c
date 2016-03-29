@@ -62,6 +62,9 @@ char *TCID = "shmctl02";
 char nobody_uid[] = "nobody";
 struct passwd *ltpuser;
 
+int exp_enos[] = { EPERM, EACCES, EFAULT, EINVAL, 0 };	/* 0 terminated list  */
+
+						      /* of expected errnos */
 int shm_id_1 = -1;
 int shm_id_2 = -1;
 int shm_id_3 = -1;
@@ -102,9 +105,11 @@ int TST_TOTAL = ARRAY_SIZE(TC);
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int i;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();		/* global setup */
 
@@ -126,6 +131,8 @@ int main(int ac, char **av)
 				tst_resm(TFAIL, "call succeeded unexpectedly");
 				continue;
 			}
+
+			TEST_ERROR_LOG(TEST_ERRNO);
 
 			if (TEST_ERRNO == TC[i].error) {
 				tst_resm(TPASS, "expected failure - errno = "
@@ -157,7 +164,7 @@ void setup(void)
 {
 	key_t shmkey2;
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	/* Switch to nobody user for correct error code collection */
 	ltpuser = getpwnam(nobody_uid);
@@ -168,6 +175,9 @@ void setup(void)
 	}
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
+
+	/* Set up the expected error numbers for -e option */
+	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 
@@ -209,5 +219,11 @@ void cleanup(void)
 	rm_shm(shm_id_2);
 
 	tst_rmdir();
+
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }

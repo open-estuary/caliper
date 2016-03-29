@@ -20,23 +20,3 @@ size01 size01
 sssd01 sssd01
 sssd02 sssd02
 sssd03 sssd03
-du01 du01.sh
-df01_ext2 df01.sh -f ext2
-df01_ext3 df01.sh -f ext3
-df01_ext4 df01.sh -f ext4
-df01_xfs df01.sh -f xfs
-df01_vfat df01.sh -f vfat
-df01_exfat df01.sh -f exfat
-df01_ntfs df01.sh -f ntfs
-mkfs01 mkfs01.sh
-mkfs01_ext2 mkfs01.sh -f ext2
-mkfs01_ext3 mkfs01.sh -f ext3
-mkfs01_ext4 mkfs01.sh -f ext4
-mkfs01_xfs mkfs01.sh -f xfs
-mkfs01_btrfs mkfs01.sh -f btrfs
-mkfs01_minix mkfs01.sh -f minix
-mkfs01_msdos mkfs01.sh -f msdos
-mkfs01_vfat mkfs01.sh -f vfat
-mkfs01_ntfs mkfs01.sh -f ntfs
-mkswap01 mkswap01.sh
-which01 which01.sh

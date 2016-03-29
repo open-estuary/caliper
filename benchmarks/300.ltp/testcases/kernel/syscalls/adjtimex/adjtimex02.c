@@ -91,6 +91,7 @@
 #include <unistd.h>
 #include <pwd.h>
 #include "test.h"
+#include "usctest.h"
 
 #define SET_MODE ( ADJ_OFFSET | ADJ_FREQUENCY | ADJ_MAXERROR | ADJ_ESTERROR | \
 	ADJ_STATUS | ADJ_TIMECONST | ADJ_TICK )
@@ -110,6 +111,7 @@ static int hz;			/* HZ from sysconf */
 
 static struct timex tim_save;
 static struct timex buff;
+static int exp_enos[] = { EPERM, EINVAL, EFAULT, 0 };
 
 static char nobody_uid[] = "nobody";
 struct passwd *ltpuser;
@@ -139,8 +141,10 @@ int main(int ac, char **av)
 {
 
 	int lc, i;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -182,6 +186,7 @@ int main(int ac, char **av)
 					 "Test Failed, adjtimex() returned %ld",
 					 TEST_RETURN);
 			}
+			TEST_ERROR_LOG(TEST_ERRNO);
 			if (test_cases[i].cleanup) {
 				test_cases[i].cleanup();
 			}
@@ -198,11 +203,14 @@ int main(int ac, char **av)
 /* setup() - performs all ONE TIME setup for this test */
 void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tim_save.modes = 0;
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
+
+	/* set the expected errnos... */
+	TEST_EXP_ENOS(exp_enos);
 
 	/* set the HZ from sysconf */
 	hz = sysconf(_SC_CLK_TCK);
@@ -230,6 +238,11 @@ void cleanup(void)
 	if ((adjtimex(&tim_save)) == -1) {
 		tst_resm(TWARN, "Failed to restore saved parameters");
 	}
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 }
 
 int setup2(void)

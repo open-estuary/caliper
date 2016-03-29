@@ -24,7 +24,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
-#include <string.h>
 #include "posixtest.h"
 
 void *a_thread_function();
@@ -34,7 +33,6 @@ pthread_t a;
 
 int main(void)
 {
-	int ret;
 
 	/* Set the action for SIGALRM to generate an error if it is
 	 * reached. This is because if SIGALRM was sent, then the
@@ -47,16 +45,16 @@ int main(void)
 	/* SIGALRM will be sent in 5 seconds. */
 	alarm(5);
 
-	ret = pthread_create(&a, NULL, a_thread_function, NULL);
-	if (ret) {
-		fprintf(stderr, "pthread_create(): %s\n", strerror(ret));
+	/* Create a new thread. */
+	if (pthread_create(&a, NULL, a_thread_function, NULL) != 0) {
+		perror("Error creating thread\n");
 		return PTS_UNRESOLVED;
 	}
 
 	pthread_cancel(a);
-
-	pthread_join(a, NULL);
-
+	/* If 'main' has reached here, then the test passed because it means
+	 * that the thread is truly asynchronise, and main isn't waiting for
+	 * it to return in order to move on. */
 	printf("Test PASSED\n");
 	return PTS_PASS;
 }
@@ -69,14 +67,13 @@ void *a_thread_function()
 	while (1)
 		sleep(1);
 
+	pthread_exit(0);
 	return NULL;
 }
-
-#define WRITE(str) write(STDOUT_FILENO, str, sizeof(str) - 1)
 
 /* If this handler is called, that means that the test has failed. */
 void alarm_handler()
 {
-	WRITE("Test FAILED: Alarm fired while waiting for cancelation\n");
-	_exit(PTS_FAIL);
+	printf("Test FAILED\n");
+	exit(PTS_FAIL);
 }

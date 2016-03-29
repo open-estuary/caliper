@@ -69,6 +69,7 @@
 #include <stdint.h>
 
 #include "test.h"
+#include "usctest.h"
 
 #define INVALID_ADDRESS ((uintptr_t)-1)
 
@@ -84,10 +85,13 @@ int main(int ac, char **av)
 {
 	struct sysinfo *sysinfo_buf;
 	int lc;
+	const char *msg;
 
 	sysinfo_buf = (void *)INVALID_ADDRESS;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	setup();		/* Global setup */
 
@@ -146,4 +150,6 @@ void setup(void)
  */
 void cleanup(void)
 {
+	TEST_CLEANUP;
+
 }

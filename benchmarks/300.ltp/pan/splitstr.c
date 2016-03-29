@@ -88,12 +88,11 @@ const char **splitstr(const char *str, const char *separator, int *argcount)
 	/*
 	 * set aside an initial char ** array for string array.
 	 */
-	arg_array = malloc(sizeof(char *) * max_toks);
+	arg_array = (char **)malloc(sizeof(char *) * max_toks);
 
 	if (arg_array == NULL) {
 		if (argcount != NULL)
 			*argcount = 0;
-		free(arg_string);
 		return (NULL);
 	}
 
@@ -114,11 +113,6 @@ const char **splitstr(const char *str, const char *separator, int *argcount)
 			arg_array =
 			    (char **)realloc((void *)arg_array,
 					     sizeof(char *) * max_toks);
-			if (arg_array == NULL) {
-				fprintf(stderr, "realloc: New memory allocation failed \n");
-				free(arg_string);
-				exit(1);
-			}
 		}
 	}
 	arg_array[num_toks] = NULL;

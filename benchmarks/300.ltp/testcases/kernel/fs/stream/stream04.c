@@ -36,6 +36,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "stream04";
 int TST_TOTAL = 1;
@@ -59,11 +60,13 @@ int main(int ac, char *av[])
 	int ret;
 
 	int lc;
+	const char *msg;
 
 	/*
 	 * parse standard options
 	 */
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 	tst_tmpdir();
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 

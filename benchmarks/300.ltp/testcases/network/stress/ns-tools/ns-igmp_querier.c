@@ -334,8 +334,10 @@ void parse_options(int argc, char *argv[], struct igmp_info *info_p, int *bg_p)
 	if ((info_p->query = create_query(max_resp, maddr, saddrs)) == NULL)
 		usage(program_name, EXIT_FAILURE);
 
-	free(maddr);
-	free(saddrs);
+	if (maddr)
+		free(maddr);
+	if (saddrs)
+		free(saddrs);
 }
 
 /*

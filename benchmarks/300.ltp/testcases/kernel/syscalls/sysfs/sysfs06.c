@@ -73,7 +73,7 @@
 #include <syscall.h>
 #include <sys/mman.h>
 #include "test.h"
-#include "linux_syscall_numbers.h"
+#include "usctest.h"
 
 static void setup();
 static void cleanup();
@@ -81,6 +81,7 @@ static void cleanup();
 char *TCID = "sysfs06";
 static int option[3] = { 2, 4, 2 };	/* valid and invalid option */
 static int fsindex[3] = { 10000, 0, 1 };	/*invalid and valid fsindex */
+static int exp_enos[] = { EINVAL, EFAULT, 0 };
 
 static struct test_case_t {
 	char *err_desc;		/*error description */
@@ -100,17 +101,21 @@ char *bad_addr = 0;
 int main(int ac, char **av)
 {
 	int lc, i;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+#ifdef __NR_sysfs
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
 		for (i = 0; i < TST_TOTAL; i++) {
 
 			tst_count = 0;
-			TEST(ltp_syscall
+			TEST(syscall
 			     (__NR_sysfs, option[i], fsindex[i], bad_addr));
 
 			/* check return code */
@@ -128,8 +133,13 @@ int main(int ac, char **av)
 					 testcase[i].exp_errno,
 					 testcase[i].exp_errval, TEST_ERRNO);
 			}
+			TEST_ERROR_LOG(TEST_ERRNO);
 		}		/*End of TEST LOOPS */
 	}
+#else
+	tst_resm(TWARN,
+		 "This test can only run on kernels that support the sysfs system call");
+#endif
 
 	/*Clean up and exit */
 	cleanup();
@@ -142,6 +152,9 @@ void setup(void)
 {
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
+
+	/* Setting up expected errnos */
+	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 
@@ -158,5 +171,10 @@ void setup(void)
 */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }

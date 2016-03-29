@@ -40,6 +40,7 @@
 #include <limits.h>
 #include <stdlib.h>
 #include "test.h"
+#include "usctest.h"
 
 #include "safe_macros.h"
 
@@ -58,11 +59,13 @@ static char buf[] = "abcdefghijklmnopqrstuvwxyz";
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
 	int bytes_to_write, fd, num_bytes;
 	pid_t pid;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -175,6 +178,8 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	if (addr != MAP_FAILED) {
 		SAFE_MUNMAP(NULL, addr, sizeof(buf));
 		SAFE_CLOSE(NULL, fd);

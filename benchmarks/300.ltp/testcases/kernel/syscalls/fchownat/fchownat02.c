@@ -32,6 +32,7 @@
 #include <string.h>
 #include <signal.h>
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 #include "fchownat.h"
 #include "lapi/fcntl.h"
@@ -42,7 +43,7 @@
 char *TCID = "fchownat02";
 int TST_TOTAL = 1;
 
-static int dir_fd;
+static int dirfd;
 static uid_t set_uid = 1000;
 static gid_t set_gid = 1000;
 static void setup(void);
@@ -53,9 +54,12 @@ static void fchownat_verify(void);
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int i;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -76,7 +80,7 @@ static void setup(void)
 	if ((tst_kvercmp(2, 6, 16)) < 0)
 		tst_brkm(TCONF, NULL, "This test needs kernel 2.6.16 or newer");
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -84,7 +88,7 @@ static void setup(void)
 
 	tst_tmpdir();
 
-	dir_fd = SAFE_OPEN(cleanup, "./", O_DIRECTORY);
+	dirfd = SAFE_OPEN(cleanup, "./", O_DIRECTORY);
 
 	SAFE_TOUCH(cleanup, TESTFILE, 0600, NULL);
 
@@ -104,7 +108,7 @@ static void setup(void)
 
 static void fchownat_verify(void)
 {
-	TEST(fchownat(dir_fd, TESTFILE_LINK, set_uid, set_gid,
+	TEST(fchownat(dirfd, TESTFILE_LINK, set_uid, set_gid,
 		      AT_SYMLINK_NOFOLLOW));
 
 	if (TEST_RETURN != 0) {
@@ -138,4 +142,6 @@ static void test_verify(void)
 static void cleanup(void)
 {
 	tst_rmdir();
+
+	TEST_CLEANUP;
 }

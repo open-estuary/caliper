@@ -65,6 +65,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "test.h"
+#include "usctest.h"
 #include "mem.h"
 
 char *TCID = "ksm05";
@@ -81,10 +82,13 @@ int main(int argc, char *argv[])
 {
 	int lc, status;
 	long ps;
+	const char *msg;
 	pid_t pid;
 	void *ptr;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, tst_exit, "OPTION PARSING ERROR - %s", msg);
 
 	ps = sysconf(_SC_PAGESIZE);
 	setup();
@@ -142,7 +146,7 @@ void setup(void)
 	int fd;
 	char buf[BUFSIZ];
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	if (tst_kvercmp(2, 6, 32) < 0)
 		tst_brkm(TCONF, NULL, "2.6.32 or greater kernel required.");
@@ -173,6 +177,8 @@ void cleanup(void)
 	/* restore /sys/kernel/mm/ksm/run value */
 	if (ksm_run_orig != 1)
 		write_ksm_run(ksm_run_orig);
+
+	TEST_CLEANUP;
 }
 #else
 int main(void)

@@ -72,6 +72,7 @@ char *TCID = "iopl01";
 #include <sys/io.h>
 
 #include "test.h"
+#include "usctest.h"
 
 static void setup();
 static void cleanup();
@@ -84,8 +85,10 @@ int main(int ac, char **av)
 {
 
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -122,7 +125,7 @@ int main(int ac, char **av)
 /* setup() - performs all ONE TIME setup for this test */
 void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -144,11 +147,18 @@ void cleanup(void)
 		tst_resm(TWARN, "iopl() cleanup failed");
 	}
 
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
+
 }
 
 #else /* __i386__ */
 
 #include "test.h"
+#include "usctest.h"
 
 int TST_TOTAL = 0;
 

@@ -94,6 +94,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include "test.h"
+#include "usctest.h"
 
 #define	KIDEXIT	42
 static void setup();
@@ -163,10 +164,13 @@ static void parent_pid(void)
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int fails;
 	int kid_status, wait_status;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -176,6 +180,7 @@ int main(int ac, char **av)
 
 		TEST(fork());
 		if (TEST_RETURN == -1) {
+			TEST_ERROR_LOG(TEST_ERRNO);
 			tst_resm(TFAIL, "fork() Failed, errno=%d : %s",
 				 TEST_ERRNO, strerror(TEST_ERRNO));
 			tst_resm(TBROK, "unable to continue");
@@ -228,6 +233,11 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	tst_rmdir();
 

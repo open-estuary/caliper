@@ -38,6 +38,7 @@
 #include <string.h>
 #include <sys/syscall.h>
 #include "test.h"
+#include "usctest.h"
 #include "linux_syscall_numbers.h"
 #include "inotify.h"
 
@@ -69,8 +70,10 @@ static char event_buf[EVENT_BUF_LEN];
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -245,6 +248,7 @@ static void cleanup(void)
 	if (fd_notify > 0 && close(fd_notify))
 		tst_resm(TWARN, "close(%d) failed", fd_notify);
 
+	TEST_CLEANUP;
 	tst_rmdir();
 }
 

@@ -52,6 +52,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "write02";
 int TST_TOTAL = 1;
@@ -64,6 +65,7 @@ char pfiln[40] = "";
 int main(int argc, char **argv)
 {
 	int lc;
+	const char *msg;
 
 	int cwrite;
 	int fild;
@@ -71,7 +73,9 @@ int main(int argc, char **argv)
 	int badcount = 0;
 	char pwbuf[BUFSIZ + 1];
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	if ((msg = parse_opts(argc, argv, NULL, NULL))) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	setup();		/* global setup for test */
 
@@ -95,6 +99,7 @@ int main(int argc, char **argv)
 		}
 		for (iws = BUFSIZ; iws > 0; iws--) {
 			if ((cwrite = write(fild, pwbuf, iws)) != iws) {
+				TEST_ERROR_LOG(errno);
 				badcount++;
 				tst_resm(TINFO, "bad write count");
 			}
@@ -139,6 +144,11 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	unlink(pfiln);
 

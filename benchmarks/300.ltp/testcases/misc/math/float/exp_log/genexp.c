@@ -35,7 +35,7 @@
 #include        <sys/signal.h>
 #include        <math.h>
 
-static int create_Result_file(void)
+int create_Result_file()
 {
 
 	int i, nbVal;
@@ -66,7 +66,7 @@ static int create_Result_file(void)
 	}
 }
 
-static int create_Data_file(void)
+int create_Data_file()
 {
 	int i, nbVal;
 	double tabD[20000], Inc;

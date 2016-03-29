@@ -43,6 +43,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "mprotect01";
 int TST_TOTAL = 3;
@@ -60,6 +61,8 @@ static void setup(void);
 static void setup1(struct test_case *self);
 static void setup2(struct test_case *self);
 static void setup3(struct test_case *self);
+
+static int exp_enos[] = { ENOMEM, EINVAL, EACCES, 0 };
 
 static int fd;
 
@@ -83,10 +86,15 @@ int main(int ac, char **av)
 {
 	int lc;
 	int i;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+	/* set up the expected errnos */
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		tst_count = 0;
@@ -102,6 +110,8 @@ int main(int ac, char **av)
 				tst_resm(TFAIL, "call succeeded unexpectedly");
 				continue;
 			}
+
+			TEST_ERROR_LOG(TEST_ERRNO);
 
 			if (TEST_ERRNO == TC[i].error) {
 				tst_resm(TPASS, "expected failure - "
@@ -161,4 +171,5 @@ static void setup(void)
 static void cleanup(void)
 {
 	close(fd);
+	TEST_CLEANUP;
 }

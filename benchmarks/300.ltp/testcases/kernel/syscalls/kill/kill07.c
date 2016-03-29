@@ -60,6 +60,7 @@
  */
 
 #include "test.h"
+#include "usctest.h"
 
 #include <signal.h>
 #include <errno.h>
@@ -86,11 +87,14 @@ extern void rm_shm(int);
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	pid_t pid;
 	int exno, status, nsig, asig, ret;
 	struct sigaction my_act, old_act;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 #ifdef UCLINUX
 	maybe_run_child(&do_child, "");
 #endif
@@ -229,6 +233,11 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing status if that option was specified.
+	 * print errno log if that option was specified
+	 */
+	TEST_CLEANUP;
 
 	/*
 	 * remove the shared memory

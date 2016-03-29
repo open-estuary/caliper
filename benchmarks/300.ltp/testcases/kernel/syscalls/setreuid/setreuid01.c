@@ -43,6 +43,7 @@
 #include <sys/types.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "compat_16.h"
 
 static void setup(void);
@@ -56,8 +57,10 @@ static uid_t ruid, euid;	/* real and effective user ids */
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -78,6 +81,7 @@ int main(int ac, char **av)
 		TEST(SETREUID(cleanup, -1, -1));
 
 		if (TEST_RETURN == -1) {
+			TEST_ERROR_LOG(TEST_ERRNO);
 			tst_resm(TFAIL,
 				 "setreuid -  Don't change either real or effective uid failed, errno=%d : %s",
 				 TEST_ERRNO, strerror(TEST_ERRNO));
@@ -95,6 +99,7 @@ int main(int ac, char **av)
 		TEST(SETREUID(cleanup, -1, euid));
 
 		if (TEST_RETURN == -1) {
+			TEST_ERROR_LOG(TEST_ERRNO);
 			tst_resm(TFAIL,
 				 "setreuid -  change effective to effective uid failed, errno=%d : %s",
 				 TEST_ERRNO, strerror(TEST_ERRNO));
@@ -112,6 +117,7 @@ int main(int ac, char **av)
 		TEST(SETREUID(cleanup, ruid, -1));
 
 		if (TEST_RETURN == -1) {
+			TEST_ERROR_LOG(TEST_ERRNO);
 			tst_resm(TFAIL,
 				 "setreuid -  change real to real uid failed, errno=%d : %s",
 				 TEST_ERRNO, strerror(TEST_ERRNO));
@@ -129,6 +135,7 @@ int main(int ac, char **av)
 		TEST(SETREUID(cleanup, -1, ruid));
 
 		if (TEST_RETURN == -1) {
+			TEST_ERROR_LOG(TEST_ERRNO);
 			tst_resm(TFAIL,
 				 "setreuid -  change effective to real uid failed, errno=%d : %s",
 				 TEST_ERRNO, strerror(TEST_ERRNO));
@@ -146,6 +153,7 @@ int main(int ac, char **av)
 		TEST(SETREUID(cleanup, ruid, ruid));
 
 		if (TEST_RETURN == -1) {
+			TEST_ERROR_LOG(TEST_ERRNO);
 			tst_resm(TFAIL,
 				 "setreuid -  try to change real to current real failed, errno=%d : %s",
 				 TEST_ERRNO, strerror(TEST_ERRNO));
@@ -172,5 +180,7 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	tst_rmdir();
 }

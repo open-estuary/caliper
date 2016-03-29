@@ -114,6 +114,7 @@
 #include <string.h>
 #include <signal.h>
 #include "test.h"
+#include "usctest.h"
 
 void setup();
 void cleanup();
@@ -154,6 +155,7 @@ int main(int ac, char **av)
 {
 	int lc;
 	int i;
+	const char *msg;
 	int tmp;
 
 	TST_TOTAL = sizeof(Scenarios) / sizeof(struct limits_t);
@@ -161,7 +163,9 @@ int main(int ac, char **av)
     /***************************************************************
      * parse standard options
      ***************************************************************/
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
     /***************************************************************
      * perform global setup for test
@@ -256,5 +260,9 @@ void setup(void)
  ***************************************************************/
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }

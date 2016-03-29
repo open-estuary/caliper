@@ -44,6 +44,7 @@
 #include <signal.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "linux_syscall_numbers.h"
 
 char *TCID = "ssetmask01";
@@ -71,6 +72,7 @@ int TST_TOTAL = 2;
 void cleanup(void)
 {
 
+	TEST_CLEANUP;
 	tst_rmdir();
 
 }
@@ -104,8 +106,11 @@ void setup(void)
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	setup();
 

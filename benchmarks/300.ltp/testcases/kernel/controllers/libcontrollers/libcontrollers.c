@@ -50,10 +50,8 @@ int scan_shares_files(unsigned int *shares_pointer)
 	/*
 	 * Check if we can get stat of the file
 	 */
-	if (lstat(fullpath, &statbuffer) < 0) {
+	if (lstat(fullpath, &statbuffer) < 0)
 		error_function("Can not read stat for file ", fullpath);
-		return -1;
-	}
 
 	if (S_ISDIR(statbuffer.st_mode) == 0) {	/* not a directory */
 		/*
@@ -77,10 +75,8 @@ int scan_shares_files(unsigned int *shares_pointer)
 	*path_pointer++ = '/';
 	*path_pointer = 0;
 
-	if ((dp = opendir(fullpath)) == NULL) {	/* Error in opening directory */
+	if ((dp = opendir(fullpath)) == NULL)	/* Error in opening directory */
 		error_function("Can't open ", fullpath);
-		return -1;
-	}
 	/*
 	 * search all groups recursively and get total shares
 	 */
@@ -103,10 +99,8 @@ int scan_shares_files(unsigned int *shares_pointer)
 
 	path_pointer[-1] = 0;
 
-	if (closedir(dp) < 0) {
+	if (closedir(dp) < 0)
 		error_function("Could not close dir ", fullpath);
-		return -1;
-	}
 	return 0;
 }
 
@@ -121,34 +115,28 @@ int read_file(char *filepath, int action, unsigned int *value)
 {
 	int num_line = 0;
 	FILE *fp;
-	int tmp;
 	switch (action) {
 	case GET_SHARES:
-		tmp = read_shares_file(filepath);
-		if (tmp == -1)
+		*value = read_shares_file(filepath);
+		if (*value == -1)
 			return -1;
-		*value = (unsigned int)tmp;
 		break;
 
 	case GET_TASKS:
 		fp = fopen(filepath, "r");
-		if (fp == NULL) {
+		if (fp == NULL)
 			error_function("Could not open file", filepath);
-			return -1;
-		}
 		while (fgets(target, LINE_MAX, fp) != NULL)
 			num_line++;
 		*value = (unsigned int)num_line;
-		if (fclose(fp)) {
+		if (fclose(fp))
 			error_function("Could not close file", filepath);
-			return -1;
-		}
 		break;
 
 	default:
 		error_function("Wrong action type passed to fun read_file for ",
 			       filepath);
-		return -1;
+		break;
 	}
 	return 0;
 }
@@ -158,10 +146,12 @@ int read_file(char *filepath, int action, unsigned int *value)
  * Prints error message and returns -1
  */
 
-static inline void error_function(char *msg1, char *msg2)
+inline int error_function(char *msg1, char *msg2)
 {
 	fprintf(stdout, "ERROR: %s ", msg1);
 	fprintf(stdout, "%s\n", msg2);
+	return -1;
+
 }
 
 /* Function: read_shares_file()
@@ -169,20 +159,17 @@ static inline void error_function(char *msg1, char *msg2)
  * the given pointer location. Returns 0 if success
  */
 
+unsigned
 int read_shares_file(char *filepath)
 {
 	FILE *fp;
 	unsigned int shares;
 	fp = fopen(filepath, "r");
-	if (fp == NULL) {
+	if (fp == NULL)
 		error_function("Could not open file", filepath);
-		return -1;
-	}
 	fscanf(fp, "%u", &shares);
-	if (fclose(fp)) {
+	if (fclose(fp))
 		error_function("Could not close file", filepath);
-		return -1;
-	}
 	return shares;
 }
 
@@ -194,10 +181,8 @@ int write_to_file(char *file, const char *mode, unsigned int value)
 {
 	FILE *fp;
 	fp = fopen(file, mode);
-	if (fp == NULL) {
+	if (fp == NULL)
 		error_function("in opening file for writing:", file);
-		return -1;
-	}
 	fprintf(fp, "%u\n", value);
 	fclose(fp);
 	return 0;

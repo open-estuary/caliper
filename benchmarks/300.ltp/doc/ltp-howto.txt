@@ -24,7 +24,7 @@ Copyright (c) 2000 by SGI, Inc.
 
 Please freely copy and distribute (sell or give away) this
 document in any format.  It's requested that corrections
-and/or comments be forwarded to the document maintainer.
+and/or comments be fowarded to the document maintainer.
 You may create a derivative work and distribute it provided
 that you:
 
@@ -427,13 +427,13 @@ but not on this one.
 
 URL: http://ltp.sourceforge.net/
 
-mailing list: ltp@lists.linux.it
+mailing list: ltp-list@lists.sourceforge.net
 
-list archive: http://lists.linux.it/pipermail/ltp/
+list archive: https://sourceforge.net/mailarchive/forum.php?forum_name=ltp-list
 
 Questions and comments should be sent to the LTP mailing
-list at ltp@lists.linux.it. To subscribe, please go to
-http://lists.linux.it/listinfo/ltp.
+list at ltp-list@lists.sourceforge.net.  To subscribe, please go to
+https://lists.sourceforge.net/lists/listinfo/ltp-list.
 
 The source is also available via CVS.  See the web site for
 a web interface and check out instructions.

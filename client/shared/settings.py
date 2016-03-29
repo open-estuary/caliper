@@ -34,6 +34,7 @@ else:
     DEFAULT_CONFIG_FILE = None
     RUNNING_STAND_ALONE_CLIENT = False
 
+
 class Settings(object):
     _NO_DEFAULT_SPECIFIED = object()
 
@@ -46,7 +47,7 @@ class Settings(object):
 
     def set_config_files(self, config_file=DEFAULT_CONFIG_FILE):
         self.config_file = config_file
-        self.config = self.parse_config_file()
+        self.config = None
 
     def _handle_no_value(self, section, key, default):
         if default is self._NO_DEFAULT_SPECIFIED:
@@ -66,7 +67,7 @@ class Settings(object):
         :return: ConfigParser() onject containing all the contents of
                         sections.
         """
-        self._ensure_config_parsed()
+        self._ensure_config_parserd()
 
         if isinstance(sections, str):
             sections = [sections]

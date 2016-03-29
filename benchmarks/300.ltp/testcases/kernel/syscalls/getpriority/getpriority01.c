@@ -74,6 +74,7 @@
 #include <sys/resource.h>
 
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "getpriority01";
 int TST_TOTAL = 1;
@@ -86,12 +87,17 @@ int prio_which[] = { PRIO_PROCESS, PRIO_PGRP, PRIO_USER };
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int ind;
 	int which;		/* scheduling priority category */
 
 	TST_TOTAL = sizeof(prio_which) / sizeof(int);
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+
+	}
 
 	setup();
 
@@ -143,5 +149,10 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }

@@ -57,9 +57,12 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include "test.h"
+#include "usctest.h"
 
 void cleanup(void);
 void setup(void);
+
+int exp_enos[] = { EBADF, 0 };
 
 char *TCID = "close02";
 int TST_TOTAL = 1;
@@ -67,10 +70,16 @@ int TST_TOTAL = 1;
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
-	setup();
+	setup();		/* global setup */
+
+	/* set up expected errnos */
+	TEST_EXP_ENOS(exp_enos);
 
 	/* The following loop checks looping state if -i option given */
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
@@ -83,6 +92,8 @@ int main(int ac, char **av)
 		if (TEST_RETURN != -1) {
 			tst_resm(TFAIL, "Closed a non existent fildes");
 		} else {
+			TEST_ERROR_LOG(TEST_ERRNO);
+
 			if (TEST_ERRNO != EBADF) {
 				tst_resm(TFAIL, "close() FAILED to set errno "
 					 "to EBADF on an invalid fd, got %d",
@@ -117,5 +128,10 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing status if that option was specified.
+	 * print errno log if that option was specified
+	 */
+	TEST_CLEANUP;
 
 }

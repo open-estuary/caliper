@@ -111,7 +111,7 @@ int check_shmem2(void *vtest)
 
 static void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 	check_newipc();
 }
 

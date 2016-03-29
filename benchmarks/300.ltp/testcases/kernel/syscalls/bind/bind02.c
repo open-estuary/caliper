@@ -56,6 +56,7 @@
 #include <netinet/in.h>
 
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "bind02";
 int testno;
@@ -126,8 +127,6 @@ int main(int argc, char *argv[])
 	/* FreeBSD has set limits for user login name -- MAXLOGNAME, but
 	 * Linux doesn't have that limitation apparently. */
 	char *username = NULL;
-
-	tst_require_root();
 
 	if (argc != 2) {
 		tst_resm(TINFO, "Defaulting to user nobody");

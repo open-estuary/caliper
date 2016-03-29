@@ -59,28 +59,8 @@
 # define O_NOATIME 01000000
 #endif
 
-#ifndef O_PATH
-# ifdef __sparc__
-#  define O_PATH 0x1000000
-# else
-#  define O_PATH 010000000
-# endif
-#endif
-
 #ifndef FALLOC_FL_KEEP_SIZE
 # define FALLOC_FL_KEEP_SIZE 1
-#endif
-
-#ifndef RENAME_NOREPLACE
-# define RENAME_NOREPLACE	(1 << 0)
-#endif
-
-#ifndef RENAME_EXCHANGE
-# define RENAME_EXCHANGE		(1 << 1)
-#endif
-
-#ifndef RENAME_WHITEOUT
-# define RENAME_WHITEOUT		(1 << 2)
 #endif
 
 /* splice, vmsplice, tee */

@@ -23,6 +23,7 @@
  */
 
 #include "test.h"
+#include "usctest.h"
 
 #include <errno.h>
 #include <sys/time.h>
@@ -38,9 +39,12 @@ int TST_TOTAL = 40;
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int new_val;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -57,7 +61,7 @@ int main(int ac, char **av)
 
 static void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -92,4 +96,5 @@ static void setpriority_verify(const int new_prio)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 }

@@ -47,6 +47,7 @@
 /*****	LTP Port	*****/
 
 #include "test.h"
+#include "usctest.h"
 #define FAILED 0
 #define PASSED 1
 
@@ -57,14 +58,16 @@ int errno;
 FILE *temp;
 int TST_TOTAL = 1;
 
-static void setup(void);
-static int blenter(void);
-static int blexit(void);
+void setup();
+int blenter();
+int blexit();
 
 /********************************/
 
 /*--------------------------------------------------------------*/
-int main(int argc, char *argv[])
+int main(argc, argv)
+int argc;
+char *argv[];
 {
 	register long long i;
 	register int j, k, l, m;
@@ -112,18 +115,18 @@ int main(int argc, char *argv[])
 /*--------------------------------------------------------------*/
 
 /*****  LTP Port	*****/
-static void setup(void)
+void setup()
 {
 	temp = stderr;
 }
 
-static int blenter(void)
+int blenter()
 {
 	local_flag = PASSED;
 	return (0);
 }
 
-static int blexit(void)
+int blexit()
 {
 	(local_flag == PASSED) ? tst_resm(TPASS,
 					  "Test passed") : tst_resm(TFAIL,

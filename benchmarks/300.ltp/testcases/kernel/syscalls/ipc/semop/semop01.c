@@ -67,10 +67,12 @@ struct sembuf sops[PSEMS];
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int i;
 	int fail = 0;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -153,4 +155,5 @@ void cleanup(void)
 	free(get_arr.array);
 
 	tst_rmdir();
+	TEST_CLEANUP;
 }

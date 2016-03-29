@@ -87,6 +87,7 @@
 #include <pwd.h>
 
 #include "test.h"
+#include "usctest.h"
 
 #define MODE_RWX	S_IRWXU | S_IRWXG | S_IRWXO
 #define FILE_MODE	S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH
@@ -127,6 +128,12 @@ struct test_case_t {		/* test case struct. to hold ref. test cond's */
 
 char *TCID = "stat03";
 int TST_TOTAL = ARRAY_SIZE(Test_cases);
+int exp_enos[] = { EACCES,
+#if !defined(UCLINUX)
+	EFAULT, ENAMETOOLONG,
+#endif
+	ENOENT, ENOTDIR, 0
+};
 
 char *bad_addr = 0;
 
@@ -137,17 +144,22 @@ int main(int ac, char **av)
 {
 	struct stat stat_buf;	/* stat structure buffer */
 	int lc;
+	const char *msg;
 	char *file_name;	/* ptr. for file name whose mode is modified */
 	char *test_desc;	/* test specific error message */
 	int ind;		/* counter to test different test conditions */
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	/*
 	 * Invoke setup function to call individual test setup functions
 	 * to simulate test conditions.
 	 */
 	setup();
+
+	/* set the expected errnos... */
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -172,6 +184,7 @@ int main(int ac, char **av)
 
 			/* Check return code from stat(2) */
 			if (TEST_RETURN == -1) {
+				TEST_ERROR_LOG(TEST_ERRNO);
 				if (TEST_ERRNO == Test_cases[ind].exp_errno) {
 					tst_resm(TPASS,
 						 "stat() fails, %s, errno:%d",
@@ -213,7 +226,7 @@ void setup(void)
 {
 	int ind;
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	/* Capture unexpected signals */
 	tst_sig(FORK, DEF_HANDLER, cleanup);
@@ -357,6 +370,11 @@ int longpath_setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	/* Restore mode permissions on test directory created in setup2() */
 	if (chmod(DIR_TEMP, MODE_RWX) < 0) {

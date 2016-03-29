@@ -62,6 +62,10 @@
 #include <sys/wait.h>
 
 char *TCID = "shmctl03";
+
+int exp_enos[] = { EACCES, EPERM, 0 };	/* 0 terminated list of */
+
+					/* expected errnos      */
 int shm_id_1 = -1;
 
 uid_t ltp_uid;
@@ -89,10 +93,12 @@ int TST_TOTAL = ARRAY_SIZE(TC);
 
 int main(int ac, char **av)
 {
+	const char *msg;
 	int pid;
 	void do_child(void);
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();		/* global setup */
 
@@ -150,6 +156,8 @@ void do_child(void)
 				continue;
 			}
 
+			TEST_ERROR_LOG(TEST_ERRNO);
+
 			if (TEST_ERRNO == TC[i].error) {
 				tst_resm(TPASS, "expected failure - errno = "
 					 "%d : %s", TEST_ERRNO,
@@ -168,9 +176,12 @@ void do_child(void)
  */
 void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
+
+	/* Set up the expected error numbers for -e option */
+	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 
@@ -201,5 +212,10 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }

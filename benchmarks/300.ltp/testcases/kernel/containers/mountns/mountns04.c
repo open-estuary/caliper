@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include "test.h"
+#include "usctest.h"
 #include "libclone.h"
 #include "safe_macros.h"
 #include "safe_file_ops.h"
@@ -72,9 +73,12 @@ static void test(void)
 
 int main(int argc, char *argv[])
 {
+	const char *msg;
 	int lc;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 

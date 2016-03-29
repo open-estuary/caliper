@@ -33,6 +33,7 @@
 #include <unistd.h>
 
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "madvise03";
 
@@ -55,11 +56,15 @@ int main(int argc, char *argv[])
 	struct stat stat;
 	void *addr1;
 	long shm_size = 0;
+
+	const char *msg = NULL;
 	char filename[64];
 	char *progname = NULL;
 	char *str_for_file = "abcdefghijklmnopqrstuvwxyz12345\n";
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -143,6 +148,8 @@ static void cleanup(void)
 		if (shmctl(shmid1, IPC_RMID, 0) < 0)
 			tst_resm(TBROK | TERRNO,
 				 "shmctl(.., IPC_RMID, ..) failed");
+
+	TEST_CLEANUP;
 
 	tst_rmdir();
 }

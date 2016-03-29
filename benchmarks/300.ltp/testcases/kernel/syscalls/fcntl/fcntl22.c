@@ -76,10 +76,18 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include "test.h"
+#include "usctest.h"
 
 int child_pid;
 int file;
 struct flock fl;		/* struct flock for fcntl */
+
+#ifdef __hpux
+/* oddball HP-UX declares the error case to be EACCES in the man page */
+int exp_enos[] = { EACCES, 0 };
+#else
+int exp_enos[] = { EAGAIN, 0 };
+#endif
 
 char *TCID = "fcntl22";
 int TST_TOTAL = 1;
@@ -90,12 +98,18 @@ void cleanup(void);
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	char *test_desc;	/* test specific error message */
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	/* setup */
 	setup();
+
+	/* set the expected errnos... */
+	TEST_EXP_ENOS(exp_enos);
 
 	/* Check for looping state if -i option is given */
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
@@ -120,9 +134,11 @@ int main(int ac, char **av)
 			if (TEST_RETURN != -1) {
 				tst_resm(TFAIL, "fcntl() returned %ld,"
 					 "expected -1, errno=%d", TEST_RETURN,
-					 EAGAIN);
+					 exp_enos[0]);
 			} else {
-				if (TEST_ERRNO == EAGAIN) {
+				TEST_ERROR_LOG(TEST_ERRNO);
+
+				if (TEST_ERRNO == exp_enos[0]) {
 					tst_resm(TPASS,
 						 "fcntl() fails with expected "
 						 "error %s errno:%d", test_desc,
@@ -131,7 +147,7 @@ int main(int ac, char **av)
 					tst_resm(TFAIL, "fcntl() fails, %s, "
 						 "errno=%d, expected errno=%d",
 						 test_desc, TEST_ERRNO,
-						 EAGAIN);
+						 exp_enos[0]);
 				}
 			}
 			/* end child */
@@ -196,6 +212,8 @@ void cleanup(void)
 	 * print errno log if that option was specified
 	 */
 	close(file);
+
+	TEST_CLEANUP;
 
 	tst_rmdir();
 

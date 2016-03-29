@@ -55,6 +55,7 @@
 #include <sys/stat.h>
 
 #include "test.h"
+#include "usctest.h"
 
 #define	K_1	1024
 #define MODES   S_IRWXU
@@ -78,8 +79,11 @@ void cleanup();
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	setup();
 

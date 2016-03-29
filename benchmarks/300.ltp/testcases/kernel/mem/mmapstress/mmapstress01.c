@@ -34,6 +34,7 @@
 #include <limits.h>
 /*****  LTP Port        *****/
 #include "test.h"
+#include "usctest.h"
 #define FAILED 0
 #define PASSED 1
 
@@ -602,9 +603,9 @@ int fileokay(char *file, uchar_t * expbuf)
 	struct stat statbuf;
 #endif /* LARGE_FILE */
 	size_t mapsize;
+	uchar_t *readbuf;
 	unsigned mappages;
 	unsigned pagesize = sysconf(_SC_PAGE_SIZE);
-	uchar_t readbuf[pagesize];
 	int fd;
 	int cnt;
 	unsigned i, j;
@@ -641,6 +642,7 @@ int fileokay(char *file, uchar_t * expbuf)
 		perror("lseek");
 		anyfail();
 	}
+	readbuf = malloc(pagesize);
 
 	if (statbuf.st_size - sparseoffset > SIZE_MAX) {
 		fprintf(stderr, "size_t overflow when setting up map\n");
@@ -667,7 +669,6 @@ int fileokay(char *file, uchar_t * expbuf)
 				(void)fprintf(stderr, "read %d of %ld bytes\n",
 					      (i * pagesize) + cnt,
 					      (long)mapsize);
-				close(fd);
 				return 0;
 			}
 		}
@@ -688,7 +689,6 @@ int fileokay(char *file, uchar_t * expbuf)
 					      "(fsize %ld)\n", i, j,
 					      statbuf.st_size);
 #endif /* LARGE_FILE */
-				close(fd);
 				return 0;
 			}
 		}
@@ -725,14 +725,14 @@ unsigned int initrand(void)
 }
 
 /*****  LTP Port        *****/
-void ok_exit(void)
+void ok_exit()
 {
 	tst_resm(TPASS, "Test passed");
 	tst_rmdir();
 	tst_exit();
 }
 
-int anyfail(void)
+int anyfail()
 {
 	tst_brkm(TFAIL, tst_rmdir, "Test failed");
 }

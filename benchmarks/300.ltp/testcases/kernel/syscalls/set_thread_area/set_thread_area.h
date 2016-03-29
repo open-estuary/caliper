@@ -3,6 +3,7 @@
 
 /* Harness Specific Include Files. */
 #include "test.h"
+#include "usctest.h"
 #include "linux_syscall_numbers.h"
 #include "config.h"
 

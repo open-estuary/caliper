@@ -53,6 +53,7 @@
 #include <memory.h>
 #include <errno.h>
 #include "test.h"
+#include "usctest.h"
 
 #define	K_1	8192
 
@@ -72,6 +73,9 @@ struct iovec wr_iovec[MAX_IOVEC] = {
 	{NULL, 0}
 };
 
+/* 0 terminated list of expected errnos */
+int exp_enos[] = { 0 };
+
 char name[K_1], f_name[K_1];
 int fd[2], in_sighandler;
 char *buf_list[NBUFS];
@@ -90,10 +94,14 @@ int fail;
 int main(int argc, char **argv)
 {
 	int lc;
+	const char *msg;
 
 	int nbytes;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+
+	}
 
 	setup();		/* set "tstdir", and "testfile" vars */
 
@@ -159,6 +167,7 @@ int main(int argc, char **argv)
 		 * contents of the first valid write() scheduled.
 		 */
 		if (writev(fd[0], wr_iovec, 3) < 0) {
+			TEST_ERROR_LOG(errno);
 			fail = 1;
 			if (errno == EFAULT) {
 				tst_resm(TFAIL, "Got error EFAULT");
@@ -195,6 +204,7 @@ int main(int argc, char **argv)
 		 */
 		l_seek(fd[0], 0, 0);
 		if (writev(fd[0], wr_iovec, 3) < 0) {
+			TEST_ERROR_LOG(errno);
 			fail = 1;
 			if (errno == EFAULT) {
 				tst_resm(TFAIL, "Got error EFAULT");
@@ -233,6 +243,7 @@ int main(int argc, char **argv)
 
 		l_seek(fd[0], 8192, 0);
 		if (writev(fd[0], wr_iovec, 3) < 0) {
+			TEST_ERROR_LOG(errno);
 			fail = 1;
 			if (errno == EFAULT) {
 				tst_resm(TFAIL, "Got error EFAULT");
@@ -281,6 +292,8 @@ void setup(void)
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
+	TEST_EXP_ENOS(exp_enos);
+
 	TEST_PAUSE;
 
 	/* Create a unique temporary directory and chdir() to it. */
@@ -304,6 +317,11 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	if (unlink(f_name) < 0) {
 		tst_resm(TFAIL, "unlink Failed--file = %s, errno = %d",

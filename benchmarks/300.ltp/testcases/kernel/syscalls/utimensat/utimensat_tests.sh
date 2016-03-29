@@ -24,10 +24,11 @@
 export TCID=utimensat01
 export TST_TOTAL=99
 export TST_COUNT=0
-. test.sh
 
 if tst_kvercmp 2 6 22 ; then
-	tst_brkm TCONF "System kernel version is less than 2.6.22,cannot execute test"
+       tst_resm TCONF "System kernel version is less than 2.6.22"
+       tst_resm TCONF "Cannot execute test"
+       exit 0
 fi
 
 RESULT_FILE=$TMPDIR/utimensat.result
@@ -38,7 +39,8 @@ FILE=$TEST_DIR/utimensat.test_file
 TEST_PROG=utimensat01
 
 if [ ! -f $LTPROOT/testcases/bin/$TEST_PROG ]; then
-	tst_brkm TWARN "$LTPROOT/testcases/bin/$TEST_PROG is missing (please check install)"
+	tst_resm TWARN "$LTPROOT/testcases/bin/$TEST_PROG is missing (please check install)"
+	exit 1
 fi
 
 # Summary counters of all test results
@@ -105,7 +107,7 @@ setup_file()
 
 test_failed()
 {
-    tst_resm TFAIL "FAILED test $test_num"
+    echo "FAILED test $test_num"
 
     failed_cnt=$(expr $failed_cnt + 1)
     failed_list="$failed_list $test_num"
@@ -175,7 +177,7 @@ check_result()
     fi
 
     passed_cnt=$(expr $passed_cnt + 1)
-    tst_resm TPASS "PASSED test $test_num"
+    echo "PASSED test $test_num"
 }
 
 run_test()
@@ -252,13 +254,15 @@ run_test()
 # Use trap to restore this line after program terminates.
 sudoers=/etc/sudoers
 if [ ! -r $sudoers ]; then
-	tst_brkm TBROK "can't read $sudoers"
+	tst_resm TBROK "can't read $sudoers"
+	exit 1
 fi
 pattern="[[:space:]]*Defaults[[:space:]]*requiretty.*"
 if grep -q "^${pattern}" $sudoers; then
 	tst_resm TINFO "Comment requiretty in $sudoers for automated testing systems"
 	if ! sed -r -i.$$ -e "s/^($pattern)/#\1/" $sudoers; then
-		tst_brkm TBROK "failed to mangle $sudoers properly"
+		tst_resm TBROK "failed to mangle $sudoers properly"
+		exit 1
 	fi
 	trap 'trap "" EXIT; restore_sudoers' EXIT
 fi
@@ -280,7 +284,8 @@ else
 fi
 
 if ! sudo $s_arg true; then
-	tst_brkm TBROK "sudo cannot be run by user non-interactively"
+	tst_resm TBROK "sudo cannot be run by user non-interactively"
+	exit 1
 fi
 if test ! -f $sudoers
 then
@@ -295,15 +300,6 @@ nuke_sudoers()
 }
 
 sudo $s_arg -u $test_user mkdir -p $TEST_DIR
-
-# Make sure chattr command is supported
-touch $TEST_DIR/tmp_file
-chattr +a $TEST_DIR/tmp_file
-if [ $? -ne 0 ] ; then
-	rm -rf $TEST_DIR
-	tst_brkm TCONF "chattr not supported"
-fi
-
 cd $TEST_DIR
 chown root $LTPROOT/testcases/bin/$TEST_PROG
 chmod ugo+x,u+s $LTPROOT/testcases/bin/$TEST_PROG
@@ -498,6 +494,7 @@ date
 echo "Total tests: $test_num; passed: $passed_cnt; failed: $failed_cnt"
 if test $failed_cnt -gt 0; then
     echo "Failed tests: $failed_list"
+    exit -1
 fi
 
-tst_exit
+exit

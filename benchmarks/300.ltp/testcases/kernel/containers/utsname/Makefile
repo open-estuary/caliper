@@ -23,6 +23,6 @@ top_srcdir		?= ../../../..
 include $(top_srcdir)/include/mk/testcases.mk
 include $(abs_srcdir)/../Makefile.inc
 
-LDLIBS			:= -lclone -lpthread -lrt $(LDLIBS)
+LDLIBS			:= -lclone -lpthread -lrt -lltp
 
 include $(top_srcdir)/include/mk/generic_leaf_target.mk

@@ -21,6 +21,7 @@
 #include <errno.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "compat_16.h"
 
 TCID_DEFINE(geteuid02);
@@ -33,9 +34,11 @@ int main(int ac, char **av)
 {
 	struct passwd *pwent;
 	int lc;
+	const char *msg;
 	uid_t uid;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -76,4 +79,5 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 }

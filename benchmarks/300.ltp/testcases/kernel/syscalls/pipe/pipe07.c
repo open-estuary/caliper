@@ -38,10 +38,13 @@
 #include <dirent.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 char *TCID = "pipe07";
 int TST_TOTAL = 1;
+
+static int exp_enos[] = { EMFILE, 0 };
 
 /* used to record file descriptors open at the test start */
 static int rec_fds[128];
@@ -55,11 +58,13 @@ static void cleanup(void);
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int min, ret;
 	int npipes;
 	int pipes[2], max_fd = 0;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -98,6 +103,7 @@ int main(int ac, char **av)
 
 static void setup(void)
 {
+	TEST_EXP_ENOS(exp_enos);
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 	TEST_PAUSE;
 
@@ -173,4 +179,5 @@ static void close_test_fds(int max_fd)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 }

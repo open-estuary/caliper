@@ -26,9 +26,13 @@ char *TCID = "creat07_child";
 
 int main(void)
 {
-	TST_CHECKPOINT_INIT(NULL);
+	struct tst_checkpoint checkpoint;
 
-	TST_SAFE_CHECKPOINT_WAKE(NULL, 0);
+	/* we are already in tmpdir, so only initialize checkpoint,
+	 * fifo has been created by parent already. */
+	TST_CHECKPOINT_INIT(&checkpoint);
+
+	TST_CHECKPOINT_SIGNAL_PARENT(&checkpoint);
 
 	for (;;) {
 		sleep(1);

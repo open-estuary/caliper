@@ -22,6 +22,7 @@
 #include <string.h>
 #include "test.h"
 #include "safe_macros.h"
+#include "usctest.h"
 
 #define OUTPUT_FNAME "output"
 

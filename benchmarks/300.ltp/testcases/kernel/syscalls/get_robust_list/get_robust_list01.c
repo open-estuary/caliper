@@ -51,6 +51,7 @@
 #include <stdlib.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "linux_syscall_numbers.h"
 
 char *TCID = "get_robust_list01";
@@ -65,6 +66,8 @@ struct robust_list_head {
 	long futex_offset;
 	struct robust_list *list_op_pending;
 };
+
+int exp_enos[] = { ESRCH, EPERM, EFAULT, 0 };
 static pid_t unused_pid;
 
 void setup(void);
@@ -73,10 +76,12 @@ void cleanup(void);
 int main(int argc, char **argv)
 {
 	int lc;
+	const char *msg;
 	struct robust_list_head head;
 	size_t len_ptr;		/* size of structure struct robust_list_head */
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -183,7 +188,9 @@ int main(int argc, char **argv)
 
 void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
+
+	TEST_EXP_ENOS(exp_enos);
 
 	unused_pid = tst_get_unused_pid(cleanup);
 
@@ -192,4 +199,5 @@ void setup(void)
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
 }

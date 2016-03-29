@@ -73,6 +73,7 @@
 #include <sched.h>
 #include <sys/wait.h>
 #include "test.h"
+#include "usctest.h"
 
 #define NEW_PRIORITY 5
 
@@ -89,10 +90,12 @@ int main(int ac, char **av)
 {
 
 	int lc;
+	const char *msg;
 	int status;
 	pid_t child_pid;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -169,6 +172,12 @@ void setup(void)
  */
 void cleanup(void)
 {
+
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 }
 
 /*

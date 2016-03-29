@@ -70,24 +70,33 @@
 #include <signal.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "common_timers.h"
 
 #define INVALID_ID ((kernel_timer_t)-1)
 
 void setup(void);
 
+char *TCID = "timer_delete03";	/* Test program identifier.    */
+int TST_TOTAL;			/* Total number of test cases. */
+
+static int exp_enos[] = { EINVAL, 0 };
+
 int testcase[] = {
 	EINVAL			/* Invalid timer ID */
 };
 
-char *TCID = "timer_delete03";
-int TST_TOTAL = ARRAY_SIZE(testcase);
-
 int main(int ac, char **av)
 {
 	int lc, i;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL))
+	    != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
+
+	TST_TOTAL = sizeof(testcase) / sizeof(testcase[0]);
 
 	setup();
 
@@ -124,6 +133,9 @@ void setup(void)
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
+	/* set the expected errnos... */
+	TEST_EXP_ENOS(exp_enos);
+
 	TEST_PAUSE;
 }
 
@@ -133,4 +145,9 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 }

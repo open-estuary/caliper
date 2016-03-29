@@ -38,6 +38,7 @@
 
 setup()
 {
+	tst_check_cmds expect ftp useradd userdel
 	export TEST_USER="ftpuser2"
 }
 

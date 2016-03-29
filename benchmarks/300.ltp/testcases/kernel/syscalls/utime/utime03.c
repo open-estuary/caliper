@@ -89,8 +89,8 @@
 #include <time.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "tst_fs_type.h"
-#include "safe_macros.h"
 
 #define TEMP_FILE	"tmp_file"
 #define FILE_MODE	S_IRWXU | S_IRGRP | S_IWGRP| S_IROTH | S_IWOTH
@@ -100,6 +100,8 @@
 char *TCID = "utime03";
 int TST_TOTAL = 1;
 time_t curr_time;		/* current time in seconds */
+time_t tloc;			/* argument var. for time() */
+int exp_enos[] = { 0 };
 
 struct passwd *ltpuser;		/* password struct for ltpusers */
 uid_t user_uid;			/* user id of ltpuser */
@@ -114,11 +116,16 @@ int main(int ac, char **av)
 	struct stat stat_buf;	/* struct buffer to hold file info. */
 	int lc;
 	long type;
+	const char *msg;
 	time_t modf_time, access_time;
 	time_t pres_time;	/* file modification/access/present time */
 	pid_t pid;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+
+	}
 
 	setup();
 
@@ -135,6 +142,9 @@ int main(int ac, char **av)
 			 tst_fs_type_name(type));
 		break;
 	}
+
+	/* set the expected errnos... */
+	TEST_EXP_ENOS(exp_enos);
 
 	pid = FORK_OR_VFORK();
 
@@ -162,8 +172,11 @@ int main(int ac, char **av)
 			TEST(utime(TEMP_FILE, NULL));
 
 			if (TEST_RETURN == -1) {
-				tst_resm(TFAIL|TTERRNO,
-					 "utime(%s) failed", TEMP_FILE);
+				TEST_ERROR_LOG(TEST_ERRNO);
+				tst_resm(TFAIL,
+					 "utime(%s) Failed, errno=%d : %s",
+					 TEMP_FILE, TEST_ERRNO,
+					 strerror(TEST_ERRNO));
 			} else {
 				/*
 				 * Sleep for a second so that mod time
@@ -176,14 +189,25 @@ int main(int ac, char **av)
 				 * Get the current time now, after
 				 * calling utime(2)
 				 */
-				pres_time = time(NULL);
+				if ((pres_time = time(&tloc)) < 0) {
+					tst_brkm(TFAIL, cleanup,
+						 "time() failed to get "
+						 "present time after "
+						 "utime, error=%d",
+						 errno);
+				}
 
 				/*
 				 * Get the modification and access
 				 * times of temporary file using
 				 * stat(2).
 				 */
-				SAFE_STAT(cleanup, TEMP_FILE, &stat_buf);
+				if (stat(TEMP_FILE, &stat_buf) < 0) {
+					tst_brkm(TFAIL, cleanup,
+						 "stat(2) of %s failed, "
+						 "error:%d", TEMP_FILE,
+						 TEST_ERRNO);
+				}
 				modf_time = stat_buf.st_mtime;
 				access_time = stat_buf.st_atime;
 
@@ -233,7 +257,7 @@ void setup(void)
 	int fildes;		/* file handle for temp file */
 	char *tmpd = NULL;
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
@@ -247,22 +271,42 @@ void setup(void)
 	tst_tmpdir();
 
 	/* get the name of the temporary directory */
-	tmpd = SAFE_GETCWD(NULL, tmpd, 0);
+	if ((tmpd = getcwd(tmpd, 0)) == NULL) {
+		tst_brkm(TBROK, NULL, "getcwd failed");
+	}
 
 	/* Creat a temporary file under above directory */
-	fildes = SAFE_CREAT(cleanup, TEMP_FILE, FILE_MODE);
+	if ((fildes = creat(TEMP_FILE, FILE_MODE)) == -1) {
+		tst_brkm(TBROK, cleanup,
+			 "creat(%s, %#o) Failed, errno=%d :%s",
+			 TEMP_FILE, FILE_MODE, errno, strerror(errno));
+	}
 
 	/* Close the temporary file created */
-	SAFE_CLOSE(cleanup, fildes);
+	if (close(fildes) < 0) {
+		tst_brkm(TBROK, cleanup,
+			 "close(%s) Failed, errno=%d : %s:",
+			 TEMP_FILE, errno, strerror(errno));
+	}
 
 	/*
 	 * Make sure that specified Mode permissions set as
 	 * umask value may be different.
 	 */
-	SAFE_CHMOD(cleanup, TEMP_FILE, FILE_MODE);
-	SAFE_CHMOD(cleanup, tmpd, 0711);
+	if (chmod(TEMP_FILE, FILE_MODE) < 0) {
+		tst_brkm(TBROK, cleanup,
+			 "chmod(%s) Failed, errno=%d : %s:",
+			 TEMP_FILE, errno, strerror(errno));
+	}
 
-	ltpuser = SAFE_GETPWNAM(cleanup, LTPUSER2);
+	if (chmod(tmpd, 0711) != 0) {
+		tst_brkm(TBROK, cleanup, "chmod() failed");
+	}
+
+	if ((ltpuser = getpwnam(LTPUSER2)) == NULL) {
+		tst_brkm(TBROK, cleanup, "%s not found in /etc/passwd",
+			 LTPUSER2);
+	}
 
 	/* get uid/gid of user accordingly */
 	user_uid = ltpuser->pw_uid;
@@ -272,10 +316,16 @@ void setup(void)
 	 * Change the ownership of test directory/file specified by
 	 * pathname to that of user_uid and group_gid.
 	 */
-	SAFE_CHOWN(cleanup, TEMP_FILE, user_uid, group_gid);
+	if (chown(TEMP_FILE, user_uid, group_gid) < 0) {
+		tst_brkm(TBROK, cleanup, "chown() of %s failed, error %d",
+			 TEMP_FILE, errno);
+	}
 
 	/* Get the current time */
-	curr_time = time(NULL);
+	if ((curr_time = time(&tloc)) < 0) {
+		tst_brkm(TBROK, cleanup,
+			 "time() failed to get current time, errno=%d", errno);
+	}
 
 	/*
 	 * Sleep for a second so that mod time and access times will be
@@ -294,6 +344,11 @@ void setup(void)
 void cleanup(void)
 {
 	seteuid(0);
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	tst_rmdir();
 

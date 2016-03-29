@@ -31,6 +31,7 @@
 #include <fcntl.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 static void help(void);
@@ -59,8 +60,11 @@ static option_t options[] = {
 int main(int argc, char *argv[])
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(argc, argv, options, &help);
+	msg = parse_opts(argc, argv, options, &help);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -81,7 +85,7 @@ int main(int argc, char *argv[])
 				tst_resm(TFAIL, "file %s is not available",
 					 file_des);
 
-			TEST(tst_umount(mntpoint_des));
+			TEST(umount(mntpoint_des));
 			if (TEST_RETURN != 0)
 				tst_brkm(TBROK | TTERRNO, cleanup,
 					 "umount(2) failed");
@@ -94,7 +98,7 @@ int main(int argc, char *argv[])
 
 void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -118,8 +122,10 @@ void setup(void)
 void cleanup(void)
 {
 	if (dflag)
-		if (tst_umount(mntpoint_src) != 0)
+		if (umount(mntpoint_src) != 0)
 			tst_brkm(TBROK | TTERRNO, NULL, "umount(2) failed");
+
+	TEST_CLEANUP;
 
 	tst_rmdir();
 }

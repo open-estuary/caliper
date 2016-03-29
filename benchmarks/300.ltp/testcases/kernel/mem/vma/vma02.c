@@ -42,6 +42,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 #include "numa_helper.h"
 
@@ -68,9 +69,12 @@ int main(int argc, char **argv)
 	int node, err, lc;
 	char buf[BUFSIZ];
 	struct bitmask *nmask = numa_allocate_nodemask();
+	const char *msg;
 
 	pagesize = getpagesize();
-	tst_parse_opts(argc, argv, options, usage);
+	msg = parse_opts(argc, argv, options, usage);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	if (opt_node) {
 		node = SAFE_STRTOL(NULL, opt_nodestr, 1, LONG_MAX);

@@ -38,7 +38,7 @@
 #include <unistd.h>
 #include "posixtest.h"
 
-static pthread_key_t keys[PTHREAD_KEYS_MAX + 1];
+static pthread_key_t keys[PTHREAD_KEYS_MAX];
 
 int main(void)
 {

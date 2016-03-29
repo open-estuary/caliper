@@ -28,6 +28,7 @@
 #include <errno.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "compat_16.h"
 
 TCID_DEFINE(setgid02);
@@ -41,14 +42,20 @@ static struct passwd *ltpuser;
 static void setup(void);
 static void cleanup(void);
 
+static int exp_enos[] = { EPERM, 0 };
+
 int main(int ac, char **av)
 {
 	struct passwd *getpwnam(), *rootpwent;
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		tst_count = 0;
@@ -67,6 +74,8 @@ int main(int ac, char **av)
 			continue;
 		}
 
+		TEST_ERROR_LOG(TEST_ERRNO);
+
 		if (TEST_ERRNO != EPERM) {
 			tst_resm(TFAIL, "setgid set invalid errno, expected: "
 				 "EPERM, got: %d\n", TEST_ERRNO);
@@ -81,7 +90,7 @@ int main(int ac, char **av)
 
 static void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	/* Switch to nobody user for correct error code collection */
 	ltpuser = getpwnam(nobody_uid);
@@ -108,4 +117,5 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 }

@@ -40,6 +40,7 @@
 #include <signal.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "compat_16.h"
 
 #define FILE_MODE	(S_IFREG|S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)
@@ -72,9 +73,11 @@ int main(int argc, char *argv[])
 {
 	struct stat stat_buf;
 	int lc;
+	const char *msg;
 	int i;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -150,7 +153,7 @@ static void setup(void)
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	TEST_PAUSE;
 	tst_tmpdir();
@@ -169,5 +172,7 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	tst_rmdir();
 }

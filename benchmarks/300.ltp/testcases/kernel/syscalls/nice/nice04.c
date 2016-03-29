@@ -68,12 +68,15 @@
 #include <errno.h>
 
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "nice04";
 int TST_TOTAL = 1;
 
 char nobody_uid[] = "nobody";
 struct passwd *ltpuser;
+
+int exp_enos[] = { EPERM, 0 };
 
 struct test_case_t {		/* test case struct. to hold ref. test cond's */
 	int nice_val;
@@ -90,13 +93,17 @@ void cleanup();			/* cleanup function for the test */
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int i;
 	int incr_val;		/* nice value for the process */
 	char *test_desc;	/* test specific error message */
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -114,6 +121,7 @@ int main(int ac, char **av)
 
 			/* check return code from nice(2) */
 			if (TEST_RETURN == -1) {
+				TEST_ERROR_LOG(TEST_ERRNO);
 				tst_resm(TPASS, "nice(2) returned %ld for %s",
 					 TEST_RETURN, test_desc);
 			} else {
@@ -135,7 +143,7 @@ int main(int ac, char **av)
  */
 void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -156,5 +164,10 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }

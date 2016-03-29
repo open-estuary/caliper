@@ -74,17 +74,14 @@
 #include <pwd.h>
 #include <sys/wait.h>
 #include <unistd.h>
-
 #include "test.h"
-#include "safe_macros.h"
+#include "usctest.h"
 
 void setup();
 void cleanup();
+extern struct passwd *my_getpwnam(char *);
 
 #define PERMS		0777
-
-static uid_t nobody_uid, bin_uid;
-static gid_t nobody_gid, bin_gid;
 
 char *TCID = "mkdir02";
 int TST_TOTAL = 1;
@@ -92,17 +89,25 @@ int TST_TOTAL = 1;
 char tstdir1[100];
 char tstdir2[100];
 
+char user1name[] = "nobody";
+char user2name[] = "bin";
+
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	struct stat buf, buf1;
 	pid_t pid, pid1;
+	struct passwd *ltpuser1;
+	struct passwd *ltpuser2;
 	int rval, status;
 
 	/*
 	 * parse standard options
 	 */
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	/*
 	 * perform global setup for test
@@ -123,6 +128,7 @@ int main(int ac, char **av)
 		 * create a directory, with S_ISGID bit set
 		 */
 
+		ltpuser1 = my_getpwnam(user1name);
 		sprintf(tstdir1, "tstdir1.%d", getpid());
 
 		if ((pid = FORK_OR_VFORK()) < 0) {
@@ -131,24 +137,24 @@ int main(int ac, char **av)
 		}
 
 		if (pid == 0) {	/* first child */
-			rval = setregid(nobody_gid, nobody_gid);
+			rval = setregid(ltpuser1->pw_gid, ltpuser1->pw_gid);
 			if (rval < 0) {
 				perror("setregid");
 				tst_resm(TFAIL, "setregid failed to "
 					 "to set the real gid to %d and "
 					 "effective gid to %d",
-					 nobody_gid, nobody_gid);
+					 ltpuser1->pw_gid, ltpuser1->pw_gid);
 				exit(1);
 
 			}
 			/* being ltupuser1 */
-			rval = setreuid(nobody_uid, nobody_uid);
+			rval = setreuid(ltpuser1->pw_uid, ltpuser1->pw_uid);
 			if (rval < 0) {
 				perror("setreuid");
 				tst_resm(TFAIL, "setreuid failed to "
 					 "to set the real uid to %d and "
 					 "effective uid to %d",
-					 nobody_uid, nobody_uid);
+					 ltpuser1->pw_uid, ltpuser1->pw_uid);
 				exit(1);
 
 			}
@@ -198,6 +204,7 @@ int main(int ac, char **av)
 		 * should inherit from parent directory
 		 */
 
+		ltpuser2 = my_getpwnam(user2name);
 		sprintf(tstdir2, "%s/tstdir2.%d", tstdir1, getpid());
 		if ((pid1 = FORK_OR_VFORK()) < 0) {
 			perror("fork failed");
@@ -206,22 +213,22 @@ int main(int ac, char **av)
 		} else if (pid1 == 0) {	/* second child */
 
 			/* being user ltpuser2 */
-			rval = setregid(bin_gid, bin_gid);
+			rval = setregid(ltpuser2->pw_gid, ltpuser2->pw_gid);
 			if (rval < 0) {
 				tst_resm(TFAIL, "setregid failed to "
 					 "to set the real gid to %d and "
 					 "effective gid to %d",
-					 bin_gid, bin_gid);
+					 ltpuser2->pw_gid, ltpuser2->pw_gid);
 				perror("setregid");
 				exit(1);
 
 			}
-			rval = setreuid(bin_uid, bin_uid);
+			rval = setreuid(ltpuser2->pw_uid, ltpuser2->pw_uid);
 			if (rval < 0) {
 				tst_resm(TFAIL, "setreuid failed to "
 					 "to set the real uid to %d and "
 					 "effective uid to %d",
-					 bin_uid, bin_uid);
+					 ltpuser2->pw_uid, ltpuser2->pw_uid);
 				perror("setreuid");
 				exit(1);
 
@@ -305,16 +312,7 @@ int main(int ac, char **av)
  */
 void setup(void)
 {
-	struct passwd *pw;
-
-	tst_require_root();
-
-	pw = SAFE_GETPWNAM(NULL, "nobody");
-	nobody_uid = pw->pw_uid;
-	nobody_gid = pw->pw_gid;
-	pw = SAFE_GETPWNAM(NULL, "bin");
-	bin_uid = pw->pw_uid;
-	bin_gid = pw->pw_gid;
+	tst_require_root(NULL);
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
@@ -332,6 +330,11 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	/*
 	 * Remove the temporary directory.

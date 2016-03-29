@@ -47,6 +47,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include "test.h"
+#include "usctest.h"
 
 void setup(void);
 void cleanup(void);
@@ -54,6 +55,8 @@ void cleanup(void);
 int fd[2];			/* fd's for the pipe() call in setup()  */
 int pfd;			/* holds the value for fd[1]            */
 int bfd = -1;			/* an invalid fd                        */
+
+int exp_enos[] = { EBADF, EINVAL, 0 };
 
 struct test_case_t {
 	int *fd;
@@ -74,10 +77,16 @@ int main(int ac, char **av)
 {
 	int lc;
 	int i;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	setup();
+
+	/* set up the expected errnos */
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -92,6 +101,8 @@ int main(int ac, char **av)
 				tst_resm(TFAIL, "call succeeded unexpectedly");
 				continue;
 			}
+
+			TEST_ERROR_LOG(TEST_ERRNO);
 
 			if (TEST_ERRNO == TC[i].error) {
 				tst_resm(TPASS, "expected failure - "
@@ -135,6 +146,11 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	/* delete the test directory created in setup() */
 	tst_rmdir();

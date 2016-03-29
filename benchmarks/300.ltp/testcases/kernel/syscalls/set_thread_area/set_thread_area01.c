@@ -28,6 +28,7 @@ int TST_TOTAL = 6;
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 }
 
 static void setup(void)
@@ -37,7 +38,6 @@ static void setup(void)
 
 struct test {
 	int syscall;
-	const char *const syscall_name;
 	thread_area_s *u_info;
 	int exp_ret;
 	int exp_errno;
@@ -52,23 +52,36 @@ struct test {
 static struct user_desc u_info1 = {.entry_number = -1 };
 static struct user_desc u_info2 = {.entry_number = -2 };
 
-#define VALUE_AND_STRING(val) val, #val
-
 static struct test tests[] = {
-	{VALUE_AND_STRING(__NR_set_thread_area), &u_info1, 0, 0},
-	{VALUE_AND_STRING(__NR_get_thread_area), &u_info1, 0, 0},
-	{VALUE_AND_STRING(__NR_set_thread_area), &u_info2, -1, EINVAL},
-	{VALUE_AND_STRING(__NR_get_thread_area), &u_info2, -1, EINVAL},
-	{VALUE_AND_STRING(__NR_set_thread_area), (void *)-9, -1, EFAULT},
-	{VALUE_AND_STRING(__NR_get_thread_area), (void *)-9, -1, EFAULT},
+	{__NR_set_thread_area, &u_info1, 0, 0},
+	{__NR_get_thread_area, &u_info1, 0, 0},
+	{__NR_set_thread_area, &u_info2, -1, EINVAL},
+	{__NR_get_thread_area, &u_info2, -1, EINVAL},
+	{__NR_set_thread_area, (void *)-9, -1, EFAULT},
+	{__NR_get_thread_area, (void *)-9, -1, EFAULT},
 };
+
+static const char *get_name(int syscall)
+{
+	switch (syscall) {
+	case __NR_set_thread_area:
+		return "set_thread_area()";
+		break;
+	case __NR_get_thread_area:
+		return "get_thread_area()";
+		break;
+	default:
+		return "invalid syscall";
+	}
+}
 
 int main(int argc, char *argv[])
 {
-	int lc;
-	unsigned i;
+	int lc, i;
+	const char *msg;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -78,7 +91,7 @@ int main(int argc, char *argv[])
 
 			if (TEST_RETURN != tests[i].exp_ret) {
 				tst_resm(TFAIL, "%s returned %li expected %i",
-					 tests[i].syscall_name,
+					 get_name(tests[i].syscall),
 					 TEST_RETURN, tests[i].exp_ret);
 				continue;
 			}
@@ -86,7 +99,7 @@ int main(int argc, char *argv[])
 			if (TEST_ERRNO != tests[i].exp_errno) {
 				tst_resm(TFAIL,
 					 "%s failed with %i (%s) expected %i (%s)",
-					 tests[i].syscall_name, TEST_ERRNO,
+					 get_name(tests[i].syscall), TEST_ERRNO,
 					 strerror(TEST_ERRNO),
 					 tests[i].exp_errno,
 					 strerror(tests[i].exp_errno));
@@ -94,7 +107,7 @@ int main(int argc, char *argv[])
 			}
 
 			tst_resm(TPASS, "%s returned %li errno %i (%s)",
-				 tests[i].syscall_name, TEST_RETURN,
+				 get_name(tests[i].syscall), TEST_RETURN,
 				 TEST_ERRNO, strerror(TEST_ERRNO));
 		}
 	}

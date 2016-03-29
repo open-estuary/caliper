@@ -54,6 +54,7 @@
 #include <signal.h>
 #include <fcntl.h>
 #include "test.h"
+#include "usctest.h"
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/types.h>
@@ -83,6 +84,11 @@ static char *argv0;		/* set by main, passed to self_exec */
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }
 
@@ -537,10 +543,13 @@ int run_test(int file_flag, int file_mode, int dup_flag)
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
 	int fail = 0;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 #ifdef UCLINUX
 	maybe_run_child(&dochild1_uc, "nddds", 1, &uc_file_flag,
 			&uc_file_mode, &parent, tmpname);

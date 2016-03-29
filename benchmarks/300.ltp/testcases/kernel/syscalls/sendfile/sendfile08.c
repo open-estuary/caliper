@@ -33,6 +33,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+
+#include "usctest.h"
 #include "test.h"
 
 #define TEST_MSG_IN "world"
@@ -54,9 +56,12 @@ int main(int argc, char *argv[])
 {
 	int lc;
 	int ret;
+	const char *msg;
 	char buf[BUFSIZ];
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -126,6 +131,8 @@ static void cleanup(void)
 {
 	close(out_fd);
 	close(in_fd);
+
+	TEST_CLEANUP;
 
 	tst_rmdir();
 }

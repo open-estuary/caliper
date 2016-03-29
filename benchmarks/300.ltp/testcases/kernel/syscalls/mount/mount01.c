@@ -25,6 +25,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 static void setup(void);
@@ -42,8 +43,10 @@ static const char *fs_type;
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -57,7 +60,7 @@ int main(int ac, char **av)
 			tst_resm(TFAIL | TTERRNO, "mount(2) failed");
 		} else {
 			tst_resm(TPASS, "mount(2) passed ");
-			TEST(tst_umount(MNTPOINT));
+			TEST(umount(MNTPOINT));
 			if (TEST_RETURN != 0) {
 				tst_brkm(TBROK | TTERRNO, cleanup,
 					 "umount(2) failed");
@@ -73,7 +76,7 @@ static void setup(void)
 {
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_tmpdir();
 
@@ -92,6 +95,8 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	if (device)
 		tst_release_device(NULL, device);
 

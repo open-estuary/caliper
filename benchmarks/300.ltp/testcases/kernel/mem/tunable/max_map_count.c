@@ -60,6 +60,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "test.h"
+#include "usctest.h"
 #include "mem.h"
 
 #define MAP_COUNT_DEFAULT	64
@@ -76,9 +77,12 @@ static void max_map_count_test(void);
 
 int main(int argc, char *argv[])
 {
+	const char *msg;
 	int lc;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR -%s ", msg);
 
 	setup();
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
@@ -92,7 +96,7 @@ int main(int argc, char *argv[])
 
 void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 	TEST_PAUSE;
@@ -110,6 +114,8 @@ void cleanup(void)
 {
 	set_sys_tune("overcommit_memory", old_overcommit, 0);
 	set_sys_tune("max_map_count", old_max_map_count, 0);
+
+	TEST_CLEANUP;
 }
 
 /* This is a filter to exclude map entries which aren't accounted
@@ -200,7 +206,7 @@ static void max_map_count_test(void)
 	while (max_maps <= max_iters) {
 		set_sys_tune("max_map_count", max_maps, 1);
 
-		switch (pid = tst_fork()) {
+		switch (pid = fork()) {
 		case -1:
 			tst_brkm(TBROK | TERRNO, cleanup, "fork");
 		case 0:

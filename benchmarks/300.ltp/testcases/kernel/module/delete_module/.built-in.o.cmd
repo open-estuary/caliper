@@ -1,0 +1,1 @@
+cmd_/home/wuyanjun/caliper/benchmarks/300.ltp/testcases/kernel/module/delete_module/built-in.o :=  rm -f /home/wuyanjun/caliper/benchmarks/300.ltp/testcases/kernel/module/delete_module/built-in.o; ar rcsD /home/wuyanjun/caliper/benchmarks/300.ltp/testcases/kernel/module/delete_module/built-in.o

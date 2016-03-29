@@ -136,9 +136,9 @@ execlp01 execlp01
 
 execv01 execv01
 execve01 execve01
-execve02 execve02
+execve02 execve02 -F $LTPROOT/testcases/bin/test3
 execve03 execve03
-execve04 execve04
+execve04 execve04 -F $LTPROOT/testcases/bin/test3
 execve05 execve05 20 $LTPROOT/testcases/bin/execve05 $LTPROOT/testcases/bin/execve05 4
 execvp01 execvp01
 
@@ -154,7 +154,6 @@ faccessat01 faccessat01
 fallocate01 fallocate01
 fallocate02 fallocate02
 fallocate03 fallocate03
-fallocate04 fallocate04
 
 #posix_fadvise test cases
 posix_fadvise01                      posix_fadvise01
@@ -258,10 +257,6 @@ fcntl30 fcntl30
 fcntl30_64 fcntl30_64
 fcntl31 fcntl31
 fcntl31_64 fcntl31_64
-fcntl32 fcntl32
-fcntl32_64 fcntl32_64
-fcntl33 fcntl33
-fcntl33_64 fcntl33_64
 
 fdatasync01 fdatasync01
 fdatasync02 fdatasync02
@@ -297,6 +292,8 @@ fstat02 fstat02
 fstat02_64 fstat02_64
 fstat03 fstat03
 fstat03_64 fstat03_64
+fstat04 fstat04
+fstat04_64 fstat04_64
 fstat05 fstat05
 fstat05_64 fstat05_64
 
@@ -319,8 +316,8 @@ ftruncate02 ftruncate02
 ftruncate02_64 ftruncate02_64
 ftruncate03 ftruncate03
 ftruncate03_64 ftruncate03_64
-ftruncate04 ftruncate04
-ftruncate04_64 ftruncate04
+ftruncate04 ftruncate04.sh
+ftruncate04_64 ftruncate04.sh 64
 
 #futimesat test cases
 futimesat01 futimesat01
@@ -364,8 +361,6 @@ getgroups01_16 getgroups01_16
 getgroups03 getgroups03
 getgroups03_16 getgroups03_16
 
-gethostbyname_r01 gethostbyname_r01
-
 gethostid01 gethostid01
 
 gethostname01 gethostname01
@@ -391,11 +386,6 @@ getppid02 getppid02
 
 getpriority01 getpriority01
 getpriority02 getpriority02
-
-getrandom01 getrandom01
-getrandom02 getrandom02
-getrandom03 getrandom03
-getrandom04 getrandom04
 
 getresgid01 getresgid01
 getresgid02 getresgid02
@@ -453,7 +443,6 @@ inotify02 inotify02
 inotify03 inotify03
 inotify04 inotify04
 inotify05 inotify05
-inotify06 inotify06
 
 fanotify01 fanotify01
 fanotify02 fanotify02
@@ -475,9 +464,6 @@ io_setup01 io_setup01
 io_submit01 io_submit01
 
 keyctl01 keyctl01
-
-kcmp01 kcmp01
-kcmp02 kcmp02
 
 kill01 kill01
 kill02 kill02
@@ -601,7 +587,6 @@ mmap14 mmap14
 # test is broken, mask it for now.
 #mmap11 mmap11 -i 30000
 mmap15 mmap15
-mmap16 mmap16
 
 modify_ldt01 modify_ldt01
 modify_ldt02 modify_ldt02
@@ -670,7 +655,6 @@ msgrcv04 msgrcv04
 msgrcv05 msgrcv05
 msgrcv06 msgrcv06
 msgrcv07 msgrcv07
-msgrcv08 msgrcv08
 
 msgsnd01 msgsnd01
 msgsnd02 msgsnd02
@@ -720,7 +704,6 @@ open09 open09
 open10 open10
 open11 open11
 open12 open12
-open13 open13
 
 #openat test cases
 openat01 openat01
@@ -765,7 +748,6 @@ pipe2_01 pipe2_01
 pipe2_02 pipe2_02
 
 poll01 poll01
-poll02 poll02
 
 ppoll01 ppoll01
 
@@ -778,9 +760,6 @@ pread02 pread02
 pread02_64 pread02_64
 pread03 pread03
 pread03_64 pread03_64
-
-preadv01 preadv01
-preadv01_64 preadv01_64
 
 profil01 profil01
 
@@ -812,9 +791,6 @@ pwrite04 pwrite04
 pwrite01_64 pwrite01_64
 pwrite02_64 pwrite02_64
 pwrite04_64 pwrite04_64
-
-pwritev01 pwritev01
-pwritev01_64 pwritev01_64
 
 quotactl01 quotactl01
 quotactl02 quotactl02
@@ -876,9 +852,6 @@ rename14 rename14
 #renameat test cases
 renameat01 renameat01
 
-renameat201 renameat201
-renameat202 renameat202 -i 10
-
 rmdir01 rmdir01
 rmdir02 rmdir02
 rmdir03 rmdir03
@@ -928,14 +901,9 @@ sched_yield01 sched_yield01
 sched_setaffinity01 sched_setaffinity01
 sched_getaffinity01 sched_getaffinity01
 
-sched_setattr01 sched_setattr01
-sched_getattr01 sched_getattr01
-sched_getattr02 sched_getattr02
-
 select01 select01
 select02 select02
 select03 select03
-select04 select04
 
 semctl01 semctl01
 semctl02 semctl02
@@ -1151,7 +1119,6 @@ signal02 signal02
 signal03 signal03
 signal04 signal04
 signal05 signal05
-signal06 signal06
 
 signalfd01 signalfd01
 
@@ -1338,10 +1305,6 @@ umount01 umount01
 umount02 umount02
 umount03 umount03
 
-umount2_01 umount2_01
-umount2_02 umount2_02
-umount2_03 umount2_03
-
 ustat01 ustat01
 ustat02 ustat02
 
@@ -1406,15 +1369,3 @@ writev06 writev06
 
 perf_event_open01 perf_event_open01
 perf_event_open02 perf_event_open02
-
-futex_wait01 futex_wait01
-futex_wait02 futex_wait02
-futex_wait03 futex_wait03
-futex_wait04 futex_wait04
-futex_wait05 futex_wait05
-futex_wake01 futex_wake01
-futex_wake02 futex_wake02
-futex_wake03 futex_wake03
-futex_wake04 futex_wake04
-futex_wait_bitset01 futex_wait_bitset01
-futex_wait_bitset02 futex_wait_bitset02

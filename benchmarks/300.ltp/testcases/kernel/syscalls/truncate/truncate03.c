@@ -53,6 +53,7 @@
 #include <sys/resource.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 #define TEST_FILE1	"testfile"
@@ -93,14 +94,21 @@ static void truncate_verify(struct test_case_t *);
 
 char *TCID = "truncate03";
 int TST_TOTAL = ARRAY_SIZE(test_cases);
+static int exp_enos[] = { EACCES, ENOTDIR, EFAULT, ENAMETOOLONG,
+			  ENOENT, EISDIR, EFBIG, ELOOP, 0 };
 
 int main(int ac, char **av)
 {
 	int i, lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		tst_count = 0;
@@ -123,7 +131,7 @@ void setup(void)
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	ltpuser = SAFE_GETPWNAM(cleanup, "nobody");
 	SAFE_SETEUID(cleanup, ltpuser->pw_uid);
@@ -175,6 +183,8 @@ void truncate_verify(struct test_case_t *tc)
 		return;
 	}
 
+	TEST_ERROR_LOG(TEST_ERRNO);
+
 	if (TEST_ERRNO == tc->exp_errno) {
 		tst_resm(TPASS | TTERRNO, "truncate() failed as expected");
 	} else {
@@ -186,5 +196,7 @@ void truncate_verify(struct test_case_t *tc)
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	tst_rmdir();
 }

@@ -34,6 +34,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "open04";
 int TST_TOTAL = 1;
@@ -43,16 +44,23 @@ static int nfile;
 static int *buf;
 static char fname[40];
 
+static int exp_enos[] = { EMFILE, 0 };
+
 static void setup(void);
 static void cleanup(void);
 
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		tst_count = 0;
@@ -63,6 +71,8 @@ int main(int ac, char **av)
 			tst_resm(TFAIL, "call succeeded unexpectedly");
 			continue;
 		}
+
+		TEST_ERROR_LOG(TEST_ERRNO);
 
 		if (TEST_ERRNO != EMFILE)
 			tst_resm(TFAIL, "Expected EMFILE, got %d", TEST_ERRNO);
@@ -119,6 +129,8 @@ static void setup(void)
 static void cleanup(void)
 {
 	close(first);
+
+	TEST_CLEANUP;
 
 	for (ifile = first; ifile < nfile; ifile++) {
 		sprintf(fname, "open04.%d.%d", ifile, mypid);

@@ -76,6 +76,7 @@
 #include <inttypes.h>
 
 #include "test.h"
+#include "usctest.h"
 
 #define TEMPFILE	"pread_file"
 #define K1              1024
@@ -100,9 +101,11 @@ void compare_bufers();		/* function to compare o/p of pread/pwrite */
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int nread;		/* no. of bytes read by pread() */
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -331,7 +334,13 @@ void compare_bufers(void)
  */
 void cleanup(void)
 {
-	int count;
+	int count;		/* index for the loop */
+
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	/* Free the memory allocated for the read/write buffer */
 	for (count = 0; count < NBUFS; count++) {

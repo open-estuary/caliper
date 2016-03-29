@@ -27,6 +27,7 @@
 #include <errno.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 #include "tst_module.h"
 
@@ -45,11 +46,13 @@ static void cleanup(void)
 {
 	if (module_loaded)
 		tst_module_unload(NULL, module_name);
+
+	TEST_CLEANUP;
 }
 
 void setup(int argc, char *argv[])
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	if (tst_kvercmp(2, 6, 0) < 0) {
 		tst_brkm(TCONF, NULL,

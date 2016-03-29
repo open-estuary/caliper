@@ -52,6 +52,7 @@
  */
 
 #include "test.h"
+#include "usctest.h"
 
 #include <errno.h>
 #include <sys/utsname.h>
@@ -62,13 +63,17 @@ void setup(void);
 char *TCID = "uname02";
 int TST_TOTAL = 1;
 
+int exp_enos[] = { 14, 0 };	/* 0 terminated list of expected errnos */
+
 #if !defined(UCLINUX)
 
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();		/* global setup */
 
@@ -84,6 +89,8 @@ int main(int ac, char **av)
 
 		if (TEST_RETURN == 0)
 			tst_resm(TFAIL, "call succeed when failure expected");
+
+		TEST_ERROR_LOG(TEST_ERRNO);
 
 		switch (TEST_ERRNO) {
 		case EFAULT:
@@ -105,11 +112,15 @@ void setup(void)
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
+	TEST_EXP_ENOS(exp_enos);
+
 	TEST_PAUSE;
 }
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
+
 }
 #else
 int main(void)

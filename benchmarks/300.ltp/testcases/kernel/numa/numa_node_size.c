@@ -65,7 +65,7 @@ void hardware(void)
 #endif
 }
 
-int main(void)
+int main()
 {
 #if HAVE_NUMA_H
 	nodemask_t nodemask;

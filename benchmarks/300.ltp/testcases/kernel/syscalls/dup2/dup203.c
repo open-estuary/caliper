@@ -49,6 +49,7 @@
 #include <errno.h>
 #include <string.h>
 #include "test.h"
+#include "usctest.h"
 
 void setup(void);
 void cleanup(void);
@@ -63,8 +64,10 @@ int main(int ac, char **av)
 	char buf[40];
 
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -205,5 +208,7 @@ void setup(void)
  */
 void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	tst_rmdir();
 }

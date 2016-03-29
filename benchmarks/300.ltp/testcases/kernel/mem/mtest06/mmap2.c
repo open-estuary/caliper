@@ -72,6 +72,7 @@
 #include <string.h>
 #include <getopt.h>
 #include "test.h"
+#include "usctest.h"
 
 #define GB 1000000000
 #ifndef TRUE

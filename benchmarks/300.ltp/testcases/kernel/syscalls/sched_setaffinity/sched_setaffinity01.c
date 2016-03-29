@@ -39,6 +39,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 #include "sched_setaffinity.h"
 #include "linux_syscall_numbers.h"
@@ -93,7 +94,7 @@ static void cleanup(void)
 
 static void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 	uid = geteuid();
 	ncpus = tst_ncpus_max();
 
@@ -138,10 +139,13 @@ static void setup(void)
 
 int main(int argc, char *argv[])
 {
+	const char *msg;
 	int lc;
 	int i;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 

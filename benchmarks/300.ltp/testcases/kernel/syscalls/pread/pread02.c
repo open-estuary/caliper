@@ -72,6 +72,7 @@
 #include <fcntl.h>
 
 #include "test.h"
+#include "usctest.h"
 
 #define TEMPFILE	"pread_file"
 #define K1              1024
@@ -83,7 +84,9 @@ int TST_TOTAL = 2;
 char *write_buf[NBUFS];		/* buffer to hold data to be written */
 char *read_buf[NBUFS];		/* buffer to hold data read from file */
 int pfd[2];			/* pair of file descriptors */
-int fd1;
+int fd1;			/* file descriptor of temporary file */
+
+int exp_enos[] = { ESPIPE, EINVAL, 0 };
 
 void setup();			/* Main setup function of test */
 void cleanup();			/* cleanup function for the test */
@@ -109,15 +112,19 @@ struct test_case_t {		/* test case struct. to hold ref. test cond's */
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int i;
 	int fildes;		/* file descriptor of test file */
 	size_t nbytes;		/* no. of bytes to be written */
 	off_t offset;		/* offset position in the specified file */
 	char *test_desc;	/* test specific error message */
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -150,6 +157,8 @@ int main(int ac, char **av)
 					 "%ld, expected -1, errno:%d",
 					 TEST_RETURN, Test_cases[i].exp_errno);
 			}
+
+			TEST_ERROR_LOG(TEST_ERRNO);
 
 			/*
 			 * Verify whether expected errno is set.
@@ -281,7 +290,13 @@ void init_buffers(void)
  */
 void cleanup(void)
 {
-	int count;
+	int count;		/* index for the loop */
+
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	/* Free the memory allocated for the read/write buffer */
 	for (count = 0; count < NBUFS; count++) {

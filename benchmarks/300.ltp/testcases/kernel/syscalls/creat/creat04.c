@@ -55,9 +55,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
-
 #include "test.h"
-#include "safe_macros.h"
+#include "usctest.h"
 
 char *TCID = "creat04";
 int TST_TOTAL = 2;
@@ -68,11 +67,13 @@ void cleanup(void);
 #define FMODE	0444
 #define DMODE	00700
 
-static char fname_dir[] = "testdir";
-static char fname[] = "testdir/file";
-static char fname1[] = "testdir/file1";
+int exp_enos[] = { EACCES, 0 };
 
-static uid_t nobody_uid;
+char user1name[] = "nobody";
+char good_dir[40] = "testdir";
+char fname[40], fname1[40];
+extern struct passwd *my_getpwnam(char *);
+struct passwd *ltpuser1;
 
 struct test_case_t {
 	char *fname;
@@ -86,13 +87,17 @@ int main(int ac, char **av)
 {
 	int lc;
 	int retval = 0;
+	const char *msg;
 
 	pid_t pid, pid1;
 	int i, status, fd;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -104,7 +109,7 @@ int main(int ac, char **av)
 		}
 
 		if (pid == 0) {	/* first child */
-			if (mkdir(fname_dir, DMODE) != 0) {
+			if (mkdir(good_dir, DMODE) != 0) {
 				perror("mkdir() failed");
 				exit(1);
 			}
@@ -126,7 +131,14 @@ int main(int ac, char **av)
 		}
 
 		if (pid1 == 0) {	/* second child */
-			if (seteuid(nobody_uid) == -1) {
+
+			ltpuser1 = my_getpwnam(user1name);
+
+			if (ltpuser1 == NULL) {
+				perror("getpwnam");
+				exit(1);
+			}
+			if (seteuid(ltpuser1->pw_uid) == -1) {
 				perror("seteuid");
 				exit(1);
 			}
@@ -143,6 +155,8 @@ int main(int ac, char **av)
 					continue;
 				}
 
+				TEST_ERROR_LOG(TEST_ERRNO);
+
 				if (TEST_ERRNO != EACCES) {
 					retval = 1;
 					tst_resm(TFAIL | TTERRNO,
@@ -158,7 +172,7 @@ int main(int ac, char **av)
 			/* clean up things in case we are looping */
 			unlink(fname);
 			unlink(fname1);
-			rmdir(fname_dir);
+			rmdir(good_dir);
 			exit(retval);
 
 		} else {	/* parent */
@@ -180,12 +194,7 @@ int main(int ac, char **av)
  */
 void setup(void)
 {
-	struct passwd *pw;
-
-	tst_require_root();
-
-	pw = SAFE_GETPWNAM(NULL, "nobody");
-	nobody_uid = pw->pw_uid;
+	tst_require_root(NULL);
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
@@ -193,6 +202,10 @@ void setup(void)
 
 	/* make a temporary directory and cd to it */
 	tst_tmpdir();
+
+	sprintf(good_dir, "%s.%d", good_dir, getpid());
+	sprintf(fname1, "%s/file1.%d", good_dir, getpid());
+	sprintf(fname, "%s/file.%d", good_dir, getpid());
 }
 
 /*
@@ -201,6 +214,11 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	/* delete the test directory created in setup() */
 	tst_rmdir();

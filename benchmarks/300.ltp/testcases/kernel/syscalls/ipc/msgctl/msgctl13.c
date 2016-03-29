@@ -24,6 +24,7 @@
 #include <errno.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "ipcmsg.h"
 
 char *TCID = "msgctl13";
@@ -33,8 +34,11 @@ static void msgctl_verify(void);
 int main(int argc, char *argv[])
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -81,4 +85,5 @@ static void msgctl_verify(void)
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
 }

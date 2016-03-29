@@ -45,6 +45,7 @@
 #include <sys/wait.h>
 #include <inttypes.h>
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 #define STRINGSIZE	27
@@ -116,6 +117,8 @@ void setup(void)
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	SAFE_CLOSE(NULL, fd);
 
 	tst_rmdir();
@@ -281,8 +284,11 @@ int main(int ac, char **av)
 	struct flock tl;
 
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 #ifdef UCLINUX
 	maybe_run_child(&do_child, "ddddd", &parent_pipe[0], &parent_pipe[1],
 			&child_pipe[0], &child_pipe[1], &fd);

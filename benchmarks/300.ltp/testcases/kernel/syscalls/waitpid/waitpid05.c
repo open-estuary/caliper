@@ -60,6 +60,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include "test.h"
+#include "usctest.h"
 
 static void do_child(int);
 static void setup(void);
@@ -78,8 +79,11 @@ int main(int ac, char **av)
 	int pid, npid, sig, nsig;
 	int exno, nexno, status;
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 #ifdef UCLINUX
 	maybe_run_child(&do_child_uclinux, "d", &sig_uclinux);
@@ -243,5 +247,6 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 	tst_rmdir();
 }

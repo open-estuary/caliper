@@ -282,9 +282,12 @@ parse_options(int argc, char *argv[], struct mcast_rcv_info *info_p, int *bg_p)
 					 saddrs);
 	}
 
-	free(maddr);
-	free(saddrs);
-	free(portnum);
+	if (maddr)
+		free(maddr);
+	if (saddrs)
+		free(saddrs);
+	if (portnum)
+		free(portnum);
 }
 
 /*

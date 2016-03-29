@@ -19,15 +19,14 @@ dnl
 
 AC_DEFUN([LTP_CHECK_CC_WARN_OLDSTYLE],[dnl
 
-wflag="-Wold-style-definition"
-AC_MSG_CHECKING([if $CC supports $wflag])
+AC_MSG_CHECKING([if $CC supports -Wold-style-definition])
 
 backup_cflags="$CFLAGS"
-CFLAGS="$CFLAGS $wflag"
+CFLAGS+=" -Wold-style-definition"
 
 AC_LINK_IFELSE(
 	[AC_LANG_PROGRAM([])],
-	[GCC_WARN_OLDSTYLE="$wflag"]
+	[GCC_WARN_OLDSTYLE="$CFLAGS"]
 	[AC_MSG_RESULT([yes])],
 	[AC_MSG_RESULT([no])]
 )

@@ -41,6 +41,7 @@
 #include <netinet/in.h>
 
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "sendto01";
 int testno;
@@ -226,6 +227,10 @@ struct test_case_t tdat[] = {
 
 int TST_TOTAL = sizeof(tdat) / sizeof(tdat[0]);
 
+int exp_enos[] = {
+	EBADF, ENOTSOCK, EFAULT, EISCONN, ENOTCONN, EINVAL, EMSGSIZE, EPIPE, 0
+};
+
 #ifdef UCLINUX
 static char *argv0;
 #endif
@@ -320,8 +325,10 @@ static void do_child(void)
 int main(int ac, char *av[])
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 #ifdef UCLINUX
 	argv0 = av[0];
@@ -329,6 +336,8 @@ int main(int ac, char *av[])
 #endif
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); ++lc) {
 
@@ -342,7 +351,9 @@ int main(int ac, char *av[])
 				    tdat[testno].tolen));
 
 			if (TEST_RETURN > 0)
-				TEST_RETURN = 0;
+				TEST_RETURN = 0;	/* all success equal */
+
+			TEST_ERROR_LOG(TEST_ERRNO);
 
 			if (TEST_RETURN != tdat[testno].retval ||
 			    (TEST_RETURN < 0 &&
@@ -378,6 +389,7 @@ static void setup(void)
 static void cleanup(void)
 {
 	kill(server_pid, SIGKILL);
+	TEST_CLEANUP;
 }
 
 static void setup0(void)

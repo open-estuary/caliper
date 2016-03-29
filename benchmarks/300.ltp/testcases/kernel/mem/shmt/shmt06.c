@@ -51,6 +51,7 @@
 
 /** LTP Port **/
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "shmt06";		/* Test program identifier.    */
 int TST_TOTAL = 2;		/* Total number of test cases. */
@@ -60,9 +61,9 @@ key_t key;
 sigset_t sigset;
 
 int child();
-static int rm_shm(int);
+int rm_shm(int);
 
-int main(void)
+int main()
 {
 	char *cp = NULL;
 	int pid, pid1, shmid;
@@ -141,7 +142,7 @@ int main(void)
 	tst_exit();
 }
 
-int child(void)
+int child()
 {
 	int shmid, chld_pid;
 	char *cp;
@@ -207,7 +208,8 @@ int child(void)
 	tst_exit();
 }
 
-static int rm_shm(int shmid)
+int rm_shm(shmid)
+int shmid;
 {
 	if (shmctl(shmid, IPC_RMID, NULL) == -1) {
 		perror("shmctl");

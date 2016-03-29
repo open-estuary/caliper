@@ -27,6 +27,7 @@
 #include <errno.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "lapi/timerfd.h"
 
 char *TCID = "timerfd_create01";
@@ -44,13 +45,17 @@ int TST_TOTAL = ARRAY_SIZE(test_cases);
 static void setup(void);
 static void timerfd_create_verify(const struct test_case_t *);
 static void cleanup(void);
+static int exp_enos[] = { EINVAL, 0 };
 
 int main(int argc, char *argv[])
 {
 	int lc;
+	const char *msg;
 	int i;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -72,6 +77,8 @@ static void setup(void)
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
 	TEST_PAUSE;
+
+	TEST_EXP_ENOS(exp_enos);
 }
 
 static void timerfd_create_verify(const struct test_case_t *test)
@@ -95,4 +102,5 @@ static void timerfd_create_verify(const struct test_case_t *test)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 }

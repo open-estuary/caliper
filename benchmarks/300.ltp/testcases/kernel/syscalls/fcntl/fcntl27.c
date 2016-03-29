@@ -94,6 +94,7 @@
 #include <string.h>
 #include <signal.h>
 #include "test.h"
+#include "usctest.h"
 
 void setup();
 void cleanup();
@@ -104,18 +105,25 @@ int TST_TOTAL = 1;
 char fname[255];
 int fd;
 
+int exp_enos[] = { 0 };
+
 int main(int ac, char **av)
 {
-	int lc, expected_result = -1;
+	int lc, expected_result = -1;	/* loop counter, expected */
+	/* result from system call */
+	const char *msg;
     /***************************************************************
      * parse standard options
      ***************************************************************/
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
     /***************************************************************
      * perform global setup for test
      ***************************************************************/
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	expected_result = -1;
 
@@ -134,6 +142,7 @@ int main(int ac, char **av)
 
 		/* check return code */
 		if (TEST_RETURN == expected_result) {
+			TEST_ERROR_LOG(TEST_ERRNO);
 			tst_resm(TPASS,
 				 "fcntl(fd, F_SETLEASE, F_RDLCK) succeeded");
 		} else {
@@ -180,6 +189,11 @@ void setup(void)
  ***************************************************************/
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	/* close the file we've had open */
 	if (close(fd) == -1) {

@@ -45,6 +45,7 @@
 #include <sys/types.h>
 
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "sbrk01";
 
@@ -64,9 +65,12 @@ int TST_TOTAL = ARRAY_SIZE(test_cases);
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int i;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -108,4 +112,5 @@ static void sbrk_verify(const struct test_case_t *test)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 }

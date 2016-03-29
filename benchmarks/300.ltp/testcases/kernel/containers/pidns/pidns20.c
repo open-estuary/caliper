@@ -46,6 +46,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
+#include "usctest.h"
 #include "test.h"
 #include <libclone.h>
 #include "pidns_helper.h"
@@ -60,6 +61,12 @@ int broken = 1;			/* broken should be 0 when test completes properly */
 
 #define CHILD_PID       1
 #define PARENT_PID      0
+
+void cleanup()
+{
+	/* Clean the test testcase as LTP wants */
+	TEST_CLEANUP;
+}
 
 /*
  * child_signal_handler() - to handle SIGUSR1
@@ -148,7 +155,7 @@ int child_fn(void *arg)
 
 static void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 	check_newpid();
 }
 
@@ -162,12 +169,12 @@ int main(int argc, char *argv[])
 
 	/* Create pipes for intercommunication */
 	if (pipe(parent_cinit) == -1 || pipe(cinit_parent) == -1) {
-		tst_brkm(TBROK | TERRNO, NULL, "pipe failed");
+		tst_brkm(TBROK | TERRNO, cleanup, "pipe failed");
 	}
 
 	cpid = ltp_clone_quick(CLONE_NEWPID | SIGCHLD, child_fn, NULL);
 	if (cpid == -1) {
-		tst_brkm(TBROK | TERRNO, NULL, "clone failed");
+		tst_brkm(TBROK | TERRNO, cleanup, "clone failed");
 	}
 
 	/* Setup pipe read and write ends */
@@ -177,22 +184,22 @@ int main(int argc, char *argv[])
 	/* Is container ready */
 	read(cinit_parent[0], buf, 5);
 	if (strcmp(buf, "c:go") != 0) {
-		tst_brkm(TBROK, NULL, "parent: container did not respond!");
+		tst_brkm(TBROK, cleanup, "parent: container did not respond!");
 	}
 
 	/* Enqueue SIGUSR1 in pending signal queue of container */
 	if (kill(cpid, SIGUSR1) == -1) {
-		tst_brkm(TBROK | TERRNO, NULL, "kill() failed");
+		tst_brkm(TBROK | TERRNO, cleanup, "kill() failed");
 	}
 
 	tst_resm(TINFO, "parent: signalled SIGUSR1 to container");
 	if (write(parent_cinit[1], "p:go", 5) != 5) {
-		tst_brkm(TBROK | TERRNO, NULL, "write failed");
+		tst_brkm(TBROK | TERRNO, cleanup, "write failed");
 	}
 
 	/* collect exit status of child */
 	if (wait(&status) == -1) {
-		tst_brkm(TBROK | TERRNO, NULL, "wait failed");
+		tst_brkm(TBROK | TERRNO, cleanup, "wait failed");
 	}
 
 	if (WIFSIGNALED(status)) {
@@ -208,5 +215,6 @@ int main(int argc, char *argv[])
 	/* Cleanup and exit */
 	close(parent_cinit[1]);
 	close(cinit_parent[0]);
+	cleanup();
 	tst_exit();
 }

@@ -54,9 +54,11 @@
 #include <netinet/in.h>
 
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "setsockopt01";
 int testno;
+int exp_enos[] = { EBADF, ENOTSOCK, EFAULT, EINVAL, ENOPROTOOPT, 0 };
 
 int s;				/* socket descriptor */
 struct sockaddr_in sin0, fsin1;
@@ -131,8 +133,12 @@ int TST_TOTAL = sizeof(tdat) / sizeof(tdat[0]);
 int main(int argc, char *argv[])
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 	setup();
 
 	for (lc = 0; TEST_LOOPING(lc); ++lc) {
@@ -146,6 +152,7 @@ int main(int argc, char *argv[])
 					tdat[testno].optlen));
 
 			if (TEST_RETURN == -1) {
+				TEST_ERROR_LOG(TEST_ERRNO);
 			}
 
 			if (TEST_RETURN != tdat[testno].retval ||
@@ -172,6 +179,9 @@ void setup(void)
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
+	/* set the expected errnos... */
+	TEST_EXP_ENOS(exp_enos);
+
 	TEST_PAUSE;
 
 	/* initialize local sockaddr */
@@ -182,6 +192,8 @@ void setup(void)
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
+
 }
 
 void setup0(void)

@@ -23,6 +23,7 @@
   */
 
 #include "test.h"
+#include "usctest.h"
 
 #include <errno.h>
 #define _USE_BSD
@@ -38,6 +39,8 @@ int TST_TOTAL = 1;
 static void cleanup(void);
 static void setup(void);
 
+static int exp_enos[] = { ECHILD, 0 };
+
 static long get_pid_max(void)
 {
 	long pid_max;
@@ -50,12 +53,14 @@ static long get_pid_max(void)
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	pid_t epid = get_pid_max() + 1;
 
 	int status = 1;
 	struct rusage rusage;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -93,9 +98,12 @@ static void setup(void)
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
+	TEST_EXP_ENOS(exp_enos);
+
 	TEST_PAUSE;
 }
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 }

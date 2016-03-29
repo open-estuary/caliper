@@ -18,8 +18,6 @@
 
 top_srcdir		?= ../../../..
 
-select04: LDLIBS+=-lrt
-
 include $(top_srcdir)/include/mk/testcases.mk
 
 include $(top_srcdir)/include/mk/generic_leaf_target.mk

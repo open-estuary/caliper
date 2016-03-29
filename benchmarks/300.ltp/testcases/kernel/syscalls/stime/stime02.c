@@ -74,11 +74,13 @@
 #include <pwd.h>
 
 #include "test.h"
+#include "usctest.h"
 
 #define INCR_TIME	10	/* increment in the system's current time */
 
 char *TCID = "stime02";
 int TST_TOTAL = 1;
+int exp_enos[] = { EPERM, 0 };
 
 time_t curr_time;		/* system's current time in seconds */
 time_t new_time;		/* system's new time */
@@ -92,10 +94,18 @@ void cleanup();			/* cleanup function for the test */
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+
+	}
 
 	setup();
+
+	/* set the expected errnos... */
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -108,6 +118,7 @@ int main(int ac, char **av)
 		TEST(stime(&new_time));
 
 		if (TEST_RETURN == -1) {
+			TEST_ERROR_LOG(TEST_ERRNO);
 			if (TEST_ERRNO == EPERM) {
 				tst_resm(TPASS, "stime(2) fails, Caller not "
 					 "root, errno:%d", TEST_ERRNO);
@@ -135,7 +146,7 @@ int main(int ac, char **av)
  */
 void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -166,5 +177,10 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }

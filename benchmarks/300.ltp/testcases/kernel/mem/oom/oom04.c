@@ -37,6 +37,7 @@
 #include <stdio.h>
 #include "numa_helper.h"
 #include "test.h"
+#include "usctest.h"
 #include "mem.h"
 
 char *TCID = "oom04";
@@ -47,9 +48,12 @@ int TST_TOTAL = 1;
 
 int main(int argc, char *argv[])
 {
+	const char *msg;
 	int lc;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 #if __WORDSIZE == 32
 	tst_brkm(TCONF, NULL, "test is not designed for 32-bit system.");
@@ -83,7 +87,7 @@ void setup(void)
 {
 	int memnode, ret;
 
-	tst_require_root();
+	tst_require_root(NULL);
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 	TEST_PAUSE;
 
@@ -109,6 +113,8 @@ void cleanup(void)
 {
 	set_sys_tune("overcommit_memory", overcommit, 0);
 	umount_mem(CPATH, CPATH_NEW);
+
+	TEST_CLEANUP;
 }
 
 #else /* no NUMA */

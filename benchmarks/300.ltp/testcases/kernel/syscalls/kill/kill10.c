@@ -156,6 +156,7 @@
 #include <string.h>
 #include <signal.h>
 #include "test.h"
+#include "usctest.h"
 
 void setup();
 void help();
@@ -185,10 +186,12 @@ int child_checklist_total = 0;
 int checklist_cmp(const void *a, const void *b);
 void checklist_reset(int bit);
 
-static inline int k_sigaction(int sig, struct sigaction *sa, struct sigaction *osa);
+inline int k_sigaction(int sig, struct sigaction *sa, struct sigaction *osa);
 
 char *TCID = "kill10";
 int TST_TOTAL = 1;
+
+int exp_enos[] = { 0, 0 };
 
 int num_procs = 10;
 int num_pgrps = 2;
@@ -204,6 +207,7 @@ pid_t mypid = 0;
 char *narg, *garg, *darg;
 int nflag = 0, gflag = 0, dflag = 0;
 
+/* for test specific parse_opts options */
 option_t options[] = {
 	{"n:", &nflag, &narg},	/* -n #procs */
 	{"g:", &gflag, &garg},	/* -g #pgrps */
@@ -214,9 +218,12 @@ option_t options[] = {
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int cnt;
 
-	tst_parse_opts(ac, av, options, &help);
+	if ((msg = parse_opts(ac, av, options, &help))) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	if (nflag) {
 		if (sscanf(narg, "%i", &num_procs) != 1) {
@@ -236,6 +243,8 @@ int main(int ac, char **av)
 	}
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -430,6 +439,11 @@ void cleanup(void)
 		waitpid(child_checklist[i].pid, NULL, 0);
 	}
 	free(child_checklist);
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }
 
@@ -756,7 +770,7 @@ void checklist_reset(int bit)
 
 }
 
-static inline int k_sigaction(int sig, struct sigaction *sa, struct sigaction *osa)
+inline int k_sigaction(int sig, struct sigaction *sa, struct sigaction *osa)
 {
 	int ret;
 	if ((ret = sigaction(sig, sa, osa)) == -1) {

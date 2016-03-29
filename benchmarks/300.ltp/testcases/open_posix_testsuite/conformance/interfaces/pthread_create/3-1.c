@@ -23,71 +23,74 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <string.h>
 #include <errno.h>
-#include <stdlib.h>
 #include "posixtest.h"
 
-#define TIMEOUT 10
+#define TIMEOUT 10		/* Timeout value of 10 seconds. */
+#define INTHREAD 0		/* Control going to or is already for Thread */
+#define INMAIN 1		/* Control going to or is already for Main */
 
-static volatile int sem;
+int sem1;			/* Manual semaphore */
 
 void *a_thread_func()
 {
-	sem = 1;
+	/* Indicate to main() that the thread was created. */
+	sem1 = INTHREAD;
 
 	/* Wait for main to detach change the attribute object and try and detach this thread.
 	 * Wait for a timeout value of 10 seconds before timing out if the thread was not able
 	 * to be detached. */
 	sleep(TIMEOUT);
 
-	/* We should not get here */
-	exit(PTS_FAIL);
+	printf
+	    ("Test FAILED: Did not detach the thread, main still waiting for it to end execution.\n");
+	pthread_exit((void *)PTS_FAIL);
+	return NULL;
 }
 
 int main(void)
 {
 	pthread_t new_th;
-	pthread_attr_t attr;
+	pthread_attr_t new_attr;
 	int ret;
 
-	if ((ret = pthread_attr_init(&attr))) {
-		fprintf(stderr, "pthread_attr_init(): %s\n", strerror(ret));
+	/* Initializing */
+	sem1 = INMAIN;
+	if (pthread_attr_init(&new_attr) != 0) {
+		perror("Error intializing attribute object\n");
 		return PTS_UNRESOLVED;
 
 	}
 
-	ret = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
-	if (ret) {
-		fprintf(stderr,
-		        "pthread_attr_setdetachstate(..., PTHREAD_CREATE_JOINABLE): %s\n",
-		        strerror(ret));
+	/* Make the new attribute object joinable */
+	if (pthread_attr_setdetachstate(&new_attr, PTHREAD_CREATE_JOINABLE) !=
+	    0) {
+		perror("Error setting the detached state of the attribute\n");
 		return PTS_UNRESOLVED;
 	}
 
-	ret = pthread_create(&new_th, &attr, a_thread_func, NULL);
-	if (ret) {
-		fprintf(stderr, "pthread_create(): %s\n", strerror(ret));
+	/* Create a new thread and pass it the attribute object that will
+	 * make it joinable. */
+	if (pthread_create(&new_th, &new_attr, a_thread_func, NULL) != 0) {
+		perror("Error creating thread\n");
 		return PTS_UNRESOLVED;
 	}
 
-	while (!sem)
-		usleep(10000);
+	while (sem1 == INMAIN)
+		sleep(1);
 
-	ret = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	if (ret) {
-		fprintf(stderr,
-		        "pthread_attr_setdetachstate(..., PTHREAD_CREATE_JOINABLE): %s\n",
-		        strerror(ret));
+	/* Now change the attribute object to be in a detached state */
+	if (pthread_attr_setdetachstate(&new_attr, PTHREAD_CREATE_DETACHED) !=
+	    0) {
+		perror("Error setting the detached state of the attribute\n");
 		return PTS_UNRESOLVED;
 	}
 
 	/* The new thread should still be able to be detached. */
-	ret = pthread_detach(new_th);
-	if (ret) {
-		fprintf(stderr,
-		        "pthread_detach() failed on joinable thread: %s\n",
-			strerror(ret));
+	if ((ret = pthread_detach(new_th)) == EINVAL) {
+		printf
+		    ("Test FAILED: pthread_detach failed on joinable thread. Return value is %d\n",
+		     ret);
 		return PTS_FAIL;
 	}
 

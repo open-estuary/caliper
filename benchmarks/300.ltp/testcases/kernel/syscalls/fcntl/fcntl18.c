@@ -44,6 +44,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include "test.h"
+#include "usctest.h"
 
 #define INVAL_FLAG	-1
 #define INVAL_MIN	(-2147483647L-1L)
@@ -65,7 +66,11 @@ int main(int ac, char **av)
 	struct flock fl;
 	int pid, status;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	const char *msg;
+
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	setup();		/* global setup */
 
@@ -171,8 +176,6 @@ void setup(void)
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
-	tst_require_root();
-
 	umask(0);
 
 	TEST_PAUSE;
@@ -195,6 +198,8 @@ void cleanup(void)
 	 * print errno log if that option was specified
 	 */
 	close(fd);
+
+	TEST_CLEANUP;
 
 	tst_rmdir();
 

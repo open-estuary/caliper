@@ -71,6 +71,7 @@
 #include <sys/mman.h>
 
 #include "test.h"
+#include "usctest.h"
 
 #define TEMPFILE	"msync_file"
 #define BUF_SIZE	256
@@ -89,10 +90,12 @@ void cleanup();			/* cleanup function for the test */
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	char read_buf[BUF_SIZE];	/* buffer to hold data read from file */
 	int nread = 0, count, err_flg = 0;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -192,6 +195,8 @@ void setup(void)
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	if (munmap(addr, page_sz) == -1)
 		tst_resm(TBROK | TERRNO, "munmap failed");
 

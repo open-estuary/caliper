@@ -52,9 +52,11 @@
 #include <netinet/in.h>
 
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "socketpair01";
 int testno;
+int exp_enos[] = { EINVAL, EPERM, EFAULT, EOPNOTSUPP, EPROTONOSUPPORT, 0 };
 
 int sv[2];
 
@@ -93,9 +95,11 @@ int TST_TOTAL = sizeof(tdat) / sizeof(tdat[0]);
 int main(int argc, char *argv[])
 {
 	int lc;
+	const char *msg;
 	int s;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -109,6 +113,7 @@ int main(int argc, char *argv[])
 			if (TEST_RETURN >= 0) {
 				TEST_RETURN = 0;	/* > 0 equivalent */
 			} else {
+				TEST_ERROR_LOG(TEST_ERRNO);
 			}
 			if (TEST_RETURN != tdat[testno].retval ||
 			    (TEST_RETURN &&
@@ -135,10 +140,13 @@ int main(int argc, char *argv[])
 
 void setup(void)
 {
+	/* set the expected errnos... */
+	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 }
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
 }

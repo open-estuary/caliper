@@ -49,6 +49,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <inttypes.h>
+
+#include "usctest.h"
 #include "test.h"
 #include "safe_macros.h"
 
@@ -153,6 +155,8 @@ void setup(void)
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	if (fd > 0)
 		close(fd);
 
@@ -169,6 +173,7 @@ int main(int ac, char **av)
 {
 	int i;
 	int lc;
+	const char *msg;
 
 #if __WORDSIZE == 32
 	tst_brkm(TCONF, NULL, "This test is only for 64bit");
@@ -180,7 +185,8 @@ int main(int ac, char **av)
 		return 0;
 	}
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 

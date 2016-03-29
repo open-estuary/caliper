@@ -61,6 +61,7 @@
 #include <sys/wait.h>
 
 #include "test.h"
+#include "usctest.h"
 
 #include "ipcmsg.h"
 
@@ -79,10 +80,12 @@ pid_t c_pid;
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	void check_functionality(void);
 	int status, e_code;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 #ifdef UCLINUX
 	maybe_run_child(&do_child, "d", &msg_q_1);
@@ -206,5 +209,11 @@ void cleanup(void)
 	rm_queue(msg_q_1);
 
 	tst_rmdir();
+
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }

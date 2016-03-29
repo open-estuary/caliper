@@ -42,6 +42,7 @@
 
 /**	LTP Port	**/
 #include "test.h"
+#include "usctest.h"
 
 #define FAILED 0
 #define PASSED 1
@@ -50,6 +51,8 @@
 #define ERR		0.0000001
 
 double pi;
+
+double atof();
 
 /*char progname[]= "atof1()"; */
 /**	LTP Port	**/
@@ -61,11 +64,11 @@ int errno;
 FILE *temp;
 int TST_TOTAL = 1;
 
-static void setup(void);
-static void blenter(void);
-static void blexit(void);
-static int numin(char *, double *);
-static int checkbuf(char *, int, int);
+void setup();
+void blenter();
+void blexit();
+int numin(char *, double *);
+int checkbuf(char *, int, int);
 
 /*--------------------------------------------------------------*/
 int main(int argc, char *argv[])
@@ -200,7 +203,9 @@ int main(int argc, char *argv[])
 
 /* FUNCTIONS GO HERE */
 
-static int numin(char *str, double *rval)
+int numin(str, rval)
+char *str;
+double *rval;
 {
 	register int i, v3, e_flag;
 	register char c;
@@ -310,7 +315,10 @@ static int numin(char *str, double *rval)
 	return (0);
 }
 
-static int checkbuf(char *str, int n1, int n2)
+int checkbuf(str, n1, n2)
+char *str;
+int n1;
+int n2;
 {
 	register int bd;	/* before decimal point */
 	register int ad;	/* after decimal point */
@@ -361,17 +369,17 @@ static int checkbuf(char *str, int n1, int n2)
 }
 
 /**	LTP Port	**/
-static void setup(void)
+void setup()
 {
 	temp = stderr;
 }
 
-static void blenter(void)
+void blenter()
 {
 	local_flag = PASSED;
 }
 
-static void blexit(void)
+void blexit()
 {
 	if (local_flag == PASSED)
 		tst_resm(TPASS, "Test passed");

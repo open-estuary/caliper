@@ -35,6 +35,7 @@
 
 #include "test.h"
 #include "config.h"
+#include "usctest.h"
 #include "linux_syscall_numbers.h"
 #include "safe_macros.h"
 #include "lapi/fcntl.h"
@@ -84,8 +85,11 @@ int TST_TOTAL = ARRAY_SIZE(testfunc);
 int main(int ac, char **av)
 {
 	int lc, i;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -379,6 +383,8 @@ static void check_io_signal(char *des)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	if (sigprocmask(SIG_SETMASK, &oldset, NULL) < 0)
 		tst_resm(TWARN | TERRNO, "sigprocmask restore oldset failed");
 

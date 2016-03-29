@@ -35,6 +35,7 @@
 #include <string.h>
 #include <sys/syscall.h>
 #include "test.h"
+#include "usctest.h"
 #include "linux_syscall_numbers.h"
 #include "fanotify.h"
 #include "safe_macros.h"
@@ -60,9 +61,12 @@ struct fanotify_event_metadata event;
 int main(int ac, char **av)
 {
 	int lc, i;
+	const char *msg;
 	int len;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -163,6 +167,7 @@ static void cleanup(void)
 	if (fd_notify > 0 && close(fd_notify) == -1)
 		tst_resm(TWARN, "close(%d) failed", fd_notify);
 
+	TEST_CLEANUP;
 	tst_rmdir();
 }
 

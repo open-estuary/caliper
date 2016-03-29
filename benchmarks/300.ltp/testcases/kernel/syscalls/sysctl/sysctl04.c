@@ -46,6 +46,7 @@
  */
 
 #include "test.h"
+#include "usctest.h"
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
@@ -67,7 +68,10 @@ int sysctl(int *name, int nlen, void *oldval, size_t * oldlenp,
 	return syscall(__NR__sysctl, &args);
 }
 
+#define SIZE(x) sizeof(x)/sizeof(x[0])
 #define OSNAMESZ 100
+
+int exp_enos[] = { ENOTDIR, 0 };
 
 void setup(void);
 void cleanup(void);
@@ -87,17 +91,23 @@ struct test_case_t {
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
 	char osname[OSNAMESZ];
 	int i;
 	size_t osnamelth;
 	int name[] = { CTL_KERN, KERN_OSREV };
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	setup();
 
-	osnamelth = sizeof(osname);
+	osnamelth = SIZE(osname);
+
+	/* set up the expected errnos */
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -113,6 +123,8 @@ int main(int ac, char **av)
 				tst_resm(TFAIL, "call succeeded unexpectedly");
 				continue;
 			}
+
+			TEST_ERROR_LOG(TEST_ERRNO);
 
 			if (TEST_ERRNO == TC[i].error) {
 				tst_resm(TPASS, "expected failure - "
@@ -151,6 +163,11 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }
 

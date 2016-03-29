@@ -91,6 +91,7 @@
 #include <sys/signal.h>
 #include <limits.h>
 #include "test.h"
+#include "usctest.h"
 
 void setup(void);
 void cleanup(void);
@@ -106,6 +107,7 @@ int main(int ac, char **av)
 
 	/* Parameters for usc code  */
 	int lc;
+	const char *msg;
 
 	/* Parameters for alarm test */
 	char *buf[] = { "-1", "ULONG_MAX", "ULONG_MAX+1" };
@@ -113,7 +115,8 @@ int main(int ac, char **av)
 	int exp[] = { 0, 0, 0 };
 	int i;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -172,6 +175,7 @@ void setup(void)
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
 }
 
 void alarm_received(int sig)

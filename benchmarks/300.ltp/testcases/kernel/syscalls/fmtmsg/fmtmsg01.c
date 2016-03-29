@@ -48,6 +48,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include "test.h"
+#include "usctest.h"
 #define FAILED 0
 #define PASSED 1
 

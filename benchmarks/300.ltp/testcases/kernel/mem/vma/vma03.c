@@ -49,6 +49,7 @@
 #include <unistd.h>
 
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "vma03";
 int TST_TOTAL = 1;
@@ -66,6 +67,7 @@ static void cleanup(void);
 
 int main(int argc, char *argv[])
 {
+	const char *msg;
 	int lc;
 	void *map, *remap;
 	off_t pgoff;
@@ -73,7 +75,9 @@ int main(int argc, char *argv[])
 #if __WORDSIZE != 32
 	tst_brkm(TCONF, NULL, "test is designed for 32-bit system only.");
 #endif
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	pgsz = sysconf(_SC_PAGE_SIZE);
 	setup();
@@ -133,6 +137,8 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	tst_rmdir();
 }
 #else /* __NR_mmap2 */

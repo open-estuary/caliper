@@ -73,9 +73,14 @@
 #include <signal.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "common_timers.h"
 
 void setup(void);
+
+char *TCID = "clock_gettime03";	/* Test program identifier.    */
+int TST_TOTAL;			/* Total number of test cases. */
+static int exp_enos[] = { EINVAL, EFAULT, 0 };
 
 int testcase[6] = {
 	EFAULT,			/* Bad timespec   */
@@ -84,12 +89,10 @@ int testcase[6] = {
 	EINVAL			/* MAX_CLOCKS + 1 */
 };
 
-char *TCID = "clock_gettime03";	/* Test program identifier.    */
-int TST_TOTAL = ARRAY_SIZE(testcase);
-
 int main(int ac, char **av)
 {
-	int i, lc;
+	int i, lc;		/* loop counter */
+	const char *msg;
 	struct timespec spec, *temp;
 
 	clockid_t clocks[] = {
@@ -101,7 +104,10 @@ int main(int ac, char **av)
 		CLOCK_THREAD_CPUTIME_ID
 	};
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+
+	TST_TOTAL = sizeof(testcase) / sizeof(testcase[0]);
 
 	/*
 	 * PROCESS_CPUTIME_ID & THREAD_CPUTIME_ID are not supported on
@@ -161,6 +167,9 @@ void setup(void)
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
+	/* set the expected errnos... */
+	TEST_EXP_ENOS(exp_enos);
+
 	TEST_PAUSE;
 }
 
@@ -170,4 +179,9 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 }

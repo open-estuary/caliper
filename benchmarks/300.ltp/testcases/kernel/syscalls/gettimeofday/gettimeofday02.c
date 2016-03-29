@@ -46,6 +46,7 @@
 #include <signal.h>
 #include <stdlib.h>
 #include "test.h"
+#include "usctest.h"
 #include <sys/syscall.h>
 #include <unistd.h>
 #include <time.h>
@@ -70,6 +71,8 @@ void breakout(int sig)
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
+
 }
 
 void help(void)
@@ -80,8 +83,11 @@ void help(void)
 int main(int ac, char **av)
 {
 	struct timeval tv1, tv2;
+	const char *msg;
 
-	tst_parse_opts(ac, av, opts, help);
+	if ((msg = parse_opts(ac, av, opts, help)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 	TEST_PAUSE;

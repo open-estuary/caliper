@@ -23,40 +23,24 @@
 $(if $(REQ_VERSION_MAJOR),,$(error You must define REQ_VERSION_MAJOR))
 $(if $(REQ_VERSION_PATCH),,$(error You must define REQ_VERSION_MINOR))
 
-ifeq ($(WITH_MODULES),no)
-SKIP := 1
-else
-ifeq ($(LINUX_VERSION_MAJOR)$(LINUX_VERSION_PATCH),)
-SKIP := 1
-else
-SKIP ?= $(shell \
-	[ "$(LINUX_VERSION_MAJOR)" -gt "$(REQ_VERSION_MAJOR)" ] || \
-	[ "$(LINUX_VERSION_MAJOR)" -eq "$(REQ_VERSION_MAJOR)" -a \
-	  "$(LINUX_VERSION_PATCH)" -ge "$(REQ_VERSION_PATCH)" ]; echo $$?)
+ifneq ($(filter install clean,$(MAKECMDGOALS)),)
+SKIP := 2
 endif
-endif
+
+SKIP ?= $(shell [ "$(WITH_MODULES)" = yes ] && \
+	[ $(LINUX_VERSION_MAJOR) -gt $(REQ_VERSION_MAJOR) ] || \
+	[ $(LINUX_VERSION_MAJOR) -eq $(REQ_VERSION_MAJOR) -a \
+	  $(LINUX_VERSION_PATCH) -ge $(REQ_VERSION_PATCH) ]; echo $$?)
 
 ifneq ($(SKIP),0)
 MAKE_TARGETS := $(filter-out %.ko, $(MAKE_TARGETS))
+MAKE_TARGETS += $(if $(filter 2,$(SKIP)),$(wildcard *.ko),)
 endif
-
-ifneq ($(filter install clean,$(MAKECMDGOALS)),)
-MAKE_TARGETS := $(filter-out %.ko, $(MAKE_TARGETS))
-MAKE_TARGETS += $(wildcard *.ko)
-endif
-
-CLEAN_TARGETS += .dep_modules
-
-MODULE_SOURCES := $(patsubst %.ko,%.c,$(filter %.ko, $(MAKE_TARGETS)))
 
 # Ignoring the exit status of commands is done to be forward compatible with
 # kernel internal API changes. The user-space test will return TCONF, if it
 # doesn't find the module (i.e. it wasn't built either due to kernel-devel
 # missing or module build failure).
-%.ko: %.c .dep_modules ;
-
-.dep_modules: $(MODULE_SOURCES)
-	@echo "Building modules: $(MODULE_SOURCES)"
+%.ko: %.c
 	-$(MAKE) -C $(LINUX_DIR) M=$(abs_srcdir)
 	rm -rf *.mod.c *.o *.ko.unsigned modules.order .tmp* .*.ko .*.cmd Module.symvers
-	@touch .dep_modules

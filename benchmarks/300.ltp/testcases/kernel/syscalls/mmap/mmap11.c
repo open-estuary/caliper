@@ -54,6 +54,7 @@
 #include<errno.h>
 #include<unistd.h>
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "mmap11";
 int TST_TOTAL = 1;
@@ -68,8 +69,11 @@ static void check(void);
 
 int main(int argc, char *argv[])
 {
+	const char *msg;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 	setup();
 	check();
 	cleanup();
@@ -78,7 +82,7 @@ int main(int argc, char *argv[])
 
 void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 	TEST_PAUSE;
@@ -86,6 +90,7 @@ void setup(void)
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
 }
 
 void check(void)

@@ -52,6 +52,7 @@
 #include <unistd.h>
 #include <setjmp.h>
 #include "test.h"
+#include "usctest.h"
 
 #include <stdlib.h>
 #include <stdlib.h>
@@ -68,8 +69,14 @@ extern int optind, opterr;
 char *goodopts = "c:t:d:";
 int errflg;
 
+/*
+ *  * These globals must be defined in the test.
+ *   */
+
 char *TCID = "mkdir09";
 int TST_TOTAL = 1;
+
+int exp_enos[] = { EFAULT, 0 };	/* List must end with 0 */
 
 int child_groups, test_time, nfiles;
 char testdir[MAXPATHLEN];
@@ -104,8 +111,11 @@ int main(int argc, char *argv[])
 	int c;
 
 #ifdef UCLINUX
+	const char *msg;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	argv0 = argv[0];
 	maybe_run_child(&dochild1_uclinux, "nd", 1, &nfiles);
@@ -567,6 +577,11 @@ void setup(void)
  *    ***************************************************************/
 void cleanup(void)
 {
+	/*
+	 *      * print timing stats if that option was specified.
+	 *           * print errno log if that option was specified.
+	 *                */
+	TEST_CLEANUP;
 
 	/*
 	 *      * Remove the temporary directory.

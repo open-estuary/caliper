@@ -58,6 +58,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include "test.h"
+#include "usctest.h"
 #include "libftest.h"
 
 char *TCID = "ftest06";
@@ -103,11 +104,13 @@ int main(int ac, char *av[])
 	char name[3];
 
 	int lc;
+	const char *msg;
 
 	/*
 	 * parse standard options
 	 */
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	/*
 	 * Default values for run conditions.
@@ -402,7 +405,7 @@ struct ino_thing {
 } ino_thing[] = {
 THING(crfile), THING(unlfile), THING(fussdir), THING(sync),};
 
-#define	NTHING	ARRAY_SIZE(ino_thing)
+#define	NTHING	(sizeof(ino_thing) / sizeof(ino_thing[0]))
 
 int thing_cnt[NTHING];
 int thing_last[NTHING];

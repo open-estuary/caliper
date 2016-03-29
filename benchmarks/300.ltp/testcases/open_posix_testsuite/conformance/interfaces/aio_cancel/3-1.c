@@ -139,8 +139,7 @@ int main(void)
 
 	close(fd);
 
-	while (countdown)
-		usleep(10000);
+	while (countdown) ;
 
 	if (!canceled)
 		return PTS_UNRESOLVED;

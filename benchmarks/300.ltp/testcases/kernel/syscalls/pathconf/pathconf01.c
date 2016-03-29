@@ -114,10 +114,18 @@
 #include <string.h>
 #include <signal.h>
 #include "test.h"
+#include "usctest.h"
 
 void setup();
 void cleanup();
 void help();
+
+char *TCID = "pathconf01";
+int TST_TOTAL;
+
+int exp_enos[] = { 0, 0 };
+
+int i;
 
 struct pathconf_args {
 	char *define_tag;
@@ -133,12 +141,6 @@ struct pathconf_args {
 	NULL, 0}
 };
 
-char *TCID = "pathconf01";
-int TST_TOTAL = ARRAY_SIZE(args);
-
-int i;
-
-
 int lflag;
 char *path;
 
@@ -150,8 +152,15 @@ option_t options[] = {
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, options, &help);
+	TST_TOTAL = (sizeof(args) / sizeof(args[0])) - 1;
+
+    /***************************************************************
+     * parse standard options
+     ***************************************************************/
+	if ((msg = parse_opts(ac, av, options, &help)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	if (!lflag) {
 		path = strdup("/tmp");
@@ -160,6 +169,9 @@ int main(int ac, char **av)
      * perform global setup for test
      ***************************************************************/
 	setup();
+
+	/* set the expected errnos... */
+	TEST_EXP_ENOS(exp_enos);
 
     /***************************************************************
      * check looping state if -c option given
@@ -221,6 +233,11 @@ void setup(void)
  ***************************************************************/
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }
 

@@ -12,13 +12,13 @@
 #if HAVE_NUMAIF_H
 #include <numaif.h>
 #endif
-#include <pthread.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 #include "safe_file_ops.h"
 #include "mem.h"
@@ -30,25 +30,16 @@ static int alloc_mem(long int length, int testcase)
 {
 	char *s;
 	long i, pagesz = getpagesize();
-	int loop = 10;
 
-	tst_resm(TINFO, "thread (%lx), allocating %ld bytes.",
-		(unsigned long) pthread_self(), length);
+	tst_resm(TINFO, "allocating %ld bytes.", length);
 
 	s = mmap(NULL, length, PROT_READ | PROT_WRITE,
 		 MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
 	if (s == MAP_FAILED)
 		return errno;
 
-	if (testcase == MLOCK) {
-		while (mlock(s, length) == -1 && loop > 0) {
-			if (EAGAIN != errno)
-				return errno;
-			usleep(300000);
-			loop--;
-		}
-	}
-
+	if (testcase == MLOCK && mlock(s, length) == -1)
+		return errno;
 #ifdef HAVE_MADV_MERGEABLE
 	if (testcase == KSM && madvise(s, length, MADV_MERGEABLE) == -1)
 		return errno;
@@ -59,51 +50,18 @@ static int alloc_mem(long int length, int testcase)
 	return 0;
 }
 
-static void *child_alloc_thread(void *args)
+static void test_alloc(int testcase, int lite)
 {
-	int ret = 0;
-
-	/* keep allocating until there's an error */
-	while (!ret)
-		ret = alloc_mem(LENGTH, (long)args);
-	exit(ret);
-}
-
-static void child_alloc(int testcase, int lite, int threads)
-{
-	int i;
-	pthread_t *th;
+	int ret;
 
 	if (lite) {
-		int ret = alloc_mem(TESTMEM + MB, testcase);
-		exit(ret);
+		ret = alloc_mem(TESTMEM + MB, testcase);
+	} else {
+		ret = 0;
+		while (!ret)
+			ret = alloc_mem(LENGTH, testcase);
 	}
-
-	th = malloc(sizeof(pthread_t) * threads);
-	if (!th) {
-		tst_resm(TINFO | TERRNO, "malloc");
-		goto out;
-	}
-
-	for (i = 0; i < threads; i++) {
-		TEST(pthread_create(&th[i], NULL, child_alloc_thread,
-			(void *)((long)testcase)));
-		if (TEST_RETURN) {
-			tst_resm(TINFO | TRERRNO, "pthread_create");
-			/*
-			 * Keep going if thread other than first fails to
-			 * spawn due to lack of resources.
-			 */
-			if (i == 0 || TEST_RETURN != EAGAIN)
-				goto out;
-		}
-	}
-
-	/* wait for one of threads to exit whole process */
-	while (1)
-		sleep(1);
-out:
-	exit(1);
+	exit(ret);
 }
 
 /*
@@ -124,14 +82,13 @@ out:
 void oom(int testcase, int lite, int retcode, int allow_sigkill)
 {
 	pid_t pid;
-	int status, threads;
+	int status;
 
 	switch (pid = fork()) {
 	case -1:
 		tst_brkm(TBROK | TERRNO, cleanup, "fork");
 	case 0:
-		threads = MAX(1, tst_ncpus() - 1);
-		child_alloc(testcase, lite, threads);
+		test_alloc(testcase, lite);
 	default:
 		break;
 	}
@@ -1117,36 +1074,4 @@ void update_shm_size(size_t * shm_size)
 		tst_resm(TINFO, "Set shm_size to shmmax: %ld", shmmax);
 		*shm_size = shmmax;
 	}
-}
-
-int range_is_mapped(void (*cleanup_fn) (void), unsigned long low, unsigned long high)
-{
-	FILE *fp;
-
-	fp = fopen("/proc/self/maps", "r");
-	if (fp == NULL)
-		tst_brkm(TBROK | TERRNO, cleanup_fn, "Failed to open /proc/self/maps.");
-
-	while (!feof(fp)) {
-		unsigned long start, end;
-		int ret;
-
-		ret = fscanf(fp, "%lx-%lx %*[^\n]\n", &start, &end);
-		if (ret != 2) {
-			fclose(fp);
-			tst_brkm(TBROK | TERRNO, cleanup_fn, "Couldn't parse /proc/self/maps line.");
-		}
-
-		if ((start >= low) && (start < high)) {
-			fclose(fp);
-			return 1;
-		}
-		if ((end >= low) && (end < high)) {
-			fclose(fp);
-			return 1;
-		}
-	}
-
-	fclose(fp);
-	return 0;
 }

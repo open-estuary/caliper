@@ -42,6 +42,7 @@
 #include <errno.h>
 
 #include "test.h"
+#include "usctest.h"
 
 #include "linux_syscall_numbers.h"
 #ifndef _FILE_OFFSET_BITS
@@ -71,13 +72,14 @@ int defined_advise[] = {
 	POSIX_FADV_DONTNEED,
 };
 
-#define defined_advise_total ARRAY_SIZE(defined_advise)
+#define defined_advise_total (sizeof(defined_advise) / sizeof(defined_advise[0]))
 
 int TST_TOTAL = defined_advise_total;
 
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int i;
 
 	/* Check this system has fadvise64 system which is used
@@ -92,7 +94,8 @@ int main(int ac, char **av)
 	/*
 	 * parse standard options
 	 */
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	/*
 	 * perform global setup for test
@@ -158,6 +161,11 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	if (fd != -1) {
 		close(fd);

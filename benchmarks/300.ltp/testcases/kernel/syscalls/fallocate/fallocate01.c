@@ -101,6 +101,7 @@
 #include <sys/utsname.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "fallocate.h"
 #include "lapi/fcntl.h"
 
@@ -200,8 +201,10 @@ int main(int ac, char **av)
 {
 	loff_t expected_size;
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -238,6 +241,7 @@ void runtest(int mode, int fd, loff_t expected_size)
 			tst_brkm(TCONF, cleanup,
 				 "fallocate system call is not implemented");
 		}
+		TEST_ERROR_LOG(TEST_ERRNO);
 		tst_resm(TFAIL | TTERRNO,
 			 "fallocate(%d, %d, %" PRId64 ", %" PRId64 ") failed",
 			 fd, mode, offset, len);
@@ -269,6 +273,7 @@ void runtest(int mode, int fd, loff_t expected_size)
 	TEST(write(fd, "A", 1));
 	/* check return code */
 	if (TEST_RETURN == -1) {
+		TEST_ERROR_LOG(TEST_ERRNO);
 		tst_resm(TFAIL | TTERRNO,
 			 "write fails in fallocate(%d, %d, %" PRId64 ", %"
 			 PRId64 ") failed", fd, mode, offset, len);

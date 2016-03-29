@@ -70,6 +70,7 @@
 #include <sys/mman.h>
 
 #include "test.h"
+#include "usctest.h"
 
 #define TEMPFILE	"msync_file"
 #define BUF_SIZE	256
@@ -148,6 +149,8 @@ void setup(void)
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	if (munmap(addr, page_sz) == -1)
 		tst_resm(TBROK | TERRNO, "munmap failed");
 

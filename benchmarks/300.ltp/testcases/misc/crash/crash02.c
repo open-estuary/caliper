@@ -63,6 +63,7 @@ TODO:
 #include <sys/wait.h>
 
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "crash02";
 int TST_TOTAL = 1;
@@ -88,14 +89,19 @@ int ntries = 100;
 /* max time allowed per try, in seconds */
 #define MAX_TRY_TIME 5
 
-void cleanup(void)
+void cleanup()
 {
+	/*
+	 * remove the tmp directory and exit
+	 */
+
+	TEST_CLEANUP;
 
 	tst_rmdir();
 
 }
 
-void setup(void)
+void setup()
 {
 	/*
 	 * setup a default signal hander and a
@@ -108,7 +114,7 @@ void setup(void)
 	tst_tmpdir();
 }
 
-void help(void)
+void help()
 {
 	printf
 	    ("	-x		dry run, hexdump random code instead\n");
@@ -138,9 +144,11 @@ void record_errno(unsigned int n);
 
 int main(int argc, char *argv[])
 {
+	const char *msg;
 	int lc;
 
-	tst_parse_opts(argc, argv, options, help);
+	if ((msg = parse_opts(argc, argv, options, help)) != NULL)
+		tst_brkm(TBROK, cleanup, "OPTION PARSING ERROR - %s", msg);
 
 	if (v_opt)
 		verbose_level = atoi(v_copt);
@@ -194,7 +202,7 @@ void monitor_fcn(int sig)
 	}
 }
 
-void badboy_fork(void)
+void badboy_fork()
 {
 	int status, pid;
 	pid_t child;
@@ -248,7 +256,7 @@ void record_errno(unsigned int n)
 }
 
 /* may not work with -c option */
-void summarize_errno(void)
+void summarize_errno()
 {
 	int i;
 
@@ -278,7 +286,7 @@ int in_blacklist(int sysno);
 /*
  * Unlike crashme, faulty syscalls are not supposed to barf
  */
-void badboy_loop(void)
+void badboy_loop()
 {
 	int i;
 
@@ -362,7 +370,7 @@ void my_signal(int sig, void (*func) ())
 	sigaction(sig, &act, 0);
 }
 
-void set_up_signals(void)
+void set_up_signals()
 {
 	my_signal(SIGILL, again_handler);
 #ifdef SIGTRAP
@@ -397,7 +405,7 @@ void set_up_signals(void)
  *	will be more insidious because they may refer to existing
  *	objects (pids, fd, etc.).
  */
-long int rand_long(void)
+long int rand_long()
 {
 	int r1, r2;
 

@@ -31,4 +31,8 @@ LDLIBS				+= -lpthread
 
 CLEAN_TARGETS			+= $(LIB)
 
+FILTER_OUT_MAKE_TARGETS		:= runcc
+
 include $(top_srcdir)/include/mk/generic_leaf_target.mk
+
+$(MAKE_TARGETS): %: %.o runcc.o

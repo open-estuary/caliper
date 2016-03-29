@@ -80,6 +80,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "test.h"
+#include "usctest.h"
 #include "compat_16.h"
 
 #define EXP_RET_VAL	0
@@ -124,8 +125,11 @@ int TST_TOTAL = sizeof(tdat) / sizeof(tdat[0]);
 int main(int argc, char **argv)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	setup();
 
@@ -190,7 +194,7 @@ void setup(void)
 {
 	struct passwd *passwd_p;
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -235,5 +239,11 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+
+	TEST_CLEANUP;
 
 }

@@ -78,6 +78,7 @@ char *TCID = "iopl02";
 #include <sys/io.h>
 #include <pwd.h>
 #include "test.h"
+#include "usctest.h"
 
 #define INVALID_LEVEL 4		/* Invalid privilege level */
 #define EXP_RET_VAL -1
@@ -86,6 +87,8 @@ static void setup();
 static int setup1(void);
 static void cleanup1();
 static void cleanup();
+
+static int exp_enos[] = { EINVAL, EPERM, 0 };
 
 static char nobody_uid[] = "nobody";
 struct passwd *ltpuser;
@@ -106,8 +109,10 @@ int main(int ac, char **av)
 {
 
 	int lc, i;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -143,6 +148,8 @@ int main(int ac, char **av)
 					 TEST_RETURN, EXP_RET_VAL,
 					 TEST_ERRNO, test_cases[i].exp_errno);
 			}
+
+			TEST_ERROR_LOG(TEST_ERRNO);
 
 			if (i == 1) {
 				/* revert back to super user */
@@ -183,7 +190,7 @@ void cleanup1(void)
 /* setup() - performs all ONE TIME setup for this test */
 void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -191,6 +198,8 @@ void setup(void)
 	if ((ltpuser = getpwnam(nobody_uid)) == NULL) {
 		tst_brkm(TBROK, NULL, "\"nobody\" user id doesn't exist");
 	}
+
+	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 
@@ -203,11 +212,18 @@ void setup(void)
 void cleanup(void)
 {
 
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
+
 }
 
 #else /* __i386__ */
 
 #include "test.h"
+#include "usctest.h"
 
 int TST_TOTAL = 0;
 

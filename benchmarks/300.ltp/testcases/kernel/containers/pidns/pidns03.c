@@ -31,13 +31,14 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include "usctest.h"
 #include "test.h"
 #include "safe_macros.h"
 #include "libclone.h"
 #include "pidns_helper.h"
 
 #define PROCDIR "proc"
-char *TCID = "pidns03";
+char *TCID	= "pidns03";
 int TST_TOTAL	= 1;
 
 
@@ -48,7 +49,7 @@ static void cleanup(void)
 
 static void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 	check_newpid();
 	tst_tmpdir();
 	SAFE_MKDIR(cleanup, PROCDIR, 0555);
@@ -107,9 +108,12 @@ static void test(void)
 
 int main(int argc, char *argv[])
 {
+	const char *msg;
 	int lc;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 

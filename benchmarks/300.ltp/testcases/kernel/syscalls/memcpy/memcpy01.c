@@ -48,6 +48,7 @@
 
 /*****	LTP Port	*****/
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "memcpy1";
 /*****	**	**	*****/

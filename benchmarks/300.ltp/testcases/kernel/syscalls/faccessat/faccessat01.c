@@ -43,6 +43,7 @@
 #include <string.h>
 #include <signal.h>
 #include "test.h"
+#include "usctest.h"
 #include "linux_syscall_numbers.h"
 
 #define TEST_CASES 6
@@ -72,6 +73,7 @@ int myfaccessat(int dirfd, const char *filename, int mode)
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	int i;
 
 	/* Disable test if the version of the kernel is less than 2.6.16 */
@@ -81,7 +83,8 @@ int main(int ac, char **av)
 		exit(0);
 	}
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -103,6 +106,7 @@ int main(int ac, char **av)
 					 TEST_ERRNO,
 					 strerror(TEST_ERRNO));
 			} else {
+				TEST_ERROR_LOG(TEST_ERRNO);
 				tst_resm(TFAIL,
 					 "faccessdat() Failed, errno=%d : %s",
 					 TEST_ERRNO, strerror(TEST_ERRNO));
@@ -179,4 +183,6 @@ void cleanup(void)
 	unlink(testfile2);
 	unlink(testfile3);
 	rmdir(pathname);
+
+	TEST_CLEANUP;
 }

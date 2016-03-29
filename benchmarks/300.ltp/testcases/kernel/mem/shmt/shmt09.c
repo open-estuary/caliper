@@ -51,6 +51,7 @@
 
 /** LTP Port **/
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "shmt09";		/* Test program identifier.    */
 int TST_TOTAL = 4;		/* Total number of test cases. */
@@ -66,9 +67,9 @@ int TST_TOTAL = 4;		/* Total number of test cases. */
 #define INCREMENT 		SHMLBA
 #endif
 
-static int rm_shm(int);
+int rm_shm(int);
 
-int main(void)
+int main()
 {
 	char *c1 = NULL, *c2 = NULL, *c3 = NULL;
 	void *vp;
@@ -186,7 +187,8 @@ int main(void)
 	tst_exit();
 }
 
-static int rm_shm(int shmid)
+int rm_shm(shmid)
+int shmid;
 {
 	if (shmctl(shmid, IPC_RMID, NULL) == -1) {
 		perror("shmctl");

@@ -49,6 +49,7 @@
 #include <sys/param.h>
 #include <sys/mman.h>
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 static char *bad_addr = 0;
@@ -102,11 +103,13 @@ static void cleanup(void);
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	char *fname1, *fname2;
 	char *desc1, *desc2;
 	int i;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -181,5 +184,6 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 	tst_rmdir();
 }

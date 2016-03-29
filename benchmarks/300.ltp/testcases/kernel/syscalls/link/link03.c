@@ -45,6 +45,7 @@
 #include <string.h>
 #include <signal.h>
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 static void setup(void);
@@ -68,11 +69,13 @@ option_t options[] = {
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	struct stat buf;
 	int i, links;
 	char lname[255];
 
-	tst_parse_opts(ac, av, options, &help);
+	if ((msg = parse_opts(ac, av, options, &help)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	if (links_arg) {
 		nlinks = atoi(links_arg);
@@ -163,5 +166,6 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 	tst_rmdir();
 }

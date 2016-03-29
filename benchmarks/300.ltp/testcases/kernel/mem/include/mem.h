@@ -2,6 +2,7 @@
 #define _MEM_H
 #include "config.h"
 #include "test.h"
+#include "usctest.h"
 
 #if defined(__powerpc__) || defined(__powerpc64__)
 #define MAXNODES		256
@@ -100,6 +101,4 @@ void setup(void);
 
 void update_shm_size(size_t *shm_size);
 
-/* MMAP */
-int range_is_mapped(void (*cleanup_fn) (void), unsigned long low, unsigned long high);
 #endif

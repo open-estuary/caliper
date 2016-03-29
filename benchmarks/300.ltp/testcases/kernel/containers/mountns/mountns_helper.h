@@ -17,8 +17,12 @@
 #include "test.h"
 #include "safe_macros.h"
 
+
 #define DIRA "A"
 #define DIRB "B"
+struct tst_checkpoint checkpoint1;
+struct tst_checkpoint checkpoint2;
+
 
 static int dummy_child(void *v)
 {
@@ -50,10 +54,11 @@ static void cleanup(void)
 
 static void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 	check_newns();
 	tst_tmpdir();
-	TST_CHECKPOINT_INIT(tst_rmdir);
+	TST_CHECKPOINT_CREATE(&checkpoint1);
+	TST_CHECKPOINT_CREATE(&checkpoint2);
 	SAFE_MKDIR(cleanup, DIRA, 0777);
 	SAFE_MKDIR(cleanup, DIRB, 0777);
 	SAFE_TOUCH(cleanup, DIRA"/A", 0, NULL);

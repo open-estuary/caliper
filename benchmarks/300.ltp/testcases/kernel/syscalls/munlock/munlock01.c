@@ -67,6 +67,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include "test.h"
+#include "usctest.h"
 
 void setup();
 void setup1(int);
@@ -74,6 +75,8 @@ void cleanup();
 
 char *TCID = "munlock01";
 int TST_TOTAL = 4;
+
+int exp_enos[] = { 0 };
 
 void *addr1;
 
@@ -92,8 +95,11 @@ struct test_case_t {
 int main(int ac, char **av)
 {
 	int lc, i;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	setup();
 
@@ -111,6 +117,7 @@ int main(int ac, char **av)
 
 			/* check return code */
 			if (TEST_RETURN == -1) {
+				TEST_ERROR_LOG(TEST_ERRNO);
 				tst_resm(TFAIL | TTERRNO,
 					 "mlock(%p, %d) Failed with "
 					 "return=%ld", TC[i].addr, TC[i].len,
@@ -137,6 +144,7 @@ void setup1(int i)
 
 	/* check return code */
 	if (TEST_RETURN == -1) {
+		TEST_ERROR_LOG(TEST_ERRNO);
 		tst_brkm(TFAIL | TTERRNO, cleanup,
 			 "mlock(%p, %d) Failed with return=%ld", TC[i].addr,
 			 TC[i].len, TEST_RETURN);
@@ -146,9 +154,12 @@ void setup1(int i)
 /* setup() - performs all ONE TIME setup for this test. */
 void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
+
+	/* set the expected errnos... */
+	TEST_EXP_ENOS(exp_enos);
 
 	TEST_PAUSE;
 }
@@ -159,4 +170,6 @@ void setup(void)
  */
 void cleanup(void)
 {
+	TEST_CLEANUP;
+
 }

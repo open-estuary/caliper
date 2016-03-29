@@ -87,6 +87,7 @@
 #include <pwd.h>
 
 #include "test.h"
+#include "usctest.h"
 
 #define MODE_RWX        S_IRWXU | S_IRWXG | S_IRWXO
 #define FILE_MODE       S_IRUSR | S_IRGRP | S_IROTH
@@ -101,6 +102,7 @@
 
 char *TCID = "symlink03";
 int TST_TOTAL = 1;
+int exp_enos[] = { ENOTDIR, ENOENT, ENAMETOOLONG, EFAULT, EEXIST, EACCES, 0 };
 
 char *bad_addr = 0;
 
@@ -149,18 +151,26 @@ void cleanup();
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	char *test_file;	/* testfile name */
 	char *sym_file;		/* symbolic link file name */
 	char *test_desc;	/* test specific error message */
 	int ind;		/* counter to test different test conditions */
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+
+	}
 
 	/*
 	 * Invoke setup function to call individual test setup functions
 	 * to simulate test conditions.
 	 */
 	setup();
+
+	/* set the expected errnos... */
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -187,6 +197,7 @@ int main(int ac, char **av)
 				 * Perform functional verification if
 				 * test executed without (-f) option.
 				 */
+				TEST_ERROR_LOG(TEST_ERRNO);
 				if (TEST_ERRNO == Test_cases[ind].exp_errno) {
 					tst_resm(TPASS, "symlink() Fails, %s, "
 						 "errno=%d", test_desc,
@@ -222,7 +233,7 @@ void setup(void)
 {
 	int ind;
 
-	tst_require_root();
+	tst_require_root(NULL);
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
@@ -381,6 +392,11 @@ int setup3(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	/* Restore mode permissions on test directory created in setup2() */
 	if (chmod(DIR_TEMP, MODE_RWX) < 0) {

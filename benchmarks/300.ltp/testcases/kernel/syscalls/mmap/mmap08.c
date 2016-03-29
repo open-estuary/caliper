@@ -39,11 +39,14 @@
 #include <sys/mman.h>
 
 #include "test.h"
+#include "usctest.h"
 
 #define TEMPFILE	"mmapfile"
 
 char *TCID = "mmap08";
 int TST_TOTAL = 1;
+
+static int exp_enos[] = { EBADF, 0 };
 
 static size_t page_sz;
 static char *addr;
@@ -55,10 +58,14 @@ static void cleanup(void);
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -83,6 +90,7 @@ int main(int ac, char **av)
 			}
 			continue;
 		}
+		TEST_ERROR_LOG(TEST_ERRNO);
 		if (TEST_ERRNO == EBADF) {
 			tst_resm(TPASS, "mmap failed with EBADF");
 		} else {
@@ -138,5 +146,6 @@ static void setup(void)
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
 	tst_rmdir();
 }

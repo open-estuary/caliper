@@ -28,6 +28,7 @@
 #include <unistd.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 #include "process_vm.h"
 
@@ -58,8 +59,11 @@ static void help(void);
 int main(int argc, char **argv)
 {
 	int lc, status;
+	const char *msg;
 
-	tst_parse_opts(argc, argv, options, &help);
+	msg = parse_opts(argc, argv, options, &help);
+	if (msg != NULL)
+		tst_brkm(TBROK, tst_exit, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
@@ -181,7 +185,7 @@ static void child_write(void)
 
 static void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 
 	bufsz =
 	    sflag ? SAFE_STRTOL(NULL, sz_opt, 1, LONG_MAX - PADDING_SIZE * 2)
@@ -199,6 +203,7 @@ static void setup(void)
 static void cleanup(void)
 {
 	clean_sem(semid);
+	TEST_CLEANUP;
 }
 
 static void help(void)

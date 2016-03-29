@@ -40,6 +40,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include "usctest.h"
 #include "test.h"
 #include "safe_macros.h"
 #include "netns_helper.h"
@@ -50,6 +51,8 @@
 
 char *TCID	= "netns_netlink";
 int TST_TOTAL	= 1;
+struct tst_checkpoint checkpoint;
+
 
 static void cleanup(void)
 {
@@ -58,11 +61,11 @@ static void cleanup(void)
 
 static void setup(void)
 {
-	tst_require_root();
+	tst_require_root(NULL);
 	check_iproute(IP_TUNTAP_MIN_VER);
 	check_netns();
 	tst_tmpdir();
-	TST_CHECKPOINT_INIT(tst_rmdir);
+	TST_CHECKPOINT_CREATE(&checkpoint);
 }
 
 int child_func(void)
@@ -90,7 +93,7 @@ int child_func(void)
 	}
 
 	/* waits for parent to create an interface */
-	TST_SAFE_CHECKPOINT_WAIT(NULL, 0);
+	TST_CHECKPOINT_CHILD_WAIT(&checkpoint);
 
 	/* To get rid of "resource temporarily unavailable" errors
 	 * when testing with -i option */
@@ -148,7 +151,7 @@ static void test(void)
 		tst_brkm(TBROK | TERRNO, cleanup, "system failed");
 
 	/* allow child to continue */
-	TST_SAFE_CHECKPOINT_WAKE(cleanup, 0);
+	TST_CHECKPOINT_SIGNAL_CHILD(cleanup, &checkpoint);
 
 
 	SAFE_WAITPID(cleanup, pid, &status, 0);
@@ -167,9 +170,12 @@ static void test(void)
 
 int main(int argc, char *argv[])
 {
+	const char *msg;
 	int lc;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 

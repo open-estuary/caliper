@@ -1,15 +1,32 @@
-ftp-download-stress01
+ftp4-download-stress01
 	Verify the ftp server or the kernel is not down after a ftp client
-	requests large data via IPv4/IPv6
+	requests large data via IPv4
 
-ftp-download-stress02
+ftp4-download-stress02
 	Verify the ftp server or the kernel is not down after many ftp
-	clients request data over IPv4/IPv6 asynchronously for a long time
+	clients request data over IPv4 asynchronously for a long time
 
-ftp-upload-stress01
+ftp6-download-stress01
 	Verify the ftp server or the kernel is not down after a ftp client
-	uploads a large data via IPv4/IPv6
+	requests large data via IPv6
 
-ftp-upload-stress02
+ftp6-download-stress02
+	Verify the ftp server or the kernel is not down after many ftp
+	clients request data over IPv6 asynchronously for a long time
+
+
+ftp4-upload-stress01
+	Verify the ftp server or the kernel is not down after a ftp client
+	uploads a large data via IPv4
+
+ftp4-upload-stress02
 	Verify the ftp server or the kernel is not down after many ftp clients
-	uploads data over IPv4/IPv6 asynchronously for a long time
+	uploads data over IPv4 asynchronously for a long time
+
+ftp6-upload-stress01
+	Verify the ftp server or the kernel is not down after a ftp client
+	uploads a large data via IPv6
+
+ftp6-upload-stress02
+	Verify the ftp server or the kernel is not down after many ftp clients
+	uploads data over IPv6 asynchronously for a long time

@@ -35,6 +35,7 @@
 #include <stdint.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 
 static void setup(void);
@@ -76,9 +77,9 @@ static void pselect_verify(void)
 		tst_resm(TINFO,
 			 "Testing basic pselect sanity,Sleeping for %jd secs",
 			 (intmax_t) tv.tv_sec);
-		clock_gettime(CLOCK_MONOTONIC, &tv_start);
+		clock_gettime(CLOCK_REALTIME, &tv_start);
 		pselect(0, &readfds, NULL, NULL, &tv, NULL);
-		clock_gettime(CLOCK_MONOTONIC, &tv_end);
+		clock_gettime(CLOCK_REALTIME, &tv_end);
 
 		real_sec = (0.5 + (tv_end.tv_sec - tv_start.tv_sec +
 				   1e-9 * (tv_end.tv_nsec - tv_start.tv_nsec)));
@@ -104,9 +105,9 @@ static void pselect_verify(void)
 		tst_resm(TINFO,
 			 "Testing basic pselect sanity,Sleeping for %ld nano secs",
 			 tv.tv_nsec);
-		clock_gettime(CLOCK_MONOTONIC, &tv_start);
+		clock_gettime(CLOCK_REALTIME, &tv_start);
 		pselect(0, &readfds, NULL, NULL, &tv, NULL);
-		clock_gettime(CLOCK_MONOTONIC, &tv_end);
+		clock_gettime(CLOCK_REALTIME, &tv_end);
 
 		real_nsec = (tv_end.tv_sec - tv_start.tv_sec) * 1e9 +
 		    tv_end.tv_nsec - tv_start.tv_nsec;
@@ -129,9 +130,12 @@ static void pselect_verify(void)
 
 int main(int argc, char *argv[])
 {
+	const char *msg;
 	int lc;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -147,7 +151,6 @@ int main(int argc, char *argv[])
 static void setup(void)
 {
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
-	tst_timer_check(CLOCK_MONOTONIC);
 	tst_tmpdir();
 
 	fd = SAFE_OPEN(cleanup, FILENAME, O_CREAT | O_RDWR, 0777);
@@ -161,4 +164,5 @@ static void cleanup(void)
 		tst_resm(TWARN | TERRNO, "close() failed");
 
 	tst_rmdir();
+	TEST_CLEANUP;
 }

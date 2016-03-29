@@ -273,7 +273,7 @@ int P2(void *vtest)
 static void setup(void)
 {
 	gethostname(oldhost, HLEN);
-	tst_require_root();
+	tst_require_root(NULL);
 	check_newuts();
 }
 

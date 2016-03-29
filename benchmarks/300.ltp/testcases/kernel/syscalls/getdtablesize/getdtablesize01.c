@@ -45,6 +45,7 @@
 #include <sys/resource.h>
 #include <unistd.h>
 #include "test.h"
+#include "usctest.h"
 
 void setup();
 void cleanup();
@@ -113,4 +114,5 @@ void setup(void)
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
 }

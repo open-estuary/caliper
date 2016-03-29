@@ -50,9 +50,8 @@
 #include <pwd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-
 #include "test.h"
-#include "safe_macros.h"
+#include "usctest.h"
 
 #define SCHED_INVALID	99
 #define INVALID_PID	999999
@@ -60,21 +59,32 @@
 char *TCID = "sched_setscheduler02";
 int TST_TOTAL = 1;
 
+int exp_enos[] = { EPERM, 0 };
+
+extern struct passwd *my_getpwnam(char *);
+
 void setup(void);
 void cleanup(void);
 
-static uid_t nobody_uid;
+char user1name[] = "nobody";
 
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
+
+	struct passwd *nobody;
 	pid_t pid;
 	struct sched_param param;
 	int status;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	setup();
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -88,13 +98,16 @@ int main(int ac, char **av)
 		if (pid == 0) {	/* child */
 			param.sched_priority = 1;
 
-			if (seteuid(nobody_uid) == -1) {
+			nobody = my_getpwnam(user1name);
+
+			if (seteuid(nobody->pw_uid) == -1) {
 				tst_brkm(TBROK, cleanup, "seteuid() failed");
 			}
 
 			TEST(sched_setscheduler(pid, SCHED_FIFO, &param));
 
 			if (TEST_ERRNO) {
+				TEST_ERROR_LOG(TEST_ERRNO);
 			}
 
 			if (TEST_RETURN != -1) {
@@ -130,12 +143,7 @@ int main(int ac, char **av)
  */
 void setup(void)
 {
-	struct passwd *pw;
-
-	tst_require_root();
-
-	pw = SAFE_GETPWNAM(NULL, "nobody");
-	nobody_uid = pw->pw_uid;
+	tst_require_root(NULL);
 
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
@@ -148,5 +156,10 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }

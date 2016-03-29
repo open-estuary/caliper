@@ -50,6 +50,7 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include "test.h"
+#include "usctest.h"
 
 static void setup(void);
 static void cleanup(void);
@@ -60,11 +61,14 @@ int TST_TOTAL = 1;
 int main(int argc, char **argv)
 {
 	int lc;
+	const char *msg;
 
 	int pid, npid, sig, nsig;
 	int exno, nexno, status;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -139,4 +143,5 @@ static void setup(void)
 static void cleanup(void)
 {
 	tst_sig(FORK, DEF_HANDLER, cleanup);
+	TEST_CLEANUP;
 }

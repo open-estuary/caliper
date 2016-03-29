@@ -70,6 +70,7 @@
 
 #include "ltp_signal.h"
 #include "test.h"
+#include "usctest.h"
 #include "linux_syscall_numbers.h"
 
 /* Older versions of glibc don't publish this constant's value. */
@@ -92,6 +93,7 @@ void sighandler(int sig)
 void cleanup(void)
 {
 
+	TEST_CLEANUP;
 	tst_rmdir();
 }
 

@@ -129,6 +129,10 @@
 				 */
 #endif
 
+static void lio_async_signal_handler();
+#ifdef sgi
+static void lio_async_callback_handler();
+#endif
 
 /*
  * Define the structure as used in lio_parse_arg1 and lio_help1
@@ -437,7 +441,7 @@ static void lio_async_signal_handler(int sig)
  * If the handler is called, it will increment the Received_callback
  * global variable.
  ***********************************************************************/
-static void lio_async_callback_handler(union sigval sigval)
+static void lio_async_callback_handler(sigval_t sigval)
 {
 	if (Debug_level)
 		printf

@@ -64,6 +64,7 @@
 #include "../utils/common_j_h.c"
 
 #include "test.h"
+#include "usctest.h"
 #include "linux_syscall_numbers.h"
 
 char *TCID = "mq_timedsend01";
@@ -102,6 +103,7 @@ void sighandler(int sig)
 void cleanup(void)
 {
 
+	TEST_CLEANUP;
 	tst_rmdir();
 }
 
@@ -440,8 +442,10 @@ int main(int ac, char **av)
 	int result = RESULT_OK;
 	int i;
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -452,7 +456,8 @@ int main(int ac, char **av)
 			/*
 			 * Execute test
 			 */
-			for (i = 0; i < (int)ARRAY_SIZE(tcase); i++) {
+			for (i = 0; i < (int)(sizeof(tcase) / sizeof(tcase[0]));
+			     i++) {
 				int ret;
 				tst_resm(TINFO, "(case%02d) START", i);
 				ret = do_test(&tcase[i]);

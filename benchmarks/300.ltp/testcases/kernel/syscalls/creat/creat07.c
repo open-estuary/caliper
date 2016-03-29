@@ -32,23 +32,32 @@
 #include <libgen.h>
 #include <stdio.h>
 #include "test.h"
+#include "usctest.h"
 
 #define TEST_APP "creat07_child"
 
 char *TCID = "creat07";
 int TST_TOTAL = 1;
 
-static void setup(void);
+static void setup(char *);
 static void cleanup(void);
+
+static int exp_enos[] = {ETXTBSY, 0};
+
+static struct tst_checkpoint checkpoint;
 
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	pid_t pid;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
-	setup();
+	setup(av[0]);
+
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -66,7 +75,7 @@ int main(int ac, char **av)
 			exit(1);
 		}
 
-		TST_SAFE_CHECKPOINT_WAIT(NULL, 0);
+		TST_CHECKPOINT_PARENT_WAIT(NULL, &checkpoint);
 
 		TEST(creat(TEST_APP, O_WRONLY));
 
@@ -82,29 +91,31 @@ int main(int ac, char **av)
 
 		if (kill(pid, SIGKILL) == -1)
 			tst_resm(TINFO | TERRNO, "kill failed");
-
+		
 		if (wait(NULL) == -1)
 			tst_brkm(TBROK|TERRNO, cleanup, "wait failed");
 	}
-
+	
 	cleanup();
 	tst_exit();
 }
 
-static void setup(void)
+static void setup(char *app)
 {
 	tst_sig(FORK, DEF_HANDLER, cleanup);
 
 	tst_tmpdir();
 
-	TST_CHECKPOINT_INIT(tst_rmdir);
-
 	TST_RESOURCE_COPY(cleanup, TEST_APP, NULL);
+	
+	TST_CHECKPOINT_CREATE(&checkpoint);
 
 	TEST_PAUSE;
 }
 
 static void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	tst_rmdir();
 }

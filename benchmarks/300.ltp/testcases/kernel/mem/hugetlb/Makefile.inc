@@ -22,7 +22,7 @@
 
 # DO NOT USE THIS FILE FOR hugetlb / lib!!!
 LIBIPCDIR		:= ../lib
-LIBIPC			:= $(LIBIPCDIR)/libhugetlb.a
+LIBIPC			:= $(LIBIPCDIR)/libipc_hugetlb.a
 
 $(LIBIPCDIR):
 	mkdir -p "$@"
@@ -31,7 +31,7 @@ $(LIBIPC): $(LIBIPCDIR)
 
 CPPFLAGS		+= -I$(abs_srcdir)/$(LIBIPCDIR)
 LDFLAGS			+= -L$(abs_builddir)/$(LIBIPCDIR)
-LDLIBS			+= -lhugetlb
+LDLIBS			+= -lipc_hugetlb
 MAKE_DEPS		+= $(LIBIPC)
 
 include $(top_srcdir)/testcases/kernel/mem/include/libmem.mk

@@ -46,6 +46,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "fork07";
 int TST_TOTAL = 1;
@@ -76,11 +77,14 @@ int main(int ac, char **av)
 	int c_pass, c_fail;
 
 	int lc;
+	const char *msg;
 
 	rea = NULL;
 	writ = NULL;
 
-	tst_parse_opts(ac, av, options, &help);
+	msg = parse_opts(ac, av, options, &help);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	if (Nflag) {
 		if (sscanf(Nforkarg, "%i", &Nforks) != 1)
@@ -203,6 +207,7 @@ static void setup(void)
 static void cleanup(void)
 {
 	int waitstatus;
+	TEST_CLEANUP;
 
 	/* collect our zombies */
 	while (wait(&waitstatus) > 0) ;

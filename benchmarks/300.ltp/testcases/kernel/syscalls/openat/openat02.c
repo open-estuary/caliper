@@ -47,6 +47,7 @@
 #include <mntent.h>
 
 #include "test.h"
+#include "usctest.h"
 #include "safe_macros.h"
 #include "lapi/fcntl.h"
 #include "openat.h"
@@ -85,8 +86,11 @@ int main(int ac, char **av)
 {
 	int lc;
 	int i;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -297,5 +301,7 @@ void testfunc_trunc(void)
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	tst_rmdir();
 }

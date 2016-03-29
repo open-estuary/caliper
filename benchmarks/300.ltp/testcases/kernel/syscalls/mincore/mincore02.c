@@ -36,6 +36,7 @@
 #include <errno.h>
 
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "mincore02";
 int TST_TOTAL = 1;
@@ -51,6 +52,7 @@ static void cleanup(void)
 	free(vec);
 	munlock(addr, page_size * num_pages);
 	munmap(addr, page_size * num_pages);
+	TEST_CLEANUP;
 	close(fd);
 	tst_rmdir();
 }
@@ -101,12 +103,15 @@ static void setup(void)
 int main(int argc, char **argv)
 {
 	int lock_pages, counter;
+	const char *msg;
 	int lc;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, cleanup, "error parsing options: %s", msg);
 
 	setup();
-
+	
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 		tst_count = 0;
 

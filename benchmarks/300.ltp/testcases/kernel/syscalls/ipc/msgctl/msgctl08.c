@@ -38,6 +38,7 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include "test.h"
+#include "usctest.h"
 #include "ipcmsg.h"
 #include "../lib/libmsgctl.h"
 
@@ -82,10 +83,12 @@ int main(int argc, char **argv)
 	struct sigaction act;
 
 #ifdef UCLINUX
+	const char *msg;
 
 	argv0 = argv[0];
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	maybe_run_child(&do_child_1_uclinux, "ndd", 1, &key_uclinux,
 			&i_uclinux);
@@ -344,5 +347,6 @@ void cleanup(void)
 
 	fflush(stdout);
 
+	TEST_CLEANUP;
 	tst_rmdir();
 }

@@ -41,6 +41,7 @@
 #include <sys/shm.h>
 
 #include "test.h"
+#include "usctest.h"
 
 #define TEMPFILE        "mmapfile"
 #define PATHLEN         256
@@ -59,8 +60,11 @@ static void cleanup(void);
 int main(int argc, char *argv[])
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	msg = parse_opts(argc, argv, NULL, NULL);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -108,15 +112,8 @@ static int page_check(void)
 	index = (vmstart / page_sz) * sizeof(uint64_t);
 
 	pm = open("/proc/self/pagemap", O_RDONLY);
-	if (pm == -1) {
-		if ((errno == EPERM) && (geteuid() != 0)) {
-			tst_brkm(TCONF | TERRNO, NULL,
-				"don't have permission to open dev pagemap");
-		} else {
-			tst_brkm(TFAIL | TERRNO, NULL,
-				"Open dev pagemap failed");
-		}
-	}
+	if (pm == -1)
+		tst_brkm(TFAIL | TERRNO, NULL, "Open dev pagemap failed");
 
 	offset = lseek(pm, index, SEEK_SET);
 	if (offset != index)
@@ -171,5 +168,6 @@ static void setup(void)
 static void cleanup(void)
 {
 	close(fildes);
+	TEST_CLEANUP;
 	tst_rmdir();
 }

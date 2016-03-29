@@ -49,6 +49,7 @@
 #include <wait.h>
 #include <sys/types.h>
 #include "test.h"
+#include "usctest.h"
 
 void setup(void);
 void cleanup(void);
@@ -59,12 +60,14 @@ int TST_TOTAL = 1;
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;		/* message returned by parse_opts */
 
 	register int pgid_0, pgid_1;
 	register int my_pid, my_ppid;
 	int ex_stat, fail = 0;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -190,4 +193,6 @@ void setup(void)
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
+
 }

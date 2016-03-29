@@ -77,6 +77,7 @@
 #include <netinet/in.h>
 
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "socketcall02";
 
@@ -88,6 +89,7 @@ void setup();
 void cleanup();
 
 int TST_TOTAL = 1;
+int exp_enos[] = { EINVAL, 0 };
 
 struct test_case_t {
 	int call;
@@ -102,8 +104,11 @@ PF_INET, SOCK_STREAM, 0}, -1, EINVAL, "invalid call"};
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	setup();
 
@@ -113,6 +118,8 @@ int main(int ac, char **av)
 		tst_count = 0;
 
 		TEST(socketcall(TC.call, TC.args));
+
+		TEST_ERROR_LOG(TEST_ERRNO);
 
 		/* check return code */
 		if ((TEST_RETURN == -1)
@@ -139,6 +146,9 @@ void setup(void)
 
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 
+	/*set the expected errnos */
+	TEST_EXP_ENOS(exp_enos);
+
 	TEST_PAUSE;
 }
 
@@ -148,6 +158,8 @@ void setup(void)
  */
 void cleanup(void)
 {
+	TEST_CLEANUP;
+
 }
 
 #else

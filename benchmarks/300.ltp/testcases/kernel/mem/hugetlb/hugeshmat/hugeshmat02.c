@@ -51,7 +51,7 @@
  */
 
 #include <pwd.h>
-#include "hugetlb.h"
+#include "ipcshm.h"
 #include "safe_macros.h"
 #include "mem.h"
 
@@ -90,9 +90,11 @@ struct test_case_t {
 int main(int ac, char **av)
 {
 	int lc, i;
+	const char *msg;
 
-	tst_parse_opts(ac, av, options, NULL);
-
+	msg = parse_opts(ac, av, options, &help);
+	if (msg != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 	if (sflag)
 		hugepages = SAFE_STRTOL(NULL, nr_opt, 0, LONG_MAX);
 
@@ -124,8 +126,7 @@ void setup(void)
 {
 	long hpage_size;
 
-	tst_require_root();
-	check_hugepage();
+	tst_require_root(NULL);
 	tst_sig(NOFORK, DEF_HANDLER, cleanup);
 	tst_tmpdir();
 
@@ -135,7 +136,7 @@ void setup(void)
 
 	shm_size = hpage_size * hugepages / 2;
 	update_shm_size(&shm_size);
-	shmkey = getipckey(cleanup);
+	shmkey = getipckey();
 
 	/* create a shared memory resource with read and write permissions */
 	/* also post increment the shmkey for the next shmget call */
@@ -149,6 +150,8 @@ void setup(void)
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	rm_shm(shm_id_2);
 
 	set_sys_tune("nr_hugepages", orig_hugepages, 0);

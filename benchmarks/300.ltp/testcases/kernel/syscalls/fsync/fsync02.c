@@ -53,6 +53,7 @@
 #include <errno.h>
 #include <sys/resource.h>
 #include "test.h"
+#include "usctest.h"
 #include <time.h>
 
 #define BLOCKSIZE 8192
@@ -74,6 +75,7 @@ struct statvfs stat_buf;
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 
 	off_t offsetret, offset;
 	char pbuf[BUFSIZ];
@@ -84,7 +86,8 @@ int main(int ac, char **av)
 	int data_blocks = 0;
 	long int random_number;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 
 	setup();
 
@@ -187,6 +190,8 @@ void setup(void)
 
 void cleanup(void)
 {
+	TEST_CLEANUP;
+
 	if (close(fd) == -1)
 		tst_resm(TWARN | TERRNO, "close failed");
 

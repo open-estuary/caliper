@@ -76,9 +76,11 @@
 #include <errno.h>
 
 #include "test.h"
+#include "usctest.h"
 
 char *TCID = "sigaltstack01";
 int TST_TOTAL = 1;
+int exp_enos[] = { 0 };
 
 void *addr, *main_stk;		/* address of main stack for signal */
 int got_signal = 0;
@@ -94,11 +96,19 @@ void sig_handler(int);		/* signal catching function */
 int main(int ac, char **av)
 {
 	int lc;
+	const char *msg;
 	void *alt_stk;		/* address of alternate stack for signal */
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	msg = parse_opts(ac, av, NULL, NULL);
+	if (msg != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+
+	}
 
 	setup();
+
+	/* set the expected errnos... */
+	TEST_EXP_ENOS(exp_enos);
 
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
 
@@ -110,6 +120,7 @@ int main(int ac, char **av)
 		TEST(sigaltstack(&sigstk, &osigstk));
 
 		if (TEST_RETURN == -1) {
+			TEST_ERROR_LOG(TEST_ERRNO);
 			tst_resm(TFAIL,
 				 "sigaltstack() Failed, errno=%d : %s",
 				 TEST_ERRNO, strerror(TEST_ERRNO));
@@ -232,6 +243,11 @@ void sig_handler(int n)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 	free(sigstk.ss_sp);
 

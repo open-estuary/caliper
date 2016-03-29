@@ -38,6 +38,7 @@
 #include "config.h"
 
 #include "test.h"
+#include "usctest.h"
 
 #include <errno.h>
 #include <signal.h>
@@ -271,6 +272,7 @@ out:
 int main(int argc, char **argv)
 {
 	int lc;
+	const char *msg;
 	int sfd;
 
 	if ((tst_kvercmp(2, 6, 22)) < 0) {
@@ -279,7 +281,9 @@ int main(int argc, char **argv)
 		exit(0);
 	}
 
-	tst_parse_opts(argc, argv, NULL, NULL);
+	if ((msg = parse_opts(argc, argv, NULL, NULL)) != NULL) {
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
+	}
 
 	setup();
 	for (lc = 0; TEST_LOOPING(lc); lc++) {
@@ -313,6 +317,11 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing stats if that option was specified.
+	 * print errno log if that option was specified.
+	 */
+	TEST_CLEANUP;
 
 }
 

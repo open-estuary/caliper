@@ -39,6 +39,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "test.h"
+#include "usctest.h"
 
 #define INVAL_FLAG	-1
 #define USER2		301
@@ -66,8 +67,10 @@ int main(int ac, char **av)
 	int exno = 0;
 
 	int lc;
+	const char *msg;
 
-	tst_parse_opts(ac, av, NULL, NULL);
+	if ((msg = parse_opts(ac, av, NULL, NULL)) != NULL)
+		tst_brkm(TBROK, NULL, "OPTION PARSING ERROR - %s", msg);
 #ifdef UCLINUX
 	argv0 = av[0];
 
@@ -229,5 +232,10 @@ void setup(void)
  */
 void cleanup(void)
 {
+	/*
+	 * print timing status if that option was specified
+	 * print errno log if that option was specified
+	 */
+	TEST_CLEANUP;
 
 }
