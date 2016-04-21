@@ -24,48 +24,25 @@ def tinyResult(content, outfp):
 	dic['tiny_latency']['Hugepage dual random read'] = []
 	dic['tiny_latency']['No Hugepage single random read'] = []
 	dic['tiny_latency']['No Hugepage dual random read'] = []
-
+	dic_list = ['C copy backwards','C copy','C copy prefetched 32B','C copy prefetched 64B','C 2-pass copy','C 2-pass copy prefetched 32B','C 2-pass copy prefetched 64B','C fill','standard memcpy','standard memset']
 
 	outfp.write('OPERATIONS\t\t\t\t\t:\tBANDWIDTH\n')
-	
-
 
 	outfp.write("%s\n" %(content.split("==========================================================================")[-3]))
-
 	outfp.write('+++++++++++++++++++++++++++++MEMORY Latency+++++++++++++++++++++++++++++++++')
 	outfp.write("%s\n" %(content.split("==========================================================================")[-1]))
-	
-	if len(re.findall("(\d+\.\d+\s*)",content.split("==========================================================================")[-3],re.DOTALL)):
-
-
-		for item in re.findall("(\d+\.\d+\s*)",content.split("==========================================================================")[-3],re.DOTALL):
-			item = int(item.split(".")[0])
-			if item > 100:		
-				i = i + 1
-				#sum = math.sqrt(sum * item)a
-				if i == 1:
-					dic['tiny_bandwidth']['C copy backwards'] = item
-				elif i == 2:
-					dic['tiny_bandwidth']['C copy'] = item
-				elif i == 3:
-					dic['tiny_bandwidth']['C copy prefetched 32B'] = item 
-				elif i == 4:
-					dic['tiny_bandwidth']['C copy prefetched 64B'] = item
-				elif i == 5:
-					dic['tiny_bandwidth']['C 2-pass copy'] = item
-				elif i == 6:
-					dic['tiny_bandwidth']['C 2-pass copy prefetched 32B'] = item
-				elif i == 7:
-					dic['tiny_bandwidth']['C 2-pass copy prefetched 64B'] = item
-				elif i == 8:
-					dic['tiny_bandwidth']['C fill'] = item
-				elif i == 9:
-					dic['tiny_bandwidth']['standard memcpy'] = item
-				elif i == 10:
-					dic['tiny_bandwidth']['standard memset'] = item
-				if i > 10:
-					break
-				
+	list = content.splitlines()
+	commands = ["C copy backwards                                     ","C copy                                               ","C copy prefetched (32 bytes step)                    ","C copy prefetched (64 bytes step)                    ","C 2-pass copy                                        ","C 2-pass copy prefetched (32 bytes step)             ","C 2-pass copy prefetched (64 bytes step)             ","C fill                                               ","standard memcpy","standard memset"]
+	i=0
+        for lines in list:
+            for command in commands:
+                if (command in lines):
+                    for item in re.findall("(\d+\.\d+\s*)",lines):
+                        item = int(item.split(".")[0])
+                        if item > 100:
+                            dic['tiny_bandwidth'][dic_list[i]] = item
+                            i+=1
+                    break
 	sum = 1.0
 	i = 0
 	content1 = str(content.split("==========================================================================")[-1])
@@ -83,8 +60,6 @@ def tinyResult(content, outfp):
 	dic['tiny_latency']['Hugepage single random read'] = lista
 	listb = [line[13],line[15] ,line[17],line[19],line[21],line[23],line[25],line[27] ,line[29] ,line[31],line[33]]
 	dic['tiny_latency']['Hugepage dual random read'] = listb
-	
-
 	content1 = str(content.split("block size : single random read / dual random read, [MADV_HUGEPAGE")[-1])
         final_lis = re.findall("(\d+\.\d+\s*)",content1,re.DOTALL)
 	line = []*34
@@ -97,11 +72,8 @@ def tinyResult(content, outfp):
 	dic['tiny_latency']['No Hugepage single random read'] = lista
 	listb = [line[13],line[15] ,line[17],line[19],line[21],line[23],line[25],line[27] ,line[29] ,line[31],line[33]]
 	dic['tiny_latency']['No Hugepage dual random read'] = listb
-
-
-	outfp.write(yaml.dump(dic, default_flow_style=False))
+	#outfp.write(yaml.dump(dic, default_flow_style=False))
 	return dic
-	    	
 
 def tinymembench_parser(content, outfp):
 	score = -1
