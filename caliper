@@ -37,23 +37,23 @@ from caliper.server.parser_process import parser as parser_engine
 
 logging.basicConfig(level=logging.INFO)
 
-def build_all_tests(remote_host):
+def build_all_tests(remote_host,flag):
     try:
         logging.info("Begining to build Caliper for the remote host")
-        result1 = build.build_for_target(remote_host)
+        result1 = build.build_for_target(remote_host,flag)
     except Exception, e:
         logging.info(e)
         raise
     else:
         return result1
 
-def run_caliper(remote_host):
+def run_caliper(remote_host,flag):
     try:
         logging.debug("begining to run Caliper")
-        result = test_run.run_caliper_tests(remote_host)
+        result = test_run.run_caliper_tests(remote_host,flag)
     except Exception, e:
         print e
-        logging.info("There is wrong when runnnig Caliper")
+        logging.info("There is wrong when running Caliper")
         raise
     else:
         return result
@@ -177,8 +177,9 @@ if __name__=="__main__":
                                 'client_config.cfg'
                                 ))
     remote_host = get_remote_host()
-
+    flag = 0
     if args.folder:
+        flag = 1
         caliper_path.folder_ope.name = args.folder
         caliper_path.folder_ope.set_up_path()
     if not os.path.exists(caliper_path.folder_ope.name):
@@ -186,7 +187,7 @@ if __name__=="__main__":
 
     if args.build:
         try:
-            result1 = build_all_tests(remote_host)
+            result1 = build_all_tests(remote_host,flag)
             if result1:
                 sys.exit()
         except Exception, e:
@@ -195,7 +196,7 @@ if __name__=="__main__":
 
     if args.run: 
         try:
-            result2 = run_caliper(remote_host)
+            result2 = run_caliper(remote_host,flag)
             if result2:
                 sys.exit()
             parser_caliper(remote_host)

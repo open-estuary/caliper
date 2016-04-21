@@ -81,6 +81,17 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
         os.remove(logfile)
 
     starttime = datetime.datetime.now()
+    if os.path.exists(Folder.caliper_log_file):
+        var = bench_name
+        sections = var + " EXECUTION"
+        fp = open(Folder.caliper_log_file,"r")
+        f = fp.readlines()
+        fp.close()
+        op = open(Folder.caliper_log_file,"w")
+        for line in f:
+            if not(sections in line):
+                op.write(line)
+        op.close()
     result = subprocess.call("echo '$$ %s EXECUTION START: %s' >> %s"
                             % (bench_name,
                                 str(starttime)[:19],
@@ -681,17 +692,20 @@ def print_format():
     logging.info("="*55)
 
 
-def run_caliper_tests(target):
-    if os.path.exists(Folder.exec_dir):
-        shutil.rmtree(Folder.exec_dir)
-    os.mkdir(Folder.exec_dir)
+def run_caliper_tests(target,flag):
+    if flag == 1:
+        if not os.path.exists(Folder.exec_dir):
+            os.mkdir(Folder.exec_dir)
+    else:
+        if os.path.exists(Folder.exec_dir):
+            shutil.rmtree(Folder.exec_dir)
+        os.mkdir(Folder.exec_dir)
     if not os.path.exists(Folder.results_dir):
         os.mkdir(Folder.results_dir)
     if not os.path.exists(Folder.yaml_dir):
         os.mkdir(Folder.yaml_dir)
     if not os.path.exists(Folder.html_dir):
         os.mkdir(Folder.html_dir)
-
     flag = 0
     target_execution_dir = server_utils.get_target_exec_dir(target)
     if not os.path.exists(target_execution_dir):
