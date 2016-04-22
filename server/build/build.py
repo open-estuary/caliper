@@ -229,6 +229,17 @@ def build_each_tool(dirname, section_name, des_build_file, arch='x86_86'):
     log_name = "%s.log" % section_name
     log_file = os.path.join(TMP_DIR, log_name)
     start_time = datetime.datetime.now()
+
+    if os.path.exists(FOLDER.caliper_log_file):
+        sections = section_name + " BUILD"
+        fp = open(FOLDER.caliper_log_file,"r")
+        f = fp.readlines()
+        fp.close()
+        op = open(FOLDER.caliper_log_file,"w")
+        for line in f:
+            if not(sections in line):
+                op.write(line)
+        op.close()
     try:
         # Fixme : Using shell=True can be a security hazard.
         # See the warning under
@@ -317,7 +328,8 @@ def create_folder(folder, mode=0755):
         os.makedirs(folder, mode)
 
 
-def build_for_target(target):
+def build_for_target(target,f_option):
+   #f_option is set if -f is used
     # Create the temperory build folders
     benchs_dir = os.path.join(TMP_DIR, 'benchmarks')
     if not os.path.exists(benchs_dir):
@@ -335,18 +347,22 @@ def build_for_target(target):
     if not os.path.exists(caliper_path.FRONT_END_DIR):
         shutil.copytree(caliper_path.FRONT_TMP_DIR,
                 caliper_path.FRONT_END_DIR)
+    if f_option == 0:
+        if os.path.exists(FOLDER.caliper_log_file):
+            os.remove(FOLDER.caliper_log_file)
 
-    if os.path.exists(FOLDER.caliper_log_file):
-        os.remove(FOLDER.caliper_log_file)
-
-    if os.path.exists(FOLDER.summary_file):
-        os.remove(FOLDER.summary_file)
-
-    create_folder(FOLDER.build_dir)
-    create_folder(FOLDER.exec_dir)
-    create_folder(FOLDER.results_dir)
-    create_folder(FOLDER.yaml_dir)
-    create_folder(FOLDER.html_dir)
+        if os.path.exists(FOLDER.summary_file):
+            os.remove(FOLDER.summary_file)
+    if not os.path.exists(FOLDER.build_dir):
+        create_folder(FOLDER.build_dir)
+    if not os.path.exists(FOLDER.exec_dir):
+        create_folder(FOLDER.exec_dir)
+    if not os.path.exists(FOLDER.results_dir):
+        create_folder(FOLDER.results_dir)
+    if not os.path.exists(FOLDER.yaml_dir):
+        create_folder(FOLDER.yaml_dir)
+    if not os.path.exists(FOLDER.html_dir):
+        create_folder(FOLDER.html_dir)
 
     if server_utils.get_target_ip(target) in server_utils.get_local_ip():
         return build_for_local()
