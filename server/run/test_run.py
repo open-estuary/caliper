@@ -81,6 +81,16 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
         os.remove(logfile)
 
     starttime = datetime.datetime.now()
+    if os.path.exists(Folder.caliper_log_file):
+        sections = bench_name + " EXECUTION"
+        fp = open(Folder.caliper_log_file,"r")
+        f = fp.readlines()
+        fp.close()
+        op = open(Folder.caliper_log_file,"w")
+        for line in f:
+            if not(sections in line):
+                op.write(line)
+        op.close()
     result = subprocess.call("echo '$$ %s EXECUTION START: %s' >> %s"
                             % (bench_name,
                                 str(starttime)[:19],
@@ -89,8 +99,9 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
     bench_test = "ltp"
     if  bench_name == bench_test:
 	 tar_ip = settings.get_value('CLIENT', 'ip', type=str) 
-	 target.run("if [[ ! -e /mnt/ltp ]]; then mkdir -p /mnt/ltp; fi")
+	 target.run("if [[ ! -e /mnt/caliper_nfs ]]; then mkdir -p /mnt/caliper_nfs; fi")
 # fix me , now that we create the folder, why not we mount it directly here
+
 	 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 	 try:
 # fix me , getting host ip to be optimised
@@ -99,11 +110,11 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
 		logging.debug("Socket connection failed during ltp pre-requisite check" )
 	 host_ip = s.getsockname()[0]
 	 try:	
-	 	xyz = target.run("mount -t nfs %s:/opt/caliper_nfs /mnt/ltp" % (host_ip) )
+	 	xyz = target.run("mount -t nfs %s:/opt/caliper_nfs /mnt/caliper_nfs" % (host_ip) )
 	 except Exception:
 		try:
-			xyz = target.run("umount /mnt/ltp/")
-			xyz = target.run("mount -t nfs %s:/opt/caliper_nfs /mnt/ltp" % (host_ip) )
+			xyz = target.run("umount /mnt/caliper_nfs/")
+			xyz = target.run("mount -t nfs %s:/opt/caliper_nfs /mnt/caliper_nfs" % (host_ip) )
 		except Exception:
 			logging.debug("Unable to mount")
 			return result
@@ -654,10 +665,10 @@ def caliper_run(target_exec_dir, target):
                 print_format()
                 if sections[i]== "ltp":
                     try:
-                        xyz = target.run("umount /mnt/ltp/")
+                        xyz = target.run("umount /mnt/caliper_nfs/")
                     except Exception:
-                        xyz = target.run("fuser -km /mnt/ltp")
-                        xyz = target.run("umount /mnt/ltp/")
+                        xyz = target.run("fuser -km /mnt/caliper_nfs")
+                        xyz = target.run("umount /mnt/caliper_nfs/")
                 run_flag = server_utils.get_fault_tolerance_config(
                                 'fault_tolerance', 'run_error_continue')
                 if run_flag == 1:
@@ -668,10 +679,10 @@ def caliper_run(target_exec_dir, target):
                 logging.info("Running %s Finished" % sections[i])
                 if sections[i] == "ltp":
                     try:
-                         xyz = target.run("umount /mnt/ltp/")
+                         xyz = target.run("umount /mnt/caliper_nfs/")
                     except Exception:
-                         xyz = target.run("fuser -km /mnt/ltp/")
-                         xyz = target.run("umount /mnt/ltp/")
+                         xyz = target.run("fuser -km /mnt/caliper_nfs/")
+                         xyz = target.run("umount /mnt/caliper_nfs/")
 			
                 print_format()
     return 0
@@ -681,17 +692,21 @@ def print_format():
     logging.info("="*55)
 
 
-def run_caliper_tests(target):
-    if os.path.exists(Folder.exec_dir):
-        shutil.rmtree(Folder.exec_dir)
-    os.mkdir(Folder.exec_dir)
+def run_caliper_tests(target,f_option):
+    #f_option =1 if -f is used
+    if f_option == 1:
+        if not os.path.exists(Folder.exec_dir):
+            os.mkdir(Folder.exec_dir)
+    else:
+        if os.path.exists(Folder.exec_dir):
+            shutil.rmtree(Folder.exec_dir)
+        os.mkdir(Folder.exec_dir)
     if not os.path.exists(Folder.results_dir):
         os.mkdir(Folder.results_dir)
     if not os.path.exists(Folder.yaml_dir):
         os.mkdir(Folder.yaml_dir)
     if not os.path.exists(Folder.html_dir):
         os.mkdir(Folder.html_dir)
-
     flag = 0
     target_execution_dir = server_utils.get_target_exec_dir(target)
     if not os.path.exists(target_execution_dir):
