@@ -2,7 +2,7 @@
 {% load staticfiles %}
 <html>
 <head>
-    <title>caliper's memory result</title>
+    <title>Caliper Performance: Memory</title>
     {% load static %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -60,32 +60,37 @@
 <div class="example">
     <div><input type="hidden" id="memory_tst" value="{{ dic_mem }}"> </div>
 
+    <!--SKD++-->
+    <div class="page-header">
+    <h1> Caliper Performance Tests: Memory </h1> 
+    </div>
+
     {% if sum %}
-    <h1><small>caliper memory comparison figure</small></h1>
+    <h1><small>Memory Score Summary</small></h1> <!--SKD++-->
     <div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/memory_summary.png' %}" height="300"
     width="600" /> </p>
 	</div>
     
-    <h1><small>caliper memory comparison detail</small></h1>
+    <!-- <h1><small>caliper memory comparison detail</small></h1> -->
     <div id="memory-summary" class="sensei-grid"></div>
     {% endif %}
 	
+    {% if bandwidth %}
+    <h2><small>Memory Score Details: Bandwidth (cachebench) </small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/memory_bandwidth.png' %}" height="450" width="800" /> </p>
+	</div>
+    <div id="memory-cachebench" class="sensei-grid"></div>
+    {% endif %}
+
     {% if local_speed %}
-    <h1><small>caliper memory bandwidth</small></h1>
+    <h2><small>Memory Score Details: Local Speed</small></h2>
 	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/memory_local_speed.png' %}" height="450" width="800" /> </p>
 	</div>
 		   
     <div id="memory-bandwidth" class="sensei-grid"></div>
-    {% endif %}
-	
-    {% if bandwidth %}
-    <h1><small>caliper memory cachebench</small></h1> 
-	<div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/memory_bandwidth.png' %}" height="450" width="800" /> </p>
-	</div>
-    <div id="memory-cachebench" class="sensei-grid"></div>
     {% endif %}
 
     </div>
