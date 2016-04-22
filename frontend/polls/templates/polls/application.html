@@ -2,7 +2,7 @@
 {% load staticfiles %}
 <html>
 <head>
-    <title>caliper's application result</title>
+    <title>Caliper Performance: Application</title>
     {% load static %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -56,19 +56,24 @@
 <body>
 <div class="example">
     <div><input type="hidden" id="application_tst" value="{{ dic_application }}"> </div>
+    <!--SKD++-->
+    <div class="page-header">
+    <h1> Caliper Performance Tests: Application </h1> 
+    </div>
+
     {% if sum %}
-    <h1><small>caliper application comparison figure</small></h1>
+    <h1><small>Application Score Summary</small></h1> <!--SKD++-->
     <div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/application_summary.png' %}" height="500"
     width="700" /> </p>
     </div>
 
-    <h1><small>caliper application comparison detail</small></h1>
+    <!-- <h1><small>caliper application comparison detail</small></h1> -->
     <div id="application_summary" class="sensei-grid"></div>
     {% endif %}
 
     {% if compile %}
-    <h1><small>caliper application compile</small></h1>
+    <h2><small>Application Score Details: Compile</small></h2>
     <div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/application_compile.png' %}" height="500"
     width="700" /> </p>
@@ -76,7 +81,7 @@
 
     <div id="application_compile" class="sensei-grid"></div>
     {% endif %}
-
+    <p><b>Note: </b> Kernel compilation tested with varied number of threads. format is kernel-dev_#Threads</p>
     </div>
 </body>
 </html>
