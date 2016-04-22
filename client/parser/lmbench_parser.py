@@ -106,9 +106,9 @@ kb = 1000
 def lmbench_lat_parser(content, outfp):
     dic = {}
     dic['cpu'] = {}
-    dic['cpu']['multicore_int'] = {}
-    dic['cpu']['multicore_float'] = {}
-    dic['cpu']['multicore_double'] = {}
+    dic['cpu']['sincore_int'] = {}
+    dic['cpu']['sincore_float'] = {}
+    dic['cpu']['sincore_double'] = {}
     dic['latency'] = {}
     dic['latency']['process'] = {}
     dic['latency']['ctx'] = {}
@@ -354,11 +354,11 @@ def lmbench_lat_parser(content, outfp):
             #    if (lat_mem_rd_type == 2):
             #        dic_mem_lat[mem_lat_dic['lat_mem_rand']] = save
     if dic_int:
-        dic['cpu']['multicore_int'] = dic_int
+        dic['cpu']['sincore_int'] = dic_int
     if dic_float:
-        dic['cpu']['multicore_float'] = dic_float
+        dic['cpu']['sincore_float'] = dic_float
     if dic_double:
-        dic['cpu']['multicore_double'] = dic_double
+        dic['cpu']['sincore_double'] = dic_double
     if dic_processor:
         dic['latency']['process'] = dic_processor
     if dic_context:
