@@ -2,7 +2,7 @@
 {% load staticfiles %}
 <html>
 <head>
-    <title>caliper's network result</title>
+    <title>Caliper Performance: Network</title>
     {% load static %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -59,31 +59,40 @@
 <body>
 <div class="example">
     <div><input type="hidden" id="network_tst" value="{{ dic_net }}"> </div>
+    
+    <!--SKD++-->
+    <div class="page-header">
+    <h1> Caliper Performance Tests: Network </h1> 
+    </div>
+
     {% if sum %}
-    <h1><small>caliper network comparison figure</small></h1>
+    <h1><small>Network Score Summary</small></h1> <!--SKD++-->
   	    <div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/network_summary.png' %}" height="500" width="750" /> </p>
 	</div>
     
-    <h1><small>caliper network comparison detail</small></h1>
+    <!-- <h1><small>caliper network comparison detail</small></h1> -->
     <div id="network-summary" class="sensei-grid"></div>
     {% endif %}
 
+    {% if bandwidth %}
+    <h2><small>Network Score Details: Bandwidth</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/network_bandwidth.png' %}" height="400" width="850" /> </p>
+	</div>
+    <div id="network-bandwidth" class="sensei-grid"></div>
+    {% endif %}
+
+    <p><b>Notes: </b><br>a) This uses iperf to test the network packet handling  of individual platform. Test format is Transmission protocol_ parrellel threads to transmit TCP_s5 - TCP protocol , number of parrellel threads to transmit=5. Each transmittion duration is 50 sec.<br>b)Moonshot platforms are tested in HP Lab remotely where the inter-chasis connection speed was 10GE. This looks like the major reason for its higher scores.</p>
+
     {% if local_lat %}
-    <h1><small>caliper network local latency</small></h1>
+    <h2><small>Network Score Details: Local Latency</small></h2>
     <div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/network_local_lat.png' %}" height="400" width="850" /> </p>
 	</div>
     <div id="network-lat" class="sensei-grid"></div>
     {% endif %}
 
-    {% if bandwidth %}
-    <h1><small>caliper network bandwidth</small></h1>
-    <div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/network_bandwidth.png' %}" height="400" width="850" /> </p>
-	</div>
-    <div id="network-bandwidth" class="sensei-grid"></div>
-    {% endif %}
 
 </div>
 </body>
