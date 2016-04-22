@@ -34,7 +34,7 @@ from caliper.client.shared import utils
 from caliper.client.shared import send_mails
 from caliper.server import summary
 from caliper.server.parser_process import parser as parser_engine
-
+from caliper.client.shared.caliper_path import folder_ope as FOLDER
 logging.basicConfig(level=logging.INFO)
 
 def build_all_tests(remote_host,f_option):
@@ -180,8 +180,13 @@ if __name__=="__main__":
     f_option = 0
     if args.folder:
         f_option = 1
+        if os.path.exists(FOLDER.caliper_log_file):
+	    fp = open(FOLDER.caliper_log_file,'a+')
+            fp.write("re-execution with -f .It may be execution of all the tools or some specific tools as specified in the config file\n")
+            fp.close()
         caliper_path.folder_ope.name = args.folder
         caliper_path.folder_ope.set_up_path()
+        
     if not os.path.exists(caliper_path.folder_ope.name):
         os.makedirs(caliper_path.folder_ope.name)
 

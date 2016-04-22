@@ -352,10 +352,6 @@ def build_for_target(target,flag):
 
         if os.path.exists(FOLDER.summary_file):
             os.remove(FOLDER.summary_file)
-    else:
-        fp = open(FOLDER.caliper_log_file,'a+')
-        fp.write("re-execution with -f .It may be execution of all the tools or some specific tools as specified in the config file")
-        fp.close()
     if not os.path.exists(FOLDER.build_dir):
         create_folder(FOLDER.build_dir)
     if not os.path.exists(FOLDER.exec_dir):

@@ -100,7 +100,9 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
     if  bench_name == bench_test:
 	 tar_ip = settings.get_value('CLIENT', 'ip', type=str) 
 	 target.run("if [[ ! -e /mnt/ltp ]]; then mkdir -p /mnt/ltp; fi")
-# fix me , now that we create the folder, why not we mount it directly here
+# fix me , now that we create the folder, why not we mount it directly her
+#this is to be changed
+
 	 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 	 try:
 # fix me , getting host ip to be optimised
