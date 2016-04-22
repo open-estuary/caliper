@@ -27,12 +27,12 @@ processor = ['lat_syscall', 'lat_read', 'lat_write', 'lat_stat',
             'lat_openclose', 'lat_tcp_select', 'lat_siginstall',
             'lat_sigcatch', 'lat_nullproc', 'lat_simpleproc', 'lat_shproc']
 
-pro_dic = {'lat_syscall': 'null call', 'lat_read': 'null IO',
-            'lat_write': 'null IO',
-            'lat_stat': 'stat', 'lat_openclose': 'open close',
-            'lat_tcp_select': 'slct TCP', 'lat_siginstall': 'sig inst',
-            'lat_sigcatch': 'sig hndl', 'lat_nullproc': 'fork proc',
-            'lat_simpleproc': 'exec proc', 'lat_shproc': 'sh proc'}
+pro_dic = {'lat_syscall': 'null_call', 'lat_read': 'null_IO',
+            'lat_write': 'null_IO',
+            'lat_stat': 'stat', 'lat_openclose': 'open_close',
+            'lat_tcp_select': 'slct_TCP', 'lat_siginstall': 'sig_inst',
+            'lat_sigcatch': 'sig_hndl', 'lat_nullproc': 'fork_proc',
+            'lat_simpleproc': 'exec_proc', 'lat_shproc': 'sh_proc'}
 
 int_label = ['integer_bit', 'integer_add', 'integer_mul',
             'integer_div', 'integer_mod']
@@ -43,36 +43,36 @@ double_label = ['double_add', 'double_mul', 'double_div', 'double_bogomflops']
 
 ctx_label = ['lat_ctx0_2', 'lat_ctx16_2', 'lat_ctx64_2', 'lat_ctx16_8',
             'lat_ctx64_8', 'lat_ctx16_16', 'lat_ctx64_16']
-ctx_label_dic = {'lat_ctx0_2': '2p/0K ctxsw', 'lat_ctx16_2': '2p/16K ctxsw',
-                'lat_ctx64_2': '2p/64K ctxsw', 'lat_ctx16_8': '8p/16K ctxsw',
-                'lat_ctx64_8': '8p/64K ctxsw',
-                'lat_ctx16_16': '16p/16K ctxsw',
-                'lat_ctx64_16': '16p/64K ctxsw'}
+ctx_label_dic = {'lat_ctx0_2': '2p/0K_ctxsw', 'lat_ctx16_2': '2p/16K_ctxsw',
+                'lat_ctx64_2': '2p/64K_ctxsw', 'lat_ctx16_8': '8p/16K_ctxsw',
+                'lat_ctx64_8': '8p/64K_ctxsw',
+                'lat_ctx16_16': '16p/16K_ctxsw',
+                'lat_ctx64_16': '16p/64K_ctxsw'}
 
 ipc_local_label = ['lat_pipe', 'lat_unix', 'lat_udp_local',
                     'lat_rpc_udp_local', 'lat_tcp_local',
                     'lat_rpc_tcp_local', 'lat_tcp_connect_local']
-ipc_local_dic = {'lat_pipe': 'Pipe', 'lat_unix': 'AF Unix',
+ipc_local_dic = {'lat_pipe': 'Pipe', 'lat_unix': 'AF_Unix',
                 'lat_udp_local': 'UDP',# 'lat_rpc_udp_local': 'RPC/UDP',
                 'lat_tcp_local': 'TCP',# 'lat_rpc_tcp_local': 'RPC/TCP',
-                'lat_tcp_connect_local': 'TCP con'}
+                'lat_tcp_connect_local': 'TCP_con'}
 
 ipc_remote_label = ['lat_udp_remote', 'lat_rpc_udp_remote', 'lat_tcp_remote',
                     'lat_rpc_tcp_remote', 'lat_tcp_connect_remote']
 ipc_remote_dic = {'lat_udp_remote': 'UDP', 'lat_rpc_udp_remote': 'RPC/UDP',
                     'lat_tcp_remote': 'TCP', 'lat_rpc_tcp_remote': 'RPC/TCP',
-                    'lat_tcp_connect_remote': 'TCP con'}
+                    'lat_tcp_connect_remote': 'TCP_con'}
 
 file_vm_label = ['fs_create_0k', 'fs_create_10k', 'fs_delete_0k',
                     'fs_delete_10k', 'lat_mappings', 'lat_protfault',
                     'lat_pagefault', 'lat_fd_select']
-file_vm_dic = {'fs_create_0k': '0k file create',
-                'fs_create_10k': '10k file create',
-                'fs_delete_0k': '0k file delete',
-                'fs_delete_10k': '10k file delete',
-                'lat_mappings': 'Mmap(KB)', 'lat_protfault': 'Prot fault',
-                'lat_pagefault': 'Page Fault',
-                'lat_fd_select': '100fd select'}
+file_vm_dic = {'fs_create_0k': '0k_file_create',
+                'fs_create_10k': '10k_file_create',
+                'fs_delete_0k': '0k_file_delete',
+                'fs_delete_10k': '10k_file_delete',
+                'lat_mappings': 'Mmap(KB)', 'lat_protfault': 'Prot_fault',
+                'lat_pagefault': 'Page_Fault',
+                'lat_fd_select': '100fd_select'}
 
 bw_ipc_label = ['bw_pipe', 'bw_unix', 'bw_tcp_local', 'bw_reread',
                 'bw_bcopy_libc', 'bw_bcopy_unrolled', 'bw_mmap',
@@ -82,22 +82,22 @@ bw_ipc_label = ['bw_pipe', 'bw_unix', 'bw_tcp_local', 'bw_reread',
                 'bw_mem_bzero', 'bw_bcopy_unrolled_partial',
                 'bw_mem_rdsum_partial', 'bw_mem_wr_partial',
                 'bw_mem_wr_rd_partial']
-bw_ipc_dic = {'bw_pipe': 'Pipe', 'bw_unix': 'AF Unix', 'bw_tcp_local': 'TCP',
-                'bw_reread': 'File reread', 'bw_bcopy_libc': 'Bcopy(libc)',
+bw_ipc_dic = {'bw_pipe': 'Pipe', 'bw_unix': 'AF_Unix', 'bw_tcp_local': 'TCP',
+                'bw_reread': 'File_reread', 'bw_bcopy_libc': 'Bcopy(libc)',
                 'bw_bcopy_unrolled': 'Bcopy(hand)',
-                'bw_mem_rdsum': 'Mem read',
-                'bw_mem_wr': 'Mem write', 'bw_mmap': 'Mmap reread',
-                'bw_reread_open2close': 'Reread O2C',
-                'bw_mmap_readopen2close': 'Mmap O2C',
+                'bw_mem_rdsum': 'Mem_read',
+                'bw_mem_wr': 'Mem_write', 'bw_mmap': 'Mmap_reread',
+                'bw_reread_open2close': 'Reread_open2close',
+                'bw_mmap_readopen2close': 'Mmap_open2close',
                 'bw_bcopy_libc_aligned': 'Bcopy(libc_a)',
                 'bw_mem_bzero': 'Bzero',
-                'bw_bcopy_unrolled_partial': 'BCopy(hand_par)',
-                'bw_mem_rdsum_partial': 'Mem read par',
-                'bw_mem_wr_partial': 'Mem write par',
-                'bw_mem_wr_rd_partial': 'Mem RW par'}
+                'bw_bcopy_unrolled_partial': 'BCopy(hand_partial)',
+                'bw_mem_rdsum_partial': 'Mem_read_partial',
+                'bw_mem_wr_partial': 'Mem_write_partial',
+                'bw_mem_wr_rd_partial': 'Mem_RW_partial'}
 
 mem_latency = ['lat_l1', 'lat_l2', 'lat_mem']
-mem_lat_dic = {'lat_l1': 'L1', 'lat_l2': 'L2', 'lat_mem': 'Main memory'}
+mem_lat_dic = {'lat_l1': 'L1', 'lat_l2': 'L2', 'lat_mem': 'Main_memory'}
 
 mb = 1000000
 kb = 1000
@@ -106,9 +106,9 @@ kb = 1000
 def lmbench_lat_parser(content, outfp):
     dic = {}
     dic['cpu'] = {}
-    dic['cpu']['multicore_int'] = {}
-    dic['cpu']['multicore_float'] = {}
-    dic['cpu']['multicore_double'] = {}
+    dic['cpu']['sincore_int'] = {}
+    dic['cpu']['sincore_float'] = {}
+    dic['cpu']['sincore_double'] = {}
     dic['latency'] = {}
     dic['latency']['process'] = {}
     dic['latency']['ctx'] = {}
@@ -354,11 +354,11 @@ def lmbench_lat_parser(content, outfp):
             #    if (lat_mem_rd_type == 2):
             #        dic_mem_lat[mem_lat_dic['lat_mem_rand']] = save
     if dic_int:
-        dic['cpu']['multicore_int'] = dic_int
+        dic['cpu']['sincore_int'] = dic_int
     if dic_float:
-        dic['cpu']['multicore_float'] = dic_float
+        dic['cpu']['sincore_float'] = dic_float
     if dic_double:
-        dic['cpu']['multicore_double'] = dic_double
+        dic['cpu']['sincore_double'] = dic_double
     if dic_processor:
         dic['latency']['process'] = dic_processor
     if dic_context:
