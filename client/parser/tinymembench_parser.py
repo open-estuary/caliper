@@ -25,7 +25,7 @@ def tinyResult(content, outfp):
 	dic['tiny_latency']['No_Hugepage_single_random_read'] = []
 	dic['tiny_latency']['No_Hugepage_dual_random_read'] = []
 	dic_list = ['C_copy_backwards','C_copy','C_copy_prefetched_32B','C_copy_prefetched_64B','C_2-pass_copy','C_2-pass_copy_prefetched_32B','C_2-pass_copy_prefetched_64B','C_fill','standard_memcpy','standard_memset']
-	outfp.write('+++++++++++++++++++++++++++++MEMORY Bandwidth+++++++++++++++++++++++++++++++++')	
+	outfp.write('+++++++++++++++++++++++++++++MEMORY Bandwidth+++++++++++++++++++++++++++++++++\n')	
 	outfp.write('OPERATIONS %54s' %': BANDWIDTH\n')
 
 	outfp.write("%s\n" %(content.split("==========================================================================")[-3]))
