@@ -99,7 +99,7 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
     bench_test = "ltp"
     if  bench_name == bench_test:
 	 tar_ip = settings.get_value('CLIENT', 'ip', type=str) 
-	 target.run("if [[ ! -e /mnt/ltp ]]; then mkdir -p /mnt/ltp; fi")
+	 target.run("if [[ ! -e /mnt/caliper_nfs ]]; then mkdir -p /mnt/caliper_nfs; fi")
 # fix me , now that we create the folder, why not we mount it directly here
 
 	 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -110,11 +110,11 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
 		logging.debug("Socket connection failed during ltp pre-requisite check" )
 	 host_ip = s.getsockname()[0]
 	 try:	
-	 	xyz = target.run("mount -t nfs %s:/opt/caliper_nfs /mnt/ltp" % (host_ip) )
+	 	xyz = target.run("mount -t nfs %s:/opt/caliper_nfs /mnt/caliper_nfs" % (host_ip) )
 	 except Exception:
 		try:
-			xyz = target.run("umount /mnt/ltp/")
-			xyz = target.run("mount -t nfs %s:/opt/caliper_nfs /mnt/ltp" % (host_ip) )
+			xyz = target.run("umount /mnt/caliper_nfs/")
+			xyz = target.run("mount -t nfs %s:/opt/caliper_nfs /mnt/caliper_nfs" % (host_ip) )
 		except Exception:
 			logging.debug("Unable to mount")
 			return result
@@ -665,10 +665,10 @@ def caliper_run(target_exec_dir, target):
                 print_format()
                 if sections[i]== "ltp":
                     try:
-                        xyz = target.run("umount /mnt/ltp/")
+                        xyz = target.run("umount /mnt/caliper_nfs/")
                     except Exception:
-                        xyz = target.run("fuser -km /mnt/ltp")
-                        xyz = target.run("umount /mnt/ltp/")
+                        xyz = target.run("fuser -km /mnt/caliper_nfs")
+                        xyz = target.run("umount /mnt/caliper_nfs/")
                 run_flag = server_utils.get_fault_tolerance_config(
                                 'fault_tolerance', 'run_error_continue')
                 if run_flag == 1:
@@ -679,10 +679,10 @@ def caliper_run(target_exec_dir, target):
                 logging.info("Running %s Finished" % sections[i])
                 if sections[i] == "ltp":
                     try:
-                         xyz = target.run("umount /mnt/ltp/")
+                         xyz = target.run("umount /mnt/caliper_nfs/")
                     except Exception:
-                         xyz = target.run("fuser -km /mnt/ltp/")
-                         xyz = target.run("umount /mnt/ltp/")
+                         xyz = target.run("fuser -km /mnt/caliper_nfs/")
+                         xyz = target.run("umount /mnt/caliper_nfs/")
 			
                 print_format()
     return 0
