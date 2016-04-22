@@ -41,10 +41,9 @@
 
 #define SIZE             (32 * 1024 * 1024)
 #define BLOCKSIZE        2048
-#define COUNT            16
 #define MAXREPEATS       10
 
-#ifdef BENCH_FRAMEBUFFER
+#ifdef __linux__
 static void *mmap_framebuffer(size_t *fbsize)
 {
     int fd;
@@ -74,7 +73,7 @@ static double bandwidth_bench_helper(int64_t *dstbuf, int64_t *srcbuf,
                                      void (*f)(int64_t *, int64_t *, int),
                                      const char *description)
 {
-    int i, j, loopcount, n;
+    int i, j, loopcount, innerloopcount, n;
     double t1, t2;
     double speed, maxspeed;
     double s, s0, s1, s2;
@@ -86,13 +85,14 @@ static double bandwidth_bench_helper(int64_t *dstbuf, int64_t *srcbuf,
     {
         f(dstbuf, srcbuf, size);
         loopcount = 0;
+        innerloopcount = 1;
         t1 = gettime();
         do
         {
-            loopcount++;
+            loopcount += innerloopcount;
             if (use_tmpbuf)
             {
-                for (i = 0; i < COUNT; i++)
+                for (i = 0; i < innerloopcount; i++)
                 {
                     for (j = 0; j < size; j += blocksize)
                         {
@@ -103,14 +103,15 @@ static double bandwidth_bench_helper(int64_t *dstbuf, int64_t *srcbuf,
             }
             else
             {
-                for (i = 0; i < COUNT; i++)
+                for (i = 0; i < innerloopcount; i++)
                 {
                     f(dstbuf, srcbuf, size);
                 }
             }
+            innerloopcount *= 2;
             t2 = gettime();
         } while (t2 - t1 < 0.5);
-        speed = (double)size * COUNT * loopcount / (t2 - t1) / 1000000.;
+        speed = (double)size * loopcount / (t2 - t1) / 1000000.;
 
         s0 += 1;
         s1 += speed;
@@ -149,57 +150,35 @@ void memset_wrapper(int64_t *dst, int64_t *src, int size)
     memset(dst, src[0], size);
 }
 
-void bandwidth_bench(int64_t *dstbuf, int64_t *srcbuf, int64_t *tmpbuf,
-                     int size, int blocksize, const char *indent_prefix)
+static bench_info c_benchmarks[] =
 {
-    bench_info *bi = get_asm_benchmarks();
+    { "C copy backwards", 0, aligned_block_copy_backwards },
+    { "C copy backwards (32 byte blocks)", 0, aligned_block_copy_backwards_bs32 },
+    { "C copy backwards (64 byte blocks)", 0, aligned_block_copy_backwards_bs64 },
+    { "C copy", 0, aligned_block_copy },
+    { "C copy prefetched (32 bytes step)", 0, aligned_block_copy_pf32 },
+    { "C copy prefetched (64 bytes step)", 0, aligned_block_copy_pf64 },
+    { "C 2-pass copy", 1, aligned_block_copy },
+    { "C 2-pass copy prefetched (32 bytes step)", 1, aligned_block_copy_pf32 },
+    { "C 2-pass copy prefetched (64 bytes step)", 1, aligned_block_copy_pf64 },
+    { "C fill", 0, aligned_block_fill },
+    { "C fill (shuffle within 16 byte blocks)", 0, aligned_block_fill_shuffle16 },
+    { "C fill (shuffle within 32 byte blocks)", 0, aligned_block_fill_shuffle32 },
+    { "C fill (shuffle within 64 byte blocks)", 0, aligned_block_fill_shuffle64 },
+    { NULL, 0, NULL }
+};
 
-    bandwidth_bench_helper(dstbuf, srcbuf, tmpbuf, size, blocksize,
-                           indent_prefix, 0,
-                           aligned_block_copy_backwards,
-                           "C copy backwards");
-    bandwidth_bench_helper(dstbuf, srcbuf, tmpbuf, size, blocksize,
-                           indent_prefix, 0,
-                           aligned_block_copy,
-                           "C copy");
-    bandwidth_bench_helper(dstbuf, srcbuf, tmpbuf, size, blocksize,
-                           indent_prefix, 0,
-                           aligned_block_copy_pf32,
-                           "C copy prefetched (32 bytes step)");
-    bandwidth_bench_helper(dstbuf, srcbuf, tmpbuf, size, blocksize,
-                           indent_prefix, 0,
-                           aligned_block_copy_pf64,
-                           "C copy prefetched (64 bytes step)");
-    bandwidth_bench_helper(dstbuf, srcbuf, tmpbuf, size, blocksize,
-                           indent_prefix, 1,
-                           aligned_block_copy,
-                           "C 2-pass copy");
-    bandwidth_bench_helper(dstbuf, srcbuf, tmpbuf, size, blocksize,
-                           indent_prefix, 1,
-                           aligned_block_copy_pf32,
-                           "C 2-pass copy prefetched (32 bytes step)");
-    bandwidth_bench_helper(dstbuf, srcbuf, tmpbuf, size, blocksize,
-                           indent_prefix, 1,
-                           aligned_block_copy_pf64,
-                           "C 2-pass copy prefetched (64 bytes step)");
-    bandwidth_bench_helper(dstbuf, srcbuf, tmpbuf, size, blocksize,
-                           indent_prefix, 0,
-                           aligned_block_fill,
-                           "C fill");
+static bench_info libc_benchmarks[] =
+{
+    { "standard memcpy", 0, memcpy_wrapper },
+    { "standard memset", 0, memset_wrapper },
+    { NULL, 0, NULL }
+};
 
-    printf("%s---\n", indent_prefix);
-    bandwidth_bench_helper(dstbuf, srcbuf, tmpbuf, size, blocksize,
-                           indent_prefix, 0,
-                           memcpy_wrapper,
-                           "standard memcpy");
-    bandwidth_bench_helper(dstbuf, srcbuf, tmpbuf, size, blocksize,
-                           indent_prefix, 0,
-                           memset_wrapper,
-                           "standard memset");
-
-    if (bi->f)
-        printf("%s---\n", indent_prefix);
-
+void bandwidth_bench(int64_t *dstbuf, int64_t *srcbuf, int64_t *tmpbuf,
+                     int size, int blocksize, const char *indent_prefix,
+                     bench_info *bi)
+{
     while (bi->f)
     {
         bandwidth_bench_helper(dstbuf, srcbuf, tmpbuf, size, blocksize,
@@ -208,7 +187,6 @@ void bandwidth_bench(int64_t *dstbuf, int64_t *srcbuf, int64_t *tmpbuf,
                                bi->description);
         bi++;
     }
-
 }
 
 static void __attribute__((noinline)) random_read_test(char *zerobuffer,
@@ -497,7 +475,7 @@ int main(void)
     int64_t *srcbuf, *dstbuf, *tmpbuf;
     void *poolbuf;
     size_t bufsize = SIZE;
-#ifdef BENCH_FRAMEBUFFER
+#ifdef __linux__
     size_t fbsize;
     int64_t *fbbuf = mmap_framebuffer(&fbsize);
     fbsize = (fbsize / BLOCKSIZE) * BLOCKSIZE;
@@ -510,16 +488,6 @@ int main(void)
                                             (void **)&dstbuf, bufsize,
                                             (void **)&tmpbuf, BLOCKSIZE,
                                             NULL, 0);
-#ifdef BENCH_FRAMEBUFFER
-    if (fbbuf)
-    {
-        printf("(*) using framebuffer as the source buffer (size=%d)\n", (int)fbsize);
-        srcbuf = fbbuf;
-        if (bufsize > fbsize)
-            bufsize = fbsize;
-    }
-#endif
-
     printf("\n");
     printf("==========================================================================\n");
     printf("== Memory bandwidth tests                                               ==\n");
@@ -534,7 +502,48 @@ int main(void)
     printf("== Note 4: If sample standard deviation exceeds 0.1%%, it is shown in    ==\n");
     printf("==         brackets                                                     ==\n");
     printf("==========================================================================\n\n");
-    bandwidth_bench(dstbuf, srcbuf, tmpbuf, bufsize, BLOCKSIZE, " ");
+
+    bandwidth_bench(dstbuf, srcbuf, tmpbuf, bufsize, BLOCKSIZE, " ", c_benchmarks);
+    printf(" ---\n");
+    bandwidth_bench(dstbuf, srcbuf, tmpbuf, bufsize, BLOCKSIZE, " ", libc_benchmarks);
+    bench_info *bi = get_asm_benchmarks();
+    if (bi->f) {
+        printf(" ---\n");
+        bandwidth_bench(dstbuf, srcbuf, tmpbuf, bufsize, BLOCKSIZE, " ", bi);
+    }
+
+#ifdef __linux__
+    bi = get_asm_framebuffer_benchmarks();
+    if (bi->f && fbbuf)
+    {
+        printf("\n");
+        printf("==========================================================================\n");
+        printf("== Framebuffer read tests.                                              ==\n");
+        printf("==                                                                      ==\n");
+        printf("== Many ARM devices use a part of the system memory as the framebuffer, ==\n");
+        printf("== typically mapped as uncached but with write-combining enabled.       ==\n");
+        printf("== Writes to such framebuffers are quite fast, but reads are much       ==\n");
+        printf("== slower and very sensitive to the alignment and the selection of      ==\n");
+        printf("== CPU instructions which are used for accessing memory.                ==\n");
+        printf("==                                                                      ==\n");
+        printf("== Many x86 systems allocate the framebuffer in the GPU memory,         ==\n");
+        printf("== accessible for the CPU via a relatively slow PCI-E bus. Moreover,    ==\n");
+        printf("== PCI-E is asymmetric and handles reads a lot worse than writes.       ==\n");
+        printf("==                                                                      ==\n");
+        printf("== If uncached framebuffer reads are reasonably fast (at least 100 MB/s ==\n");
+        printf("== or preferably >300 MB/s), then using the shadow framebuffer layer    ==\n");
+        printf("== is not necessary in Xorg DDX drivers, resulting in a nice overall    ==\n");
+        printf("== performance improvement. For example, the xf86-video-fbturbo DDX     ==\n");
+        printf("== uses this trick.                                                     ==\n");
+        printf("==========================================================================\n\n");
+
+        srcbuf = fbbuf;
+        if (bufsize > fbsize)
+            bufsize = fbsize;
+        bandwidth_bench(dstbuf, srcbuf, tmpbuf, bufsize, BLOCKSIZE, " ", bi);
+    }
+#endif
+
     free(poolbuf);
 
     printf("\n");

@@ -28,10 +28,11 @@
 
 #include "util.h"
 
-void aligned_block_copy(int64_t * __restrict dst,
+void aligned_block_copy(int64_t * __restrict dst_,
                         int64_t * __restrict src,
                         int                  size)
 {
+    volatile int64_t *dst = dst_;
     int64_t t1, t2, t3, t4;
     while ((size -= 64) >= 0)
     {
@@ -54,10 +55,11 @@ void aligned_block_copy(int64_t * __restrict dst,
     }
 }
 
-void aligned_block_copy_backwards(int64_t * __restrict dst,
+void aligned_block_copy_backwards(int64_t * __restrict dst_,
                                   int64_t * __restrict src,
                                   int                  size)
 {
+    volatile int64_t *dst = dst_;
     int64_t t1, t2, t3, t4;
     src += size / 8 - 1;
     dst += size / 8 - 1;
@@ -82,10 +84,81 @@ void aligned_block_copy_backwards(int64_t * __restrict dst,
     }
 }
 
-void aligned_block_copy_pf32(int64_t * __restrict dst,
+/*
+ * Walk memory addresses in the backwards direction, but still
+ * copy each individual 32 byte block in the forward direction.
+ */
+void aligned_block_copy_backwards_bs32(int64_t * __restrict dst_,
+                                       int64_t * __restrict src,
+                                       int                  size)
+{
+    volatile int64_t *dst = dst_;
+    int64_t t1, t2, t3, t4;
+    src += size / 8 - 8;
+    dst += size / 8 - 8;
+    while ((size -= 64) >= 0)
+    {
+        t1 = src[4];
+        t2 = src[5];
+        t3 = src[6];
+        t4 = src[7];
+        dst[4] = t1;
+        dst[5] = t2;
+        dst[6] = t3;
+        dst[7] = t4;
+        t1 = src[0];
+        t2 = src[1];
+        t3 = src[2];
+        t4 = src[3];
+        dst[0] = t1;
+        dst[1] = t2;
+        dst[2] = t3;
+        dst[3] = t4;
+        src -= 8;
+        dst -= 8;
+    }
+}
+
+/*
+ * Walk memory addresses in the backwards direction, but still
+ * copy each individual 64 byte block in the forward direction.
+ */
+void aligned_block_copy_backwards_bs64(int64_t * __restrict dst_,
+                                       int64_t * __restrict src,
+                                       int                  size)
+{
+    volatile int64_t *dst = dst_;
+    int64_t t1, t2, t3, t4;
+    src += size / 8 - 8;
+    dst += size / 8 - 8;
+    while ((size -= 64) >= 0)
+    {
+        t1 = src[0];
+        t2 = src[1];
+        t3 = src[2];
+        t4 = src[3];
+        dst[0] = t1;
+        dst[1] = t2;
+        dst[2] = t3;
+        dst[3] = t4;
+        t1 = src[4];
+        t2 = src[5];
+        t3 = src[6];
+        t4 = src[7];
+        dst[4] = t1;
+        dst[5] = t2;
+        dst[6] = t3;
+        dst[7] = t4;
+        src -= 8;
+        dst -= 8;
+    }
+}
+
+void aligned_block_copy_pf32(int64_t * __restrict dst_,
                              int64_t * __restrict src,
                              int                  size)
 {
+    volatile int64_t *dst = dst_;
     int64_t t1, t2, t3, t4;
     while ((size -= 64) >= 0)
     {
@@ -110,10 +183,11 @@ void aligned_block_copy_pf32(int64_t * __restrict dst,
     }
 }
 
-void aligned_block_copy_pf64(int64_t * __restrict dst,
+void aligned_block_copy_pf64(int64_t * __restrict dst_,
                              int64_t * __restrict src,
                              int                  size)
 {
+    volatile int64_t *dst = dst_;
     int64_t t1, t2, t3, t4;
     while ((size -= 64) >= 0)
     {
@@ -126,7 +200,6 @@ void aligned_block_copy_pf64(int64_t * __restrict dst,
         *dst++ = t2;
         *dst++ = t3;
         *dst++ = t4;
-        __builtin_prefetch(src + 32, 0, 0);
         t1 = *src++;
         t2 = *src++;
         t3 = *src++;
@@ -138,10 +211,11 @@ void aligned_block_copy_pf64(int64_t * __restrict dst,
     }
 }
 
-void aligned_block_fill(int64_t * __restrict dst,
+void aligned_block_fill(int64_t * __restrict dst_,
                         int64_t * __restrict src,
                         int                  size)
 {
+    volatile int64_t *dst = dst_;
     int64_t data = *src;
     while ((size -= 64) >= 0)
     {
@@ -153,6 +227,72 @@ void aligned_block_fill(int64_t * __restrict dst,
         *dst++ = data;
         *dst++ = data;
         *dst++ = data;
+    }
+}
+
+/*
+ * Simulate reshuffled memory write accesses to the destination
+ * buffer (a kind of "drunken master style" access pattern).
+ *
+ * See: https://github.com/ssvb/tinymembench/issues/7
+ */
+void aligned_block_fill_shuffle16(int64_t * __restrict dst_,
+                                  int64_t * __restrict src,
+                                  int                  size)
+{
+    volatile int64_t *dst = dst_;
+    int64_t data = *src;
+    while ((size -= 64) >= 0)
+    {
+        dst[0 + 0] = data;
+        dst[1 + 0] = data;
+        dst[1 + 2] = data;
+        dst[0 + 2] = data;
+        dst[1 + 4] = data;
+        dst[0 + 4] = data;
+        dst[0 + 6] = data;
+        dst[1 + 6] = data;
+        dst += 8;
+    }
+}
+
+void aligned_block_fill_shuffle32(int64_t * __restrict dst_,
+                                  int64_t * __restrict src,
+                                  int                  size)
+{
+    volatile int64_t *dst = dst_;
+    int64_t data = *src;
+    while ((size -= 64) >= 0)
+    {
+        dst[3 + 0] = data;
+        dst[0 + 0] = data;
+        dst[2 + 0] = data;
+        dst[1 + 0] = data;
+        dst[3 + 4] = data;
+        dst[0 + 4] = data;
+        dst[2 + 4] = data;
+        dst[1 + 4] = data;
+        dst += 8;
+    }
+}
+
+void aligned_block_fill_shuffle64(int64_t * __restrict dst_,
+                                  int64_t * __restrict src,
+                                  int                  size)
+{
+    volatile int64_t *dst = dst_;
+    int64_t data = *src;
+    while ((size -= 64) >= 0)
+    {
+        dst[5] = data;
+        dst[2] = data;
+        dst[7] = data;
+        dst[6] = data;
+        dst[1] = data;
+        dst[3] = data;
+        dst[0] = data;
+        dst[4] = data;
+        dst += 8;
     }
 }
 
