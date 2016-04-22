@@ -14,7 +14,9 @@ import re
 import radar_caliper as radar
 import plot_utils as utils
 
-PLOT_COLOR = ['ro-', 'yo-', 'bo-', 'go-', 'ko-', 'co-', 'mo-']
+#skd++ commented and updated PLOT_COLOR = ['ro-', 'yo-', 'bo-', 'go-', 'ko-', 'co-', 'mo-']
+#color codes - #40ff00:bright green, #ff0000:red
+PLOT_COLOR = ['#40ff00', '#ff0000', 'y', 'b', 'g', 'k', 'm', 'c']
 
 
 # for each subItem get the union points
@@ -160,13 +162,15 @@ class DrawPicture:
                         y_max = y_value
 
                     try:
-                        ax.plot(x1, test_values, PLOT_COLOR[i], label=labeli)
+                        #skd++ commented and updated ax.plot(x1, test_values, PLOT_COLOR[i], label=labeli)
+                        ax.plot(x1, test_values, 'o-', color=PLOT_COLOR[i], label=labeli)
                     except Exception, e:
                         print e
 
                 str_xlabel = 'Test Cases for ' + subItem + '_' + point
                 title_name = point + ' BarChart'
-                ll = ax.legend(loc='upper right')
+                #skd++ commented & added to move the legend outside the plot ll = ax.legend(loc='upper right')
+                ll = ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
                 leg = plt.gca().get_legend()
                 ltext = leg.get_texts()
                 plt.setp(ltext, fontsize='small')
@@ -185,7 +189,9 @@ class DrawPicture:
                     point = point.replace('/', '_')
                 point = '_'.join(point.split(" "))
                 png_name = os.path.join(folder, subItem + '_' + point + '.png')
-                plt.savefig(png_name)
+                #skd++ commented and updated to handle the legend outside the plot without cropped
+                #plt.savefig(png_name)
+                plt.savefig(png_name, bbox_extra_artists=(ll,), bbox_inches='tight')
 
     @staticmethod
     def draw_testCase_picture(file_names, test_subItems, folder, category=1):
@@ -194,7 +200,9 @@ class DrawPicture:
         if not len(test_subItems):
             return
         label_total = _get_labels(file_names)
-        color_total = ['r', 'y', 'b', 'g', 'k', 'm', 'c', 'w']
+        #skd++ commented and updated color_total = ['r', 'y', 'b', 'g', 'k', 'm', 'c', 'w']
+        #color codes - #40ff00:bright green, #ff0000:red
+        color_total = ['#40ff00','#ff0000', 'y', 'b', 'g', 'k', 'm', 'c', 'w']
 
         for item in test_subItems:
             key_points = get_points_union(file_names, item, category)
@@ -249,7 +257,11 @@ class DrawPicture:
             # compute the length of the x axis
             for i in range(0, len(label_total)):
                 ind = na.array(range(key_length))+0.5
-                width = 0.20
+                # skd++  commented and updated to handle more than 5 platforms in the graph 
+                # fixme: better solution?
+                # width = 0.20 
+                #width = 0.10 the below fix is given by Elaine. 
+                width = 1.0/(len(label_total)+1) 
                 rect_item = ax.bar(ind+i*width, data_total[i], width,
                                     color=color_total[i])
                 rects.append(rect_item)
@@ -259,7 +271,8 @@ class DrawPicture:
             ax.set_xticks(ind+width*len(rects)/2)
             ax.set_xticklabels(tuple(key_points))
 
-            ax.legend(tuple(rects), tuple(label_total), loc="upper right")
+            #skd++ commented & added to move the legend outside the plot  ax.legend(tuple(rects), tuple(label_total), loc="upper right")
+            sklegend = ax.legend(tuple(rects), tuple(label_total), loc='center left', bbox_to_anchor=(1, 0.5))
             leg = plt.gca().get_legend()
             ltext = leg.get_texts()
             plt.setp(ltext, fontsize='small')
@@ -276,7 +289,9 @@ class DrawPicture:
             # for i in range(0, len(rects)):
                 # autolabel(rects[i])
             png_name = os.path.join(folder, item + '_summary.png')
-            plt.savefig(png_name)
+            #skd++ commented and updated to handle the legend outside the plot without cropped
+            #plt.savefig(png_name)
+            plt.savefig(png_name, bbox_extra_artists=(sklegend,), bbox_inches='tight')
 
     @staticmethod
     def draw_testSubItem_picture(file_names, test_subItems,
@@ -284,7 +299,9 @@ class DrawPicture:
         y_max = 0
         data_total = []
         label_total = []
-        color_total = ['r', 'y', 'b', 'g', 'k', 'm', 'c', 'w']
+        #skd++ commented and updated color_total = ['r', 'y', 'b', 'g', 'k', 'm', 'c', 'w']
+        #color codes - #40ff00:bright green, #ff0000:red
+        color_total = ['#40ff00','#ff0000', 'y', 'b', 'g', 'k', 'm', 'c', 'w']
         rects = []
         ind = 0
         width = 0.35
@@ -328,7 +345,11 @@ class DrawPicture:
         # compute the length of the x axis
         for i in range(0, len(label_total)):
             ind = na.array(range(len(test_subItems)))+0.5
-            width = 0.20
+            # skd++  commented and updated to handle more than 5 platforms in the graph 
+            # fixme: better solution?
+            # width = 0.20 
+            #width = 0.10 the below fix is given by Elaine. 
+            width = 1.0/(len(label_total)+1) 
             rect_item = ax.bar(ind+i*width, data_total[i], width,
                                 color=color_total[i])
             rects.append(rect_item)
@@ -338,7 +359,8 @@ class DrawPicture:
         ax.set_xticks(ind + width * len(rects) / 2)
         ax.set_xticklabels(tuple(test_subItems))
 
-        ax.legend(tuple(rects), tuple(label_total),  loc="upper left")
+        #skd++ commented and added to move legend outside the plot ax.legend(tuple(rects), tuple(label_total),  loc="upper left")
+        sklegend = ax.legend(tuple(rects), tuple(label_total),  loc='center left', bbox_to_anchor=(1, 0.5))
         # set the fonts in the plotting
         leg = plt.gca().get_legend()
         ltext = leg.get_texts()
@@ -356,7 +378,9 @@ class DrawPicture:
         #     autolabel(rects[i])
         png_name = os.path.join(folder,
                                 '_'.join([classify, 'Total_Scores.png']))
-        plt.savefig(png_name)
+        #skd++ commented and updated to handle the legend outside the plot without cropped
+        #plt.savefig(png_name)
+        plt.savefig(png_name, bbox_extra_artists=(sklegend,), bbox_inches='tight')
 
 
 def get_files_union(file_lists, category=1):
