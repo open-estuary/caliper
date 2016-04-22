@@ -2,7 +2,7 @@
 {% load staticfiles %}
 <html>
 <head>
-    <title>caliper's latency result</title>
+    <title>Caliper Performance: Latency</title>
     {% load static %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -69,56 +69,65 @@
 <div class="example">
     <div><input type="hidden" id="latency_tst" value="{{ dic_lat }}"> </div>
 
+    <!--SKD++-->
+    <div class="page-header">
+    <h1> Caliper Performance Tests: Latency </h1> 
+    </div>
+
     {% if sum %}
-    <h1><small>caliper latency comparison figure</small></h1>
+    <h1><small>Latency Score Summary</small></h1> <!--SKD++-->
     <div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/latency_summary.png' %}"
     height="400" width="700" /> </p>
 	</div>
     
-    <h1><small>caliper latency comparison detail</small></h1>
+    <!-- <h1><small>caliper latency comparison detail</small></h1> -->
     <div id="lat-summary" class="sensei-grid"></div>
     {% endif %}
-	
-    {% if ctx %}
-    <h1><small>caliper ctx latency</small></h1>
-	<div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/latency_ctx.png' %}" height="400" width="750" /> </p>
-	</div>
-    <div id="lat-ctx" class="sensei-grid"></div>
-    {% endif %}
-	
-    {% if file_vm %}
-    <h1><small>caliper file/vm latency</small></h1>
-	<div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/latency_file_vm.png' %}" height="400" width="700" /> </p>
-	</div>
-    <div id="lat-file-vm" class="sensei-grid"></div>
-    {% endif %}
-	
-    {% if process %}
-    <h1><small>caliper process latency</small></h1>
-	<div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/latency_process.png' %}" height="400" width="750" /> </p>
-	</div>
-    <div id="lat-process" class="sensei-grid"></div>
-    {% endif %}
-    
+    <p><b>FixMe: </b>file/vm overall score above shows PC-I5650_U15.04 as 100. This is has a minor issue.
+                   Based on the analysis of data in detail, <b>MOONSHOT-M700P_U14.04 score should be 100 for file/vm.</b>
+                   <br>Please check the 'Latency Score Details: File/VM Latency' section below. Its very clear. 
+                       However, due to a page-fault during the test on PC-I5650_U15.04, there was one unwanted data observed in the test results. Hence, the overall score calculation had a minor issue. This will be fixed in the next report.</p>	
     {% if mem %}
-    <h1><small>caliper memory latency</small></h1>
+    <h2><small>Latency Score Details: Memory Latency</small></h2>
 	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/latency_mem.png' %}" height="400" width="750" /> </p>
 	</div>
     <div id="lat-memory" class="sensei-grid"></div>
     {% endif %}
 
+    {% if ctx %}
+    <h2><small>Latency Score Details: Context Switch</small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/latency_ctx.png' %}" height="400" width="750" /> </p>
+	</div>
+    <div id="lat-ctx" class="sensei-grid"></div>
+    {% endif %}
+	
+    {% if process %}
+    <h2><small>Latency Score Details: Process Latency</small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/latency_process.png' %}" height="400" width="750" /> </p>
+	</div>
+    <div id="lat-process" class="sensei-grid"></div>
+    {% endif %}
+
     {% if rttest %}
-    <h1><small>caliper real-time latency</small></h1>
+    <h2><small>Latency Score Details: Real Time Latency</small></h2>
 	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/latency_rttest.png' %}" height="400" width="750" /> </p>
 	</div>
     <div id="lat-real-time" class="sensei-grid"></div>
     {% endif %}
+    <p><b>Attn:</b> Some values show as 'Zero' in the score for certain platforms. Observed certain issues in the test execution for these. This needs more analysis </p>
+    {% if file_vm %}
+    <h2><small>Latency Score Details: File/VM Latency</small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/latency_file_vm.png' %}" height="400" width="700" /> </p>
+	</div>
+    <div id="lat-file-vm" class="sensei-grid"></div>
+    {% endif %}
+    <p><b>FixMe:</b> Due to a page-fault during the test on PC-I5650_U15.04, there was one unwanted data observed in the test results and graph. It caused a a minor issue in the overall score(only). This will be fixed in the next report. Above <b>individual scores are *CORRECT*.</b> </p>	
     </div>
 </body>
 </html>

@@ -2,7 +2,7 @@
 {% load staticfiles %}
 <html>
 <head>
-    <title>caliper's kernel result</title>
+    <title>Caliper Functional: Kernel</title>
     {% load static %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -54,17 +54,24 @@
 <div class="example">
     <div><input type="hidden" id="kernel_tst" value="{{ dic_kernel }}"> </div>
 
+    <!--SKD++-->
+    <div class="page-header">
+    <h1> Caliper Functional Tests: Kernel </h1> 
+    </div>
+
     {% if sum %}
-    <h1><small>caliper kernel comparison figure</small></h1>
+    <h1><small>Kernel Score Summary</small></h1> <!--SKD++-->
     <div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/kernel_summary.png' %}" height="450"
     width="700" /> </p>
 	</div>
     
-    <h1><small>caliper kernel comparison detail</small></h1>
+    <!-- <h1><small>caliper kernel comparison detail</small></h1> -->
     <div id="kernel-summary" class="sensei-grid"></div>
     {% endif %}
-	
+
+    <p> <b>Note:</b>: These scores are based on how many tests test pass or fail (functional tests). 
+                      For some platforms all functional tests are passed. Hence, such cases, the score will be 100</p>	
     </div>
 
 </body>

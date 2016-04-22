@@ -201,16 +201,20 @@ def draw_radar(file_lists, store_folder, kind=1):
     (spoke_labels, data_lists) = get_Items_score(file_lists, category)
     dimension = len(spoke_labels)
     if (dimension < 3):
-        logging.info("The comparision dimension is less than 3")
+        #SKD++ spelling corrected for comparison
+        logging.info("The comparison dimension is less than 3")
         return 1
     theta = radar_factory(dimension, frame='circle')
     labels = [file_list.split('/')[-1].split('_')[0]
                  for file_list in file_lists]
+    
+    #skd++ commented and updated the colors to handle more than 7 platforms
+    #colors = ['b', 'r', 'g', 'm', 'y', 'c', 'k']
+    colors = ['#40ff00','#ff0000', 'y', 'b', 'g', 'k', 'm', 'c', 'w']
 
-    colors = ['b', 'r', 'g', 'm', 'y', 'c', 'k']
     if len(file_lists) < len(colors):
         colors = colors[0:len(file_lists)]
-    title = 'Radar Diagram'
+    title = 'Radar / Spider Diagram'
 
     fig = plt.figure(figsize=(9, 9))
     fig.set_size_inches(13.0, 13.0)
@@ -240,13 +244,20 @@ def draw_radar(file_lists, store_folder, kind=1):
     legend = plt.legend(labels, loc=(0.9, 0.95), labelspacing=0.1)
 
     plt.setp(legend.get_texts(), fontsize='small')
-    plt.figtext(0.5, 0.965, 'Drawing Radar Diagram for Caliper',
+    
+    #skd++ commented
+    #plt.figtext(0.5, 0.965, 'Drawing Radar Diagram for Caliper',
+    #            ha='center', color='black', weight='bold', size='large')
+    
+    #skd++ added
+    plt.figtext(0.5, 0.965, ' ',
                 ha='center', color='black', weight='bold', size='large')
 
     path_name = os.path.join(store_folder, '_'.join([category,
                         "Total_Scores.png"]))
 
-    plt.savefig(path_name, dit=512)
+    #skd++ commented and updated to handle legend position plt.savefig(path_name, dit=512)
+    plt.savefig(path_name, dit=512, bbox_extra_artists=(legend,), bbox_inches='tight')
     return 0
 
 # if __name__ == "__main__":
