@@ -2,7 +2,7 @@
 {% load staticfiles %}
 <html>
 <head>
-    <title>caliper's algorithm result</title>
+    <title>Caliper Performance: Algorithm</title>
     {% load static %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -65,46 +65,51 @@
 <body>
 <div class="example">
     <div><input type="hidden" id="algorithm_tst" value="{{ dic_alg }}"> </div>
+    
+    <!--SKD++-->
+    <div class="page-header">
+    <h1> Caliper Performance Tests: Algorithm </h1> 
+    </div>	
 
     {% if sum %}
-    <h1><small>caliper algorithm comparison figure</small></h1>
+    <h1><small>Algorithm Score Summary</small></h1> <!--SKD++-->
 	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/algorithm_summary.png' %}" height="400" width="700" /> </p>
 	</div>
-    <h1><small>caliper algorithm comparison detail</small></h1>
+    <!-- SKD++ commented <h1><small>caliper algorithm comparison detail</small></h1> -->
     <div id="alg_comparison" class="sensei-grid"></div>
     {% endif %}
 	
     {% if digital_verify  %}
-    <h1><small>caliper algorithm signature verify</small></h1>
+    <h2><small>Algorithm Score Details: Digital Verify</small></h2>
 	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/algorithm_digital_verify.png' %}" height="400" width="800" /> </p>
 	</div>
     <div id="alg_verify" class="sensei-grid"></div>
     {% endif %}
 	
-    {% if hash_algorithm %}
-    <h1><small>caliper algorithm hash</small></h1>
-	<div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/algorithm_hash_algorithm.png' %}" height="400" width="850" /> </p>
-	</div>
-    <div id="alg_hash" class="sensei-grid"></div>
-    {% endif %}
-	
     {% if digital_sign %}
-    <h1><small>caliper algorithm digital sign</small></h1>
+    <h2><small>Algorithm Score Details: Digital Sign</small></h2>
 	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/algorithm_digital_sign.png' %}" height="400" width="800" /> </p>
 	</div>
     <div id="alg_sign" class="sensei-grid"></div>
     {% endif %}
-	
+    <p><b>Note: </b> The test case names are same for Digital Verify and Digital Sign. However encryption is tested for Digital Sign and decryption is tested for Digital Verify.</p>	
     {% if symmetric_cyphers %}
-    <h1><small>caliper algorithm symmetric cyphers</small></h1>
+    <h2><small>Algorithm Score Details: Symmetric Cyphers</small></h2>
 	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/algorithm_symmetric_cyphers.png' %}" height="400" width="900" /> </p>
 	</div>
     <div id="alg_symmetric" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if hash_algorithm %}
+    <h2><small>Algorithm Score Details: Hash Algorithm</small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/algorithm_hash_algorithm.png' %}" height="400" width="850" /> </p>
+	</div>
+    <div id="alg_hash" class="sensei-grid"></div>
     {% endif %}
 
    </div>

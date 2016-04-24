@@ -3,7 +3,7 @@
 {% load staticfiles %}
 <html>
 <head>
-    <title>caliper's cpu result</title>
+    <title>Caliper Performance: CPU</title>
     {% load static %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -68,19 +68,24 @@
 <body>
 <div class="example">
     <div><input type="hidden" id="cpu_tst" value="{{ dic_cpu }}"> </div>
-    
+
+    <!--SKD++-->
+    <div class="page-header">
+    <h1> Caliper Performance Tests: CPU </h1> 
+    </div>
+
     {% if sum %}
-    <h1><small>caliper cpu comparison figure</small></h1>
+    <h1><small>CPU Score Summary</small></h1> <!--SKD++-->
 	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/cpu_summary.png' %}" height="400" width="700" /> </p>
 	</div>
     
-    <h1><small>caliper cpu comparison detail</small></h1>
+    <!-- <h1><small>caliper cpu comparison detail</small></h1> -->
     <div id="summary"  class="sensei-grid"></div>
     {% endif %}
 	
     {% if multicore_int %}
-    <h1><small>caliper cpu basic integer</small></h1>
+    <h2><small>CPU Score Details: Multicore Integer (Basic Integer) </small></h2>
 	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/cpu_multicore_int.png' %}" height="400" width="850" /> </p>
 	</div>
@@ -88,7 +93,7 @@
     {% endif %}
 	
     {% if multicore_float %}
-    <h1><small>caliper cpu float operation</small></h1>
+    <h2><small>CPU Score Details: Multicore Float </small></h2>
 	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/cpu_multicore_float.png' %}" height="400" width="850" /> </p>
 	</div>
@@ -96,7 +101,7 @@
     {% endif %}
 	
     {% if multicore_double %}
-    <h1><small>caliper cpu double operation</small></h1>
+    <h2><small>CPU Score Details: Multicore Double </small></h2>
 	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/cpu_multicore_double.png' %}" height="500" width="850" /> </p>
 	</div>
@@ -104,15 +109,15 @@
     {% endif %}
 	
     {% if sincore_int %}
-	<h1><small>caliper cpu sincore integer</small></h1>
+	<h2><small>CPU Score Details: Single Core Integer </small></h2>
 	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/cpu_sincore_int.png' %}" height="400" width="800" /> </p>
 	</div>
     <div id="sin-int" class="sensei-grid"></div>
     {% endif %}
-	
+    <p><b>Attn:</b> Some values show as 'Zero' in the score for certain platforms. Observed certain issues in the test execution for these. This needs more analysis </p>
     {% if sincore_float %}
-    <h1><small>caliper cpu sincore float</small></h1>
+    <h2><small>CPU Score Details: Single Core Float </small></h2>
 	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/cpu_sincore_float.png' %}" height="400" width="850" /> </p>
 	</div>

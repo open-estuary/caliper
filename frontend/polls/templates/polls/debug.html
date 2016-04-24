@@ -2,7 +2,7 @@
 {% load staticfiles %}
 <html>
 <head>
-    <title>caliper's debug result</title>
+    <title>Caliper Functional:Debug</title>
     {% load static %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -53,18 +53,24 @@
 <body>
 <div class="example">
     <div><input type="hidden" id="debug_tst" value="{{ dic_debug }}"> </div>
+    
+    <!--SKD++-->
+    <div class="page-header">
+    <h1> Caliper Functional Tests: Debug </h1> 
+    </div>
 
     {% if sum %}
-    <h1><small>caliper debug comparison figure</small></h1>
+    <h1><small>Debug Score Summary</small></h1> <!--SKD++-->
     <div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/debug_summary.png' %}" height="300"
     width="600" /> </p>
 	</div>
     
-    <h1><small>caliper debug comparison detail</small></h1>
+    <!-- <h1><small>caliper debug comparison detail</small></h1> -->
     <div id="debug-summary" class="sensei-grid"></div>
     {% endif %}
-	
+    <p> <b>Note:</b>: These scores are based on how many tests test pass or fail (functional tests). 
+                      For some platforms all functional tests are passed. Hence, such cases, the score will be 100</p>
     </div>
 
 </body>

@@ -1,0 +1,33 @@
+#!/usr/bin/expect
+set timeout  -1
+set option [lindex $argv 0]
+#set passwd {"sana123" "go4it#caliper" "root123"}
+set i 0
+spawn sudo ./host_dependency.sh $option
+while true {
+	expect {
+		"yes" { send "yes\r"; exp_continue }
+		#"assword " { send "[lindex $passwd $i]\r"; incr i;  exp_continue }
+		"would you like to install" { 
+			 send_user "INSIDE\t"
+			 interact "\r" return
+			 send "\r"
+		}
+		"Would u like me to do it" {
+			 send_user "INSIDE\t"
+			 interact "\r" return
+			 send "\r"
+		}
+		"*\$ " { send_user "HOST dependency exiting \n" }
+		"*\# " { send_user "HOST dependency exiting \n" }
+		"failed" {
+			send_user "U have not selected any choice:"
+			send_user "I will be exiting"
+			exit 1"
+		}
+		eof { 
+			send_user "Everything was successful\n"
+			break
+		}
+	}
+}

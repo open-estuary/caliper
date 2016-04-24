@@ -3,7 +3,7 @@
 
 <html>
 <head>
-    <title>caliper's result</title>
+    <title>Caliper Report</title>
     {% load static %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -62,28 +62,72 @@
     <div><input type="hidden" id="example_tst" value="{{ dic_sum }}"> </div>
 
     <div class="page-header">
+    <h1> Caliper Benchmarking Report </h1> <!--SKD++-->
+    <p><b>Report Version & Date : v2.0-20160329</b> </p>
     </div>
-    <p> With Caliper you can test hardware easily, get visible results and
-    compare the performance of it with other boards. All the data below are
-    scores; the scores are normalized from the original data and the
-    normalization algoirthm.</p>
+<!--SKD++ START Updated data-->
+    <p> Caliper is a test framework focuses on benchmarking and performance evaluation of server platforms.
+        It is developed primarily to evaluate various ARM64 server platforms. However, as a benchmarking 
+        platform, it caters and tested on other hardware platforms like x86.
+        
+        With Caliper you can test hardware and the software platform running on it easily, get visible results
+        and compare the performance. It can help to discover issues related to hardware or software.
+        	
+        To ease the first level of comparison of platforms, it provides simple score based view as the top most
+        view. Scores are generated based on the original test results on the corresponding platform using uniform
+        normalization algorithms across the platforms.
 
-    <h1><small>Comparision platforms and configuration</small></h1>
-    <div id="platform_configuration" class="sensei-grid"></div>
+        If you want to know more about caliper, please visit <a href="http://open-estuary.org/caliper-benchmarking/" target="_blank">Caliper page in Open Estuary Website</a></p>
+
+      <mark> <i><b>How to read the Scores in this report :</b> <br>Higher the score, better the performance!
+             <br>Ex: Usually lower the latency, it is better. However, in this report, <b>higher the latency score, it is better!</b>
+             <br>All the scores are converted to percentiles. Means <b>Max Score is 100.</b>
+             <br>In every score, one platform will score 100 and others will be relative percentile score to this.
+             <br>Please read the report accordingly.</i> </mark>
+<!--SKD++ END Updated data-->
+
+    <h2>Tested Platforms: Overview</h2> <!--SKD++ spelling for comparison updated-->
+    <div id="platform_configuration" class="sensei-grid"></div> 
+    <i><b>Attn: </b>Please <b>scroll to right</b> to see the table completely. Same with other tables in this report</i><br><br>
     
+    <mark><b>Notes: <br></b> a) Platform Name = BoardName-OSversion : Ex: RH2285-U15.04= RH2285 server with Ubuntu 15.04; D02-Est2.1-U15.04= D02 board with Est2.1 based on Ubuntu 15.04 distro <br> b) Please click to get the <b>hardware details of each target platform</b>: <a href="/static/TargetInfo/D02-EST2.1-U15.04_Info.txt" target="_blank">D02-EST2.1-U15.04</a>, <a href="/static/TargetInfo/DELLR7-E5606-U15.04_Info.txt" target="_blank">DELLR7-E5606-U15.0</a>, <a href="/static/TargetInfo/MOONSHOT-M400-U14.04_Info.txt" target="_blank">MOONSHOT-M400-U14.04</a>, <a href="/static/TargetInfo/MOONSHOT-M700P-U14.04_Info.txt" target="_blank">MOONSHOT-M700P-U14.04</a>, <a href="/static/TargetInfo/OVERDRIVE-OsuseTumbleweed_Info.txt" target="_blank">OVERDRIVE-OsuseTumbleweed</a>, <a href="/static/TargetInfo/PC-I5650-U15.04_Info.txt" target="_blank">PC-I5650-U15.04</a>, <a href="/static/TargetInfo/RH2285-E52420V2-U15.04_Info.txt" target="_blank">RH2285-E52420V2-U15.04</a>, <a href="/static/TargetInfo/RH2288-E52690V3-U15.04_Info.txt" target="_blank">RH2288-E52690V3-U15.04</a></mark>
     <!--h1><small>Test tool used</small></h1>
     <div id="tools_info" class="sensei-grid"></div>
 
     <h1><small>Test execution details</small></h1>
     <div id="exec_info" class="sensei-grid"></div-->
-
-    <h1><small>Result Summary</small></h1>
+<hr>
+    <h1>Summary Comments/Issues observed</h1>
+    <p>This section will provide summary comments/high level issue observations based on the scores(focus w.r.t D02). This is only for reference to help further analysis or to improve the benchmarking report overall. These are not intended for any claim. 
+       <br>
+       1. HP Moonshot(ARM64 and X86 platforms), AMD Overdrive, RH2288 platforms are added.
+       <br>
+       2. HP Moonshot system tested from HP Lab remotely. The network, harddisk provided(SSD) etc were of high quality. These factors would have influenced the good results from HP Moonshot in the overall scoring. [Anyways to be analysed each in detail] 
+       <br>
+       3. There are some functional tests failed in most of the platforms. D02 has failed tests in kernel,dio, posix, mem, proc and cpu. 
+       <br>
+       4. CPU functional test score <b>D02 is the lowest</b>
+       <br>
+       5. <b>MOONSHOT-M700P(x86 based) has the HIGHEST </b> overall score in algorithm,application,io,memory, disk and cpu 
+       <br>
+       6. <b>D02 has the LOWEST </b> overall score in latency, network, application, memory and disk. Also low scores for algorithm, io and cpu. This is <b>*alarming*</b> and needs to analyse each in detail. 
+       <br>
+       7. <b>RH2288-E52690V3 has the HIGHEST </b> overall score in latency and <b>MOONSHOT-M400(ARM64) has the HIGHEST </b>overall score for network
+       <br>
+       8. D02 is slightly ahead of AMD Overdrive(ARM64) and MOONSHOT-M400(ARM64) ONLY in algorithm 
+       <br>
+       9. <b>AMD Overdrive(ARM64) and MOONSHOT-M400(ARM64) scored very HIGH compared to D02</b> in latency, application and disk
+       <br>
+       10. <b>MOONSHOT-M400(ARM64) has LOWEST </b> overall score in algorithm and cpu. <b>AMD Overdrive(ARM64) has LOWEST </b> overall score in io.
+       <br> </p> 
+<hr>
+    <h1>Overall Benchmarking Score Summary</h1>
     {% if func_summary %}
-    <h2><small>Functional tests</small></h2>
+    <h2>Caliper Functional Test Score</h2>
     
-    <p>This is the functional test result of D02, pc and our team's server. 
-    More detail information about <a href="/polls/kernel">KERNEL</a>.
-    More detail information about <a href="/polls/peripheral">PERIPHERAL</a>.
+    <p>Caliper does basic functional verification on the target platforms. It also creates the scores based on the pass rate of functional tests on each platform. Currently caliper categorizes the functional tests under <a href="/polls/kernel" target="_blank">KERNEL</a> and <a href="/polls/debug" target="_blank">DEBUG</a>(please click the link for each category details)
+    <!-- More detail information about <a href="/polls/kernel">KERNEL</a>.
+    More detail information about <a href="/polls/peripheral">PERIPHERAL</a>. SKD++ commented-->
     </p>
 
 	<div style="text-align: center;">
@@ -95,18 +139,9 @@
     {% endif %}
 
     {% if perf_summary %}
-    <h2><small>Perfomance tests</small></h2>
+    <h2>Caliper Performance Test Score</h2>
 
-    <p>This is the performance result of D02, pc and our team's server. 
-    More detail information about <a href="/polls/algorithm">ALGORITHM</a>;
-    More detail information about <a href="/polls/cpu">CPU</a>;
-    More detail information about <a href="/polls/disk">DISK</a>;
-    More detail information about <a href="/polls/latency">LATENCY</a>;
-    More detail information about <a href="/polls/io">IO</a>;
-    More detail information about <a href="/polls/network">NETWORK</a>;
-    More detail information about <a href="/polls/memory">MEMORY</a>;
-    More detail information about <a href="/polls/application"> APPLICATION</a>.
-    </p>
+    <p>Caliper does various performance tests on all the target platforms. It creates consolidated score for each platform on each category of benchmarks. Currently caliper categorizes the performance tests under <a href="/polls/algorithm" target="_blank">ALGORITHM</a>, <a href="/polls/cpu" target="_blank">CPU</a>, <a href="/polls/disk" target="_blank">DISK</a>, <a href="/polls/latency" target="_blank">LATENCY</a>, More detail information about <a href="/polls/io" target="_blank">IO</a>, <a href="/polls/network" target="_blank">NETWORK</a>, <a href="/polls/memory" target="_blank">MEMORY</a>, and <a href="/polls/application" target="_blank"> APPLICATION</a> (please click on each link to get the details for each category)</p>
 
 	<div style="text-align: center;">
         <p> <img src="{% static 'polls/pictures/Performance_Total_Scores.png' %}" height="700"
@@ -115,7 +150,18 @@
     
     <div id="sum_perf_info" class="sensei-grid"></div>
     {% endif %}
-
     </div>
+<hr>
+<i><b>Caliper Changelog:<br> </b> <b>v2.0-20160329:</b> <br>   a) 4 platforms are newly added(Moonshot(x86), Moonshot(ARM64), AMDOverdrive(ARM64) and RH2288(x86)) <br>   b) Graphs and Legends made more consistent <br>   c) Scoring algorithm improved : Abosolute scoring changed to percentile for easy comparison <br>   d) Benchmark Framework optimized to handle more number of platforms <br>   e) Benchmarking updated: tinymembench added, disk tests improved, LTP updated to latest version<br>   f) Log collection from target system is improved <br>  g) D02 tested with Estuary v2.1<br>   h) Data consistency improved : verified with multiple runs and value checks <br>   i) Overall Report formatting/presentation improved.<br><br><b>v1.0-20151221:</b><br>   a) First version with 4 platforms(R7(x86), D02(ARM64),RH2285(X86),I5PC(x86)) <br>    b) D02 tested on Estuary 2.1 <br>   c) Scoring Algorithms are with absolute values <br>   d) Framework supported only 5 platforms reporting</i>
+<hr>
+<i><b>Caliper Disclaimers:<br> </b> a) The actual test results/values are processed using different algorithm to derive the Scores. The Scores are intended only to compare various parameters among the platforms. If you want to see the original test results/values for debugging/analysis, please request for caliper test execution logs. <br> b) Each benchmark execution can depend on system conditions at the time of run. Hence, even if, caliper reboots the platform before each performance tests, the repeated test may not give 'exactly' same results for performance<br> c) There could be variations in the results due to specific peripheral hardwares in each platform(like RAM, HDD models etc).<br> d) These results are not intended for any claim, rather it is intended to use to improve the platforms as needed<br> e) During the initial analysis, we observed certain minor issues which demands score calculations optimization. We have marked as 'FixMe' with details, wherever needed. <br>f) Please provide your comments and feedback to caliper@open-estuary.org. It will help us to improve the report</i>
+<hr>
+
+<div style="text-align: center;">
+<dl id="copyright">
+    <dt title="Copyright">&copy;</dt>
+    <dd><a href="http://www.open-estuary.org" target="_blank">Open Estuary</a></dd>
+</dl>
+</div>
 </body>
 </html>

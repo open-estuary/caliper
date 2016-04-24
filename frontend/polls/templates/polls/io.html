@@ -2,7 +2,7 @@
 {% load staticfiles %}
 <html>
 <head>
-    <title>caliper's cpu result</title>
+    <title>Caliper Performance:IO</title>
     {% load static %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -59,19 +59,25 @@
 <body>
 <div class="example">
     <div><input type="hidden" id="io_tst" value="{{ dic_io }}"> </div>
+    
+    <!--SKD++-->
+    <div class="page-header">
+    <h1> Caliper Performance Tests: IO </h1> 
+    </div>
+ 
     {% if sum %}
-    <h1><small>caliper io comparison figure</small></h1>
+    <h1><small>IO Score Summary</small></h1> <!--SKD++-->
     <div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/io_summary.png' %}" height="500"
     width="700" /> </p>
 	</div>
     
-    <h1><small>caliper io comparison detail</small></h1>
+    <!-- <h1><small>caliper io comparison detail</small></h1> -->
     <div id="io-summary" class="sensei-grid"></div>
     {% endif %}    
     
     {% if bandwidth %}
-    <h1><small>caliper io bandwidth</small></h1>
+    <h2><small>IO Score Details: Bandwidth</small></h2>
     <div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/io_bandwidth.png' %}" height="500"
     width="700" /> </p>
@@ -81,7 +87,7 @@
     {% endif %}
     
     {% if iops %}
-    <h1><small>caliper io iops</small></h1>
+    <h2><small>IO Score Details: iops</small></h2>
     <div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/io_iops.png' %}" height="500"
     width="700" /> </p>

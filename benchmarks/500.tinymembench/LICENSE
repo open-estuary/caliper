@@ -1,5 +1,5 @@
 /*
- * Copyright © 2011 Siarhei Siamashka <siarhei.siamashka@gmail.com>
+ * Copyright © 2011-2016 Siarhei Siamashka <siarhei.siamashka@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -20,20 +20,3 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-
-#ifndef __ASM_OPT_H__
-#define __ASM_OPT_H__
-
-#include <stdint.h>
-
-typedef struct
-{
-    const char *description;
-    int use_tmpbuf;
-    void (*f)(int64_t *, int64_t *, int);
-} bench_info;
-
-bench_info *get_asm_benchmarks(void);
-bench_info *get_asm_framebuffer_benchmarks(void);
-
-#endif

@@ -1,0 +1,54 @@
+#!/usr/bin/expect
+set timeout -1
+if {[llength $argv] == 0} {
+     send_user "\nUsage: scriptname option client_name client_ip server_name server_ip \'password\' \n"
+     exit 1
+}
+set option [lindex $argv 0]
+set client_user [lindex $argv 1]
+set client_ip [lindex $argv 2]
+#set toolchain_path[lindex $argv 3]
+set passwd [lindex $argv 3]
+set i 0
+
+spawn scp target_dependency.sh $client_user@$client_ip:./
+expect {
+    "yes" { send "yes\r"; exp_continue}
+#    "assword: " { send "[lindex $passwd $i]\r"; incr i; exp_continue }
+    "assword: " { send "[lindex $passwd ]\r";  exp_continue }
+    "100% " { send_user "\n\t\tSent target_dependency.sh successfully" }  
+}
+
+set i 0
+spawn ssh -t $client_user@$client_ip "sudo ./target_dependency.sh $option"
+while true {
+	expect {
+		"yes" { send "yes\r"; exp_continue}
+		#    "assword: " { send "[lindex $passwd $i]\r"; incr i; exp_continue }
+		"assword: " { send "[lindex $passwd ]\r";  exp_continue }
+		"would you like to install" {
+			send_user "INSIDE"
+			interact "\r" return
+			send "\r"
+		 }
+        	"ailed" {
+			send_user "FAILED IN TARGET DEPENDENY\n"
+           		exit 1
+        	}
+		timeout {
+			send_user "U have not selected any choice:"
+			send_user "I will be exiting"
+			exit 1
+		}
+		eof {
+			spawn ssh $client_user@$client_ip "rm target_dependency.sh"
+			break
+		}
+	}
+}
+#lassign [wait] pid spawnid os_error_flag value
+#
+#if {$value == 1} {
+#        puts "\nthe target dependency has not been meet\n"
+#        send "exit 1\r"
+#}
