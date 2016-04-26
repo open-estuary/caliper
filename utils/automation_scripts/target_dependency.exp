@@ -15,7 +15,7 @@ spawn scp target_dependency.sh $client_user@$client_ip:./
 expect {
     "yes" { send "yes\r"; exp_continue}
 #    "assword: " { send "[lindex $passwd $i]\r"; incr i; exp_continue }
-    "assword: " { send "[lindex $passwd ]\r";  exp_continue }
+    "assword" { send "[lindex $passwd ]\r";  exp_continue }
     "100% " { send_user "\n\t\tSent target_dependency.sh successfully" }  
 }
 
@@ -25,16 +25,16 @@ while true {
 	expect {
 		"yes" { send "yes\r"; exp_continue}
 		#    "assword: " { send "[lindex $passwd $i]\r"; incr i; exp_continue }
-		"assword: " { send "[lindex $passwd ]\r";  exp_continue }
+		"assword" { send "[lindex $passwd ]\r";  exp_continue }
 		"would you like to install" {
 			send_user "INSIDE"
 			interact "\r" return
 			send "\r"
 		 }
-        	"ailed" {
+        "ailed" {
 			send_user "FAILED IN TARGET DEPENDENY\n"
            		exit 1
-        	}
+        }
 		timeout {
 			send_user "U have not selected any choice:"
 			send_user "I will be exiting"

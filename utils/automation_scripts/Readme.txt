@@ -4,7 +4,10 @@ This file can be used to automate caliper execution. This is not part of caliper
 
 Instruction:
 1. Make sure you create a folder in your home directory and name it as "toolchain" and keep required toolchain files in this folder.
-2. "testlist.txt" file contains a list of test to be performed by caliper, put an '#' symbol before the test name you wish to not execute
+2. Auto SSH has to be estalised with the client
+3. Give executable permission to all the files preasent in this folder except for Readme.txt
+4. Reboot the Client Machine before processeding further
+5. "testlist.txt" file contains a list of test to be performed by caliper, put an '#' symbol before the test name you wish to not execute
     For example 
 	#[tinymembench]
 	#[openssl]
@@ -15,7 +18,7 @@ Instruction:
 
 This will not execute tinymembench, openssl, scimark and linpack	
 		
-3. Run the main.sh command with the following arguments
+6. Run the main.sh command with the following arguments
    option=$1
    server_id=$2
    server_ip=$3
@@ -36,3 +39,5 @@ This will not execute tinymembench, openssl, scimark and linpack
    client_ip=192.168.40.27
    client_passwd=root123
    caliper_option=-br
+
+NOTE: THIS WILL NOT INSTALL mysql-server  AND libmysqlclient-dev IN THE CLIENT. PLEASE INSTALL THIS MANUALLY

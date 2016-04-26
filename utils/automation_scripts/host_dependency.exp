@@ -23,7 +23,7 @@ while true {
 		"failed" {
 			send_user "U have not selected any choice:"
 			send_user "I will be exiting"
-			exit 1"
+			exit 1
 		}
 		eof { 
 			send_user "Everything was successful\n"

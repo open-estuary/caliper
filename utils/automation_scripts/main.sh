@@ -90,25 +90,30 @@ echo -e "option=$option \n server_id=$server_id\n server_ip=$server_ip\n server_
 path_config="/etc/caliper/config/client_config.cfg"
 sudo ./modify.py $path_config $client_ip $server_ip
 
-
-toolchain_flag=0
-#Exporting the Tool chain
-files_toolchain=`find ~/toolchain/ -mindepth 1 -maxdepth 1 -type d -printf "%f\n"`
-for i in $files_toolchain
-do
-    toolchain_flag=$(($toolchain_flag + 1))
-    export PATH=~/toolchain/$i/bin:$PATH
-done
-
-if [ $toolchain_flag -eq 0 ]
+host_arch=`uname -a | awk -F ' ' '{print $12}'`
+target_arch=`ssh $client_id@$client_ip "uname -a"`
+target_arch=`echo $target_arch | awk -F ' ' '{print $13}'`
+if [ $host_arch != $target_arch ]
 then
-    echo -e "\nThe Toolchain Path is invalid\n"
-    exit
-elif [ $toolchain_flag -eq 1 ]
-then
-    echo -e "\n ONLY $i toolchain is exported\n"
-    echo "This will lead to error Please"
-    sleep 5
+    toolchain_flag=0
+    #Exporting the Tool chain
+    files_toolchain=`find ~/toolchain/ -mindepth 1 -maxdepth 1 -type d -printf "%f\n"`
+    for i in $files_toolchain
+    do
+        toolchain_flag=$(($toolchain_flag + 1))
+        export PATH=~/toolchain/$i/bin:$PATH
+    done
+
+    if [ $toolchain_flag -eq 0 ]
+    then
+        echo -e "\nThe Toolchain Path is invalid\n"
+        exit
+    elif [ $toolchain_flag -eq 1 ]
+    then
+        echo -e "\n ONLY $i toolchain is exported\n"
+        echo "This will lead to error Please"
+        sleep 5
+    fi
 fi
 
 #checking all the test to be conducted
