@@ -98,31 +98,34 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
                             shell=True)
     bench_test = "ltp"
     if  bench_name == bench_test:
-	 tar_ip = settings.get_value('CLIENT', 'ip', type=str) 
-	 target.run("if [[ ! -e /mnt/caliper_nfs ]]; then mkdir -p /mnt/caliper_nfs; fi")
+        tar_ip = settings.get_value('CLIENT', 'ip', type=str)
+        target.run("if [[ ! -e /mnt/caliper_nfs ]]; then mkdir -p /mnt/caliper_nfs; fi")
 # fix me , now that we create the folder, why not we mount it directly here
+        try:
+             tar_mask = ".".join(tar_ip.split(".")[0:3])
+             p1 = subprocess.Popen(["ifconfig"], stdout=subprocess.PIPE)
+             p2 = subprocess.Popen(["grep", tar_mask], stdin=p1.stdout, stdout=subprocess.PIPE)
+             p1.stdout.close()
+             output,err = p2.communicate()
+             output = output.strip()
+             host_ip = output.split("inet addr:")[1].split(" ")[0]
 
-	 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-	 try:
-# fix me , getting host ip to be optimised
-		s.connect(("8.8.8.8", 80) )
-	 except Exception:
-		logging.debug("Socket connection failed during ltp pre-requisite check" )
-	 host_ip = s.getsockname()[0]
-	 try:	
-	 	xyz = target.run("mount -t nfs %s:/opt/caliper_nfs /mnt/caliper_nfs" % (host_ip) )
-	 except Exception:
-		try:
-			xyz = target.run("umount /mnt/caliper_nfs/")
-			xyz = target.run("mount -t nfs %s:/opt/caliper_nfs /mnt/caliper_nfs" % (host_ip) )
-		except Exception:
-			logging.debug("Unable to mount")
-			return result
-   	 readme_file=log_bench+"_README"
-    	 resultltp = subprocess.call("touch %s"
-					%(readme_file),shell=True)
-    	 resultltp = subprocess.call("echo 'The categorization of ltp in caliper is\nCATEGORY\t\t\t\t\t\tSCENARIOS OF LTP\n\n[command]\t\t\t\t\t\tcommands\n[cpu]\t\t\t\t\t\tsched,cpuhotplug\n[memory]\t\t\t\t\t\tmm.numa,hugetlb\n[dio]\t\t\t\t\t\tdio,io,dma_thread_diotest,timers\n[filesystem]\t\t\t\t\t\tfilecaps,fs,fs_bind,fs_ext4,fs_perms_simple,fs_readonly\n[kernel/\t\t\t\t\t\tsyscalls,controllers,pty,containers,admin_tools,modules,can\n[proc]\t\t\t\t\t\tipc,hyperthreading,nptl,cap_bounds,connectors,pipes\n\n\nltp_output.log contains the screenshot of complete ltp execution and ltp_parser.log contains the information regarding the number of tests executed and among them which all have passed failed or skipped.\n\nFor more information regarding a particular category please see ltp_<category>_output.log which contains the output screen and parser log for that particular category' >> %s"
-		%(readme_file),shell=True)
+        except Exception:
+            logging.debug("Unable to get the host_ip" )
+        try:
+            mount_cmd = target.run("mount -t nfs %s:/opt/caliper_nfs /mnt/caliper_nfs" % (host_ip) )
+        except Exception:
+            try:
+                umount_cmd = target.run("umount /mnt/caliper_nfs/")
+                mount_cmd = target.run("mount -t nfs %s:/opt/caliper_nfs /mnt/caliper_nfs" % (host_ip) )
+            except Exception:
+                logging.debug("Unable to mount")
+                return result
+        readme_file=log_bench+"_README"
+        resultltp = subprocess.call("touch %s"
+                             %(readme_file),shell=True)
+        resultltp = subprocess.call("echo 'The categorization of ltp in caliper is\nCATEGORY\t\t\t\t\t\tSCENARIOS OF LTP\n\n[command]\t\t\t\t\t\tcommands\n[cpu]\t\t\t\t\t\tsched,cpuhotplug\n[memory]\t\t\t\t\t\tmm.numa,hugetlb\n[dio]\t\t\t\t\t\tdio,io,dma_thread_diotest,timers\n[filesystem]\t\t\t\t\t\tfilecaps,fs,fs_bind,fs_ext4,fs_perms_simple,fs_readonly\n[kernel/\t\t\t\t\t\tsyscalls,controllers,pty,containers,admin_tools,modules,can\n[proc]\t\t\t\t\t\tipc,hyperthreading,nptl,cap_bounds,connectors,pipes\n\n\nltp_output.log contains the screenshot of complete ltp execution and ltp_parser.log contains the information regarding the number of tests executed and among them which all have passed failed or skipped.\n\nFor more information regarding a particular category please see ltp_<category>_output.log which contains the output screen and parser log for that particular category' >> %s"
+                  %(readme_file),shell=True)
     
     # for each command in run config file, read the config for the benchmark
     for i in range(0, len(sections_run)):
@@ -154,7 +157,7 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
             logging.info(e)
             crash_handle.main()
             if bench_name == bench_test:
-                 xyz = subprocess.call("mv /opt/caliper_nfs/ltp_log/* %s "
+                 move_logs = subprocess.call("mv /opt/caliper_nfs/ltp_log/* %s "
                                 % (Folder.exec_dir), shell=True)
             server_utils.file_copy(logfile, tmp_log_file, 'a+')
             if os.path.exists(tmp_log_file):
@@ -167,7 +170,7 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
               return result
         else:
             if bench_name == bench_test:
-                xyz = subprocess.call("mv /opt/caliper_nfs/ltp_log/* %s "
+                move_logs = subprocess.call("mv /opt/caliper_nfs/ltp_log/* %s "
                                 % (Folder.exec_dir), shell=True)
                 if os.path.exists(subsection_file):
                     server_utils.file_copy(tmp_log_file,subsection_file, 'a+')
@@ -665,10 +668,10 @@ def caliper_run(target_exec_dir, target):
                 print_format()
                 if sections[i]== "ltp":
                     try:
-                        xyz = target.run("umount /mnt/caliper_nfs/")
+                        unmount = target.run("if  df -h |grep caliper_nfs  ; then umount /mnt/caliper_nfs/; fi")
                     except Exception:
-                        xyz = target.run("fuser -km /mnt/caliper_nfs")
-                        xyz = target.run("umount /mnt/caliper_nfs/")
+                        unmount = target.run("if  df -h |grep caliper_nfs  ; then fuser -km /mnt/caliper_nfs ;fi")
+                        unmount = target.run("if  df -h |grep caliper_nfs  ; then umount /mnt/caliper_nfs/ ;fi")
                 run_flag = server_utils.get_fault_tolerance_config(
                                 'fault_tolerance', 'run_error_continue')
                 if run_flag == 1:
@@ -679,10 +682,10 @@ def caliper_run(target_exec_dir, target):
                 logging.info("Running %s Finished" % sections[i])
                 if sections[i] == "ltp":
                     try:
-                         xyz = target.run("umount /mnt/caliper_nfs/")
+                         unmount = target.run("if  df -h |grep caliper_nfs  ; then umount /mnt/caliper_nfs/ ;fi")
                     except Exception:
-                         xyz = target.run("fuser -km /mnt/caliper_nfs/")
-                         xyz = target.run("umount /mnt/caliper_nfs/")
+                         unmount = target.run("if  df -h |grep caliper_nfs  ; then fuser -km /mnt/caliper_nfs/ ;fi")
+                         unmount = target.run("if  df -h |grep caliper_nfs  ; then umount /mnt/caliper_nfs/ ;fi")
 			
                 print_format()
     return 0
