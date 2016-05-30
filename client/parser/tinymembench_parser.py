@@ -28,7 +28,7 @@ def tinyResult(content, outfp):
 	outfp.write('+++++++++++++++++++++++++++++MEMORY Bandwidth+++++++++++++++++++++++++++++++++\n')	
 	outfp.write('OPERATIONS %54s' %': BANDWIDTH\n')
 
-	outfp.write("%s\n" %(content.split("==========================================================================")[2]))
+	outfp.write("%s\n" %(content.split("==========================================================================")[-3]))
 	outfp.write('+++++++++++++++++++++++++++++MEMORY Latency+++++++++++++++++++++++++++++++++')
 	outfp.write("%s\n" %(content.split("==========================================================================")[-1]))
 	list = content.splitlines()
