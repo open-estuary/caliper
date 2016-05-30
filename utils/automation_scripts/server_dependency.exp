@@ -13,7 +13,7 @@ set passwd [lindex $argv 3]
 spawn scp server_dependency.sh $server_user@$server_ip:./
 expect {
     "yes" { send "yes\r"; exp_continue}
-    "assword" { send "[lindex $passwd]\r"; exp_continue }
+    "assword: " { send "[lindex $passwd]\r"; exp_continue }
     "100% " { send_user "\n\t\tSent server_dependency.sh successfully" }  
 }
 
