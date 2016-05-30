@@ -53,7 +53,7 @@ def get_host_arch(host):
 
 def get_host_name(host):
     try:
-        arch_result = host.run("/bin/uname -a") + host.run
+        arch_result = host.run("/bin/uname -a")
     except error.CmdError, e:
         raise error.ServRunError(e.args[0], e.args[1])
     else:
