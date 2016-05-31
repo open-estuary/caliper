@@ -14,6 +14,7 @@ import re
 from caliper.client.shared.utils import *
 from caliper.client.shared import error
 from caliper.client.shared import caliper_path
+from caliper.client.shared.settings import settings
 
 
 def get_target_exec_dir(target):
@@ -33,6 +34,7 @@ def get_host_arch(host):
         arch_result = host.run("/bin/uname -a")
     except error.CmdError, e:
         raise error.ServRunError(e.args[0], e.args[1])
+
     else:
         returncode = arch_result.exit_status
         if returncode == 0:
@@ -53,14 +55,17 @@ def get_host_arch(host):
 
 def get_host_name(host):
     try:
-        arch_result = host.run("/bin/uname -a") + host.run
+        arch_result = host.run("/bin/uname -a")
     except error.CmdError, e:
         raise error.ServRunError(e.args[0], e.args[1])
     else:
         returncode = arch_result.exit_status
         if returncode == 0:
             output = arch_result.stdout
-            machine_name = output.split(" ")[1]
+            try:
+                machine_name = settings.get_value('CLIENT', 'name', type=str)
+            except:
+                machine_name = output.split(" ")[1]
             return machine_name
         else:
             msg = "Caliper does not support this kind of arch machine"
