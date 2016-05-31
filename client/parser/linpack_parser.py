@@ -23,7 +23,7 @@ def compute_mflops(content, outfp):
                     continue
                 else:
                     mflops = mflops + mflops_tmp
-        mflops = mflops/6
+        mflops = mflops/len(line)
         outfp.write(str(mflops) + "\n")
         score = mflops
     return score

@@ -180,11 +180,12 @@ if __name__=="__main__":
     f_option = 0
     if args.folder:
         f_option = 1
-        fp = open(FOLDER.caliper_log_file,'a+')
-        fp.write("re-execution with -f .It may be execution of all the tools or some specific tools as specified in the config file \n")
-        fp.close()
         caliper_path.folder_ope.name = args.folder
         caliper_path.folder_ope.set_up_path()
+        if os.path.exists(FOLDER.caliper_log_file):
+            fp = open(FOLDER.caliper_log_file,'a+')
+            fp.write("re-execution with -f .It may be execution of all the tools or some specific tools as specified in the config file \n")
+            fp.close()
     if not os.path.exists(caliper_path.folder_ope.name):
         os.makedirs(caliper_path.folder_ope.name)
 

@@ -29,7 +29,7 @@ def time_parser(content, outfp):
     if system_time:
         sys_time = trans_float(system_time.group(1), system_time.group(2))
         outfp.write("sys " + str(sys_time) + "s\n")
-    return score/1000
+    return score
 
 if __name__ == "__main__":
     infp = open("1.txt", "r")

@@ -38,6 +38,12 @@
     {% if bandwidth %}
     <script src="{% static 'polls/js/example/memory/memory_cachebench.js' %}"></script>
     {% endif %}
+    {% if tiny_bandwidth %}
+    <script src="{% static 'polls/js/example/memory/memory_tiny_bandwidth.js' %}"></script>
+    {% endif %}
+    {% if tiny_latency %}
+    <script src="{% static 'polls/js/example/memory/memory_tiny_latency.js' %}"></script>
+    {% endif %}
 
     <!-- Custom CSS for this example -->
     <style type="text/css">
@@ -71,7 +77,6 @@
     <p> <img src="{% static 'polls/pictures/memory_summary.png' %}" height="300"
     width="600" /> </p>
 	</div>
-    
     <!-- <h1><small>caliper memory comparison detail</small></h1> -->
     <div id="memory-summary" class="sensei-grid"></div>
     {% endif %}
@@ -91,6 +96,22 @@
 	</div>
 		   
     <div id="memory-bandwidth" class="sensei-grid"></div>
+    {% endif %}
+    {% if tiny_bandwidth %}
+    <h2><small>Memory Score Details: Tiny Bandwidth</small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/memory_tiny_bandwidth.png' %}" height="450" width="800" /> </p>
+	</div>
+
+    <div id="memory-tiny-bandwidth" class="sensei-grid"></div>
+    {% endif %}
+    {% if tiny_latency %}
+    <h2><small>Memory Score Details: Tiny Latency</small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/memory_tiny_latency.png' %}" height="450" width="800" /> </p>
+	</div>
+
+    <div id="memory-tiny-latency" class="sensei-grid"></div>
     {% endif %}
 
     </div>
