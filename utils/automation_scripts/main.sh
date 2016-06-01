@@ -53,7 +53,7 @@ comment()
 	string=`echo "$line" | awk -F : '{ print $2 }'`
 	num2=$(($num+3))
 
-	if [ ${string:0:1} != '#' ]
+	if [ ${string:0:1} != '#' -a ${string} != '\n']
 	then
 		sudo sed -i "$num,$num2 s/^/#/g" $fileName
 	fi
@@ -78,7 +78,7 @@ uncomment()
 	string=`echo "$line" | awk -F : '{ print $2 }'`
 	num2=$(($num+3))
 
-	if [ ${string:0:1} == '#' ]
+    if [ ${string:0:1} != '#' -a ${string} != '\n']
 	then
 		sudo sed -i "$num,$num2 s/#//g" $fileName
 	fi

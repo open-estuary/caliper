@@ -43,10 +43,5 @@ while true {
 		}
 	}
 }
-#lassign [wait] pid spawnid os_error_flag value
 
-#if {$value == 1} {
-#        puts "\nthe target dependency has not been meet\n"
-#        send "exit 1\r"
-#}
 
