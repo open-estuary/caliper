@@ -236,7 +236,7 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
     if  bench_name == bench_test:
         tar_ip = settings.get_value('CLIENT', 'ip', type=str)
         target.run("if [[ ! -e /mnt/caliper_nfs ]]; then mkdir -p /mnt/caliper_nfs; fi")
-    # fix me , now that we create the folder, why not we mount it directly here
+# fix me , now that we create the folder, why not we mount it directly here
         try:
              tar_mask = ".".join(tar_ip.split(".")[0:3])
              p1 = subprocess.Popen(["ifconfig"], stdout=subprocess.PIPE)
