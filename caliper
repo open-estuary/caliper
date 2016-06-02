@@ -144,7 +144,10 @@ def generate_web_tar():
                 shutil.rmtree(test_dir)
             test_dir = os.path.join(RESULT_DIR, 'test_results.tar.gz')
             if os.path.exists( test_dir ):
-                shutil.rmtree(test_dir)
+                try:
+                    shutil.rmtree(test_dir)
+                except:
+                    os.remove(test_dir)
             subprocess.call("cd %s; mv 127.0.0.1:8000 test_results; tar\
                     czf test_results.tar.gz test_results; rm -fr\
                     test_results" % RESULT_DIR, shell=True)

@@ -189,6 +189,11 @@ def compute_caliper_logs(target_exec_dir,flag = 1):
                     if not flag_compute and dic[bench][sections_run[k]["value"]]:
                             logging.info("There is wrong when computing the result\
                                         of \"%s\"" % command)
+    if not os.path.exists(caliper_path.HTML_DATA_DIR_INPUT):
+        os.makedirs(caliper_path.HTML_DATA_DIR_INPUT)
+
+    if not os.path.exists(caliper_path.HTML_DATA_DIR_OUTPUT):
+        os.makedirs(caliper_path.HTML_DATA_DIR_OUTPUT)
 
 def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
                     run_file):
