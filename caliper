@@ -17,6 +17,7 @@ import signal
 import datetime
 import commands
 import subprocess
+
 from argparse import ArgumentParser
 from caliper.client.shared.caliper_path import folder_ope as FOLDER
 try:
@@ -26,6 +27,7 @@ except ImportError:
 
 from caliper.server.build import build
 from caliper.server.run import test_run
+from caliper.server.run import write_results
 from caliper.client.shared.settings import settings
 from caliper.client.shared import error
 from caliper.server.hosts import host_factory
@@ -34,9 +36,12 @@ from caliper.client.shared import utils
 from caliper.client.shared import send_mails
 from caliper.server import summary
 from caliper.server.parser_process import parser as parser_engine
+from caliper.server.parser_process import normalize
+
+
 
 logging.basicConfig(level=logging.INFO)
-
+intermediate = 0
 def build_all_tests(remote_host,f_option):
     try:
         logging.info("Begining to build Caliper for the remote host")
@@ -54,6 +59,17 @@ def run_caliper(remote_host,f_option):
     except Exception, e:
         print e
         logging.info("There is wrong when running Caliper")
+        raise
+    else:
+        return result
+
+def parser_caliper_logs(remote_host,f_option):
+    try:
+        logging.debug("begining to Parse Caliper Logs")
+        result = test_run.parser_caliper_tests(remote_host,f_option)
+    except Exception, e:
+        print e
+        logging.info("There is wrong when parsing Caliper")
         raise
     else:
         return result
@@ -133,6 +149,7 @@ def generate_web_tar():
                     czf test_results.tar.gz test_results; rm -fr\
                     test_results" % RESULT_DIR, shell=True)
         except Exception as e:
+            print e
             logging.info("There is wrong with generating the test result webpage")
             kill_django(newpid)
             return 0
@@ -141,17 +158,29 @@ def generate_web_tar():
             kill_django(newpid)
             return 1
 
+def normalize_scores():
+    write_results.yaml_filter(caliper_path.HTML_DATA_DIR_INPUT)
+    return
+
+
 if __name__=="__main__":
     parser = ArgumentParser()
     parser.add_argument("-b", "--build", action="store_true",
-            dest="build", default=True,
-            help="select to build the selected test tools")
+            dest="build", default=True,help="select to build the selected test tools")
     parser.add_argument("-B", "--nobuild", action="store_false",
             dest="build", help="select not to build process of test tools")
     parser.add_argument("-r", "--run", action="store_true", dest="run", default=True,
             help="select to run the selected test tools")
     parser.add_argument("-R", "--norun", action="store_false", dest="run", help=
             "not to execute the process of running test tools")
+    parser.add_argument("-p", "--parse", action="store_true", dest="parse", default=True,
+                        help="select to Parse the selected test tools")
+    parser.add_argument("-P", "--noparse", action="store_false", dest="parse", help=
+            "not to Parse the process of running test tools")
+    parser.add_argument("-s", "--score", action="store_true", dest="score", default=True,
+                        help="select to Score the selected test tools")
+    parser.add_argument("-S", "--noscore", action="store_false", dest="score", help=
+                        "not to Score the process of running test tools")
     parser.add_argument("-w", "--webpage", action="store_true", dest="webpage", default=False,
             help="select to generate the webpage test report")
     parser.add_argument("-e", "--email", action="store_true", dest="send_email",
@@ -200,10 +229,10 @@ if __name__=="__main__":
 
     if args.run: 
         try:
-            result2 = run_caliper(remote_host,f_option)
+            result2 = run_caliper(remote_host, f_option)
             if result2:
                 sys.exit()
-            parser_caliper(remote_host)
+
         except Exception:
             raise
             sys.exit()
@@ -217,7 +246,33 @@ if __name__=="__main__":
         except Exception, e:
             raise e
 
+    if args.parse:
+        try:
+            result2 = parser_caliper_logs(remote_host, f_option)
+            if result2:
+               sys.exit()
+            result2 = test_run.compute_caliper_logs(remote_host,1)
+        except Exception:
+            raise
+            sys.exit()
+
+    if args.score:
+        try:
+            result2 = test_run.compute_caliper_logs(remote_host,2)
+            if intermediate:
+                parser_caliper(remote_host)
+        except Exception as e:
+            print e
+            pass
+
     if args.webpage and not args.send_email:
+        try:
+            flag = normalize_scores()
+            write_results.normalize_caliper()
+            normalize.normalise()
+        except Exception as e:
+            print e
+            sys.exit()
         flag = generate_web_tar()
 
     if args.webpage and args.send_email:
