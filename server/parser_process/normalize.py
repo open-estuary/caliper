@@ -4,7 +4,7 @@ import os
 import glob
 from caliper.client.shared import caliper_path
 
-DATAFILES_FOLDER = caliper_path.HTML_DATA_DIR_INPUT
+DATAFILES_FOLDER = caliper_path.HTML_DATA_DIR_OUTPUT
 
 def normalise():
     dicList = []
@@ -172,9 +172,9 @@ def delete(dic, option):
 
 def save(dicList):
     for dic in dicList:
-        outputyaml = open(caliper_path.HTML_DATA_DIR_INPUT + dic['name'] + "_score_post.yaml",'w')
-        outputjson = open(caliper_path.HTML_DATA_DIR_INPUT + dic['name'] + "_score_post.json",'w')
+        outputyaml = open(os.path.join(caliper_path.HTML_DATA_DIR_OUTPUT, dic['name'] + "_score_post.yaml"),'w')
+        outputjson = open(os.path.join(caliper_path.HTML_DATA_DIR_OUTPUT , dic['name'] + "_score_post.json"),'w')
         outputyaml.write(yaml.dump(dic, default_flow_style=False))
-        outputjson.write(json.dumps(dic,indent=0))
+        outputjson.write(json.dumps(dic,indent=0,sort_keys=True))
         outputyaml.close()
         outputjson.close()

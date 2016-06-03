@@ -207,7 +207,7 @@ def write_yaml_perf(yaml_file, tmp, result, kind=1):
 
 def yaml_filter(yamlPath):
     scoreFile = {}
-    for files in glob.glob(yamlPath + "*_score.yaml"):
+    for files in glob.glob(os.path.join(yamlPath,"*_score.yaml")):
         dic = {}
         dic = yaml.load(open(files))
         scoreFile[str(files)] = dic
@@ -391,7 +391,7 @@ def normalize_caliper():
         return
 
 def normalize_caliper_output(yamlPath):
-    for host_yaml_file in glob.glob(yamlPath + "*_score.yaml"):
+    for host_yaml_file in glob.glob(os.path.join(yamlPath,"*_score.yaml")):
         try:
             return_code = normalize_results( host_yaml_file)
         except Exception, e:
@@ -408,8 +408,10 @@ def normalize_results(yaml_file):
     func_str = 'Functional'
 
     yaml_file_post = yaml_file[0:-5] + "_post" + yaml_file[-5:]
+    fileName = yaml_file_post.split('/')[-1]
+    yaml_file_post_output = os.path.join(caliper_path.HTML_DATA_DIR_OUTPUT,fileName)
     if os.path.exists(yaml_file):
-        shutil.copyfile(yaml_file, yaml_file_post)
+        shutil.copyfile(yaml_file, yaml_file_post_output)
     else:
         logging.info("No such file %s" % yaml_file)
         flag = -1
@@ -425,7 +427,8 @@ def normalize_results(yaml_file):
         func_results = dic_[results_str][func_str]
         dic_[results_str][func_str] = normalize_score(func_results)
 
-    with open(yaml_file_post, 'w') as outfile:
+
+    with open(yaml_file_post_output, 'w') as outfile:
         outfile.write(yaml.dump(dic_, default_flow_style=False))
         flag = 1
     outfile.close()
