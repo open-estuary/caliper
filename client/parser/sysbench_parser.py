@@ -65,7 +65,7 @@ def sysbench_cpu_parser(content,outfp):
     contents = content.split("execution time (avg/stddev)")
     for item in contents:
         if re.search(r'Number of threads:',item):
-            if re.search(r'Number of threads: 1',item):
+            if re.search(r'Number of threads: 1\n',item):
                 result = re.search(r'\s+total time:\s+(\d+\.\d+)s',item)
                 dic['cpu_sincore']['sincore_misc']['sysbench_prime'] = result.group(1)
             else:
