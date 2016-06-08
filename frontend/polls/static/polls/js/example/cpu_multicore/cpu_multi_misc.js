@@ -1,15 +1,14 @@
 
 $(function () {
-    var test = document.getElementById("cpu_sincore").value;
+    var test = document.getElementById("cpu_multicore").value;
 
-    var sin_int_dic = getJson(test, 'sincore_double')
+    var sin_int_dic = getJson(test, 'multicore_misc')
     var columns = getHoriColumn(sin_int_dic);
     var data = getHoriData(sin_int_dic, columns);
-    console.log(data)
-    console.log(sin_int_dic)
+
     // initialize grid
     var options = {emptyRow: true, sortable: false};
-    var grid = $(document.getElementById("sin-double")).grid(data, columns, options);
+    var grid = $(document.getElementById("multi-misc")).grid(data, columns, options);
 
     draw_grid(grid);
 

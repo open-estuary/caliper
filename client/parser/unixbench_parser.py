@@ -15,11 +15,13 @@ def unixbench_parser(contents, outfp):
     contents = contents.split("-----------------------------------------------------------------------")
 
     dic = {}
-    dic['multicore'] = {}
-    dic['sincore'] = {}
+    dic['cpu_multicore'] = {}
+    dic['cpu_multicore']['multicore_unixbench'] = {}
+    dic['cpu_sincore'] = {}
+    dic['cpu_sincore']['sincore_unixbench'] = {}
     for key,value in seperators.iteritems():
-        dic['sincore'][key] = re.findall(value + r'\s+\d+.\d+\s+(\d+.\d+)',contents[1])[0]
-        dic['multicore'][key] = re.findall(value + r'\s+\d+.\d+\s+(\d+.\d+)', contents[2])[0]
+        dic['cpu_sincore']['sincore_unixbench'][key] = re.findall(value + r'\s+\d+.\d+\s+(\d+.\d+)',contents[1])[0]
+        dic['cpu_multicore']['multicore_unixbench'][key] = re.findall(value + r'\s+\d+.\d+\s+(\d+.\d+)', contents[2])[0]
 
     outfp.write(yaml.dump(dic,default_flow_style=False))
     outfp.close()

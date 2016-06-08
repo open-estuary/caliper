@@ -14,12 +14,13 @@ urlpatterns = [
         url(r'^$', views.index, name='index'),
         # for Performance
         url(r'algorithm/$', views.algorithm, name='algorithm'),
-        url(r'cpu/$', views.cpu, name='cpu'),
-        url(r'disk/$', views.disk, name='disk'),
+        url(r'cpu_sincore/$', views.cpu_sincore, name='cpu_sincore'),
+        url(r'cpu_multicore/$', views.cpu_multicore, name='cpu_multicore'),
+        url(r'storage/$', views.storage, name='storage'),
         url(r'latency/$', views.latency, name='latency'),
         url(r'memory/$', views.memory, name='memory'),
         url(r'network/$', views.network, name='network'),
-        url(r'io/$', views.io, name='io'),
+        #url(r'io/$', views.io, name='io'),
         url(r'application/$', views.application, name='application'),
         # for Functional
         url(r'kernel/$', views.kernel, name='kernel'),

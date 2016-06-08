@@ -1,6 +1,6 @@
 
 $(function () {
-	var test = document.getElementById("cpu_tst").value;  
+	var test = document.getElementById("cpu_sincore").value;
     
     var sin_float_dic = getJson(test, 'sincore_float')
     console.log(sin_float_dic)

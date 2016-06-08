@@ -1,6 +1,6 @@
 
 $(function () {
-    var test = document.getElementById("io_tst").value;  
+    var test = document.getElementById("storage_tst").value;
     
     var local_lat_dic = getJson(test, 'iops')
     var columns = getHoriColumn(local_lat_dic);

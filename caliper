@@ -112,7 +112,6 @@ def kill_django(pid):
             utils.safe_kill(child1, signal.SIGINT)
         utils.safe_kill(child, signal.SIGSTOP)
     utils.kill_process_tree(pid)
-
 RESULT_DIR = caliper_path.folder_ope.results_dir
 
 def generate_web_tar():

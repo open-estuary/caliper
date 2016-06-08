@@ -1,6 +1,6 @@
 
 $(function () {
-    var test = document.getElementById("cpu_tst").value;
+    var test = document.getElementById("cpu_sincore").value;
 
     var sin_int_dic = getJson(test, 'sincore_int')
     var columns = getHoriColumn(sin_int_dic);

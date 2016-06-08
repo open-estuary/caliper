@@ -35,6 +35,30 @@
     {% if compile %}
     <script src="{% static 'polls/js/example/application/application_compile.js' %}"></script>
     {% endif %}
+    {% if ebizzy_mmap_records %}
+    <script src="{% static 'polls/js/example/application/application_ebizzy_mmap_records.js' %}"></script>
+    {% endif %}
+    {% if ebizzy_mmap_time %}
+    <script src="{% static 'polls/js/example/application/application_ebizzy_mmap_time.js' %}"></script>
+    {% endif %}
+    {% if ebizzy_no_mmap_records %}
+    <script src="{% static 'polls/js/example/application/application_ebizzy_no_mmap_records.js' %}"></script>
+    {% endif %}
+    {% if ebizzy_no_mmap_time %}
+    <script src="{% static 'polls/js/example/application/application_ebizzy_no_mmap_time.js' %}"></script>
+    {% endif %}
+    {% if hadoop %}
+    <script src="{% static 'polls/js/example/application/application_hadoop.js' %}"></script>
+    {% endif %}
+    {% if sysbench %}
+    <script src="{% static 'polls/js/example/application/application_sysbench.js' %}"></script>
+    {% endif %}
+    {% if jdk %}
+    <script src="{% static 'polls/js/example/application/application_jdk.js' %}"></script>
+    {% endif %}
+
+
+
 
     <!-- Custom CSS for this example -->
     <style type="text/css">
@@ -80,8 +104,82 @@
     </div>
 
     <div id="application_compile" class="sensei-grid"></div>
-    {% endif %}
     <p><b>Note: </b> Kernel compilation tested with varied number of threads. format is kernel-dev_#Threads</p>
+    {% endif %}
+
+    {% if ebizzy_mmap_records %}
+    <h2><small>Application Score Details: Ebizzy mmap Records</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/application_ebizzy_mmap_records.png' %}" height="500"
+    width="700" /> </p>
     </div>
+
+    <div id="ebizzy-mmap-records" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if ebizzy_mmap_time %}
+    <h2><small>Application Score Details: Ebizzy mmap Time</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/application_ebizzy_mmap_time.png' %}" height="500"
+    width="700" /> </p>
+    </div>
+
+    <div id="ebizzy-mmap-time" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if ebizzy_no_mmap_records %}
+    <h2><small>Application Score Details: Ebizzy No mmap Records</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/application_ebizzy_no_mmap_records.png' %}" height="500"
+    width="700" /> </p>
+    </div>
+
+    <div id="ebizzy-no-mmap-records" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if ebizzy_no_mmap_time %}
+    <h2><small>Application Score Details: Ebizzy No mmap Time</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/application_ebizzy_no_mmap_time.png' %}" height="500"
+    width="700" /> </p>
+    </div>
+
+    <div id="ebizzy-no-mmap-time" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if hadoop %}
+    <h2><small>Application Score Details: Hadoop</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/application_hadoop.png' %}" height="500"
+    width="700" /> </p>
+    </div>
+
+    <div id="application_hadoop" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if sysbench %}
+    <h2><small>Application Score Details: Sysbench</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/application_sysbench.png' %}" height="500"
+    width="700" /> </p>
+    </div>
+
+    <div id="application_sysbench" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if jdk %}
+    <h2><small>Application Score Details: JDK</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/application_jdk.png' %}" height="500"
+    width="700" /> </p>
+    </div>
+
+    <div id="application_jdk" class="sensei-grid"></div>
+    {% endif %}
+
+
+
+
+</div>
 </body>
 </html>
