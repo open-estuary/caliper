@@ -1,9 +1,6 @@
 #!/bin/bash
 
-set -x
-
-user=$(echo $USER)
-hdfs_tmp=/tmp/hadoop-$user
+hdfs_tmp=/tmp/hadoop-${USER}
 
 HADOOP_DIR=$PWD/hadoop
 HADOOP_CONF=$HADOOP_DIR/etc/hadoop
@@ -20,63 +17,53 @@ HIBENCH_BENCH_LIST=$HIBENCH_CONF/benchmarks.lst
 HIBENCH_LAN_API=$HIBENCH_CONF/languages.lst
 
 sudo apt-get install expect -y
+
 ##### set the ssh no-passwd login #####
 if [ ! -f ~/.ssh/*.pub ]; then
     ./generate_keys.sh
 fi
-public_key=$(cat ~/.ssh/*.pub)
-echo $public_key >> ~/.ssh/authorized_keys
+sKeyPub=$(cat ~/.ssh/id_*.pub)
+f0=~/.ssh/authorized_keys
+grep -q "${sKeyPub}" ${f0} 2>/dev/null
+if [ $? -ne 0 ]; then
+    cat ~/.ssh/*.pub >>${f0}
+fi
 
 ############## get JAVA_HOME which need to be used later ################
-java_version=`java -version 2>tmp_001.txt && awk '/java/{print $0}' tmp_001.txt`
-if [ "$java_version"x = ""x ]; then
-    sudo apt-get install openjdk-7-jdk -y
-    if [ $? -ne 0 ]; then
-        echo 'Install openjdk-7-jdk error'
-    fi
-    java_location=$(find /usr/lib -name 'java-*-openjdk*')
-    java_loc=$(echo $java_location | awk '{print $1}')
-    echo "java install location is $java_loc"
-
-    echo "export JAVA_HOME=$java_loc" >> /etc/profile
-    echo 'export JAVA_JRE=$JAVA_HOME/jre'  >> /etc/profile
-    echo 'CLASSPATH=.:$JAVA_HOME/lib:$JRE_HOME/lib:$CLASSPATH'  >> /etc/profile 
-    source /etc/profile
-elif [ "$(whereis java)"x != ""x ]; then 
-    java_location=$(find /usr/lib -name 'java-*-openjdk*')
-    java_loc=$(echo $java_location | awk '{print $1}')
-    echo "java install location is $java_loc"
-
-    echo "export JAVA_HOME=$java_loc" >> /etc/profile
-    echo 'export JAVA_JRE=$JAVA_HOME/jre'  >> /etc/profile
-    echo 'CLASSPATH=.:$JAVA_HOME/lib:$JRE_HOME/lib:$CLASSPATH'  >> /etc/profile 
-    source /etc/profile
-else
-    # java is installed 
-    flag=0
-    sys_path=(${PATH//:/ })
-    
-    for i in ${sys_path[@]}
-    do
-        tmp=$(echo $i | grep 'java' | grep 'bin' | grep -v 'jre')
-        if [ "$tmp"x != ""x ]; then
-            flag=1
-            java_loc=${i%bin}
+#[ "$(whereis java)"x != ""x ]
+if false; then
+    iRt1=1
+    IFS=:; for d1 in ${PATH}; do IFS=${g_IFS0};
+        s1=$(echo ${d1} | grep 'java' | grep 'bin' | grep -v 'jre')
+        if [ -n "${s1}" ]; then
+            java_loc=${s1%/bin}
+            iRt1=0
+            break
         fi
-        break
-    done
-    if [ $flag -ne 1 ]; then
-        echo 'You have installed java, but you still need to configure the java
-        location in the /etc/profile or ~/.bashrc'
-        exit
+    IFS=$'\n'; done; IFS=${g_IFS0};
+fi
+if ! hash java; then
+    sudo apt-get -y install openjdk-7-jdk
+    if [ $? -ne 0 ]; then
+        printf "%s[%3s]%5s: install openjdk-7-jdk failed\n" "${FUNCNAME[0]}" ${LINENO} "Error" 1>&2
+        exit 1
     fi
 fi
+java_loc=$(find /usr/lib -name 'java-*-openjdk*' |sed -n "1p")
+printf "%s[%3s]%5s: ${java_loc}\n" "${FUNCNAME[0]}" ${LINENO} "Info"
+
+export JAVA_HOME=$java_loc
+export CLASSPATH=.:$JAVA_HOME/lib:$JAVA_HOME/jre/lib
 
 ############# start the hadoop service ################
 pushd $HADOOP_DIR
-  pushd $HADOOP_CONF
-    echo "export JAVA_HOME=$java_loc" >> $HADOOP_CONF/hadoop-env.sh
-  popd
+    pushd $HADOOP_CONF
+    grep -q "export JAVA_HOME=$java_loc" $HADOOP_CONF/hadoop-env.sh
+    if [ $? -ne 0 ]; then
+        echo "export JAVA_HOME=$java_loc" >> $HADOOP_CONF/hadoop-env.sh
+    fi
+    popd
+
 /usr/bin/expect  << EOF
   spawn $HADOOP_SERVICE/stop-all.sh
   expect {
@@ -89,37 +76,48 @@ pushd $HADOOP_DIR
   }
   expect eof
 EOF
-  rm -fr $hdfs_tmp
-  $HADOOP_BIN/hdfs namenode -format
-/usr/bin/expect  << EOF
-  spawn $HADOOP_SERVICE/start-dfs.sh
-   expect {
-    "connecting (yes/no)?"
-    {
-      send "yes\r"
-      expect "connecting (yes/no)?"
-      send "yes\r"
-    }
-  }
-  expect eof
+
+rm -fr $hdfs_tmp
+$HADOOP_BIN/hdfs namenode -format
+
+bOK1=false
+nMax1=5
+n1=0
+while [ ${n1} -lt ${nMax1} ]; do
+    sInfo1=$(/usr/bin/expect  << EOF
+      spawn $HADOOP_SERVICE/start-dfs.sh
+       expect {
+        "connecting (yes/no)?"
+        {
+          send "yes\r"
+          expect "connecting (yes/no)?"
+          send "yes\r"
+        }
+      }
+      expect eof
 EOF
-  hdfs_jps=$(jps)
-  if [ "$(echo $hdfs_jps | grep -w 'SecondaryNameNode')"x != ""x ]; then
-    if [ "$(echo $hdfs_jps | grep -w 'DataNode')"x != ""x ]; then
-      if [ "$(echo $hdfs_jps | grep -w 'NameNode')"x != ""x ]; then
-      	echo 'hdfs run successfully'
-      else
-	echo 'Namenode setup error'
-	exit
-      fi
-    else
-        echo 'DataNode setup error'
-	exit
+)
+    hdfs_jps=$(jps)
+    echo "${hdfs_jps}" |grep -iw "SecondaryNameNode"
+    if [ $? -eq 0 ]; then
+        echo "${hdfs_jps}" |grep -iw "NameNode"
+        if [ $? -eq 0 ]; then
+            echo "${hdfs_jps}" |grep -iw "DataNode"
+            if [ $? -eq 0 ]; then
+                bOK1=true
+                break
+            fi
+        fi
     fi
-  else
-    echo 'SecondaryNameNode setup error'
-    exit
-  fi
+
+    let n1+=1
+done
+
+printf "%s[%3s]%5s: while [ ${n1} -lt ${nMax1} ] ${sInfo1}\n${hdfs_jps}\n" "${FUNCNAME[0]}" ${LINENO} "Info"
+if ! ${bOK1}; then
+    printf "%s[%3s]%5s: Java Proc [NameNode SecondaryNameNode DataNode] have failed\n" "${FUNCNAME[0]}" ${LINENO} "Error" 1>&2
+    exit 1
+fi
 
 /usr/bin/expect  << EOF
   spawn $HADOOP_SERVICE/start-yarn.sh
@@ -140,7 +138,7 @@ EOF
       echo 'yarn run successfully'
   else 
       echo 'yarn set up failed'
-      exit
+      exit 1
   fi
 popd
 
