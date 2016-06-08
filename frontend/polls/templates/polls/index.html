@@ -52,63 +52,36 @@
 
     <div class="page-header">
     <h1> Caliper Benchmarking Report </h1> <!--SKD++-->
-    <p><b>Report Version & Date : v2.0-20160329</b> </p>
+    <p><b>Report Version & Date : Version-yyyymmdd</b> </p>
     </div>
-<!--SKD++ START Updated data-->
-    <p> Caliper is a test framework focuses on benchmarking and performance evaluation of server platforms.
-        It is developed primarily to evaluate various ARM64 server platforms. However, as a benchmarking 
-        platform, it caters and tested on other hardware platforms like x86.
-        
-        With Caliper you can test hardware and the software platform running on it easily, get visible results
-        and compare the performance. It can help to discover issues related to hardware or software.
-        	
-        To ease the first level of comparison of platforms, it provides simple score based view as the top most
-        view. Scores are generated based on the original test results on the corresponding platform using uniform
-        normalization algorithms across the platforms.
+<!-- START Updating data-->
+<h2> Introduction </h2>
+	<p>
+	Caliper is a test framework focuses on benchmarking and performance evaluation of server platforms. It can access the performance of ARM as well as X86 platforms . Caliper allows you to build, 	 execute and create a benchmarking report of the platforms under evaluation. It can help to discover issues related to hardware or software.
+	</p>
 
-        If you want to know more about caliper, please visit <a href="http://open-estuary.org/caliper-benchmarking/" target="_blank">Caliper page in Open Estuary Website</a></p>
+<h2> Test classification  </h2>
+	<p>
+	Caliper has already integrated with many industry standard open source benchmarking tools. Even though Caliper mainly focuses on the performance aspects of the system, it gives some insight on the functional aspects as well. The integrated tools are divided under two top dimensions, Performance and Functional. Under each of these categories sub subcategories and then the test cases are organised.	
+	</p>
 
-      <mark> <i><b>How to read the Scores in this report :</b> <br>Higher the score, better the performance!
-             <br>Ex: Usually lower the latency, it is better. However, in this report, <b>higher the latency score, it is better!</b>
-             <br>All the scores are converted to percentiles. Means <b>Max Score is 100.</b>
-             <br>In every score, one platform will score 100 and others will be relative percentile score to this.
-             <br>Please read the report accordingly.</i> </mark>
-<!--SKD++ END Updated data-->
+<h2> Report presentation </h2>
+	<p>
+	This report present the percentile score based comparison of platforms under each categories and  test scenarios.  Caliper collect the original execution results from each test cases  and normalize them. This is consisting of dynamic range compression of measured values and conversion of <b>"Smaller The Better"</b> values to <b>"Higher The Better"</b>. Hence, in this report, all the scores are <b> Higher The Better </b>.These calculated scores are then compared across platforms and then converted them to <b> "Percentiles" </b>. This means the highest value in each category will have the value of 100 and rest will be relative percentile score to this. If you want to know more details about the scoring process followed in this report, please go to <a href="polls/score_Calculation.html" target="_blank"> <b>Caliper score calculation.</b></a> 
+       <br>If you want to know more about caliper, please visit <a href="http://open-estuary.org/caliper-benchmarking/" target="_blank"> <b>Caliper page in Open Estuary Website</b></a></p>
+	</p>
 
-    <h2>Tested Platforms: Overview</h2> <!--SKD++ spelling for comparison updated-->
+    <h2>Tested Platforms: Overview</h2> 
     <div id="platform_configuration" class="sensei-grid"></div> 
-    <i><b>Attn: </b>Please <b>scroll to right</b> to see the table completely. Same with other tables in this report</i><br><br>
-    
-    <mark><b>Notes: <br></b> a) Platform Name = BoardName-OSversion : Ex: RH2285-U15.04= RH2285 server with Ubuntu 15.04; D02-Est2.1-U15.04= D02 board with Est2.1 based on Ubuntu 15.04 distro <br> b) Please click to get the <b>hardware details of each target platform</b>: <a href="/static/TargetInfo/D02-EST2.1-U15.04_Info.txt" target="_blank">D02-EST2.1-U15.04</a>, <a href="/static/TargetInfo/DELLR7-E5606-U15.04_Info.txt" target="_blank">DELLR7-E5606-U15.0</a>, <a href="/static/TargetInfo/MOONSHOT-M400-U14.04_Info.txt" target="_blank">MOONSHOT-M400-U14.04</a>, <a href="/static/TargetInfo/MOONSHOT-M700P-U14.04_Info.txt" target="_blank">MOONSHOT-M700P-U14.04</a>, <a href="/static/TargetInfo/OVERDRIVE-OsuseTumbleweed_Info.txt" target="_blank">OVERDRIVE-OsuseTumbleweed</a>, <a href="/static/TargetInfo/PC-I5650-U15.04_Info.txt" target="_blank">PC-I5650-U15.04</a>, <a href="/static/TargetInfo/RH2285-E52420V2-U15.04_Info.txt" target="_blank">RH2285-E52420V2-U15.04</a>, <a href="/static/TargetInfo/RH2288-E52690V3-U15.04_Info.txt" target="_blank">RH2288-E52690V3-U15.04</a></mark>
-    <!--h1><small>Test tool used</small></h1>
-    <div id="tools_info" class="sensei-grid"></div>
+    <i><b>Attn: </b>Please <b>scroll to right</b> to see the table completely. Same with other tables in this report</i><br>
+    <i><b>arm_64 Core is ARM-v8, Cortex A57 </b>  </i><br><br>
+   
+    <mark><b>Notes: <br></b> a) Platform Name = BoardName-OSversion : Ex: RH2285-U15.04= RH2285 server with Ubuntu 15.04; D02-Est2.1-U15.04= D02 board with Est2.1 based on Ubuntu 15.04 distro <br> b) Please click to get the <b>hardware details of each target platform</b>: <a href="static/TargetInfo/D02-EST2.2-U15.04_Info.txt" target="_blank">D02-EST2.2-U15.04</a>, <a href="static/TargetInfo/DELLR7-E5606-U15.04_Info.txt" target="_blank">DELLR7-E5606-U15.0</a>, <a href="static/TargetInfo/MOONSHOT-M400-U14.04_Info.txt" target="_blank">MOONSHOT-M400-U14.04</a>, <a href="static/TargetInfo/MOONSHOT-M710P-U14.04_Info.txt" target="_blank">MOONSHOT-M710P-U14.04</a>, <a href="static/TargetInfo/OVERDRIVE-U15.04_Info.txt" target="_blank">OVERDRIVEU15.04_Info.txt</a>, <a href="static/TargetInfo/PC-I5650-U15.04_Info.txt" target="_blank">PC-I5650-U15.04</a>, <a href="static/TargetInfo/RH2285-E52420V2-U15.04_Info.txt" target="_blank">RH2285-E52420V2-U15.04</a>, <a href="static/TargetInfo/RH2288-E52690V3-U15.04_Info.txt" target="_blank">RH2288-E52690V3-U15.04</a></mark>
 
-    <h1><small>Test execution details</small></h1>
-    <div id="exec_info" class="sensei-grid"></div-->
+<p> To have a very quick reference of the hardware configurations of platforms evaluated, please refer to <a href="static/TargetInfo/Platform_Configuration.xlsx" target ="_blank"> <b>Platform_Configuration.xlsx </b> </a>
+ 
 <hr>
-    <h1>Summary Comments/Issues observed</h1>
-    <p>This section will provide summary comments/high level issue observations based on the scores(focus w.r.t D02). This is only for reference to help further analysis or to improve the benchmarking report overall. These are not intended for any claim. 
-       <br>
-       1. HP Moonshot(ARM64 and X86 platforms), AMD Overdrive, RH2288 platforms are added.
-       <br>
-       2. HP Moonshot system tested from HP Lab remotely. The network, harddisk provided(SSD) etc were of high quality. These factors would have influenced the good results from HP Moonshot in the overall scoring. [Anyways to be analysed each in detail] 
-       <br>
-       3. There are some functional tests failed in most of the platforms. D02 has failed tests in kernel,dio, posix, mem, proc and cpu. 
-       <br>
-       4. CPU functional test score <b>D02 is the lowest</b>
-       <br>
-       5. <b>MOONSHOT-M700P(x86 based) has the HIGHEST </b> overall score in algorithm,application,io,memory, disk and cpu 
-       <br>
-       6. <b>D02 has the LOWEST </b> overall score in latency, network, application, memory and disk. Also low scores for algorithm, io and cpu. This is <b>*alarming*</b> and needs to analyse each in detail. 
-       <br>
-       7. <b>RH2288-E52690V3 has the HIGHEST </b> overall score in latency and <b>MOONSHOT-M400(ARM64) has the HIGHEST </b>overall score for network
-       <br>
-       8. D02 is slightly ahead of AMD Overdrive(ARM64) and MOONSHOT-M400(ARM64) ONLY in algorithm 
-       <br>
-       9. <b>AMD Overdrive(ARM64) and MOONSHOT-M400(ARM64) scored very HIGH compared to D02</b> in latency, application and disk
-       <br>
-       10. <b>MOONSHOT-M400(ARM64) has LOWEST </b> overall score in algorithm and cpu. <b>AMD Overdrive(ARM64) has LOWEST </b> overall score in io.
-       <br> </p> 
+Add the observation here !!!!!!!!
 <hr>
     <h1>Overall Benchmarking Score Summary</h1>
     {% if func_summary %}
@@ -138,13 +111,32 @@
 	</div>
     
     <div id="sum_perf_info" class="sensei-grid"></div>
-    {% endif %}
+    
     </div>
-<hr>
-<i><b>Caliper Changelog:<br> </b> <b>v2.0-20160329:</b> <br>   a) 4 platforms are newly added(Moonshot(x86), Moonshot(ARM64), AMDOverdrive(ARM64) and RH2288(x86)) <br>   b) Graphs and Legends made more consistent <br>   c) Scoring algorithm improved : Abosolute scoring changed to percentile for easy comparison <br>   d) Benchmark Framework optimized to handle more number of platforms <br>   e) Benchmarking updated: tinymembench added, disk tests improved, LTP updated to latest version<br>   f) Log collection from target system is improved <br>  g) D02 tested with Estuary v2.1<br>   h) Data consistency improved : verified with multiple runs and value checks <br>   i) Overall Report formatting/presentation improved.<br><br><b>v1.0-20151221:</b><br>   a) First version with 4 platforms(R7(x86), D02(ARM64),RH2285(X86),I5PC(x86)) <br>    b) D02 tested on Estuary 2.1 <br>   c) Scoring Algorithms are with absolute values <br>   d) Framework supported only 5 platforms reporting</i>
-<hr>
+
+<div style="text-align: left;">
+<h1>The test data </h1>
+<p> The original values of test data can be obtained from the below excels. <br>
+<b> 1.<a href="static/TestInfo/Performance-Tests.xlsx" target="_blank"> <b>Top Dimention - Performance Test Results</b></a> <br>
+<b> 2.<a href="static/TestInfo/Functional-Tests.xlsx" target="_blank"> <b>Top Dimention - Functional Test Results </b></a> <br>
+</p>
+</div>
+
+<div style="text-align: left;">
+<h1>The test tools  </h1>
+<p> Caliper uses industry standard open source test and benchmarking tools for the comparison. <br>
+The tools details and versions of the same can be obtained here, <a href="static/TestInfo/Tool_details.xlsx" target="_blank"> <b>Tool_details.xlsx </b></a> 
+</p>
+</div>
+
+<p><hr>
+<i><b>Caliper Changelog:<br> </b> <b>version-yyyymmdd:</b> <br>
+Change logs comes here...
+a)..
+b)....
+
 <i><b>Caliper Disclaimers:<br> </b> a) The actual test results/values are processed using different algorithm to derive the Scores. The Scores are intended only to compare various parameters among the platforms. If you want to see the original test results/values for debugging/analysis, please request for caliper test execution logs. <br> b) Each benchmark execution can depend on system conditions at the time of run. Hence, even if, caliper reboots the platform before each performance tests, the repeated test may not give 'exactly' same results for performance<br> c) There could be variations in the results due to specific peripheral hardwares in each platform(like RAM, HDD models etc).<br> d) These results are not intended for any claim, rather it is intended to use to improve the platforms as needed<br> e) During the initial analysis, we observed certain minor issues which demands score calculations optimization. We have marked as 'FixMe' with details, wherever needed. <br>f) Please provide your comments and feedback to caliper@open-estuary.org. It will help us to improve the report</i>
-<hr>
+<hr></p>
 
 <div style="text-align: center;">
 <dl id="copyright">

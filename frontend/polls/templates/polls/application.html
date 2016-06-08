@@ -65,19 +65,38 @@
 <body>
 <div class="example">
     <div><input type="hidden" id="application_tst" value="{{ dic_application }}"> </div>
-    <!--SKD++-->
+   
     <div class="page-header">
     <h1> Caliper Performance Tests: Application </h1> 
     </div>
 
+    <div style="text-align: left;">
+     <p> Tests under this section captures the performace of certain application scenarios such as <br>
+         1. <b>Kernel compilation </b>: Compiling a kernel in multiple threads can avaluate the multi core/multi threding capability of the system.<br>
+	 2. <b>Database</b> : Sysbench oltp benchmark evaluate the database performance.<br>
+	 3. <b>Hadoop</b> : Hibench measures the common hadoop performance parameters like HadoopTerasort,HadoopWordcount,HadoopBayes,HadoopKmeans,HadoopSort,HadoopDfsioe etc. <br>
+	 4. <b>Ebizzy</b> : Web application sever load. <br>
+         5. <b>JDK</b>  : Uses SciMark2 to evaluates the Java performance for scientific and numerical computing.<br>
+     </p>
+  <h1><small>Report Layout </small></h1>
+     <p> The scores of each scenario  shown below is followed by the participating tests cases from each of these scenarios. Remember the scores are based on the percentile ranking across each participating platforms which is already discussed <a href="score_Calculation.html" target="_blank"> <b>here.</b></a> </p>
+   <h1><small>Test description </small></h1>
+    
+   <p>Caliper executes the applications mentioned below to evaluate the performance.   </p>
+<mark><p> <b>Notes: </b> <br>
+Hadoop performance is based on single node. Soon Caliper to expand the scope of testing multi node performance as well</p><mark>
+
+	<p> To have a very quick reference of the hardware configurations of platforms evaluated, please refer to <a href="../static/TargetInfo/Platform_Configuration.xlsx" target ="_blank"> <b>Platform_Configuration.xlsx </b> </a>
+    </div>
+	
     {% if sum %}
-    <h1><small>Application Score Summary</small></h1> <!--SKD++-->
+    <h1><small>Application Score Summary</small></h1> 
     <div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/application_summary.png' %}" height="500"
     width="700" /> </p>
     </div>
 
-    <!-- <h1><small>caliper application comparison detail</small></h1> -->
+
     <div id="application_summary" class="sensei-grid"></div>
     {% endif %}
 
@@ -89,14 +108,8 @@
     </div>
 
     <div id="application_compile" class="sensei-grid"></div>
-    <p><b>Note: </b> Kernel compilation tested with varied number of threads. format is kernel-dev_#Threads</p>
     {% endif %}
-
-    {% if ebizzy_mmap_records %}
-    <h2><small>Application Score Details: Ebizzy mmap Records</small></h2>
-    <div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/application_ebizzy_mmap_records.png' %}" height="500"
-    width="700" /> </p>
+    <p><b>Note: </b> Kernel compilation tested with varied number of threads. format is kernel-dev_#Threads</p>
     </div>
 
     <div id="ebizzy-mmap-records" class="sensei-grid"></div>

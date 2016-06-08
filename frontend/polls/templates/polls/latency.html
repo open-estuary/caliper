@@ -57,19 +57,30 @@
 <div class="example">
     <div><input type="hidden" id="latency_tst" value="{{ dic_lat }}"> </div>
 
-    <!--SKD++-->
+
     <div class="page-header">
     <h1> Caliper Performance Tests: Latency </h1> 
     </div>
 
+    <div style="text-align: left;">
+     <p> The test under this section is mainly targetted towards the performance evaluation of Latency in the sytems through various benchmarking tests which exercises it.</p>
+  <h1><small>Report Layout </small></h1>
+     <p> The scores of each scenario  shown below is followed by the participating tests cases from each of these scenarios. Remember the scores are based on the percentile ranking across each participating platforms which is already discussed <a href="score_Calculation.html" target="_blank"> <b>here.</b></a>    </p>
+   <h1><small>Test description </small></h1>
+     <p>
+Currently Caliper derives these tests from various well known open source tools to test performance.   </p>
+
+	<p> To have a very quick reference of the hardware configurations of platforms evaluated, please refer to <a href="../static/TargetInfo/Platform_Configuration.xlsx" target ="_blank"> <b>Platform_Configuration.xlsx </b> </a>
+    </div>
+	
     {% if sum %}
-    <h1><small>Latency Score Summary</small></h1> <!--SKD++-->
+    <h1><small>Latency Score Summary</small></h1> 
     <div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/latency_summary.png' %}"
     height="400" width="700" /> </p>
 	</div>
     
-    <!-- <h1><small>caliper latency comparison detail</small></h1> -->
+ 
     <div id="lat-summary" class="sensei-grid"></div>
     {% endif %}
     <p><b>FixMe: </b>file/vm overall score above shows PC-I5650_U15.04 as 100. This is has a minor issue.
@@ -115,7 +126,6 @@
 	</div>
     <div id="lat-file-vm" class="sensei-grid"></div>
     {% endif %}
-    <p><b>FixMe:</b> Due to a page-fault during the test on PC-I5650_U15.04, there was one unwanted data observed in the test results and graph. It caused a a minor issue in the overall score(only). This will be fixed in the next report. Above <b>individual scores are *CORRECT*.</b> </p>	
     </div>
 </body>
 </html>
