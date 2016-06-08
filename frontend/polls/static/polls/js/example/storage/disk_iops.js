@@ -1,14 +1,14 @@
 
 $(function () {
-	var test = document.getElementById("cpu_sincore").value;
+    var test = document.getElementById("storage_tst").value;
     
-    var sum_dic = getJson(test, 'sum');
-    var columns = getHoriColumn(sum_dic);
-    var data = getHoriData(sum_dic, columns);
-  
+    var iops_dic = getJson(test, 'iops');
+    var columns = getHoriColumn(iops_dic);
+    var data = getHoriData(iops_dic, columns);
+
     // initialize grid
     var options = {emptyRow: true, sortable: false};
-	var grid = $(document.getElementById("summary")).grid(data, columns, options);
+	var grid = $(".sensei-grid:eq(1)").grid(data, columns, options);
 
     draw_grid(grid);
 

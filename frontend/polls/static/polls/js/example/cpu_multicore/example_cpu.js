@@ -1,14 +1,14 @@
 
 $(function () {
-	var test = document.getElementById("cpu_tst").value;  
+	var test = document.getElementById("cpu_multicore").value;
     
-    var float_dic = getJson(test, 'multicore_float')
-    var columns = getHoriColumn(float_dic);
-    var data = getHoriData(float_dic, columns);
-
+    var sum_dic = getJson(test, 'sum');
+    var columns = getHoriColumn(sum_dic);
+    var data = getHoriData(sum_dic, columns);
+  
     // initialize grid
     var options = {emptyRow: true, sortable: false};
-	var grid = $(document.getElementById("multi-float")).grid(data, columns, options);
+	var grid = $(document.getElementById("summary")).grid(data, columns, options);
 
     draw_grid(grid);
 

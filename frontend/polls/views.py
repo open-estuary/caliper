@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django.conf import settings
 from plot import show_picture
 
+
 CONFIG_STR = 'Configuration'
 TOTAL_STR = 'Total_Scores'
 POINT_STR = 'Point_Scores'
@@ -146,26 +147,36 @@ def algorithm(request):
     return render(request, 'polls/algorithm.html', dic_total)
 
 
-def cpu(request):
+def cpu_sincore(request):
     files = get_files()
     dic_total = {}
-    dic_cpu = get_detail_data(files, PERF_STR, 'cpu')
-    dic_total['dic_cpu'] = json.dumps(dic_cpu)
+    dic_cpu = get_detail_data(files, PERF_STR, 'cpu_sincore')
+    dic_total['dic_cpu_sincore'] = json.dumps(dic_cpu)
     for key in dic_cpu.keys():
         key_name = _deal_keyword(key)
         dic_total[key_name] = True
-    return render(request, 'polls/cpu.html', dic_total)
+    print dic_total
+    return render(request, 'polls/cpu_sincore.html', dic_total)
 
-
-def disk(request):
+def cpu_multicore(request):
     files = get_files()
     dic_total = {}
-    dic_disk = get_detail_data(files, PERF_STR, 'disk')
-    dic_total['dic_disk'] = json.dumps(dic_disk)
+    dic_cpu = get_detail_data(files, PERF_STR, 'cpu_multicore')
+    dic_total['dic_cpu_multicore'] = json.dumps(dic_cpu)
+    for key in dic_cpu.keys():
+        key_name = _deal_keyword(key)
+        dic_total[key_name] = True
+    return render(request, 'polls/cpu_multicore.html', dic_total)
+
+def storage(request):
+    files = get_files()
+    dic_total = {}
+    dic_disk = get_detail_data(files, PERF_STR, 'storage')
+    dic_total['dic_storage'] = json.dumps(dic_disk)
     for key in dic_disk.keys():
         key_name = _deal_keyword(key)
         dic_total[key_name] = True
-    return render(request, 'polls/disk.html', dic_total)
+    return render(request, 'polls/storage.html', dic_total)
 
 
 def latency(request):
@@ -189,16 +200,6 @@ def memory(request):
         dic_total[key_name] = True
     return render(request, 'polls/memory.html', dic_total)
 
-
-def io(request):
-    files = get_files()
-    dic_total = {}
-    dic_io = get_detail_data(files, PERF_STR, 'io')
-    dic_total['dic_io'] = json.dumps(dic_io)
-    for key in dic_io.keys():
-        key_name = _deal_keyword(key)
-        dic_total[key_name] = True
-    return render(request, 'polls/io.html', dic_total)
 
 
 def network(request):

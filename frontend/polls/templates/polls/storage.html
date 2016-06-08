@@ -2,7 +2,7 @@
 {% load staticfiles %}
 <html>
 <head>
-    <title>Caliper Performance:IO</title>
+    <title>Caliper Performance: Storage</title>
     {% load static %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -30,15 +30,20 @@
     <script src="{% static 'polls/js/src/sensei-editors.js' %}"></script>
     <script src="{% static 'polls/js/src/sensei-json.js' %}"></script>
     {% if sum %}
-    <script src="{% static 'polls/js/example/io/example_io.js' %}"></script>
-    {% endif %}    
+    <script src="{% static 'polls/js/example/storage/example_storage.js' %}"></script>
+    {% endif %}
+    {% if Iozone_Cached %}
+    <script src="{% static 'polls/js/example/storage/disk_cached.js' %}"></script>
+    {% endif %}
+    {% if Iozone_DirectIO %}
+    <script src="{% static 'polls/js/example/storage/disk_directIO.js' %}"></script>
+    {% endif %}
     {% if bandwidth %}
-    <script src="{% static 'polls/js/example/io/io_bandwidth.js' %}"></script>
-    {% endif %}    
+    <script src="{% static 'polls/js/example/storage/io_bandwidth.js' %}"></script>
+    {% endif %}
     {% if iops %}
-    <script src="{% static 'polls/js/example/io/io_iops.js' %}"></script>
-    {% endif %}    
-
+    <script src="{% static 'polls/js/example/storage/io_iops.js' %}"></script>
+    {% endif %}
     <!-- Custom CSS for this example -->
     <style type="text/css">
         .example {
@@ -58,38 +63,58 @@
 </head>
 <body>
 <div class="example">
-    <div><input type="hidden" id="io_tst" value="{{ dic_io }}"> </div>
+    <div><input type="hidden" id="storage_tst" value="{{ dic_storage }}"> </div>
     
     <!--SKD++-->
     <div class="page-header">
-    <h1> Caliper Performance Tests: IO </h1> 
+    <h1> Caliper Performance Tests: Disk </h1> 
     </div>
- 
+
     {% if sum %}
-    <h1><small>IO Score Summary</small></h1> <!--SKD++-->
+    <h1><small>Storage Score Summary</small></h1> <!--SKD++-->
     <div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/io_summary.png' %}" height="500"
+    <p> <img src="{% static 'polls/pictures/storage_summary.png' %}" height="500"
+    width="700" /> </p>
+    </div>
+
+    <!-- <h1><small>caliper disk comparison detail</small></h1> -->
+    <div id="storage-summary" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if Iozone_Cached %}
+    <h2><small>Storage Score Details: iozone cached </small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/storage_Iozone-Cached.png' %}" height="500"
     width="700" /> </p>
 	</div>
-    
-    <!-- <h1><small>caliper io comparison detail</small></h1> -->
-    <div id="io-summary" class="sensei-grid"></div>
-    {% endif %}    
-    
-    {% if bandwidth %}
-    <h2><small>IO Score Details: Bandwidth</small></h2>
+
+    <div id="disk-cached" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if Iozone_DirectIO %}
+    <h2><small>Storage Score Details: iozone Direct IO </small></h2>
     <div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/io_bandwidth.png' %}" height="500"
+    <p> <img src="{% static 'polls/pictures/storage_Iozone-DirectIO.png' %}" height="500"
+    width="700" /> </p>
+    </div>
+
+    <div id="disk-directIO" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if bandwidth %}
+    <h2><small>Storage Score Details: Bandwidth</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/storage_bandwidth.png' %}" height="500"
     width="700" /> </p>
 	</div>
 
     <div id="io-bandwidth" class="sensei-grid"></div>
     {% endif %}
-    
+
     {% if iops %}
-    <h2><small>IO Score Details: iops</small></h2>
+    <h2><small>Storage Score Details: iops</small></h2>
     <div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/io_iops.png' %}" height="500"
+    <p> <img src="{% static 'polls/pictures/storage_iops.png' %}" height="500"
     width="700" /> </p>
 	</div>
     <div id="io-iops" class="sensei-grid"></div>
