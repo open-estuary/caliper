@@ -19,7 +19,8 @@ MS_UNIT = 'milliseconds'
 RESPONSE_TIME_TOKENS = ['min', 'avg', 'max', 'percentile']
 
 
-def sysbench_parser(content, outfp):
+def sysbench_oltp_parser(content, outfp):
+
     seen_general_statistics = False
     seen_response_time = False
 
@@ -48,11 +49,42 @@ def sysbench_parser(content, outfp):
                     MS_UNIT + '\n')
     return sysbench_dic
 
+def sysbench_cpu_parser(content,outfp):
+    result = 0
+    dic = {}
+    dic['cpu_sincore'] = {}
+    dic['cpu_multicore'] = {}
+    dic['cpu_sincore']['sincore_misc'] = {}
+    dic['cpu_multicore']['multicore_misc'] = {}
+    dic['cpu_sincore']['sincore_misc']['sysbench_prime'] = 0
+    dic['cpu_multicore']['multicore_misc']['sysbench_prime'] = 0
+    contents = content.split("evaluation benchmark")[1].split("~/caliper")[0]
+    version = re.search(r'(sysbench \d+\.\d+: .*)',content)
+    outfp.write(version.group(1))
+    outfp.write(contents)
+    contents = content.split("execution time (avg/stddev)")
+    for item in contents:
+        if re.search(r'Number of threads:',item):
+            if re.search(r'Number of threads: 1',item):
+                result = re.search(r'\s+total time:\s+(\d+\.\d+)s',item)
+                dic['cpu_sincore']['sincore_misc']['sysbench_prime'] = result.group(1)
+            else:
+                result = re.search(r'\s+total time:\s+(\d+\.\d+)s',item)
+                dic['cpu_multicore']['multicore_misc']['sysbench_prime'] = result.group(1)
+    return dic
+
+def sysbench_parser(content,outfp):
+    if re.search("sysbench_cpu",content):
+       result = sysbench_cpu_parser(content,outfp)
+    else:
+       result = sysbench_oltp_parser(content, outfp)
+    return result
 if __name__ == "__main__":
-    infp = open("1.txt", "r")
+    infp = open("sysbench_output.log", "r")
     content = infp.read()
     outfp = open("2.txt", "a+")
     pdb.set_trace()
-    sysbench_parser(content, outfp)
+    a = sysbench_parser(content, outfp)
+    print a
     outfp.close()
     infp.close()
