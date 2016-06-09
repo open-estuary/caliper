@@ -85,11 +85,7 @@ def parse_all_cases(target_exec_dir, target, kind_bench, bench_name,
     # for each command in run config file, read the config for the benchmark
     for i in range(0, len(sections_run)):
         dic[bench_name][sections_run[i]] = {}
-        outfp = open(logfile, 'r')
-	infp = open(tmp_log_file,'w')
-	infp.write(re.findall("test start\s+%+(.*?)%+\s+test_end", outfp.read(), re.DOTALL)[i])
-	infp.close()
-        outfp.close()
+
         flag = 0
         try:
             category = configRun.get(sections_run[i], 'category')
@@ -117,6 +113,11 @@ def parse_all_cases(target_exec_dir, target, kind_bench, bench_name,
                                         parser, subsection_file,
                                         tmp_parser_file)
             else:
+                outfp = open(logfile, 'r')
+                infp = open(tmp_log_file, 'w')
+                infp.write(re.findall("test start\s+%+(.*?)%+\s+test_end", outfp.read(), re.DOTALL)[i])
+                infp.close()
+                outfp.close()
                 parser_result = parser_case(kind_bench, bench_name, parser_file,
                                         parser,tmp_log_file,
                                         tmp_parser_file)

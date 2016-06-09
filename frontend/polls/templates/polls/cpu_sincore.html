@@ -33,13 +33,8 @@
     {% if sum %}
     <script src="{% static 'polls/js/example/cpu/example_cpu.js' %}"></script>
     {% endif %}
-    {% if multicore_int %}
-    <script src="{% static 'polls/js/example/cpu/cpu_integer.js' %}"></script>
-    {% endif %}
-    {% if multicore_float %}
-    <script src="{% static 'polls/js/example/cpu/cpu_float.js' %}"></script>
-    {% endif %}
-    {% if multicore_double %}
+
+    {% if sincore_double %}
     <script src="{% static 'polls/js/example/cpu/cpu_double.js' %}"></script>
     {% endif %}
     {% if sincore_int %}
@@ -48,26 +43,21 @@
     {% if sincore_float %}
 	<script src="{% static 'polls/js/example/cpu/cpu_sin_float.js' %}"></script>
     {% endif %}
-    <!-- Custom CSS for this example -->
-    <style type="text/css">
-        .example {
-            width: 940px;
-            margin: 50px auto;
-            padding: 0 20px;
-        }
-        .sensei-grid {
-            margin-bottom: 20px;
-        }
-        h1 {
-            font-weight: bold;
-            line-height: normal;
-        }
-    </style>
+    {% if sincore_unixbench %}
+	<script src="{% static 'polls/js/example/cpu/cpu_unixbench.js' %}"></script>
+    {% endif %}
+    {% if sincore_misc %}
+	<script src="{% static 'polls/js/example/cpu/cpu_sincore_misc.js' %}"></script>
+    {% endif %}
+
+<!-- link the caliper report css here -->
+ <link rel="stylesheet" type="text/css" href="../static/css/caliper_report.css"/>
+ 
 
 </head>
 <body>
 <div class="example">
-    <div><input type="hidden" id="cpu_tst" value="{{ dic_cpu }}"> </div>
+    <div><input type="hidden" id="cpu_sincore" value="{{ dic_cpu_sincore }}"> </div>
 
     <!--SKD++-->
     <div class="page-header">
@@ -77,51 +67,52 @@
     {% if sum %}
     <h1><small>CPU Score Summary</small></h1> <!--SKD++-->
 	<div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/cpu_summary.png' %}" height="400" width="700" /> </p>
+    <p> <img src="{% static 'polls/pictures/cpu_sincore_summary.png' %}" height="400" width="700" /> </p>
 	</div>
     
     <!-- <h1><small>caliper cpu comparison detail</small></h1> -->
     <div id="summary"  class="sensei-grid"></div>
     {% endif %}
 	
-    {% if multicore_int %}
-    <h2><small>CPU Score Details: Multicore Integer (Basic Integer) </small></h2>
-	<div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/cpu_multicore_int.png' %}" height="400" width="850" /> </p>
-	</div>
-    <div id="multi-int" class="sensei-grid"></div>
-    {% endif %}
-	
-    {% if multicore_float %}
-    <h2><small>CPU Score Details: Multicore Float </small></h2>
-	<div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/cpu_multicore_float.png' %}" height="400" width="850" /> </p>
-	</div>
-    <div id="multi-float" class="sensei-grid"></div>
-    {% endif %}
-	
-    {% if multicore_double %}
-    <h2><small>CPU Score Details: Multicore Double </small></h2>
-	<div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/cpu_multicore_double.png' %}" height="500" width="850" /> </p>
-	</div>
-    <div id="multi-double" class="sensei-grid"></div>
-    {% endif %}
-	
     {% if sincore_int %}
 	<h2><small>CPU Score Details: Single Core Integer </small></h2>
 	<div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/cpu_sincore_int.png' %}" height="400" width="800" /> </p>
+    <p> <img src="{% static 'polls/pictures/cpu_sincore_sincore_int.png' %}" height="400" width="800" /> </p>
 	</div>
     <div id="sin-int" class="sensei-grid"></div>
     {% endif %}
     <p><b>Attn:</b> Some values show as 'Zero' in the score for certain platforms. Observed certain issues in the test execution for these. This needs more analysis </p>
+
     {% if sincore_float %}
     <h2><small>CPU Score Details: Single Core Float </small></h2>
 	<div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/cpu_sincore_float.png' %}" height="400" width="850" /> </p>
+    <p> <img src="{% static 'polls/pictures/cpu_sincore_sincore_float.png' %}" height="400" width="850" /> </p>
 	</div>
     <div id="sin-float" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if sincore_double %}
+    <h2><small>CPU Score Details: Sincore Double </small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/cpu_sincore_sincore_double.png' %}" height="500" width="850" /> </p>
+	</div>
+    <div id="sin-double" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if sincore_unixbench %}
+    <h2><small>CPU Score Details: Single Core Unixbench </small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/cpu_sincore_sincore_unixbench.png' %}" height="400" width="850" /> </p>
+	</div>
+    <div id="sin-unixbench" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if sincore_misc %}
+    <h2><small>CPU Score Details: Single Core Misc </small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/cpu_sincore_sincore_misc.png' %}" height="400" width="850" /> </p>
+	</div>
+    <div id="sincore-misc" class="sensei-grid"></div>
     {% endif %}
     
 </div>
