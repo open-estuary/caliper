@@ -20,18 +20,23 @@ do
            
        if [ $choice == 'y' ]
        then
-            sudo dpkg --configure -a
-            sudo apt-get update &
-            wait
-            sudo apt-get build-dep ${target_packages[$i]} -y &
-            wait 
-            sudo apt-get install ${target_packages[$i]} -y &
-            wait
-            if [ $? -ne 0 ]
-            then
-                echo -e "\n\t\t${target_packages[$i]} is not installed properly"
-                exit 1
-            fi
+	   		if [ ${target_packages[$i]} == 'mysql-server' -o ${target_packages[$i]} == 'libmysqlclient-dev' ]
+			then
+				echo "The ${target_packages[$i]} package is not present . Please install it manually"
+			else
+            	sudo dpkg --configure -a
+            	sudo apt-get update &
+            	wait
+            	sudo apt-get build-dep ${target_packages[$i]} -y &
+            	wait 
+            	sudo apt-get install ${target_packages[$i]} -y &
+            	wait
+            	if [ $? -ne 0 ]
+            	then
+                	echo -e "\n\t\t${target_packages[$i]} is not installed properly"
+                	exit 1
+            	fi
+			fi
        else
             echo "Please install ${target_packages[$i]} and try again"
        fi
