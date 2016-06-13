@@ -7,7 +7,6 @@ if {[llength $argv] == 0} {
 set option [lindex $argv 0]
 set client_user [lindex $argv 1]
 set client_ip [lindex $argv 2]
-#set toolchain_path[lindex $argv 3]
 set passwd [lindex $argv 3]
 set i 0
 
@@ -29,10 +28,10 @@ while true {
 			interact "\r" return
 			send "\r"
 		 }
-        	"ailed" {
+        "ailed" {
 			send_user "FAILED IN TARGET DEPENDENY\n"
-           		exit 1
-        	}
+           	exit 1
+        }
 		timeout {
 			send_user "U have not selected any choice:"
 			send_user "I will be exiting"

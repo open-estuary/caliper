@@ -20,6 +20,7 @@
 [scimarkJava]
 [ltp]
 [ebizzy]
-
+[stress_ng]
 [sysbench]
 [hadoop]
+[unixbench]

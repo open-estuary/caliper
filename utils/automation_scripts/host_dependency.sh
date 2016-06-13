@@ -62,7 +62,7 @@ fi
 flag=0
 command="/opt/caliper_nfs *(rw,sync,no_root_squash)"
 pattern=`echo "$command" | awk -F ' ' '{ print $1 }'`
-if [ `cat /etc/exports | grep -c "$pattern"` -eq 1 ]
+if [ `cat /etc/exports | grep -c "$pattern"` -ge 1 ]
 then
     pattern=`echo "$command" | awk -F ' ' '{print $2}'`
     if [ `cat /etc/exports | grep -c "$pattern"` -eq 1 ]
