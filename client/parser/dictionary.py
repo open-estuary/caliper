@@ -7,9 +7,9 @@ import pdb
 import glob
 import os
 import json
-from normalize import *
-from report import *
-from helper import *
+#from normalize import *
+#from report import *
+#from helper import *
 
 def convertDic(oldDic):
     newDic = copy.deepcopy(oldDic)
@@ -505,6 +505,8 @@ def cpu(dic):
     dic['Hardware_Info']['CPU']['CPU_Cores'] = 0
     dic['Hardware_Info']['CPU']['Numa_Node'] = 0
     dic['Hardware_Info']['CPU']['BogoMIPS'] = 0
+    dic['Hardware_Info']['CPU']['Byte_Order'] = 0
+    dic['Hardware_Info']['CPU']['Cpu_Type'] = 0
     return
 
 def disk(dic):
@@ -550,8 +552,9 @@ def memory(dic):
     dic['Hardware_Info']['MEMORY']['Main_Memory_Formfactor'] = 0
     dic['Hardware_Info']['MEMORY']['Main_Memory_Max_Speed'] = 0
     dic['Hardware_Info']['MEMORY']['Main_Memory_Current_Speed'] = 0
-    dic['Hardware_Info']['MEMORY']['Main_Memory_Manufactuer'] = 0
+    dic['Hardware_Info']['MEMORY']['Main_Memory_Manufacturer'] = 0
     dic['Hardware_Info']['MEMORY']['Main_Memory_Part_number'] = 0
+    dic['Hardware_Info']['MEMORY']['Main_Memory_Size'] = 0
     return
 
 def kernel(dic):
