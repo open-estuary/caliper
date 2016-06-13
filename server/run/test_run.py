@@ -32,7 +32,7 @@ from caliper.client.shared import caliper_path
 from caliper.client.shared.settings import settings
 from caliper.server.run import write_results
 from caliper.client.shared.caliper_path import folder_ope as Folder
-
+from caliper.client.shared.caliper_path import intermediate
 
 
 def get_server_command(kind_bench, section_name):
@@ -853,14 +853,15 @@ def run_caliper_tests(target,f_option):
     try:
         logging.debug("beginnig to run the test cases")
         test_result = caliper_run(target_execution_dir, target)
-        target_name = server_utils.get_host_name(target)
-        yaml_dir = os.path.join(Folder.results_dir, 'yaml')
-        result_yaml_name = target_name + '.yaml'
-        result_yaml = os.path.join(yaml_dir, result_yaml_name)
-        dic = {}
-        dic = traverse.traverse_pre(target, dic)
-        with open(result_yaml,'w') as fp:
-            fp.write(yaml.dump(dic, default_flow_style=False))
+        if intermediate == 1:
+            target_name = server_utils.get_host_name(target)
+            yaml_dir = os.path.join(Folder.results_dir, 'yaml')
+            result_yaml_name = target_name + '.yaml'
+            result_yaml = os.path.join(yaml_dir, result_yaml_name)
+            dic = {}
+            dic = traverse.traverse_pre(target, dic)
+            with open(result_yaml,'w') as fp:
+                fp.write(yaml.dump(dic, default_flow_style=False))
 
     except error.CmdError:
         logging.info("There is wrong in running benchmarks")

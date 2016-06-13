@@ -26,7 +26,7 @@ CURRENT_PATH = os.path.dirname(sys.modules[__name__].__file__)
 CALIPER_DIR = os.path.abspath(os.path.join(CURRENT_PATH, '..', '..'))
 PARSER_DIR = os.path.abspath(os.path.join(CALIPER_DIR, 'client', 'parser'))
 FRONT_TMP_DIR = os.path.join(CALIPER_DIR, 'frontend')
-
+intermediate = 0
 if not judge_caliper_installed():
     # This means caliper is not installed and execution will be local.
     # Output folders are created with in the local directory structure.
