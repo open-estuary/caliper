@@ -53,7 +53,7 @@ comment()
 	string=`echo "$line" | awk -F : '{ print $2 }'`
 	num2=$(($num+3))
 
-	if [ ${string:0:1} != '#' -a ${string} != '\n']
+	if [ ${string:0:1} != '#' -a ${string} != '\n' ] 
 	then
 		sudo sed -i "$num,$num2 s/^/#/g" $fileName
 	fi
@@ -76,10 +76,12 @@ uncomment()
 	#extracting the line num and the pattern of the test
 	num=`echo "$line" | awk -F : '{ print $1 }'`
 	string=`echo "$line" | awk -F : '{ print $2 }'`
+	echo $string
 	num2=$(($num+3))
 
-    if [ ${string:0:1} != '#' -a ${string} != '\n']
+    if [ ${string:0:1} == '#' -a ${string} != '\n' ]
 	then
+		echo "IM GOING TO UNCOMMENT"
 		sudo sed -i "$num,$num2 s/#//g" $fileName
 	fi
 }
@@ -91,24 +93,90 @@ path_config="/etc/caliper/config/client_config.cfg"
 sudo ./modify.py $path_config $client_ip $server_ip
 
 
-toolchain_flag=0
-#Exporting the Tool chain
-files_toolchain=`find ~/toolchain/ -mindepth 1 -maxdepth 1 -type d -printf "%f\n"`
-for i in $files_toolchain
-do
-    toolchain_flag=$(($toolchain_flag + 1))
-    export PATH=~/toolchain/$i/bin:$PATH
-done
+#Comparing the tool chain
+target_arch=`ssh $client_id@$client_ip "uname -a"`
+target_arch=`echo $target_arch | awk -F ' ' '{print $12}'`
+host_arch=`uname -a |  awk -F ' ' '{print $12}'`
 
-if [ $toolchain_flag -eq 0 ]
+
+#Exporting the Tool chain
+echo "Target arch = $target_arch"
+echo "Host arch = $host_arch"
+if [ $target_arch != $host_arch ]
 then
-    echo -e "\nThe Toolchain Path is invalid\n"
-    exit
-elif [ $toolchain_flag -eq 1 ]
-then
-    echo -e "\n ONLY $i toolchain is exported\n"
-    echo "This will lead to error Please"
-    sleep 5
+	target_arch=`ssh $client_id@$client_ip "uname -a"`
+	target_arch=`echo $target_arch | awk -F ' ' '{print $13}'`
+	echo $target_arch
+	if [ $target_arch == 'aarch64' ]
+	then 
+		if [ ! -d "./toolchain/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux" ]
+		then
+			if [ -d "toolchain" ]
+			then
+				mkdir "toolchain"
+			fi
+			if [ -f "gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.bz2" ]
+			then
+				tar -xvf gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.bz2 &
+				wait
+				mv gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux ./toolchain
+			else
+				echo "The toolchain is not present "
+				echo "Do you want me to download it for you [y/n]"
+				read choice
+				if [ $choice == 'y' ]
+				then
+					wget https://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.bz2 &
+					wait
+					tar -xvf gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.bz2 
+					wait
+					mv gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux ./toolchain
+				else
+					echo "Please download toolchain and then try again"
+					exit 1
+				fi
+			fi
+		fi
+		files_toolchain="gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux/bin"
+	elif [ $target_arch == 'arm_32' ]
+	then
+		if [ ! -d "./toolchain/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux" ]
+		then 
+			if [ -d "toolchain" ]
+			then
+				mkdir toolchain
+			fi
+			if [ -f "gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.bz2" ]
+			then
+				tar -xvf gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.bz2 &
+				wait
+				mv gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux ./toolchain
+			else
+			    echo "The toolchain is not present "
+				echo "Do you want me to download it for you [y/n]"
+				read choice
+				if [ $choice == 'y' ]
+				then
+					wget https://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.bz2 &
+					wait
+					tar -xvf gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.bz2 &
+					wait
+					mv gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux ./toolchain
+				else
+					echo "Please download toolchain and then try again"
+					exit 1
+				fi
+			fi
+		fi
+		files_toolchain="gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux/bin"
+	fi
+   	export PATH=./toolchain/$files_toolchain:$PATH
+	if [ $? -ne 0 ]
+	then 
+		echo "Exporting the tool chain failed"
+		exit
+	fi
+	echo "exporting $files_toolchain done"
 fi
 
 #checking all the test to be conducted
@@ -141,7 +209,7 @@ else
 fi
 
 
-sudo ./target_dependency.exp "$option" "$client_id" "$client_ip" "$client_passwd" "$toolchain"
+sudo ./target_dependency.exp "$option" "$client_id" "$client_ip" "$client_passwd" 
 if [ $? -eq 0 ]
 then
 	echo -e "\n*********************************   Caliper is excuting   ***********************************\n"
