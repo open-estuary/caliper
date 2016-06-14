@@ -78,7 +78,7 @@ pushd $HADOOP_DIR
     echo "export JAVA_HOME=$java_loc" >> $HADOOP_CONF/hadoop-env.sh
   popd
 /usr/bin/expect  << EOF
-set timeout -1
+set timeout   300
   spawn $HADOOP_SERVICE/stop-all.sh
   expect {
     "connecting (yes/no)?"
@@ -93,7 +93,7 @@ EOF
   rm -fr $hdfs_tmp
   $HADOOP_BIN/hdfs namenode -format
 /usr/bin/expect  << EOF
-set timeout -1
+set timeout  300
   spawn $HADOOP_SERVICE/start-dfs.sh
    expect {
     "connecting (yes/no)?"
@@ -124,7 +124,7 @@ EOF
   fi
 
 /usr/bin/expect  << EOF
-set timeout -1
+set timeout  300
   spawn $HADOOP_SERVICE/start-yarn.sh
   expect {
     "connecting (yes/no)?"
