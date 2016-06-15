@@ -572,5 +572,7 @@ def os(dic):
     dic['Hardware_Info']['OS']['Description'] = 0
     dic['Hardware_Info']['OS']['Release'] = 0
     dic['Hardware_Info']['OS']['Codename'] = 0
+    dic['Hardware_Info']['OS']['GCC_Version'] = 0
+    dic['Hardware_Info']['OS']['LD_Version'] = 0
     return
 
