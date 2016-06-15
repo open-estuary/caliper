@@ -1,6 +1,6 @@
 
 $(function () {
-	var test = document.getElementById("cpu_tst").value;  
+	var test = document.getElementById("cpu_sincore").value;
     
     var sum_dic = getJson(test, 'sum');
     var columns = getHoriColumn(sum_dic);

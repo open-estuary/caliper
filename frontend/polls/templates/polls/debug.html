@@ -33,40 +33,39 @@
     <script src="{% static 'polls/js/example/debug/example_debug.js' %}"></script>
     {% endif %}
 
-    <!-- Custom CSS for this example -->
-    <style type="text/css">
-        .example {
-            width: 940px;
-            margin: 50px auto;
-            padding: 0 20px;
-        }
-        .sensei-grid {
-            margin-bottom: 20px;
-        }
-        h1 {
-            font-weight: bold;
-            line-height: normal;
-        }
-    </style>
+<!-- link the caliper report css here -->
+ <link rel="stylesheet" type="text/css" href="../static/css/caliper_report.css"/>
+
+
 
 </head>
 <body>
 <div class="example">
     <div><input type="hidden" id="debug_tst" value="{{ dic_debug }}"> </div>
     
-    <!--SKD++-->
+    
     <div class="page-header">
     <h1> Caliper Functional Tests: Debug </h1> 
     </div>
 
+      <div style="text-align: left;">
+     <p> The test under this section is mainly targetted towards the functional evaluation of debug subsystem through various tools and tests which exercises this subsystem.</p>
+  <h1><small>Report Layout </small></h1>
+     <p> The scores of each scenario  shown below is followed by the participating tests cases from each of these scenarios. Remember the scores are based on the percentile ranking across each participating platforms which is already discussed <a href="score_Calculation.html" target="_blank"> <b>here.</b></a>    </p>
+   <h1><small>Test description </small></h1>
+     <p>
+Currently Caliper executes perf functional tests to evaluate the functionality of debug subsystem.   </p>
+
+	<p> To have a very quick reference of the hardware configurations of platforms evaluated, please refer to <a href="../static/TargetInfo/Platform_Configuration.xlsx" target ="_blank"> <b>Platform_Configuration.xlsx </b> </a>
+    </div>
+
     {% if sum %}
-    <h1><small>Debug Score Summary</small></h1> <!--SKD++-->
+    <h1><small>Debug Score Summary</small></h1> 
     <div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/debug_summary.png' %}" height="300"
     width="600" /> </p>
 	</div>
     
-    <!-- <h1><small>caliper debug comparison detail</small></h1> -->
     <div id="debug-summary" class="sensei-grid"></div>
     {% endif %}
     <p> <b>Note:</b>: These scores are based on how many tests test pass or fail (functional tests). 

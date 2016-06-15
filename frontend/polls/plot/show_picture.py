@@ -16,7 +16,7 @@ import parser_yaml_result as deal_result
 from django.conf import settings
 
 web_yamls_dir = settings.DATAFILES_FOLDER
-polls_location = os.path.join(web_yamls_dir, "..", "..", "polls", "static",
+polls_location = os.path.join(web_yamls_dir,"..", "..", "..", "polls", "static",
                                 "polls", "pictures")
 
 

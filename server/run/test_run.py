@@ -14,6 +14,7 @@ import logging
 import datetime
 import subprocess
 import socket
+import yaml
 try:
     import caliper.common as common
 except ImportError:
@@ -21,7 +22,8 @@ except ImportError:
 #for ltp
 from caliper.server.hosts import abstract_ssh
 #import caliper.server.utils as server_utils
-#for ltp 
+#for ltp
+from caliper.server.parser_process import test_perf_tranver as traverse
 from caliper.server import crash_handle
 from caliper.client.shared import error
 from caliper.server import utils as server_utils
@@ -30,7 +32,7 @@ from caliper.client.shared import caliper_path
 from caliper.client.shared.settings import settings
 from caliper.server.run import write_results
 from caliper.client.shared.caliper_path import folder_ope as Folder
-
+from caliper.client.shared.caliper_path import intermediate
 
 
 def get_server_command(kind_bench, section_name):
@@ -50,8 +52,8 @@ def get_server_command(kind_bench, section_name):
         return None
 
 
-def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
-                    run_file, parser_file):
+def parse_all_cases(target_exec_dir, target, kind_bench, bench_name,
+                     run_file,parser_file,dic):
     """
     function: run one benchmark which was selected in the configuration files
     """
@@ -77,6 +79,146 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
     tmp_parser_file = log_bench + "_parser_tmp.log"
     if os.path.exists(parser_result_file):
         os.remove(parser_result_file)
+    #output_logs_names = glob.glob(Folder.exec_dir+"/*output.log")
+    bench_test = "ltp"
+
+    # for each command in run config file, read the config for the benchmark
+    for i in range(0, len(sections_run)):
+        dic[bench_name][sections_run[i]] = {}
+
+        flag = 0
+        try:
+            category = configRun.get(sections_run[i], 'category')
+            scores_way = configRun.get(sections_run[i], 'scores_way')
+            parser = configRun.get(sections_run[i], 'parser')
+            command = configRun.get(sections_run[i], 'command')
+        except Exception:
+            logging.debug("no value for the %s" % sections_run[i])
+            continue
+	if bench_name == bench_test:
+	    subsection = sections_run[i].split(" ")[1]
+	    subsection_file = log_bench + "_" + subsection + "_output.log"
+        if os.path.exists(tmp_parser_file):
+            os.remove(tmp_parser_file)
+        # parser the result in the tmp_log_file, the result is the output of
+        # running the command
+
+        try:
+            logging.debug("Parsering the result of command: %s" % command)
+            if bench_name == bench_test:
+                outfp = open(tmp_parser_file, "w")
+                outfp.write("%s" %(subsection))
+                outfp.close()		
+                parser_result = parser_case(kind_bench, bench_name, parser_file,
+                                        parser, subsection_file,
+                                        tmp_parser_file)
+            else:
+                outfp = open(logfile, 'r')
+                infp = open(tmp_log_file, 'w')
+                infp.write(re.findall("test start\s+%+(.*?)%+\s+test_end", outfp.read(), re.DOTALL)[i])
+                infp.close()
+                outfp.close()
+                parser_result = parser_case(kind_bench, bench_name, parser_file,
+                                        parser,tmp_log_file,
+                                        tmp_parser_file)
+            dic[bench_name][sections_run[i]]["type"] = type(parser_result)
+            dic[bench_name][sections_run[i]]["value"] = parser_result
+        except Exception, e:
+            logging.info("There's wrong when parsering the result of \" %s \""
+                            % sections_run[i])
+            logging.info(e)
+            if os.path.exists(tmp_parser_file):
+                os.remove(tmp_parser_file)
+            if os.path.exists(tmp_log_file):
+                os.remove(tmp_log_file)
+        else:
+            server_utils.file_copy(parser_result_file, tmp_parser_file, "a+")
+            if os.path.exists(tmp_parser_file):
+                os.remove(tmp_parser_file)
+            if os.path.exists(tmp_log_file):
+                os.remove(tmp_log_file)
+            if (parser_result <= 0):
+                continue
+
+def compute_caliper_logs(target_exec_dir,flag = 1):
+    # according the method in the config file, compute the score
+    dic = yaml.load(open(caliper_path.folder_ope.final_parser, 'r'))
+    config_files = server_utils.get_cases_def_files(target_exec_dir)
+    for i in range(0, len(config_files)):
+        config_file = os.path.join(config_files[i])
+        config, sections = server_utils.read_config_file(config_file)
+        classify = config_files[i].split("/")[-1].strip().split("_")[0]
+        for j in range(0, len(sections)):
+            try:
+                run_file = config.get(sections[j], 'run')
+                parser = config.get(sections[j], 'parser')
+            except Exception:
+                raise AttributeError("The is no option value of Computing")
+
+            print_format()
+            logging.info("Computing Score for %s" % sections[j])
+            bench = os.path.join(classify, sections[j])
+            try:
+                # get the abspath, which is filename of run config for the benchmark
+                bench_conf_file = os.path.join(
+                                caliper_path.config_files.tests_cfg_dir,
+                                bench, run_file)
+                # get the config sections for the benchmrk
+                configRun, sections_run = server_utils.read_config_file(
+                                                    bench_conf_file)
+            except AttributeError as e:
+                raise AttributeError
+            except Exception:
+                raise
+            for k in range(0, len(sections_run)):
+                try:
+                    category = configRun.get(sections_run[k], 'category')
+                    scores_way = configRun.get(sections_run[k], 'scores_way')
+                    command = configRun.get(sections_run[k], 'command')
+                except Exception:
+                    logging.debug("no value for the %s" % sections_run[k])
+                    continue
+                try:
+                    logging.debug("Computing the score of the result of command: %s"
+                                % command)
+                    flag_compute = compute_case_score(dic[sections[j]][sections_run[k]]["value"], category,
+                                          scores_way, target_exec_dir, flag)
+                except Exception, e:
+                    logging.info(e)
+                    continue
+                else:
+                    if not flag_compute and dic[bench][sections_run[k]["value"]]:
+                            logging.info("There is wrong when computing the result\
+                                        of \"%s\"" % command)
+    if not os.path.exists(caliper_path.HTML_DATA_DIR_INPUT):
+        os.makedirs(caliper_path.HTML_DATA_DIR_INPUT)
+
+    if not os.path.exists(caliper_path.HTML_DATA_DIR_OUTPUT):
+        os.makedirs(caliper_path.HTML_DATA_DIR_OUTPUT)
+
+def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
+                    run_file):
+    """
+    function: run one benchmark which was selected in the configuration files
+    """
+    try:
+        # get the abspath, which is filename of run config for the benchmark
+        bench_conf_file = os.path.join(
+                                    caliper_path.config_files.tests_cfg_dir,
+                                    kind_bench, run_file)
+        # get the config sections for the benchmrk
+        configRun, sections_run = server_utils.read_config_file(
+                                                    bench_conf_file)
+    except AttributeError as e:
+        raise AttributeError
+    except Exception:
+        raise
+    logging.debug("the sections to run are: %s" % sections_run)
+    if not os.path.exists(Folder.exec_dir):
+        os.mkdir(Folder.exec_dir)
+    log_bench = os.path.join(Folder.exec_dir, bench_name)
+    logfile = log_bench + "_output.log"
+    tmp_log_file = log_bench + "_output_tmp.log"
     if os.path.exists(logfile):
         os.remove(logfile)
 
@@ -98,48 +240,45 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
                             shell=True)
     bench_test = "ltp"
     if  bench_name == bench_test:
-	 tar_ip = settings.get_value('CLIENT', 'ip', type=str) 
-	 target.run("if [[ ! -e /mnt/caliper_nfs ]]; then mkdir -p /mnt/caliper_nfs; fi")
+        tar_ip = settings.get_value('CLIENT', 'ip', type=str)
+        target.run("if [[ ! -e /mnt/caliper_nfs ]]; then mkdir -p /mnt/caliper_nfs; fi")
 # fix me , now that we create the folder, why not we mount it directly here
-
-	 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-	 try:
-# fix me , getting host ip to be optimised
-		s.connect(("8.8.8.8", 80) )
-	 except Exception:
-		logging.debug("Socket connection failed during ltp pre-requisite check" )
-	 host_ip = s.getsockname()[0]
-	 try:	
-	 	xyz = target.run("mount -t nfs %s:/opt/caliper_nfs /mnt/caliper_nfs" % (host_ip) )
-	 except Exception:
-		try:
-			xyz = target.run("umount /mnt/caliper_nfs/")
-			xyz = target.run("mount -t nfs %s:/opt/caliper_nfs /mnt/caliper_nfs" % (host_ip) )
-		except Exception:
-			logging.debug("Unable to mount")
-			return result
-   	 readme_file=log_bench+"_README"
-    	 resultltp = subprocess.call("touch %s"
-					%(readme_file),shell=True)
-    	 resultltp = subprocess.call("echo 'The categorization of ltp in caliper is\nCATEGORY\t\t\t\t\t\tSCENARIOS OF LTP\n\n[command]\t\t\t\t\t\tcommands\n[cpu]\t\t\t\t\t\tsched,cpuhotplug\n[memory]\t\t\t\t\t\tmm.numa,hugetlb\n[dio]\t\t\t\t\t\tdio,io,dma_thread_diotest,timers\n[filesystem]\t\t\t\t\t\tfilecaps,fs,fs_bind,fs_ext4,fs_perms_simple,fs_readonly\n[kernel/\t\t\t\t\t\tsyscalls,controllers,pty,containers,admin_tools,modules,can\n[proc]\t\t\t\t\t\tipc,hyperthreading,nptl,cap_bounds,connectors,pipes\n\n\nltp_output.log contains the screenshot of complete ltp execution and ltp_parser.log contains the information regarding the number of tests executed and among them which all have passed failed or skipped.\n\nFor more information regarding a particular category please see ltp_<category>_output.log which contains the output screen and parser log for that particular category' >> %s"
-		%(readme_file),shell=True)
-    
+        try:
+             tar_mask = ".".join(tar_ip.split(".")[0:3])
+             p1 = subprocess.Popen(["ifconfig"], stdout=subprocess.PIPE)
+             p2 = subprocess.Popen(["grep", tar_mask], stdin=p1.stdout, stdout=subprocess.PIPE)
+             p1.stdout.close()
+             output,err = p2.communicate()
+             output = output.strip()
+             host_ip = output.split("inet addr:")[1].split(" ")[0]
+        except Exception:
+            logging.debug("Unable to get the host_ip" )
+        try:
+            mount_cmd = target.run("mount -t nfs %s:/opt/caliper_nfs /mnt/caliper_nfs" % (host_ip) )
+        except Exception:
+            try:
+                umount_cmd = target.run("umount /mnt/caliper_nfs/")
+                mount_cmd = target.run("mount -t nfs %s:/opt/caliper_nfs /mnt/caliper_nfs" % (host_ip) )
+            except Exception:
+                logging.debug("Unable to mount")
+                return result
+        readme_file=log_bench+"_README"
+        resultltp = subprocess.call("touch %s"
+                             %(readme_file),shell=True)
+        resultltp = subprocess.call("echo 'The categorization of ltp in caliper is\nCATEGORY\t\t\t\t\t\tSCENARIOS OF LTP\n\n[command]\t\t\t\t\t\tcommands\n[cpu]\t\t\t\t\t\tsched,cpuhotplug\n[memory]\t\t\t\t\t\tmm.numa,hugetlb\n[dio]\t\t\t\t\t\tdio,io,dma_thread_diotest,timers\n[filesystem]\t\t\t\t\t\tfilecaps,fs,fs_bind,fs_ext4,fs_perms_simple,fs_readonly\n[kernel/\t\t\t\t\t\tsyscalls,controllers,pty,containers,admin_tools,modules,can\n[proc]\t\t\t\t\t\tipc,hyperthreading,nptl,cap_bounds,connectors,pipes\n\n\nltp_output.log contains the screenshot of complete ltp execution and ltp_parser.log contains the information regarding the number of tests executed and among them which all have passed failed or skipped.\n\nFor more information regarding a particular category please see ltp_<category>_output.log which contains the output screen and parser log for that particular category' >> %s"
+                  %(readme_file),shell=True)
     # for each command in run config file, read the config for the benchmark
     for i in range(0, len(sections_run)):
         flag = 0
         try:
             category = configRun.get(sections_run[i], 'category')
-            scores_way = configRun.get(sections_run[i], 'scores_way')
-            parser = configRun.get(sections_run[i], 'parser')
             command = configRun.get(sections_run[i], 'command')
         except Exception:
             logging.debug("no value for the %s" % sections_run[i])
             continue
 	if bench_name == bench_test:
-	    subsection = sections_run[i].split(" ")[1] 
+	    subsection = sections_run[i].split(" ")[1]
 	    subsection_file = log_bench + "_" + subsection + "_output.log"
-        if os.path.exists(tmp_parser_file):
-            os.remove(tmp_parser_file)
         if os.path.exists(tmp_log_file):
             os.remove(tmp_log_file)
 
@@ -154,7 +293,7 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
             logging.info(e)
             crash_handle.main()
             if bench_name == bench_test:
-                 xyz = subprocess.call("mv /opt/caliper_nfs/ltp_log/* %s "
+                 move_logs = subprocess.call("mv /opt/caliper_nfs/ltp_log/* %s "
                                 % (Folder.exec_dir), shell=True)
             server_utils.file_copy(logfile, tmp_log_file, 'a+')
             if os.path.exists(tmp_log_file):
@@ -167,7 +306,7 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
               return result
         else:
             if bench_name == bench_test:
-                xyz = subprocess.call("mv /opt/caliper_nfs/ltp_log/* %s "
+                move_logs = subprocess.call("mv /opt/caliper_nfs/ltp_log/* %s "
                                 % (Folder.exec_dir), shell=True)
                 if os.path.exists(subsection_file):
                     server_utils.file_copy(tmp_log_file,subsection_file, 'a+')
@@ -186,51 +325,9 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
                        continue
                 else:
                     return result
-        # parser the result in the tmp_log_file, the result is the output of
-        # running the command
-        try:
-            logging.debug("Parsering the result of command: %s" % command)
-            if bench_name == bench_test:
-                outfp = open(tmp_parser_file, "w")
-                outfp.write("%s" %(subsection))
-                outfp.close()		
-                parser_result = parser_case(kind_bench, bench_name, parser_file,
-                                        parser, subsection_file,
-                                        tmp_parser_file)
-            else:
-                parser_result = parser_case(kind_bench, bench_name, parser_file,
-                                        parser,tmp_log_file,
-                                        tmp_parser_file)
-        except Exception, e:
-            logging.info("There's wrong when parsering the result of \" %s \""
-                            % sections_run[i])
-            logging.info(e)
-            if os.path.exists(tmp_parser_file):
-                os.remove(tmp_parser_file)
             if os.path.exists(tmp_log_file):
                 os.remove(tmp_log_file)
-        else:
-            server_utils.file_copy(parser_result_file, tmp_parser_file, "a+")
-            if os.path.exists(tmp_parser_file):
-                os.remove(tmp_parser_file)
-            if os.path.exists(tmp_log_file):
-                os.remove(tmp_log_file)
-            if (parser_result <= 0):
-                continue
 
-        # according the method in the config file, compute the score
-        try:
-            logging.debug("Computing the score of the result of command: %s"
-                            % command)
-            flag_compute = compute_case_score(parser_result, category,
-                                                scores_way, target)
-        except Exception, e:
-            logging.info(e)
-            continue
-        else:
-            if not flag_compute and parser_result:
-                logging.info("There is wrong when computing the result\
-                                of \"%s\"" % command)
     endtime = datetime.datetime.now()
     result = subprocess.call("echo '$$ %s EXECUTION STOP: %s' >> %s"
                                 % (sections_run[i], str(endtime)[:19],
@@ -239,7 +336,6 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
                                 % (sections_run[i],
                                     (endtime-starttime).seconds,
                                     Folder.caliper_log_file), shell=True)
-
 
 def run_commands(exec_dir, kind_bench, commands,
                     stdout_tee=None, stderr_tee=None, target=None):
@@ -517,7 +613,7 @@ def parser_case(kind_bench, bench_name, parser_file, parser, infile, outfile):
             outfp = open(outfile, 'a+')
             contents = infp.read()
 
-	    if  bench_name == "ltp": 
+	    if  bench_name == "ltp":
                  result = methodToCall(contents, outfp)
 	    else:
 
@@ -536,7 +632,7 @@ def parser_case(kind_bench, bench_name, parser_file, parser, infile, outfile):
     return result
 
 
-def compute_case_score(result, category, score_way, target):
+def compute_case_score(result, category, score_way, target, flag):
     tmp = category.split()
     length = len(tmp)
     # write the result and the corresponding score to files
@@ -544,36 +640,32 @@ def compute_case_score(result, category, score_way, target):
     yaml_dir = os.path.join(Folder.results_dir, 'yaml')
     result_yaml_name = target_name + '.yaml'
     score_yaml_name = target_name + '_score.yaml'
-    result_yaml = os.path.join(yaml_dir, result_yaml_name)
-    score_yaml = os.path.join(yaml_dir, score_yaml_name)
+    if flag == 1:
+        result_yaml = os.path.join(yaml_dir, result_yaml_name)
+    else :
+        result_yaml = os.path.join(yaml_dir, score_yaml_name)
     if (length == 4 and tmp[0] == 'Functional'):
-        return compute_func(result, tmp, score_way, result_yaml, score_yaml)
+        return compute_func(result, tmp, score_way, result_yaml, flag)
     elif ((length != 0 and length <= 4) and tmp[0] == 'Performance'):
-        return compute_perf(result, tmp, score_way, result_yaml, score_yaml)
+        return compute_perf(result, tmp, score_way, result_yaml, flag)
     else:
         return -4
 
 
-def compute_func(result, tmp, score_way, result_yaml, score_yaml):
+def compute_func(result, tmp, score_way, result_yaml, flag=1):
     flag1 = 0
-    flag2 = 0
-    result_flag = 1
-    score_flag = 2
-
-    result_score = result * 100
+    if flag == 2:
+        result = result * 100
     try:
         flag1 = write_results.write_yaml_func(result_yaml,
                                                 tmp, result,
-                                                result_flag)
-        flag2 = write_results.write_yaml_func(score_yaml,
-                                                tmp, result_score,
-                                                score_flag)
+                                                flag)
     except BaseException:
         logging.debug("There is wrong when computing the score")
-    return flag1 & flag2
+    return flag1
 
 
-def compute_perf(result, tmp, score_way, result_yaml, score_yaml):
+def compute_perf(result, tmp, score_way, result_yaml, flag=1):
     result_flag = 1
     score_flag = 2
 
@@ -587,34 +679,31 @@ def compute_perf(result, tmp, score_way, result_yaml, score_yaml):
         result_fp = result
     elif (type(result) == dict and (len(tmp) > 0 and len(tmp) < 4)):
         return deal_dic_for_yaml(result, tmp, score_way,
-                                    result_yaml, score_yaml)
+                                    result_yaml,flag)
     else:
         return -4
 
-    result_score = write_results.compute_score(score_way, result_fp)
+    if flag == 2:
+        result_fp = write_results.compute_score(score_way, result_fp)
     flag1 = 0
-    flag2 = 0
     try:
         flag1 = write_results.write_yaml_perf(result_yaml, tmp,
-                                                result_fp, result_flag)
-        flag2 = write_results.write_yaml_perf(score_yaml,
-                                                tmp, result_score, score_flag)
+                                                result_fp, flag)
     except BaseException:
         logging.debug("There is wrong when compute the score.")
-    return flag1 & flag2
+    return flag1
 
 
-def deal_dic_for_yaml(result, tmp, score_way, yaml_file, score_yaml_file):
+def deal_dic_for_yaml(result, tmp, score_way, yaml_file,flag):
     if (len(tmp) == 2):
-        flag = write_results.write_dic(result, tmp, score_way,
-                                yaml_file, score_yaml_file)
+        status = write_results.write_dic(result, tmp, score_way,
+                                yaml_file, flag)
     elif (len(tmp) == 3):
-        flag = write_results.write_sin_dic(result, tmp, score_way, yaml_file,
-                                            score_yaml_file)
+        status = write_results.write_sin_dic(result, tmp, score_way, yaml_file, flag)
     else:
-        flag = write_results.write_multi_dic(result, tmp, score_way,
-                                            yaml_file, score_yaml_file)
-    return flag
+        status = write_results.write_multi_dic(result, tmp, score_way,
+                                            yaml_file, flag)
+    return status
 
 
 def caliper_run(target_exec_dir, target):
@@ -658,17 +747,17 @@ def caliper_run(target_exec_dir, target):
             bench = os.path.join(classify, sections[i])
             try:
                 result = run_all_cases(target_exec_dir, target, bench,
-                                        sections[i], run_file, parser)
+                                        sections[i], run_file)
             except Exception:
                 logging.info("Running %s Exception" % sections[i])
                 crash_handle.main()
                 print_format()
                 if sections[i]== "ltp":
                     try:
-                        xyz = target.run("umount /mnt/caliper_nfs/")
+                        unmount = target.run("if  df -h |grep caliper_nfs  ; then umount /mnt/caliper_nfs/; fi")
                     except Exception:
-                        xyz = target.run("fuser -km /mnt/caliper_nfs")
-                        xyz = target.run("umount /mnt/caliper_nfs/")
+                        unmount = target.run("if  df -h |grep caliper_nfs  ; then fuser -km /mnt/caliper_nfs ;fi")
+                        unmount = target.run("if  df -h |grep caliper_nfs  ; then umount /mnt/caliper_nfs/ ;fi")
                 run_flag = server_utils.get_fault_tolerance_config(
                                 'fault_tolerance', 'run_error_continue')
                 if run_flag == 1:
@@ -679,14 +768,63 @@ def caliper_run(target_exec_dir, target):
                 logging.info("Running %s Finished" % sections[i])
                 if sections[i] == "ltp":
                     try:
-                         xyz = target.run("umount /mnt/caliper_nfs/")
+                         unmount = target.run("if  df -h |grep caliper_nfs  ; then umount /mnt/caliper_nfs/ ;fi")
                     except Exception:
-                         xyz = target.run("fuser -km /mnt/caliper_nfs/")
-                         xyz = target.run("umount /mnt/caliper_nfs/")
-			
+                         unmount = target.run("if  df -h |grep caliper_nfs  ; then fuser -km /mnt/caliper_nfs/ ;fi")
+                         unmount = target.run("if  df -h |grep caliper_nfs  ; then umount /mnt/caliper_nfs/ ;fi")
                 print_format()
+
     return 0
 
+
+def parsing_run(target_exec_dir, target):
+    # get the test cases defined files
+    config_files = server_utils.get_cases_def_files(target_exec_dir)
+    logging.debug("the selected configuration are %s" % config_files)
+    dic = {}
+    for i in range(0, len(config_files)):
+        # run benchmarks selected in each configuration file
+        # config_file = os.path.join(caliper_path.CALIPER_PRE, config_files[i])
+        config_file = os.path.join(config_files[i])
+        config, sections = server_utils.read_config_file(config_file)
+        logging.debug(sections)
+
+        # get if it is the 'common' or 'arm' or 'android'
+        classify = config_files[i].split("/")[-1].strip().split("_")[0]
+        logging.debug(classify)
+
+        for i in range(0, len(sections)):
+            dic[sections[i]] = {}
+            # try to resolve the configuration of the configuration file
+            try:
+                run_file = config.get(sections[i], 'run')
+                parser = config.get(sections[i], 'parser')
+            except Exception:
+                raise AttributeError("The is no option value of parser")
+
+            print_format()
+            logging.info("Parsing %s" % sections[i])
+            bench = os.path.join(classify, sections[i])
+            try:
+                result = parse_all_cases(target_exec_dir, target, bench,
+                                       sections[i], run_file,parser,dic)
+            except Exception:
+                logging.info("Running %s Exception" % sections[i])
+                crash_handle.main()
+                print_format()
+                run_flag = server_utils.get_fault_tolerance_config(
+                    'fault_tolerance', 'run_error_continue')
+                if run_flag == 1:
+                    continue
+                else:
+                    return result
+            else:
+                logging.info("Parsing %s Finished" % sections[i])
+                print_format()
+    outfp = open(caliper_path.folder_ope.name.strip()+"/final_parsing_logs.yaml",'w')
+    outfp.write(yaml.dump(dic, default_flow_style=False))
+    outfp.close()
+    return 0
 
 def print_format():
     logging.info("="*55)
@@ -707,6 +845,7 @@ def run_caliper_tests(target,f_option):
         os.mkdir(Folder.yaml_dir)
     if not os.path.exists(Folder.html_dir):
         os.mkdir(Folder.html_dir)
+
     flag = 0
     target_execution_dir = server_utils.get_target_exec_dir(target)
     if not os.path.exists(target_execution_dir):
@@ -714,8 +853,45 @@ def run_caliper_tests(target,f_option):
     try:
         logging.debug("beginnig to run the test cases")
         test_result = caliper_run(target_execution_dir, target)
+        if intermediate == 1:
+            target_name = server_utils.get_host_name(target)
+            yaml_dir = os.path.join(Folder.results_dir, 'yaml')
+            result_yaml_name = target_name + '.yaml'
+            result_yaml = os.path.join(yaml_dir, result_yaml_name)
+            dic = {}
+            dic = traverse.traverse_pre(target, dic)
+            with open(result_yaml,'w') as fp:
+                fp.write(yaml.dump(dic, default_flow_style=False))
+
     except error.CmdError:
         logging.info("There is wrong in running benchmarks")
+        flag = 1
+    else:
+        if test_result:
+            flag = test_result
+    return flag
+
+def parser_caliper_tests(target,f_option):
+    #f_option =1 if -f is used
+    if not os.path.exists(Folder.exec_dir):
+            print "Invalid Parser input Folder"
+            return -1
+
+    if not os.path.exists(Folder.results_dir):
+        os.mkdir(Folder.results_dir)
+    if not os.path.exists(Folder.yaml_dir):
+        os.mkdir(Folder.yaml_dir)
+    if not os.path.exists(Folder.html_dir):
+        os.mkdir(Folder.html_dir)
+    flag = 0
+    target_execution_dir = server_utils.get_target_exec_dir(target)
+    if not os.path.exists(target_execution_dir):
+        flag = 1
+    try:
+        logging.debug("beginnig to parse the test cases")
+        test_result = parsing_run(target_execution_dir, target)
+    except error.CmdError:
+        logging.info("There is wrong in parsing test cases")
         flag = 1
     else:
         if test_result:

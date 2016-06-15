@@ -5,18 +5,18 @@ import pdb
 
 def ebizzy_records_parser(content, outfp):
     dic = {}
-    dic['ebizzy_m_r'] = {}
-    dic['ebizzy_M_r'] = {}
+    dic['ebizzy_mmap_records'] = {}
+    dic['ebizzy_no_mmap_records'] = {}
 
     thread_num = 0
     blocks = content.split("log:")
     flag = '_M'
     for block in blocks:
         if re.search('-M', block):
-            dic_tmp = dic['ebizzy_M_r']
+            dic_tmp = dic['ebizzy_no_mmap_records']
             flag = '_M'
         if re.search('-m', block):
-            dic_tmp = dic['ebizzy_m_r']
+            dic_tmp = dic['ebizzy_mmap_records']
             flag = '_m'
         for thread in re.findall('-t\s*(\d+)\s*', block):
             thread_num = thread
@@ -35,18 +35,18 @@ def ebizzy_records_parser(content, outfp):
 
 def ebizzy_sys_parser(content, outfp):
     dic = {}
-    dic['ebizzy_m_t'] = {}
-    dic['ebizzy_M_t'] = {}
+    dic['ebizzy_mmap_time'] = {}
+    dic['ebizzy_no_mmap_time'] = {}
 
     blocks = content.split("log:")
     thread_num = 0
     flag = '_M'
     for block in blocks:
         if re.search('-M', block):
-            dic_tmp = dic['ebizzy_M_t']
+            dic_tmp = dic['ebizzy_no_mmap_time']
             flag = '_M'
         if re.search('-m', block):
-            dic_tmp = dic['ebizzy_m_t']
+            dic_tmp = dic['ebizzy_mmap_time']
             flag = '_m'
         for thread in re.findall('-t\s*(\d+)\s*', block):
             thread_num = thread

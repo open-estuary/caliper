@@ -38,41 +38,51 @@
     {% if bandwidth %}
     <script src="{% static 'polls/js/example/memory/memory_cachebench.js' %}"></script>
     {% endif %}
+    {% if tiny_bandwidth %}
+    <script src="{% static 'polls/js/example/memory/memory_tiny_bandwidth.js' %}"></script>
+    {% endif %}
+    {% if tiny_latency %}
+    <script src="{% static 'polls/js/example/memory/memory_tiny_latency.js' %}"></script>
+    {% endif %}
 
-    <!-- Custom CSS for this example -->
-    <style type="text/css">
-        .example {
-            width: 940px;
-            margin: 50px auto;
-            padding: 0 20px;
-        }
-        .sensei-grid {
-            margin-bottom: 20px;
-        }
-        h1 {
-            font-weight: bold;
-            line-height: normal;
-        }
-    </style>
+ <!-- link the caliper report css here -->
+ <link rel="stylesheet" type="text/css" href="../static/css/caliper_report.css"/>
+
 
 </head>
 <body>
 <div class="example">
     <div><input type="hidden" id="memory_tst" value="{{ dic_mem }}"> </div>
 
-    <!--SKD++-->
+   
     <div class="page-header">
     <h1> Caliper Performance Tests: Memory </h1> 
     </div>
 
+    <div style="text-align: left;">
+    <p> The test under this section is mainly targetted towards the performance evaluation of memory subsystem through various benchmarking tests which exercises the same. The tools used are <br>
+        1. <b>Tinymembench</b>: This is a simple memory benchmark program, which tries to measure the peak bandwidth of sequential memory accesses and the latency of random memory accesses   <br>
+        2. <b>Lmbench</b> : lmbench is a series of micro benchmarks intended to measure basic operating system and hardware system metrics.<br>
+        3. <b>Cachebench</b> : CacheBench is a benchmark designed to evaluate the performance of the memory hierarchy.  
+     </p>
+
+  <h1><small>Report Layout </small></h1>
+     <p> The scores of each scenario  shown below is followed by the participating tests cases from each of these scenarios. Remember the scores are based on the percentile ranking across each participating platforms which is already discussed <a href="score_Calculation.html" target="_blank"> <b>here.</b></a>    </p>
+   <h1><small>Test description </small></h1>
+     <p>
+Currently Caliper executes various benchmark and developed scripts to evaluate the performance focusing the memory subsystem.   </p>
+
+	<p> To have a very quick reference of the hardware configurations of platforms evaluated, please refer to <a href="../static/TargetInfo/Platform_Configuration.xlsx" target ="_blank"> <b>Platform_Configuration.xlsx </b> </a>
+    </div>
+	
     {% if sum %}
-    <h1><small>Memory Score Summary</small></h1> <!--SKD++-->
+    <h1><small>Memory Score Summary</small></h1>
     <div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/memory_summary.png' %}" height="300"
     width="600" /> </p>
 	</div>
     
-    <!-- <h1><small>caliper memory comparison detail</small></h1> -->
+ 
     <div id="memory-summary" class="sensei-grid"></div>
     {% endif %}
 	
@@ -91,6 +101,22 @@
 	</div>
 		   
     <div id="memory-bandwidth" class="sensei-grid"></div>
+    {% endif %}
+    {% if tiny_bandwidth %}
+    <h2><small>Memory Score Details: Tiny Bandwidth</small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/memory_tiny_bandwidth.png' %}" height="450" width="800" /> </p>
+	</div>
+
+    <div id="memory-tiny-bandwidth" class="sensei-grid"></div>
+    {% endif %}
+    {% if tiny_latency %}
+    <h2><small>Memory Score Details: Tiny Latency</small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/memory_tiny_latency.png' %}" height="450" width="800" /> </p>
+	</div>
+
+    <div id="memory-tiny-latency" class="sensei-grid"></div>
     {% endif %}
 
     </div>

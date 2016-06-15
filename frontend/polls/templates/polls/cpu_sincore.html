@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+
+{% load staticfiles %}
+<html>
+<head>
+    <title>Caliper Performance: CPU</title>
+    {% load static %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- CSS dependecies -->
+    <link rel="stylesheet" type="text/css" href="{% get_static_prefix %}js/lib/bootstrap/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" type="text/css" href="{% get_static_prefix %}js/lib/pickadate/lib/themes/classic.css"/>
+    <link rel="stylesheet" type="text/css" href="{% get_static_prefix %}js/lib/pickadate/lib/themes/classic.date.css"/>
+    <link rel="stylesheet" type="text/css" href="{% get_static_prefix %}js/lib/fontawesome/css/font-awesome.min.css"/>
+    <link rel="stylesheet" type="text/css" href="{% get_static_prefix %}js/lib/summernote/dist/summernote.css"/>
+
+    <!-- Sensei Grid CSS -->
+    <link rel="stylesheet" type="text/css" href="{% static 'polls/css/sensei-grid.css' %}"/>
+
+    <!-- JS dependencies -->
+    <script src="{% get_static_prefix %}js/lib/jquery/dist/jquery.min.js"></script>
+    <script src="{% get_static_prefix %}js/lib/lodash/dist/lodash.min.js"></script>
+    <script src="{% get_static_prefix %}js/lib/pickadate/lib/picker.js"></script>
+    <script src="{% get_static_prefix %}js/lib/pickadate/lib/picker.date.js"></script>
+    <script src="{% get_static_prefix %}js/lib/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="{% get_static_prefix %}js/lib/summernote/dist/summernote.js"></script>
+
+    <!-- Sensei Grid JS -->
+    <script src="{% static 'polls/js/src/sensei-grid.js' %}"></script>
+    <script src="{% static 'polls/js/src/sensei-editors.js' %}"></script>
+    <script src="{% static 'polls/js/src/sensei-json.js' %}"></script>
+    {% if sum %}
+    <script src="{% static 'polls/js/example/cpu/example_cpu.js' %}"></script>
+    {% endif %}
+
+    {% if sincore_double %}
+    <script src="{% static 'polls/js/example/cpu/cpu_double.js' %}"></script>
+    {% endif %}
+    {% if sincore_int %}
+	<script src="{% static 'polls/js/example/cpu/cpu_sin_integer.js' %}"></script>
+    {% endif %}
+    {% if sincore_float %}
+	<script src="{% static 'polls/js/example/cpu/cpu_sin_float.js' %}"></script>
+    {% endif %}
+    {% if sincore_unixbench %}
+	<script src="{% static 'polls/js/example/cpu/cpu_unixbench.js' %}"></script>
+    {% endif %}
+    {% if sincore_misc %}
+	<script src="{% static 'polls/js/example/cpu/cpu_sincore_misc.js' %}"></script>
+    {% endif %}
+
+<!-- link the caliper report css here -->
+ <link rel="stylesheet" type="text/css" href="../static/css/caliper_report.css"/>
+ 
+
+</head>
+<body>
+<div class="example">
+    <div><input type="hidden" id="cpu_sincore" value="{{ dic_cpu_sincore }}"> </div>
+
+    <!--SKD++-->
+    <div class="page-header">
+    <h1> Caliper Performance Tests: CPU </h1> 
+    </div>
+
+    {% if sum %}
+    <h1><small>CPU Score Summary</small></h1> <!--SKD++-->
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/cpu_sincore_summary.png' %}" height="400" width="700" /> </p>
+	</div>
+    
+    <!-- <h1><small>caliper cpu comparison detail</small></h1> -->
+    <div id="summary"  class="sensei-grid"></div>
+    {% endif %}
+	
+    {% if sincore_int %}
+	<h2><small>CPU Score Details: Single Core Integer </small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/cpu_sincore_sincore_int.png' %}" height="400" width="800" /> </p>
+	</div>
+    <div id="sin-int" class="sensei-grid"></div>
+    {% endif %}
+    <p><b>Attn:</b> Some values show as 'Zero' in the score for certain platforms. Observed certain issues in the test execution for these. This needs more analysis </p>
+
+    {% if sincore_float %}
+    <h2><small>CPU Score Details: Single Core Float </small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/cpu_sincore_sincore_float.png' %}" height="400" width="850" /> </p>
+	</div>
+    <div id="sin-float" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if sincore_double %}
+    <h2><small>CPU Score Details: Sincore Double </small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/cpu_sincore_sincore_double.png' %}" height="500" width="850" /> </p>
+	</div>
+    <div id="sin-double" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if sincore_unixbench %}
+    <h2><small>CPU Score Details: Single Core Unixbench </small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/cpu_sincore_sincore_unixbench.png' %}" height="400" width="850" /> </p>
+	</div>
+    <div id="sin-unixbench" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if sincore_misc %}
+    <h2><small>CPU Score Details: Single Core Misc </small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/cpu_sincore_sincore_misc.png' %}" height="400" width="850" /> </p>
+	</div>
+    <div id="sincore-misc" class="sensei-grid"></div>
+    {% endif %}
+    
+</div>
+</body>
+</html>

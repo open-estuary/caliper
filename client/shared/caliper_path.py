@@ -26,7 +26,7 @@ CURRENT_PATH = os.path.dirname(sys.modules[__name__].__file__)
 CALIPER_DIR = os.path.abspath(os.path.join(CURRENT_PATH, '..', '..'))
 PARSER_DIR = os.path.abspath(os.path.join(CALIPER_DIR, 'client', 'parser'))
 FRONT_TMP_DIR = os.path.join(CALIPER_DIR, 'frontend')
-
+intermediate = 0
 if not judge_caliper_installed():
     # This means caliper is not installed and execution will be local.
     # Output folders are created with in the local directory structure.
@@ -53,6 +53,8 @@ GEN_DIR = os.path.join(CALIPER_REPORT_HOME, 'binary')
 
 FRONT_END_DIR = os.path.join(CALIPER_REPORT_HOME, 'frontend')
 HTML_DATA_DIR = os.path.join(FRONT_END_DIR, 'frontend', 'data_files')
+HTML_DATA_DIR_INPUT = os.path.join(HTML_DATA_DIR, 'Input_Logs')
+HTML_DATA_DIR_OUTPUT = os.path.join(HTML_DATA_DIR, 'Normalised_Logs')
 HTML_PICTURE_DIR = os.path.join(FRONT_END_DIR, 'polls', 'static', 'polls',
                                 'pictures')
 
@@ -107,6 +109,7 @@ class Folder(Singleton):
                                             'caliper_exe.log')
         self.summary_file = os.path.join(CALIPER_REPORT_HOME, self.name,
                                             'results_summary.log')
+        self.final_parser = os.path.join(CALIPER_REPORT_HOME, self.name,'final_parsing_logs.yaml')
         self.yaml_dir = os.path.join(self.results_dir, 'yaml')
         self.html_dir = os.path.join(self.results_dir, 'html')
         self.name = os.path.join(CALIPER_REPORT_HOME, self.name)
