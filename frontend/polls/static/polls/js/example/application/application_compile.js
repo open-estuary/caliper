@@ -10,6 +10,7 @@ $(function () {
     var options = {emptyRow: true, sortable: false};
     var grid = $(document.getElementById("application_compile")).grid(data, columns, options);
 
+
     draw_grid(grid);
 
     // api examples
