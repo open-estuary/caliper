@@ -75,6 +75,8 @@ def os_populate(dic,contents):
             if group.group(2).strip() == "lsb_release":
                 lsb_release_list.sort()
                 key_lists = dic['Hardware_Info']['OS'].keys()
+                key_lists.remove('GCC_Version')
+                key_lists.remove('LD_Version')
                 key_lists.sort()
                 for i in range(0,len(lsb_release_list)):
                     command = str(lsb_release_list[i]) + ':' +"\s+([\w\S ]+)"
@@ -84,6 +86,12 @@ def os_populate(dic,contents):
                             dic['Hardware_Info']['OS'][key_lists[i]] = group_keys.group(1)
                         except:
                             dic['Hardware_Info']['OS'][key_lists[i]] = "*TBA"
+            elif group.group(2).strip() == "gcc":
+               item = re.search(r'(\d+\.\d+\.\d+)\n',blocks)
+               dic['Hardware_Info']['OS']['GCC_Version'] = item.group(1)
+            elif group.group(2).strip() == "ld":
+               item = re.search(r'(\d+\.\d+)\n',blocks)
+               dic['Hardware_Info']['OS']['LD_Version'] = item.group(1)
     return
 
 def cpu_populate(dic,contents):
