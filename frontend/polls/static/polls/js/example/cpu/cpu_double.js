@@ -5,8 +5,7 @@ $(function () {
     var sin_int_dic = getJson(test, 'sincore_double')
     var columns = getHoriColumn(sin_int_dic);
     var data = getHoriData(sin_int_dic, columns);
-    console.log(data)
-    console.log(sin_int_dic)
+
     // initialize grid
     var options = {emptyRow: true, sortable: false};
     var grid = $(document.getElementById("sin-double")).grid(data, columns, options);

@@ -144,6 +144,7 @@ def write_yaml_perf(yaml_file, tmp, result, kind=1):
     flag = 0
     if not os.path.exists(yaml_file):
         os.mknod(yaml_file)
+        '''
         file_name = yaml_file.split('/')[-1]
         file_name = file_name.split("_score")[0] + ".yaml"
         abs_path = yaml_file.split('/')
@@ -158,6 +159,7 @@ def write_yaml_perf(yaml_file, tmp, result, kind=1):
             dic_new['name'] = {}
             dic_new['name'] = dic['name']
             fp.write(yaml.dump(dic_new,default_flow_style=False))
+        '''
     fp = open(yaml_file)
     result = round_perf(result)
     x = yaml.load(fp)

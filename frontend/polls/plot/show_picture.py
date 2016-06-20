@@ -9,6 +9,7 @@
 
 import os
 import re
+import yaml
 import shutil
 import logging
 
@@ -32,7 +33,21 @@ def get_targets_data(path):
 
 def show_caliper_result():
     file_lists = []
-    file_lists = get_targets_data(web_yamls_dir)
+    filesname = get_targets_data(web_yamls_dir)
+    files_new = []
+    for i in range(0, len(filesname)):
+        print i, filesname[i]
+        fp = open(filesname[i])
+        data = yaml.load(fp)
+        data = data['Configuration']
+        if data['machine arch'] == 'x86_64':
+            files_new.append(filesname[i])
+    files_new.sort()
+    filesname = [i for i in filesname if not i in files_new]
+    filesname.sort()
+    files_new.sort()
+    for i in files_new:
+        filesname.append(i)
     picture_location = os.path.abspath(polls_location)
 
     if os.path.exists(picture_location):
@@ -40,6 +55,6 @@ def show_caliper_result():
 
     os.makedirs(picture_location)
     try:
-        deal_result.draw_picture(file_lists, picture_location)
+        deal_result.draw_picture(filesname, picture_location)
     except Exception:
         logging.info("There is wrong in drawing pictures")

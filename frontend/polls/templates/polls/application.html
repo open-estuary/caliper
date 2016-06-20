@@ -84,9 +84,9 @@
     
    <p>Caliper executes the applications mentioned below to evaluate the performance.   </p>
 <mark><p> <b>Notes: </b> <br>
-Hadoop performance is based on single node. Soon Caliper to expand the scope of testing multi node performance as well</p><mark>
+Hadoop performance is based on single node. Soon Caliper to expand the scope of testing multi node performance as well</p></mark>
 
-	<p> To have a very quick reference of the hardware configurations of platforms evaluated, please refer to <a href="../static/TargetInfo/Platform_Configuration.xlsx" target ="_blank"> <b>Platform_Configuration.xlsx </b> </a>
+	<p> To have a very quick reference of the hardware configurations of platforms evaluated, please refer to <a href="../static/TargetInfo/Platform_Configuration.xlsx" target ="_blank"> <b>Platform_Configuration.xlsx </b> </a></p>
     </div>
 	
     {% if sum %}
@@ -110,6 +110,12 @@ Hadoop performance is based on single node. Soon Caliper to expand the scope of 
     <div id="application_compile" class="sensei-grid"></div>
     {% endif %}
     <p><b>Note: </b> Kernel compilation tested with varied number of threads. format is kernel-dev_#Threads</p>
+
+    {% if ebizzy_mmap_records %}
+    <h2><small>Application Score Details: Ebizzy mmap records</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/application_ebizzy_mmap_records.png' %}" height="500"
+    width="700" /> </p>
     </div>
 
     <div id="ebizzy-mmap-records" class="sensei-grid"></div>
@@ -175,9 +181,7 @@ Hadoop performance is based on single node. Soon Caliper to expand the scope of 
     <div id="application_jdk" class="sensei-grid"></div>
     {% endif %}
 
+    </div>
 
-
-
-</div>
 </body>
 </html>
