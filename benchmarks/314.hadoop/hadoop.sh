@@ -65,16 +65,14 @@ pushd $HADOOP_DIR
     popd
 
 /usr/bin/expect  << EOF
-  spawn $HADOOP_SERVICE/stop-all.sh
-  expect {
-    "connecting (yes/no)?"
-    {
-      send "yes\r"
-      expect "connecting (yes/no)?"
-      send "yes\r"
+    spawn $HADOOP_SERVICE/stop-all.sh
+    expect {
+        -re {connecting \(yes/no\)\?} {
+            send "yes\n"
+            exp_continue
+        }
+        eof
     }
-  }
-  expect eof
 EOF
 
 rm -fr $hdfs_tmp
@@ -85,24 +83,22 @@ nMax1=5
 n1=0
 while [ ${n1} -lt ${nMax1} ]; do
     sInfo1=$(/usr/bin/expect  << EOF
-      spawn $HADOOP_SERVICE/start-dfs.sh
-       expect {
-        "connecting (yes/no)?"
-        {
-          send "yes\r"
-          expect "connecting (yes/no)?"
-          send "yes\r"
+    spawn $HADOOP_SERVICE/start-dfs.sh
+    expect {
+        -re {connecting \(yes/no\)\?} {
+            send "yes\n"
+            exp_continue
         }
-      }
-      expect eof
+        eof
+    }
 EOF
-)
+    )
     hdfs_jps=$(jps)
-    echo "${hdfs_jps}" |grep -iw "SecondaryNameNode"
+    echo "${hdfs_jps}" |grep -iqw "SecondaryNameNode"
     if [ $? -eq 0 ]; then
-        echo "${hdfs_jps}" |grep -iw "NameNode"
+        echo "${hdfs_jps}" |grep -iqw "NameNode"
         if [ $? -eq 0 ]; then
-            echo "${hdfs_jps}" |grep -iw "DataNode"
+            echo "${hdfs_jps}" |grep -iqw "DataNode"
             if [ $? -eq 0 ]; then
                 bOK1=true
                 break
@@ -120,16 +116,14 @@ if ! ${bOK1}; then
 fi
 
 /usr/bin/expect  << EOF
-  spawn $HADOOP_SERVICE/start-yarn.sh
-  expect {
-    "connecting (yes/no)?"
-    {
-      send "yes\r"
-      expect "connecting (yes/no)?"
-      send "yes\r"
+    spawn $HADOOP_SERVICE/start-yarn.sh
+    expect {
+        -re {connecting \(yes/no\)\?} {
+            send "yes\n"
+            exp_continue
+        }
+        eof
     }
-  }
-  expect eof
 EOF
   yarn_jps=$(jps)
   yarn_suc=$(echo $yarn_jps | grep -w 'NodeManager')
