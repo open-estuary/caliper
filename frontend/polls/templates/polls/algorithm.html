@@ -82,14 +82,6 @@
     <div id="alg_comparison" class="sensei-grid"></div>
     {% endif %}
 	
-    {% if digital_verify  %}
-    <h2><small>Algorithm Score Details: Digital Verify</small></h2>
-	<div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/algorithm_digital_verify.png' %}" height="400" width="800" /> </p>
-	</div>
-    <div id="alg_verify" class="sensei-grid"></div>
-    {% endif %}
-	
     {% if digital_sign %}
     <h2><small>Algorithm Score Details: Digital Sign</small></h2>
 	<div style="text-align: center;">
@@ -97,14 +89,15 @@
 	</div>
     <div id="alg_sign" class="sensei-grid"></div>
     {% endif %}
-    <p><b>Note: </b> The test case names are same for Digital Verify and Digital Sign. However encryption is tested for Digital Sign and decryption is tested for Digital Verify.</p>	
-    {% if symmetric_cyphers %}
-    <h2><small>Algorithm Score Details: Symmetric Cyphers</small></h2>
+
+    {% if digital_verify  %}
+    <h2><small>Algorithm Score Details: Digital Verify</small></h2>
 	<div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/algorithm_symmetric_cyphers.png' %}" height="400" width="900" /> </p>
+    <p> <img src="{% static 'polls/pictures/algorithm_digital_verify.png' %}" height="400" width="800" /> </p>
 	</div>
-    <div id="alg_symmetric" class="sensei-grid"></div>
+    <div id="alg_verify" class="sensei-grid"></div>
     {% endif %}
+    <p><b>Note: </b> The test case names are same for Digital Verify and Digital Sign. However encryption is tested for Digital Sign and decryption is tested for Digital Verify.</p>	
 
     {% if hash_algorithm %}
     <h2><small>Algorithm Score Details: Hash Algorithm</small></h2>
@@ -113,6 +106,15 @@
 	</div>
     <div id="alg_hash" class="sensei-grid"></div>
     {% endif %}
+
+    {% if symmetric_cyphers %}
+    <h2><small>Algorithm Score Details: Symmetric Cyphers</small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/algorithm_symmetric_cyphers.png' %}" height="400" width="900" /> </p>
+	</div>
+    <div id="alg_symmetric" class="sensei-grid"></div>
+    {% endif %}
+
     {% if unzip %}
     <h2><small>Algorithm Score Details: Unzip</small></h2>
 	<div style="text-align: center;">

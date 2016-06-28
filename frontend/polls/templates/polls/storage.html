@@ -55,7 +55,7 @@
     
     <!--SKD++-->
     <div class="page-header">
-    <h1> Caliper Performance Tests: Disk </h1> 
+    <h1> Caliper Performance Tests: Storage </h1>
     </div>
 
     {% if sum %}
@@ -64,7 +64,6 @@
     <p> <img src="{% static 'polls/pictures/storage_summary.png' %}" height="500"
     width="700" /> </p>
     </div>
-
     <!-- <h1><small>caliper disk comparison detail</small></h1> -->
     <div id="storage-summary" class="sensei-grid"></div>
     {% endif %}
@@ -75,7 +74,6 @@
     <p> <img src="{% static 'polls/pictures/storage_Iozone-Cached.png' %}" height="500"
     width="700" /> </p>
 	</div>
-
     <div id="disk-cached" class="sensei-grid"></div>
     {% endif %}
 
@@ -85,7 +83,6 @@
     <p> <img src="{% static 'polls/pictures/storage_Iozone-DirectIO.png' %}" height="500"
     width="700" /> </p>
     </div>
-
     <div id="disk-directIO" class="sensei-grid"></div>
     {% endif %}
 
@@ -95,7 +92,6 @@
     <p> <img src="{% static 'polls/pictures/storage_bandwidth.png' %}" height="500"
     width="700" /> </p>
 	</div>
-
     <div id="io-bandwidth" class="sensei-grid"></div>
     {% endif %}
 

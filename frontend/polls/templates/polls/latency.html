@@ -72,28 +72,21 @@ Currently Caliper derives these tests from various well known open source tools 
 
 	<p> To have a very quick reference of the hardware configurations of platforms evaluated, please refer to <a href="../static/TargetInfo/Platform_Configuration.xlsx" target ="_blank"> <b>Platform_Configuration.xlsx </b> </a>
     </div>
-	
+
     {% if sum %}
     <h1><small>Latency Score Summary</small></h1> 
     <div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/latency_summary.png' %}"
     height="400" width="700" /> </p>
 	</div>
-    
- 
+
+
     <div id="lat-summary" class="sensei-grid"></div>
     {% endif %}
     <p><b>FixMe: </b>file/vm overall score above shows PC-I5650_U15.04 as 100. This is has a minor issue.
-                   Based on the analysis of data in detail, <b>MOONSHOT-M700P_U14.04 score should be 100 for file/vm.</b>
+                   Based on the analysis of data in detail, <b>MOONSHOT-M710P_U14.04 score should be 100 for file/vm.</b>
                    <br>Please check the 'Latency Score Details: File/VM Latency' section below. Its very clear. 
                        However, due to a page-fault during the test on PC-I5650_U15.04, there was one unwanted data observed in the test results. Hence, the overall score calculation had a minor issue. This will be fixed in the next report.</p>	
-    {% if mem %}
-    <h2><small>Latency Score Details: Memory Latency</small></h2>
-	<div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/latency_mem.png' %}" height="400" width="750" /> </p>
-	</div>
-    <div id="lat-memory" class="sensei-grid"></div>
-    {% endif %}
 
     {% if ctx %}
     <h2><small>Latency Score Details: Context Switch</small></h2>
@@ -102,13 +95,29 @@ Currently Caliper derives these tests from various well known open source tools 
 	</div>
     <div id="lat-ctx" class="sensei-grid"></div>
     {% endif %}
-	
+
+    {% if file_vm %}
+    <h2><small>Latency Score Details: File/VM Latency</small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/latency_file_vm.png' %}" height="400" width="700" /> </p>
+	</div>
+    <div id="lat-file-vm" class="sensei-grid"></div>
+    {% endif %}
+
     {% if process %}
     <h2><small>Latency Score Details: Process Latency</small></h2>
 	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/latency_process.png' %}" height="400" width="750" /> </p>
 	</div>
     <div id="lat-process" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if mem %}
+    <h2><small>Latency Score Details: Memory Latency</small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/latency_mem.png' %}" height="400" width="750" /> </p>
+	</div>
+    <div id="lat-memory" class="sensei-grid"></div>
     {% endif %}
 
     {% if rttest %}
@@ -118,14 +127,7 @@ Currently Caliper derives these tests from various well known open source tools 
 	</div>
     <div id="lat-real-time" class="sensei-grid"></div>
     {% endif %}
-    <p><b>Attn:</b> Some values show as 'Zero' in the score for certain platforms. Observed certain issues in the test execution for these. This needs more analysis </p>
-    {% if file_vm %}
-    <h2><small>Latency Score Details: File/VM Latency</small></h2>
-	<div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/latency_file_vm.png' %}" height="400" width="700" /> </p>
-	</div>
-    <div id="lat-file-vm" class="sensei-grid"></div>
-    {% endif %}
+
     </div>
 </body>
 </html>

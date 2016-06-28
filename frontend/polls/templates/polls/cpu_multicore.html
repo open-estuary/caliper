@@ -62,21 +62,21 @@
     <!-- <h1><small>caliper cpu comparison detail</small></h1> -->
     <div id="summary"  class="sensei-grid"></div>
     {% endif %}
-	
+
+    {% if multicore_misc %}
+    <h2><small>CPU Score Details: Multicore Misc  </small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/cpu_multicore_multicore_misc.png' %}" height="400" width="850" /> </p>
+	</div>
+    <div id="multi-misc" class="sensei-grid"></div>
+    {% endif %}
+
     {% if multicore_unixbench %}
     <h2><small>CPU Score Details: Multicore Unixbench  </small></h2>
 	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/cpu_multicore_multicore_unixbench.png' %}" height="400" width="850" /> </p>
 	</div>
     <div id="multi-unixbench" class="sensei-grid"></div>
-    {% endif %}
-
-	{% if multicore_misc %}
-    <h2><small>CPU Score Details: Multicore Misc  </small></h2>
-	<div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/cpu_multicore_multicore_misc.png' %}" height="400" width="850" /> </p>
-	</div>
-    <div id="multi-misc" class="sensei-grid"></div>
     {% endif %}
 
     
