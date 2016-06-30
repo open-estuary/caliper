@@ -161,16 +161,6 @@ Hadoop performance is based on single node. Soon Caliper to expand the scope of 
     <div id="application_hadoop" class="sensei-grid"></div>
     {% endif %}
 
-    {% if sysbench %}
-    <h2><small>Application Score Details: Sysbench</small></h2>
-    <div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/application_sysbench.png' %}" height="500"
-    width="700" /> </p>
-    </div>
-
-    <div id="application_sysbench" class="sensei-grid"></div>
-    {% endif %}
-
     {% if jdk %}
     <h2><small>Application Score Details: JDK</small></h2>
     <div style="text-align: center;">
@@ -179,6 +169,16 @@ Hadoop performance is based on single node. Soon Caliper to expand the scope of 
     </div>
 
     <div id="application_jdk" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if sysbench %}
+    <h2><small>Application Score Details: Sysbench</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/application_sysbench.png' %}" height="500"
+    width="700" /> </p>
+    </div>
+
+    <div id="application_sysbench" class="sensei-grid"></div>
     {% endif %}
 
     </div>
