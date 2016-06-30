@@ -8,7 +8,12 @@ build_unixbench() {
        mkdir -p $myOBJPATH
    fi
    pushd $CoreMarkPath
-	make
+   if [ $ARCH == "arm_64" || $ARCH == "arm_32" ]
+   then
+	make CC=$GCC
+   else
+        make
+   fi
 	cp -r $CoreMarkPath/* $myOBJPATH
 	make clean
    popd
