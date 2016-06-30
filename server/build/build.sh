@@ -35,6 +35,7 @@ check_sum()
 download_file()
 {
     # we have less than 3 arguments. Print the help text:
+    checksum_result=1
     if [ $# -lt 3 ] ; then
         echo
         'download.sh  -- download and check if the package downloads correctly
