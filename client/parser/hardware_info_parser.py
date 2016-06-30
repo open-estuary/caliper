@@ -356,19 +356,19 @@ def hardware_info_parser(content,outfp):
     dic_yaml['Configuration']['CPU_type'] = dic['Hardware_Info']['CPU']['Cpu_Type']
     dic_yaml['Configuration']['Memory'] = dic['Hardware_Info']['MEMORY']['Main_Memory_Size']
     dic_yaml['Configuration']['OS_Version'] = dic['Hardware_Info']['KERNEL']['Version']
-    dic_yaml['Configuration']['byte_order'] = dic['Hardware_Info']['CPU']['Byte_Order']
-    dic_yaml['Configuration']['hostname'] = server_utils.get_host_name(host)
-    dic_yaml['Configuration']['l1d_cache'] = dic['Hardware_Info']['MEMORY']['L1_D-Cache_Size']
-    dic_yaml['Configuration']['l1i_cache'] = dic['Hardware_Info']['MEMORY']['L1_I-Cache_Size']
-    dic_yaml['Configuration']['l2_cache'] = dic['Hardware_Info']['MEMORY']['L2_Cache_Size']
-    dic_yaml['Configuration']['l3_cache'] = dic['Hardware_Info']['MEMORY']['L3_Cache_Size']
-    dic_yaml['Configuration']['machine_arch'] = dic['Hardware_Info']['CPU']['Architecture']
-    dic_yaml['name'] = dic_yaml['Configuration']['hostname']
-    yaml_name = dic_yaml['Configuration']['hostname'] + ".yaml"
+    dic_yaml['Configuration']['Byte_order'] = dic['Hardware_Info']['CPU']['Byte_Order']
+    dic_yaml['Configuration']['Hostname'] = server_utils.get_host_name(host)
+    dic_yaml['Configuration']['L1d_cache'] = dic['Hardware_Info']['MEMORY']['L1_D-Cache_Size']
+    dic_yaml['Configuration']['L1i_cache'] = dic['Hardware_Info']['MEMORY']['L1_I-Cache_Size']
+    dic_yaml['Configuration']['L2_cache'] = dic['Hardware_Info']['MEMORY']['L2_Cache_Size']
+    dic_yaml['Configuration']['L3_cache'] = dic['Hardware_Info']['MEMORY']['L3_Cache_Size']
+    dic_yaml['Configuration']['Machine_arch'] = dic['Hardware_Info']['CPU']['Architecture']
+    dic_yaml['name'] = dic_yaml['Configuration']['Hostname']
+    yaml_name = dic_yaml['Configuration']['Hostname'] + ".yaml"
     yaml_path = os.path.join(Folder.yaml_dir,yaml_name)
     with open(yaml_path,'w') as outfp:
         outfp.write(yaml.dump(dic_yaml,default_flow_style = False))
-    yaml_name_hw = dic_yaml['Configuration']['hostname'] + "_hw_info.yaml"
+    yaml_name_hw = dic_yaml['Configuration']['Hostname'] + "_hw_info.yaml"
     yaml_path_hw = os.path.join(Folder.yaml_dir,yaml_name_hw)
     with open(yaml_path_hw,'w') as outfp:
         outfp.write(yaml.dump(dic,default_flow_style = False))
