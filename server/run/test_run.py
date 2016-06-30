@@ -885,8 +885,6 @@ def parser_caliper_tests(target,f_option):
         os.mkdir(Folder.html_dir)
     flag = 0
     target_execution_dir = server_utils.get_target_exec_dir(target)
-    if not os.path.exists(target_execution_dir):
-        flag = 1
     try:
         logging.debug("beginnig to parse the test cases")
         test_result = parsing_run(target_execution_dir, target)

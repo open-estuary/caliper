@@ -1,0 +1,4 @@
+1.Copy the output logs of openssl from different platforms to Input_openssl directory.
+2.Execute openssl.py 
+3.Using the template xlsx the values will be populated in openssl_merge.xlsx.
+
