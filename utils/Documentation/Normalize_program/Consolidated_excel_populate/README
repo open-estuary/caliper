@@ -1,0 +1,1 @@
+This script takes as input,the raw yamls i.e. Platform.yaml from Report_input Folder and generates the Excels namely Performance-Tests.xlsx and Functional-Tests.xlsx.It uses the Functional.xlsx and  Performance.xlsx as its template Excel.
