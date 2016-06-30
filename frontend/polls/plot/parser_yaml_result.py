@@ -360,6 +360,10 @@ class DrawPicture:
         ax.set_title('Total Score of each Items')
         ax.set_xticks(ind + width * len(rects) / 2)
         ax.set_xticklabels(tuple(test_subItems))
+        label_fig = ax.get_xticklabels()
+        for label_tmp in label_fig:
+            label_tmp.set_rotation(30)
+            label_tmp.set_size('small')
 
         #skd++ commented and added to move legend outside the plot ax.legend(tuple(rects), tuple(label_total),  loc="upper left")
         sklegend = ax.legend(tuple(rects), tuple(label_total),  loc='center left', bbox_to_anchor=(1, 0.5))
