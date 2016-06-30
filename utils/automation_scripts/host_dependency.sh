@@ -1,5 +1,5 @@
 #!/bin/bash
-host_packages=('python-dev' 'nfs-common' 'build-essential' 'python-pip' 'automake' 'autoconf' 'make' 'openssh-server' 'libnuma-dev' 'texinfo' 'python-matplotlib' 'python-numpy' 'nfs-kernel-server' 'openjdk-7-jre' 'openjdk-7-jdk')
+host_packages=('libc6:i386' 'libncurses:i386' 'libstdc++6:i386' 'lib32z1' 'python-dev' 'nfs-common' 'build-essential' 'python-pip' 'automake' 'autoconf' 'make' 'openssh-server' 'libnuma-dev' 'texinfo' 'python-matplotlib' 'python-numpy' 'nfs-kernel-server' 'openjdk-7-jre' 'openjdk-7-jdk')
 NFS_mount="/opt/caliper_nfs/ltp_log"
 toolchain="/home/sana/toolchain"
 
@@ -11,7 +11,6 @@ for i in `seq 0 $((${#host_packages[@]}-1)) `
 do
 	#chcking to see if all the host dependent packages are installed
     check=`dpkg-query -W -f='${Status}' ${host_packages[$i]} | grep -c "ok installed"`
-    echo "check = $check"
     if [ $check -eq 0 ] 
     then
 	# if force option is passed thn forcefully run the scripts
@@ -65,7 +64,7 @@ pattern=`echo "$command" | awk -F ' ' '{ print $1 }'`
 if [ `cat /etc/exports | grep -c "$pattern"` -ge 1 ]
 then
     pattern=`echo "$command" | awk -F ' ' '{print $2}'`
-    if [ `cat /etc/exports | grep -c "$pattern"` -eq 1 ]
+    if [ `cat /etc/exports | grep -c "$pattern"` -ge 1 ]
     then
         flag=1
     fi
@@ -80,7 +79,7 @@ else
     read choice
     if [ $choice == 'y'  ]
     then
-       `echo "$command" >> /etc/exports`
+        `sudo echo "$command" >> /etc/exports`
         if [ $? -ne 0 ]
         then
             echo -e "\n\t\tEXPORTING THE PATH FAILED"

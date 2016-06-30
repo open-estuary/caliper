@@ -105,7 +105,10 @@ def normalize_files(dicList):
 
 
 def delete(dic, option):
-    del dic['results']['Functional']['peripheral']
+    try:
+        del dic['results']['Functional']['peripheral']
+    except:
+        pass
     try:
             del dic['results']['Functional']['kernel']['EFIFS']
     except KeyError:

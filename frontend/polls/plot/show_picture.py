@@ -40,7 +40,7 @@ def show_caliper_result():
         fp = open(filesname[i])
         data = yaml.load(fp)
         data = data['Configuration']
-        if data['machine arch'] == 'x86_64':
+        if data['Machine_arch'] == 'x86_64':
             files_new.append(filesname[i])
     files_new.sort()
     filesname = [i for i in filesname if not i in files_new]
