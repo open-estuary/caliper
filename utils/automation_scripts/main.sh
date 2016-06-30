@@ -111,15 +111,15 @@ then
 	then 
 		if [ ! -d "./toolchain/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux" ]
 		then
-			if [ -d "toolchain" ]
+			if [ -d toolchain ]
 			then
-				mkdir "toolchain"
+				mkdir toolchain
 			fi
 			if [ -f "gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.bz2" ]
 			then
 				tar -xvf gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.bz2 &
 				wait
-				mv gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux ./toolchain
+				mv gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux ./toolchain/
 			else
 				echo "The toolchain is not present "
 				echo "Do you want me to download it for you [y/n]"
@@ -130,14 +130,14 @@ then
 					wait
 					tar -xvf gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.bz2 
 					wait
-					mv gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux ./toolchain
+					mv gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux ./toolchain/
 				else
 					echo "Please download toolchain and then try again"
 					exit 1
 				fi
 			fi
 		fi
-		files_toolchain="gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux/bin"
+		files_toolchain="toolchain/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux/bin"
 	elif [ $target_arch == 'arm_32' ]
 	then
 		if [ ! -d "./toolchain/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux" ]
@@ -150,7 +150,7 @@ then
 			then
 				tar -xvf gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.bz2 &
 				wait
-				mv gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux ./toolchain
+				mv gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux ./toolchain/
 			else
 			    echo "The toolchain is not present "
 				echo "Do you want me to download it for you [y/n]"
@@ -161,16 +161,16 @@ then
 					wait
 					tar -xvf gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.bz2 &
 					wait
-					mv gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux ./toolchain
+					mv gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux ./toolchain/
 				else
 					echo "Please download toolchain and then try again"
 					exit 1
 				fi
 			fi
 		fi
-		files_toolchain="gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux/bin"
+		files_toolchain="toolchain/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux/bin"
 	fi
-   	export PATH=./toolchain/$files_toolchain:$PATH
+   	export PATH=$PWD/$files_toolchain:$PATH
 	if [ $? -ne 0 ]
 	then 
 		echo "Exporting the tool chain failed"
