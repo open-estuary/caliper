@@ -1,5 +1,10 @@
 #!/bin/bash
 
+#it run very long time.
+#if we need debug any issue, or the issue reproducibility random,
+#we can add it to the corresponding position.
+#set -x
+
 hdfs_tmp=/tmp/hadoop-${USER}
 
 HADOOP_DIR=$PWD/hadoop
@@ -24,6 +29,7 @@ if [ ! -f ~/.ssh/*.pub ]; then
 fi
 sKeyPub=$(cat ~/.ssh/id_*.pub)
 f0=~/.ssh/authorized_keys
+##Avoid duplication to add
 grep -q "${sKeyPub}" ${f0} 2>/dev/null
 if [ $? -ne 0 ]; then
     cat ~/.ssh/*.pub >>${f0}
@@ -31,6 +37,7 @@ fi
 
 ############## get JAVA_HOME which need to be used later ################
 #[ "$(whereis java)"x != ""x ]
+#comment the discard code for reference
 if false; then
     iRt1=1
     IFS=:; for d1 in ${PATH}; do IFS=${g_IFS0};
@@ -42,6 +49,7 @@ if false; then
         fi
     IFS=$'\n'; done; IFS=${g_IFS0};
 fi
+#Is java installed?
 if ! hash java; then
     sudo apt-get -y install openjdk-7-jdk
     if [ $? -ne 0 ]; then
@@ -49,6 +57,8 @@ if ! hash java; then
         exit 1
     fi
 fi
+
+#Get the java path
 java_loc=$(find /usr/lib -name 'java-*-openjdk*' |sed -n "1p")
 printf "%s[%3s]%5s: ${java_loc}\n" "${FUNCNAME[0]}" ${LINENO} "Info"
 
@@ -81,6 +91,7 @@ $HADOOP_BIN/hdfs namenode -format
 bOK1=false
 nMax1=5
 n1=0
+##while for fixed the "SecondaryNameNode" not started.
 while [ ${n1} -lt ${nMax1} ]; do
     sInfo1=$(/usr/bin/expect  << EOF
     spawn $HADOOP_SERVICE/start-dfs.sh
