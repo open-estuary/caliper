@@ -158,13 +158,13 @@
  *  Note different numeric results to single precision. Slight variations
  *  are normal with different compilers and sometimes optimisation levels. 
  *
- **************************************************************************
+ **************************************************************************/
   
  #include <math.h>       /* for sin, exp etc.           */
  #include <stdio.h>      /* standard I/O                */ 
  #include <string.h>     /* for strcpy - 3 occurrences  */
  #include <stdlib.h>     /* for exit   - 1 occurrence   */
-  #include "cpuidh.h"
+ #include "cpuidh.h"
 
  /*PRECISION PRECISION PRECISION PRECISION PRECISION PRECISION PRECISION*/
 
