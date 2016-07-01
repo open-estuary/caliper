@@ -6,14 +6,15 @@ build_sysbench() {
     mkdir -p $INSTALL_DIR
 
     if [ ! -d $download_dir/$filename ]; then
-        if [ $("whereis bzr")x = ""x ]; then
-            echo "bzr has not been installed"
-        else
+        if hash bzr; then
             bzr branch lp:~sysbench-developers/sysbench/0.5 $download_dir/$filename
             if [ $? -ne 0 ]; then
                 echo 'Download sysbench-0.5 failed'
                 rm -fr $download_dir/$filename
             fi
+        else
+            echo "bzr has not been installed"
+            exit 1
         fi
     fi
 
