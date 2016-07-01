@@ -124,7 +124,7 @@ def parse_all_cases(target_exec_dir, target, kind_bench, bench_name,
             dic[bench_name][sections_run[i]]["type"] = type(parser_result)
             dic[bench_name][sections_run[i]]["value"] = parser_result
         except Exception, e:
-            logging.info("There's wrong when parsering the result of \" %s \""
+            logging.info("Error while parsing the result of \" %s \""
                             % sections_run[i])
             logging.info(e)
             if os.path.exists(tmp_parser_file):
@@ -156,7 +156,10 @@ def compute_caliper_logs(target_exec_dir,flag = 1):
                 raise AttributeError("The is no option value of Computing")
 
             print_format()
-            logging.info("Computing Score for %s" % sections[j])
+            if flag == 1:
+                logging.info("Generation raw yaml for %s" % sections[j])
+            else:
+                logging.info("Computing Score for %s" % sections[j])
             bench = os.path.join(classify, sections[j])
             try:
                 # get the abspath, which is filename of run config for the benchmark
@@ -177,6 +180,7 @@ def compute_caliper_logs(target_exec_dir,flag = 1):
                     command = configRun.get(sections_run[k], 'command')
                 except Exception:
                     logging.debug("no value for the %s" % sections_run[k])
+                    logging.info(e)
                     continue
                 try:
                     logging.debug("Computing the score of the result of command: %s"
@@ -184,12 +188,14 @@ def compute_caliper_logs(target_exec_dir,flag = 1):
                     flag_compute = compute_case_score(dic[sections[j]][sections_run[k]]["value"], category,
                                           scores_way, target_exec_dir, flag)
                 except Exception, e:
+                    logging.info("Error while computing the result of \"%s\""  % sections_run[k])
                     logging.info(e)
                     continue
                 else:
                     if not flag_compute and dic[bench][sections_run[k]["value"]]:
-                            logging.info("There is wrong when computing the result\
+                            logging.info("Error while computing the result\
                                         of \"%s\"" % command)
+    logging.info("="*55)
     if not os.path.exists(caliper_path.HTML_DATA_DIR_INPUT):
         os.makedirs(caliper_path.HTML_DATA_DIR_INPUT)
 

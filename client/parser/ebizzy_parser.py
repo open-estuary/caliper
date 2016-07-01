@@ -19,6 +19,8 @@ def ebizzy_records_parser(content, outfp):
             dic_tmp = dic['ebizzy_mmap_records']
             flag = '_m'
         for thread in re.findall('-t\s*(\d+)\s*', block):
+            if int(thread) < int(10):
+                thread = '0' + str(thread)
             thread_num = thread
 
         if not thread_num:
@@ -49,6 +51,8 @@ def ebizzy_sys_parser(content, outfp):
             dic_tmp = dic['ebizzy_mmap_time']
             flag = '_m'
         for thread in re.findall('-t\s*(\d+)\s*', block):
+            if int(thread) < int(10):
+                thread = '0' + str(thread)
             thread_num = thread
 
         if not thread_num:
