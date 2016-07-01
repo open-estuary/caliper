@@ -43,9 +43,9 @@ double_label = ['double_add', 'double_mul', 'double_div', 'double_bogomflops']
 
 ctx_label = ['lat_ctx0_2', 'lat_ctx16_2', 'lat_ctx64_2', 'lat_ctx16_8',
             'lat_ctx64_8', 'lat_ctx16_16', 'lat_ctx64_16']
-ctx_label_dic = {'lat_ctx0_2': '2p/0K_ctxsw', 'lat_ctx16_2': '2p/16K_ctxsw',
-                'lat_ctx64_2': '2p/64K_ctxsw', 'lat_ctx16_8': '8p/16K_ctxsw',
-                'lat_ctx64_8': '8p/64K_ctxsw',
+ctx_label_dic = {'lat_ctx0_2': '02p/0K_ctxsw', 'lat_ctx16_2': '02p/16K_ctxsw',
+                'lat_ctx64_2': '02p/64K_ctxsw', 'lat_ctx16_8': '08p/16K_ctxsw',
+                'lat_ctx64_8': '08p/64K_ctxsw',
                 'lat_ctx16_16': '16p/16K_ctxsw',
                 'lat_ctx64_16': '16p/64K_ctxsw'}
 
