@@ -63,14 +63,11 @@ def get_caliper_num():
     number = 0
     files = os.listdir(CALIPER_REPORT_HOME)
     for name in files:
-        if re.search('^output', name) and re.search('\d+', name):
-            num_tmp = re.search('(\d+)', name).group(1)
-            if num_tmp > number:
-                number = num_tmp
-    if number:
-        return int(number)+1
-    else:
-        return int(number)
+        if re.search('^output_\d+$', name):
+            num_tmp = int(re.search('_(\d+)$', name).group(1))
+            if num_tmp >= number:
+                number = num_tmp + 1
+    return number
 
 
 class Singleton(object):
