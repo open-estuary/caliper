@@ -57,19 +57,42 @@
 <!-- START Updating data-->
 <h2> Introduction </h2>
 	<p>
-	Caliper is a test framework focuses on benchmarking and performance evaluation of server platforms. It can access the performance of ARM as well as X86 platforms . Caliper allows you to build, 	 execute and create a benchmarking report of the platforms under evaluation. It can help to discover issues related to hardware or software.
+	Caliper is a test framework focuses on benchmarking and performance 
+evaluation of server platforms. It can access the performance of ARM as 
+well as X86 platforms . Caliper allows you to build, 	 execute and 
+create a benchmarking report of the platforms under evaluation. It can 
+help to discover issues related to hardware or software.
 	</p>
 
 <h2> Test classification  </h2>
 	<p>
-	Caliper has already integrated with many industry standard open source benchmarking tools. Even though Caliper mainly focuses on the performance aspects of the system, it gives some insight on the functional aspects as well. The integrated tools are divided under two top dimensions, Performance and Functional. Under each of these categories sub subcategories and then the test cases are organised.	
+	Caliper has already integrated with many industry standard open source 
+benchmarking tools. Even though Caliper mainly focuses on the 
+performance aspects of the system, it gives some insight on the 
+functional aspects as well. The integrated tools are divided under two 
+top dimensions, Performance and Functional. Under each of these 
+categories sub subcategories and then the test cases are organised.	
 	</p>
 
 <h2> Report presentation </h2>
 	<p>
-	This report present the percentile score based comparison of platforms under each categories and  test scenarios.  Caliper collect the original execution results from each test cases  and normalize them. This is consisting of dynamic range compression of measured values and conversion of <b>"Smaller The Better"</b> values to <b>"Higher The Better"</b>. Hence, in this report, all the scores are <b> Higher The Better </b>.These calculated scores are then compared across platforms and then converted them to <b> "Percentiles" </b>. This means the highest value in each category will have the value of 100 and rest will be relative percentile score to this. If you want to know more details about the scoring process followed in this report, please go to <a href="polls/score_Calculation.html" target="_blank"> <b>Caliper score calculation.</b></a> 
+	This report present the percentile score based comparison of platforms 
+under each categories and  test scenarios.  Caliper collect the original
+ execution results from each test cases  and normalize them. This is 
+consisting of dynamic range compression of measured values and 
+conversion of <b>"Smaller The Better"</b> values to <b>"Higher The Better"</b>. Hence, in this report, all the scores are <b> Higher The Better </b>.These calculated scores are then compared across platforms and then converted them to <b> "Percentiles" </b>.
+ This means the highest value in each category will have the value of 
+100 and rest will be relative percentile score to this. If you want to 
+know more details about the scoring process followed in this report, 
+please go to <a href="{% static 'polls/pictures/score_Calculation.html' %}" target="_blank"> <b>Caliper score calculation.</b></a>
        <br>If you want to know more about caliper, please visit <a href="http://open-estuary.org/caliper-benchmarking/" target="_blank"> <b>Caliper page in Open Estuary Website</b></a></p>
 
+<h3> Data sample collection and variability check </h3>
+	<p>
+	Caliper execute the test suites iteratively to produce multiple samples of the test results. These samples are used to calculate the 
+<b>Coefficient of variation [CV] </b>. <b>CV</b> is defined as the ratio of the <b> Standard Deviation</b> to the <b>Mean</b> represented in percentage. </br>
+This gives a measure of variability for the samples with respect to the <b>Mean</b> value.
+Please click here <a href="{% static 'polls/pictures/iterative_execution.html' %}" target="_blank"> <b>Caliper Execution</b></a> for more details</p>
 
     <h2>Tested Platforms: Overview</h2> 
     <div id="platform_configuration" class="sensei-grid"></div> 
@@ -78,7 +101,7 @@
    
     <mark><b>Notes: <br></b> a) Platform Name = BoardName-OSversion : Ex: RH2285-U15.04= RH2285 server with Ubuntu 15.04; D02-Est2.1-U15.04= D02 board with Est2.1 based on Ubuntu 15.04 distro <br> b) Please click to get the <b>hardware details of each target platform</b>: <a href="static/TargetInfo/D02-EST2.2-U15.04_Info.txt" target="_blank">D02-EST2.2-U15.04</a>, <a href="static/TargetInfo/DELLR7-E5606-U15.04_Info.txt" target="_blank">DELLR7-E5606-U15.0</a>, <a href="static/TargetInfo/MOONSHOT-M400-U14.04_Info.txt" target="_blank">MOONSHOT-M400-U14.04</a>, <a href="static/TargetInfo/MOONSHOT-M710P-U14.04_Info.txt" target="_blank">MOONSHOT-M710P-U14.04</a>, <a href="static/TargetInfo/OVERDRIVE-U15.04_Info.txt" target="_blank">OVERDRIVEU15.04_Info.txt</a>, <a href="static/TargetInfo/PC-I5650-U15.04_Info.txt" target="_blank">PC-I5650-U15.04</a>, <a href="static/TargetInfo/RH2285-E52420V2-U15.04_Info.txt" target="_blank">RH2285-E52420V2-U15.04</a>, <a href="static/TargetInfo/RH2288-E52690V3-U15.04_Info.txt" target="_blank">RH2288-E52690V3-U15.04</a></mark>
 
-<p> To have a very quick reference of the hardware configurations of platforms evaluated, please refer to <a href="static/TargetInfo/Platform_Configuration.xlsx" target ="_blank"> <b>Platform_Configuration.xlsx </b> </a>
+<p> To have a very quick reference of the hardware configurations of platforms evaluated, please refer to <a href="{%static '../static/TargetInfo/Platform_Configuration.xlsx' %}" target ="_blank"> <b>Platform_Configuration.xlsx </b> </a>
  
 <hr>
 Add the observation here !!!!!!!!
@@ -116,15 +139,15 @@ Add the observation here !!!!!!!!
 <div style="text-align: left;">
 <h1>The test data </h1>
 <p> The original values of test data can be obtained from the below excels. <br>
-<b> 1.<a href="static/TestInfo/Performance-Tests.xlsx" target="_blank"> <b>Top Dimention - Performance Test Results</b></a></b> <br>
-<b> 2.<a href="static/TestInfo/Functional-Tests.xlsx" target="_blank"> <b>Top Dimention - Functional Test Results </b></a> </b><br>
+<b> 1.<a href="static/TestInfo/Report-Data/Performance-Tests.xlsx" target="_blank"> <b>Top Dimention - Performance Test Results</b></a></b> <br>
+<b> 2.<a href="static/TestInfo/Report-Data/Functional-Tests.xlsx" target="_blank"> <b>Top Dimention - Functional Test Results </b></a> </b><br>
 </p>
 </div>
 
 <div style="text-align: left;">
 <h1>The test tools  </h1>
 <p> Caliper uses industry standard open source test and benchmarking tools for the comparison. <br>
-The tools details and versions of the same can be obtained here, <a href="static/TestInfo/Tool_details.xlsx" target="_blank"> <b>Tool_details.xlsx </b></a> 
+The tools details and versions of the same can be obtained here, <a href="static/TestInfo/Tool/Tool_details.xlsx" target="_blank"> <b>Tool_details.xlsx </b></a> 
 </p>
 </div>
 

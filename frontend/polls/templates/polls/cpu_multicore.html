@@ -50,9 +50,29 @@
 
     <!--SKD++-->
     <div class="page-header">
-    <h1> Caliper Performance Tests: CPU </h1> 
+    <h1> Caliper Performance Tests: CPU-Multicore </h1>
     </div>
 
+  <div style="text-align: left;">
+	<h1><small>Report Layout </small></h1>
+	<p> The score of each test item is represented as the percentage of performance compared to the highest value obtained across all platform. So a value of <b>x%</b> means that the test case/	 	 scenario performance is <b> x% </b> compared to the highest scored platform, which is always given <b> 100% </b>.</br>
+        To know the ranking calculation and actual values scored by each platform on specific test cases, please refer to the raw values excel provided along with the report.
+        Please click <a href="{% static 'polls/pictures/score_Calculation.html' %}" target="_blank"> <b>here</b></a> for more details. </p>
+	The <b>score summary</b> is the percentage of performance of each platform for individual test scenarios. The detailed sections shows the individual test case score(rank) in the same fashion. <br>
+   </div>
+
+   <div  style="text-align: left;">
+     <h1><small>Test description </small></h1>
+     <p>
+	The test under this section evaluate single core performance of the CPU Subsystem. These tests would impact mainly CPU and the memory subsystem. Relatively low or nil stress on IO</p>
+	<li>Stress-ng : Measure sthe CPU performance by running some CPU intensive routines.</li>
+	<li>unixbench : A system benchmark which test the performance of CPU and memory. </li>
+	<li>sysbench-CPU : Measure the CPU performance by finding the given number of prime numbers and measuring the time for the same.</li>
+	
+    </p>
+
+	<p> To have a very quick reference of the hardware configurations of platforms evaluated, please refer to <a href="{%static '../static/TargetInfo/Platform_Configuration.xlsx' %}" target ="_blank"> 		<b>Platform_Configuration.xlsx </b> </a></p>
+   </div>
     {% if sum %}
     <h1><small>CPU Score Summary</small></h1> <!--SKD++-->
 	<div style="text-align: center;">

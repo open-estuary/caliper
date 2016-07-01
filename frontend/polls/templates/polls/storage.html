@@ -53,13 +53,29 @@
 <div class="example">
     <div><input type="hidden" id="storage_tst" value="{{ dic_storage }}"> </div>
     
-    <!--SKD++-->
+
     <div class="page-header">
-    <h1> Caliper Performance Tests: Storage </h1>
-    </div>
+    <h1> Caliper Performance Tests: Storage </h1> 
+   </div>
+ 
+   <div style="text-align: left;">
+	<h1><small>Report Layout </small></h1>
+	<p> The score of each test item is represented as the percentage of performance compared to the highest value obtained across all platform. So a value of <b>x%</b> means that the test case/	 	 scenario performance is <b> x% </b> compared to the highest scored platform, which is always given <b> 100% </b>.</br> 
+        To know the ranking calculation and actual values scored by each platform on specific test cases, please refer to the raw values excel provided along with the report. 
+        Please click <a href="{% static 'polls/pictures/score_Calculation.html' %}" target="_blank"> <b>here</b></a> for more details. </p>
+	The <b>score summary</b> is the percentage of performance of each platform for individual test scenarios. The detailed sections shows the individual test case score(rank) in the same fashion. <br> 
+   </div>
+
+ <h1><small>Test description </small></h1>
+    
+     <p> 
+     Tests under this section captures the performace of disk and file system.
+     <li><b>Iozone </b>: This is a filesystem benchmark tool. The benchmark tests file I/O performance for the following operations. <b> Read, write, re-read, re-write, read backwards, read strided, fread, fwrite, random read/write etc </b> </li>
+     <li><b>Fio </b>: This is the most powerful IO benchmarking tool available today which is very flexible to create various io workloads and to execute them. </b> </li>
+	<p> To have a very quick reference of the hardware configurations of platforms evaluated, please refer to <a href="{%static '../static/TargetInfo/Platform_Configuration.xlsx' %}" target ="_blank"> 		<b>Platform_Configuration.xlsx </b> </a></p>
 
     {% if sum %}
-    <h1><small>Storage Score Summary</small></h1> <!--SKD++-->
+    <h1><small>Storage Score Summary</small></h1> 
     <div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/storage_summary.png' %}" height="500"
     width="700" /> </p>

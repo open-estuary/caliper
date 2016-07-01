@@ -19,8 +19,10 @@ from django.conf import settings
 web_yamls_dir = settings.DATAFILES_FOLDER
 polls_location = os.path.join(web_yamls_dir,"..", "..", "..", "polls", "static",
                                 "polls", "pictures")
+static_path = os.path.join(web_yamls_dir,"..", "..", "..", "polls","templates","polls")
 
-
+static_files = ["Caliper-iteration.png","Caliper_report_clasification.JPG","Caliper_report_classification.JPG","Classification.png","percentile_calculation.PNG","flowchart.PNG"\
+                    ,"iterative_execution.html","score_Calculation.html"]
 def get_targets_data(path):
     yaml_files = []
     for root, dirs, files in os.walk(path):
@@ -56,5 +58,7 @@ def show_caliper_result():
     os.makedirs(picture_location)
     try:
         deal_result.draw_picture(filesname, picture_location)
+        for files in static_files:
+            shutil.copy(os.path.join(static_path,files), picture_location)
     except Exception:
         logging.info("There is wrong in drawing pictures")

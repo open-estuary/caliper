@@ -79,14 +79,23 @@
          5. <b>JDK</b>  : Uses SciMark2 to evaluates the Java performance for scientific and numerical computing.<br>
      </p>
   <h1><small>Report Layout </small></h1>
-     <p> The scores of each scenario  shown below is followed by the participating tests cases from each of these scenarios. Remember the scores are based on the percentile ranking across each participating platforms which is already discussed <a href="score_Calculation.html" target="_blank"> <b>here.</b></a> </p>
-   <h1><small>Test description </small></h1>
+     <p> The score of each test item is represented as the percentage of performance compared to the highest value obtained across all platform. So a value of <b>x%</b> means that the test case/scenario performance is <b> x% </b> compared to the highest scored platform, which is always given <b> 100% </b>.</br> To know the ranking calculation and actual values scored by each platform on specific test cases, please refer to the raw values excel provided along with the report. Please click <a href="{% static 'polls/pictures/score_Calculation.html' %}" target="_blank"> <b>here</b></a> for more details. </p> </br>
+The <b>score summary</b> is the percentage of performance of each platform for individual test scenarios. The detailed sections shows the individual test case score(rank) in the same fashion. <br> 
+ 
+  <h1><small>Test description </small></h1>
     
-   <p>Caliper executes the applications mentioned below to evaluate the performance.   </p>
+     <p> Tests under this section captures the performace of certain application scenarios such as </li>
+         <li><b>Kernel compilation </b>: Compiling a kernel in multiple threads can evaluate the multi core/multi threading capability of the system.This can be used to measure how well the platform is scaling with respect to the number of cores (equivalent to the number threads of compilation)</li>
+	 <li><b>Database</b> : Sysbench oltp benchmark evaluate the database performance.</li>
+	 <li><b>Hadoop</b> : Hibench measures the common hadoop performance parameters like <b>HadoopTerasort, HadoopWordcount, HadoopBayes, HadoopKmeans, HadoopSort, HadoopDfsioe</b> etc. <br>
+	 <li><b>Ebizzy</b> : Web application sever load. </li>
+         <li><b>JDK</b>  : Uses SciMark2 to evaluates the Java performance for scientific and numerical computing.It consists of five computational kernels: <b>FFT, Gauss-Seidel relaxation, Sparse matrix-multiply, Monte Carlo integration, and dense LU factorization</b>.Reports a composite score in approximate <b>Mflops (Millions of floating point operations per second)</b>.</li> 
+     </p>
+   
 <mark><p> <b>Notes: </b> <br>
 Hadoop performance is based on single node. Soon Caliper to expand the scope of testing multi node performance as well</p></mark>
 
-	<p> To have a very quick reference of the hardware configurations of platforms evaluated, please refer to <a href="../static/TargetInfo/Platform_Configuration.xlsx" target ="_blank"> <b>Platform_Configuration.xlsx </b> </a></p>
+	<p> To have a very quick reference of the hardware configurations of platforms evaluated, please refer to <a href="{%static '../static/TargetInfo/Platform_Configuration.xlsx' %}" target ="_blank"> <b>Platform_Configuration.xlsx </b> </a></p>
     </div>
 	
     {% if sum %}
