@@ -14,7 +14,7 @@ do
        then
             choice="y"
        else
-           echo "\n\t\t${target_packages[$i]} is not installed, would you like to install(y/n)"
+           echo -e "\n\t\t${target_packages[$i]} is not installed, would you like to install(y/n)"
            read choice
        fi
            
@@ -22,7 +22,7 @@ do
        then
 	   		if [ ${target_packages[$i]} == 'mysql-server' -o ${target_packages[$i]} == 'libmysqlclient-dev' ]
 			then
-				echo "The ${target_packages[$i]} package is not present . Please install it manually"
+				echo -e "The ${target_packages[$i]} package is not present . Please install it manually"
 			else
             	sudo dpkg --configure -a
             	sudo apt-get update &
@@ -53,12 +53,22 @@ then
     sudo mkdir -p /mnt/sdb/
 	sudo chmod -R 775 /mnt/sdb
 	sudo chown -R $USER:$USER /mnt/sdb
+	sudo mount /dev/sdb /mnt/sdb
 	if [ $? -ne 0 ]
 	then
        echo -e "\nCreating a Mount Path for Fio testing Failed\n"
 	   exit 1
     fi
 else
+        if [ `mount -l | grep -c "/dev/sdb on /mnt/sdb"` != 0 ]
+        then
+            sudo mount /dev/sdb /mnt/sdb
+	        if [ $? -ne 0 ]
+	        then
+                echo -e "\nCreating a Mount Path for Fio testing Failed\n"
+	            exit 1
+            fi
+        fi
         echo -e "\nMount Partition for fio testing Already exits\n"
 fi
 
