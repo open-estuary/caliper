@@ -299,7 +299,7 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
             logging.info(e)
             crash_handle.main()
             if bench_name == bench_test:
-                 move_logs = subprocess.call("mv /opt/caliper_nfs/ltp_log/* %s "
+                 move_logs = subprocess.call("cp /opt/caliper_nfs/ltp_log/* %s "
                                 % (Folder.exec_dir), shell=True)
             server_utils.file_copy(logfile, tmp_log_file, 'a+')
             if os.path.exists(tmp_log_file):
@@ -312,7 +312,7 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
               return result
         else:
             if bench_name == bench_test:
-                move_logs = subprocess.call("mv /opt/caliper_nfs/ltp_log/* %s "
+                move_logs = subprocess.call("cp /opt/caliper_nfs/ltp_log/* %s "
                                 % (Folder.exec_dir), shell=True)
                 if os.path.exists(subsection_file):
                     server_utils.file_copy(tmp_log_file,subsection_file, 'a+')
