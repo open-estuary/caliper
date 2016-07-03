@@ -1,0 +1,44 @@
+Hardware_Info:
+  CPU:
+    Architecture: x86_64
+    Bogomips: '6384.12'
+    Cores_Per_Socket: '4'
+    Cpu_Cores: '2'
+    Model_Name: Intel(R) Core(TM) i5 CPU         650  @ 3.20GHz
+    Numa_Node: '1'
+    Sockets: '1'
+    Threads_per_Core: '2'
+  DISK:
+    Disk_Model: 0
+    Disk_Size: 0
+    Disk_Type: 0
+    RAID_Card: 0
+    RAID_Config: 0
+  KERNEL:
+    Version: 3.19.0-15-generic
+  MEMORY:
+    L1_D-Cache: 0
+    L1_D-Cache_Associativity: 0
+    L1_D-Cache_Operational_Mode: 0
+    L1_I-Cache_Associativity: 0
+    L1_I-Cache_Operational_Mode: 0
+    L1_I-Cache_Size: 0
+    L2_Cache_Associativity: 0
+    L2_Cache_Operational_Mode: 0
+    L2_Cache_Size: 0
+    L3_Cache: 0
+    L3_Cache_Associativity: 0
+    L3_Cache_Operational_Mode: 0
+    Main_Memory_Current_Speed: 0
+    Main_Memory_Formfactor: 0
+    Main_Memory_Manufactuer: 0
+    Main_Memory_Max_Speed: 0
+    Main_Memory_Part_number: 0
+    Main_Memory_Type: 0
+  NETWORK:
+    PCI_Gigabit_Card: Intel Corporation 82574L Gigabit
+  OS:
+    Codename: vivid
+    Description: Ubuntu 15.04
+    Distributor_ID: Ubuntu
+    Release: '15.04'

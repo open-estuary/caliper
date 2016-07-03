@@ -89,7 +89,7 @@ int             Int_Glob;
  /* end of variables for time measurement */
  
  
- void main (int argc, char *argv[])
+ int main (int argc, char *argv[])
  /*****/
  
    /* main program, corresponds to procedures        */
@@ -181,7 +181,7 @@ int             Int_Glob;
    #else
        printf ("Register option not selected\n\n");
        strcpy(Reg_Define, "Register option  Not selected.");
-   #endif                 "Register option      Selected."
+   #endif               /*"Register option      Selected."*/
 
  /*  
    if (Reg)
@@ -325,7 +325,7 @@ int             Int_Glob;
    printf ("%10d\n", Arr_2_Glob[8][7]);
    
    printf ("Ptr_Glob->            ");
-   printf ("  Ptr_Comp:       *    %d\n", (int) Ptr_Glob->Ptr_Comp);
+   printf ("  Ptr_Comp:       *    %p\n", Ptr_Glob->Ptr_Comp);
    
    printf ("  Discr:       ");
    if (Ptr_Glob->Discr == 0)  printf ("O.K.  ");
@@ -351,7 +351,7 @@ int             Int_Glob;
    printf ("%s\n", Ptr_Glob->variant.var_1.Str_Comp);
    
    printf ("Next_Ptr_Glob->       "); 
-   printf ("  Ptr_Comp:       *    %d", (int) Next_Ptr_Glob->Ptr_Comp);
+   printf ("  Ptr_Comp:       *    %p", Next_Ptr_Glob->Ptr_Comp);
    printf (" same as above\n");
    
    printf ("  Discr:       ");
@@ -579,6 +579,8 @@ int             Int_Glob;
        printf(" Press Enter\n\n");
        //int g = getchar();
     }
+
+    return 0;
  }
  
  void Proc_1 (REG Rec_Pointer Ptr_Val_Par)

@@ -44,48 +44,46 @@
     {% if symmetric_cyphers %}
     <script src="{% static 'polls/js/example/algorithm/algorithm_symm.js' %}"></script>
     {% endif %}
+    {% if unzip %}
+    <script src="{% static 'polls/js/example/algorithm/algorithm_unzip.js' %}"></script>
+    {% endif %}
 
-    <!-- Custom CSS for this example -->
-    <style type="text/css">
-        .example {
-            width: 940px;
-            margin: 50px auto;
-            padding: 0 20px;
-        }
-        .sensei-grid {
-            margin-bottom: 20px;
-        }
-        h1 {
-            font-weight: bold;
-            line-height: normal;
-        }
-    </style>
+<!-- link the caliper report css here  -->
+ <link rel="stylesheet" type="text/css" href="../static/css/caliper_report.css"/>
+
 </head>
 
 <body>
 <div class="example">
     <div><input type="hidden" id="algorithm_tst" value="{{ dic_alg }}"> </div>
     
-    <!--SKD++-->
     <div class="page-header">
     <h1> Caliper Performance Tests: Algorithm </h1> 
     </div>	
+  
+    <div style="text-align: left;">
 
+    <h1><small>Report Layout </small></h1>
+     <p> The score of each test item is represented as the percentage of performance compared to the highest value obtained across all platform. So a value of <b>x%</b> means that the test case/scenario performance is <b> x% </b> compared to the highest scored platform, which is always given <b> 100% </b>.</br> To know the ranking calculation and actual values scored by each platform on specific test cases, please refer to the raw values excel provided along with the report. Please click <a href="{% static 'polls/pictures/score_Calculation.html' %}" target="_blank"> <b>here</b></a> for more details. </p> </br>
+The <b>score summary</b> is the percentage of performance of each platform for individual test scenarios. The detailed sections shows the individual test case score(rank) in the same fashion. <br> 
+ 
+     <h1><small>Test description </small></h1>
+     <p> The test under this section evaluate various algorithm performance. These tests would impact mainly CPU and the memory subsystem, in some cases disk also would be impacted.</p>
+
+     <p> <li><b>Openssl Benchmark Suite</b> :  This tool tests all the openssl ciphers and measures the performance. The test suite is executed in single thread hence it measures the single core performance. </p></li>
+<mark><p> <b>Notes: </b> In D02/D03 platform, the hardware accelerators for algorithms are not utilized. Hence the D02 results may be lower and is expected. We can expect better results once the drivers enable the hardware accelerators </p></mark>
+
+	<p> To have a very quick reference of the hardware configurations of platforms evaluated, please refer to <a href="{%static '../static/TargetInfo/Platform_Configuration.xlsx' %}" target ="_blank"> <b>Platform_Configuration.xlsx </b> </a></p>
+	<p> We have preserved block-wise performance details of each cipher across platforms, please refer to <a href="../static/TestInfo/Report-Data/openssl_TestCases.xlsx" target ="_blank"> <b>Openssl_TestCases.xlsx </b> </a></p>
+    </div>
+	
     {% if sum %}
-    <h1><small>Algorithm Score Summary</small></h1> <!--SKD++-->
+   <h1><small>Algorithm Score Summary</small></h1> 
 	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/algorithm_summary.png' %}" height="400" width="700" /> </p>
 	</div>
-    <!-- SKD++ commented <h1><small>caliper algorithm comparison detail</small></h1> -->
+   
     <div id="alg_comparison" class="sensei-grid"></div>
-    {% endif %}
-	
-    {% if digital_verify  %}
-    <h2><small>Algorithm Score Details: Digital Verify</small></h2>
-	<div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/algorithm_digital_verify.png' %}" height="400" width="800" /> </p>
-	</div>
-    <div id="alg_verify" class="sensei-grid"></div>
     {% endif %}
 	
     {% if digital_sign %}
@@ -95,7 +93,25 @@
 	</div>
     <div id="alg_sign" class="sensei-grid"></div>
     {% endif %}
+    <p><b>Note: </b> The test case names are same for Digital Verify and Digital Sign. However encryption is tested for Digital Sign and decryption is tested for Digital Verify.</p>
+
+    {% if digital_verify  %}
+    <h2><small>Algorithm Score Details: Digital Verify</small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/algorithm_digital_verify.png' %}" height="400" width="800" /> </p>
+	</div>
+    <div id="alg_verify" class="sensei-grid"></div>
+    {% endif %}
     <p><b>Note: </b> The test case names are same for Digital Verify and Digital Sign. However encryption is tested for Digital Sign and decryption is tested for Digital Verify.</p>	
+
+    {% if hash_algorithm %}
+    <h2><small>Algorithm Score Details: Hash Algorithm</small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/algorithm_hash_algorithm.png' %}" height="400" width="850" /> </p>
+	</div>
+    <div id="alg_hash" class="sensei-grid"></div>
+    {% endif %}
+
     {% if symmetric_cyphers %}
     <h2><small>Algorithm Score Details: Symmetric Cyphers</small></h2>
 	<div style="text-align: center;">
@@ -104,12 +120,12 @@
     <div id="alg_symmetric" class="sensei-grid"></div>
     {% endif %}
 
-    {% if hash_algorithm %}
-    <h2><small>Algorithm Score Details: Hash Algorithm</small></h2>
+    {% if unzip %}
+    <h2><small>Algorithm Score Details: Unzip</small></h2>
 	<div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/algorithm_hash_algorithm.png' %}" height="400" width="850" /> </p>
+    <p> <img src="{% static 'polls/pictures/algorithm_unzip.png' %}" height="400" width="850" /> </p>
 	</div>
-    <div id="alg_hash" class="sensei-grid"></div>
+    <div id="alg_unzip" class="sensei-grid"></div>
     {% endif %}
 
    </div>

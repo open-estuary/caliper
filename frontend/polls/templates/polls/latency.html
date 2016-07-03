@@ -48,53 +48,45 @@
     <script src="{% static 'polls/js/example/latency/latency_rttest.js' %}"></script>
     {% endif %}
 
-    <!-- Custom CSS for this example -->
-    <style type="text/css">
-        .example {
-            width: 940px;
-            margin: 50px auto;
-            padding: 0 20px;
-        }
-        .sensei-grid {
-            margin-bottom: 20px;
-        }
-        h1 {
-            font-weight: bold;
-            line-height: normal;
-        }
-    </style>
+ <!-- link the caliper report css here  -->
+ <link rel="stylesheet" type="text/css" href="../static/css/caliper_report.css"/>
+
 
 </head>
 <body>
 <div class="example">
     <div><input type="hidden" id="latency_tst" value="{{ dic_lat }}"> </div>
 
-    <!--SKD++-->
+
     <div class="page-header">
     <h1> Caliper Performance Tests: Latency </h1> 
     </div>
 
+    <div style="text-align: left;">
+     <p> The test under this section is mainly targetted towards the performance evaluation of Latency in the sytems through various benchmarking tests which exercises it.</p>
+  <h1><small>Report Layout </small></h1>
+     <p> The scores of each scenario  shown below is followed by the participating tests cases from each of these scenarios. Remember the scores are based on the percentile ranking across each participating platforms which is already discussed <a href="{% static 'polls/pictures/score_Calculation.html' %}" target="_blank"> <b>here.</b></a>    </p>
+   <h1><small>Test description </small></h1>
+     <p>
+Currently Caliper derives these tests from various well known open source tools to test performance.   </p>
+
+	<p> To have a very quick reference of the hardware configurations of platforms evaluated, please refer to <a href="{%static '../static/TargetInfo/Platform_Configuration.xlsx' %}" target ="_blank"> <b>Platform_Configuration.xlsx </b> </a>
+    </div>
+
     {% if sum %}
-    <h1><small>Latency Score Summary</small></h1> <!--SKD++-->
+    <h1><small>Latency Score Summary</small></h1> 
     <div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/latency_summary.png' %}"
     height="400" width="700" /> </p>
 	</div>
-    
-    <!-- <h1><small>caliper latency comparison detail</small></h1> -->
+
+
     <div id="lat-summary" class="sensei-grid"></div>
     {% endif %}
     <p><b>FixMe: </b>file/vm overall score above shows PC-I5650_U15.04 as 100. This is has a minor issue.
-                   Based on the analysis of data in detail, <b>MOONSHOT-M700P_U14.04 score should be 100 for file/vm.</b>
+                   Based on the analysis of data in detail, <b>MOONSHOT-M710P_U14.04 score should be 100 for file/vm.</b>
                    <br>Please check the 'Latency Score Details: File/VM Latency' section below. Its very clear. 
                        However, due to a page-fault during the test on PC-I5650_U15.04, there was one unwanted data observed in the test results. Hence, the overall score calculation had a minor issue. This will be fixed in the next report.</p>	
-    {% if mem %}
-    <h2><small>Latency Score Details: Memory Latency</small></h2>
-	<div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/latency_mem.png' %}" height="400" width="750" /> </p>
-	</div>
-    <div id="lat-memory" class="sensei-grid"></div>
-    {% endif %}
 
     {% if ctx %}
     <h2><small>Latency Score Details: Context Switch</small></h2>
@@ -103,13 +95,29 @@
 	</div>
     <div id="lat-ctx" class="sensei-grid"></div>
     {% endif %}
-	
+
+    {% if file_vm %}
+    <h2><small>Latency Score Details: File/VM Latency</small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/latency_file_vm.png' %}" height="400" width="700" /> </p>
+	</div>
+    <div id="lat-file-vm" class="sensei-grid"></div>
+    {% endif %}
+
     {% if process %}
     <h2><small>Latency Score Details: Process Latency</small></h2>
 	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/latency_process.png' %}" height="400" width="750" /> </p>
 	</div>
     <div id="lat-process" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if mem %}
+    <h2><small>Latency Score Details: Memory Latency</small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/latency_mem.png' %}" height="400" width="750" /> </p>
+	</div>
+    <div id="lat-memory" class="sensei-grid"></div>
     {% endif %}
 
     {% if rttest %}
@@ -119,15 +127,7 @@
 	</div>
     <div id="lat-real-time" class="sensei-grid"></div>
     {% endif %}
-    <p><b>Attn:</b> Some values show as 'Zero' in the score for certain platforms. Observed certain issues in the test execution for these. This needs more analysis </p>
-    {% if file_vm %}
-    <h2><small>Latency Score Details: File/VM Latency</small></h2>
-	<div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/latency_file_vm.png' %}" height="400" width="700" /> </p>
-	</div>
-    <div id="lat-file-vm" class="sensei-grid"></div>
-    {% endif %}
-    <p><b>FixMe:</b> Due to a page-fault during the test on PC-I5650_U15.04, there was one unwanted data observed in the test results and graph. It caused a a minor issue in the overall score(only). This will be fixed in the next report. Above <b>individual scores are *CORRECT*.</b> </p>	
+
     </div>
 </body>
 </html>

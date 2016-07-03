@@ -43,9 +43,9 @@ double_label = ['double_add', 'double_mul', 'double_div', 'double_bogomflops']
 
 ctx_label = ['lat_ctx0_2', 'lat_ctx16_2', 'lat_ctx64_2', 'lat_ctx16_8',
             'lat_ctx64_8', 'lat_ctx16_16', 'lat_ctx64_16']
-ctx_label_dic = {'lat_ctx0_2': '2p/0K_ctxsw', 'lat_ctx16_2': '2p/16K_ctxsw',
-                'lat_ctx64_2': '2p/64K_ctxsw', 'lat_ctx16_8': '8p/16K_ctxsw',
-                'lat_ctx64_8': '8p/64K_ctxsw',
+ctx_label_dic = {'lat_ctx0_2': '02p/0K_ctxsw', 'lat_ctx16_2': '02p/16K_ctxsw',
+                'lat_ctx64_2': '02p/64K_ctxsw', 'lat_ctx16_8': '08p/16K_ctxsw',
+                'lat_ctx64_8': '08p/64K_ctxsw',
                 'lat_ctx16_16': '16p/16K_ctxsw',
                 'lat_ctx64_16': '16p/64K_ctxsw'}
 
@@ -105,10 +105,10 @@ kb = 1000
 
 def lmbench_lat_parser(content, outfp):
     dic = {}
-    dic['cpu'] = {}
-    dic['cpu']['sincore_int'] = {}
-    dic['cpu']['sincore_float'] = {}
-    dic['cpu']['sincore_double'] = {}
+    dic['cpu_sincore'] = {}
+    dic['cpu_sincore']['sincore_int'] = {}
+    dic['cpu_sincore']['sincore_float'] = {}
+    dic['cpu_sincore']['sincore_double'] = {}
     dic['latency'] = {}
     dic['latency']['process'] = {}
     dic['latency']['ctx'] = {}
@@ -354,11 +354,11 @@ def lmbench_lat_parser(content, outfp):
             #    if (lat_mem_rd_type == 2):
             #        dic_mem_lat[mem_lat_dic['lat_mem_rand']] = save
     if dic_int:
-        dic['cpu']['sincore_int'] = dic_int
+        dic['cpu_sincore']['sincore_int'] = dic_int
     if dic_float:
-        dic['cpu']['sincore_float'] = dic_float
+        dic['cpu_sincore']['sincore_float'] = dic_float
     if dic_double:
-        dic['cpu']['sincore_double'] = dic_double
+        dic['cpu_sincore']['sincore_double'] = dic_double
     if dic_processor:
         dic['latency']['process'] = dic_processor
     if dic_context:

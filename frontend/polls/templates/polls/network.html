@@ -39,39 +39,51 @@
     <script src="{% static 'polls/js/example/network/network_bandwidth.js' %}"></script>
     {% endif %}
 
-    <!-- Custom CSS for this example -->
-    <style type="text/css">
-        .example {
-            width: 940px;
-            margin: 50px auto;
-            padding: 0 20px;
-        }
-        .sensei-grid {
-            margin-bottom: 20px;
-        }
-        h1 {
-            font-weight: bold;
-            line-height: normal;
-        }
-    </style>
+ <!-- link the caliper report css here -->
+ <link rel="stylesheet" type="text/css" href="../static/css/caliper_report.css"/>
+
 
 </head>
 <body>
 <div class="example">
     <div><input type="hidden" id="network_tst" value="{{ dic_net }}"> </div>
     
-    <!--SKD++-->
+
     <div class="page-header">
     <h1> Caliper Performance Tests: Network </h1> 
     </div>
 
-    {% if sum %}
-    <h1><small>Network Score Summary</small></h1> <!--SKD++-->
+
+   <div style="text-align: left;">
+	<h1><small>Report Layout </small></h1>
+	<p> The score of each test item is represented as the percentage of performance compared to the highest value obtained across all platform. So a value of <b>x%</b> means that the test case/	 	 scenario performance is <b> x% </b> compared to the highest scored platform, which is always given <b> 100% </b>.</br> 
+        To know the ranking calculation and actual values scored by each platform on specific test cases, please refer to the raw values excel provided along with the report. 
+        Please click <a href="{% static 'polls/pictures/score_Calculation.html' %}" target="_blank"> <b>here</b></a> for more details. </p>
+	The <b>score summary</b> is the percentage of performance of each platform for individual test scenarios. The detailed sections shows the individual test case score(rank) in the same fashion. <br> 
+   </div>
+  
+	<div> 
+	<mark><p> <b>Notes: </b> <br>
+	The caliper testbed network infrastucture is not very good(only 100mbps) hence it does not put any stress on the XGE modules. 
+	We have tested network subsystem using normal lan cable connected network. On the other side you can see that moonshots at HP Lab are having higher bandwith (10G) hence the performance figures 	 will be higher for Moonshot targets.
+	</p></mark>
+	</div>
+ 
+   
+    <div style="text-align: left;">
+     <p> The test under this section is mainly targetted towards the performance evaluation of Network subsystem through various benchmarking tests which exercises the same such as <br>
+         1. <b>Netperf</b> : Netperf is a benchmark that can be used to measure various aspects of networking performance. <br>
+         2. <b>Iperf </b>:   Iperf is a commonly-used network testing tool that can create Transmission Control Protocol (TCP) and User Datagram Protocol (UDP). <br> 
+         3. <b>Lmbench</b> : lmbench is a series of micro benchmarks intended to measure basic operating system and hardware system metrics. <br>
+     </p>
+	<p> To have a very quick reference of the hardware configurations of platforms evaluated, please refer to <a href="{%static '../static/TargetInfo/Platform_Configuration.xlsx' %}" target ="_blank"> 		<b>Platform_Configuration.xlsx </b> </a></p>
+   </div>
+	 {% if sum %}
+    <h1><small>Network Score Summary</small></h1> 
   	    <div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/network_summary.png' %}" height="500" width="750" /> </p>
 	</div>
     
-    <!-- <h1><small>caliper network comparison detail</small></h1> -->
     <div id="network-summary" class="sensei-grid"></div>
     {% endif %}
 

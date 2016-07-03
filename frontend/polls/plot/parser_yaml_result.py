@@ -121,11 +121,12 @@ class DrawPicture:
         for subItem in test_sub_items:
             # get the Test Points in each Test SubItem
             key_points = get_points_union(file_names, subItem, category)
-
+            key_points.sort()
             rcParams['figure.figsize'] = 9, 6
             for point in key_points:
                 # get the keys of the Test Points, namely the Test Cases
                 label = get_cases_union(file_names, subItem, point, category)
+                label.sort()
                 if not label:
                     continue
                 # set the length of x axis
@@ -206,6 +207,7 @@ class DrawPicture:
 
         for item in test_subItems:
             key_points = get_points_union(file_names, item, category)
+            key_points.sort()
             key_length = len(key_points)
             if not key_points:
                 continue
@@ -358,6 +360,10 @@ class DrawPicture:
         ax.set_title('Total Score of each Items')
         ax.set_xticks(ind + width * len(rects) / 2)
         ax.set_xticklabels(tuple(test_subItems))
+        label_fig = ax.get_xticklabels()
+        for label_tmp in label_fig:
+            label_tmp.set_rotation(30)
+            label_tmp.set_size('small')
 
         #skd++ commented and added to move legend outside the plot ax.legend(tuple(rects), tuple(label_total),  loc="upper left")
         sklegend = ax.legend(tuple(rects), tuple(label_total),  loc='center left', bbox_to_anchor=(1, 0.5))

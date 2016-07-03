@@ -33,7 +33,7 @@ while true {
 			send_user "I will be exiting"
 			exit 1
 		}
-		"ailed" {
+		"ERROR-IN-AUTOMATION" {
 			send_user "FAILED IN SERVER DEPENDENCY\n"
 			exit 1
 		}
@@ -43,10 +43,5 @@ while true {
 		}
 	}
 }
-#lassign [wait] pid spawnid os_error_flag value
 
-#if {$value == 1} {
-#        puts "\nthe target dependency has not been meet\n"
-#        send "exit 1\r"
-#}
 

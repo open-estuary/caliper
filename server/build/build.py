@@ -363,6 +363,10 @@ def build_for_target(target,f_option):
         create_folder(FOLDER.yaml_dir)
     if not os.path.exists(FOLDER.html_dir):
         create_folder(FOLDER.html_dir)
+    if not os.path.exists(caliper_path.HTML_DATA_DIR_INPUT):
+        os.makedirs(caliper_path.HTML_DATA_DIR_INPUT)
+    if not os.path.exists(caliper_path.HTML_DATA_DIR_OUTPUT):
+        os.makedirs(caliper_path.HTML_DATA_DIR_OUTPUT)
 
     if server_utils.get_target_ip(target) in server_utils.get_local_ip():
         return build_for_local()

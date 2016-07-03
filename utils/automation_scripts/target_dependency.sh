@@ -1,6 +1,7 @@
 #!/bin/bash
 target_packages=('stress' 'make' 'build-essential' 'linux-tools-generic' 'linux-tools-common' 'gcc g++' 'nfs-common' 'automake' 'autoconf' 'openjdk-7-jre' 'openjdk-7-jdk' 'mysql-server' 'libmysqlclient-dev')
-
+ERROR="ERROR-IN-AUTOMATION"
+UPDATE=0
 clear
 echo "TARGET"
 echo -e "\n\t\t Target dependency"
@@ -14,24 +15,33 @@ do
        then
             choice="y"
        else
-           echo "\n\t\t${target_packages[$i]} is not installed, would you like to install(y/n)"
+           echo -e "\n\t\t${target_packages[$i]} is not installed, would you like to install(y/n)"
            read choice
        fi
            
        if [ $choice == 'y' ]
        then
-            sudo dpkg --configure -a
-            sudo apt-get update &
-            wait
-            sudo apt-get build-dep ${target_packages[$i]} -y &
-            wait 
-            sudo apt-get install ${target_packages[$i]} -y &
-            wait
-            if [ $? -ne 0 ]
-            then
-                echo -e "\n\t\t${target_packages[$i]} is not installed properly"
-                exit 1
-            fi
+	   		if [ ${target_packages[$i]} == 'mysql-server' -o ${target_packages[$i]} == 'libmysqlclient-dev' ]
+			then
+				echo -e "$ERROR:The ${target_packages[$i]} package is not present . Please install it manually"
+			else
+            	sudo dpkg --configure -a
+                if [ $UPDATE=0 ]
+                then
+                    UPDATE=1
+                    sudo apt-get update &
+            	    wait
+                fi
+            	sudo apt-get build-dep ${target_packages[$i]} -y &
+            	wait 
+            	sudo apt-get install ${target_packages[$i]} -y &
+            	wait
+            	if [ $? -ne 0 ]
+            	then
+                	echo -e "\n\t\t$ERROR:${target_packages[$i]} is not installed properly"
+                	exit 1
+            	fi
+			fi
        else
             echo "Please install ${target_packages[$i]} and try again"
        fi
@@ -48,12 +58,22 @@ then
     sudo mkdir -p /mnt/sdb/
 	sudo chmod -R 775 /mnt/sdb
 	sudo chown -R $USER:$USER /mnt/sdb
+	sudo mount /dev/sdb /mnt/sdb
 	if [ $? -ne 0 ]
 	then
-       echo -e "\nCreating a Mount Path for Fio testing Failed\n"
+       echo -e "\n$ERROR:Creating a Mount Path for Fio testing Failed\n"
 	   exit 1
     fi
 else
+        if [ `mount -l | grep -c "/dev/sdb on /mnt/sdb"` != 0 ]
+        then
+            sudo mount /dev/sdb /mnt/sdb
+	        if [ $? -ne 0 ]
+	        then
+                echo -e "\n$ERROR:Creating a Mount Path for Fio testing Failed\n"
+	            exit 1
+            fi
+        fi
         echo -e "\nMount Partition for fio testing Already exits\n"
 fi
 
@@ -63,7 +83,7 @@ temp=${temp:1}
 cp /usr/lib/linux-tools/$temp/perf /usr/bin/
 if [ $? -ne 0 ]
 then
-    echo -e "\n\t\tFailed to cp the perf path"
+    echo -e "\n\t\t$ERROR:Failed to cp the perf path"
     exit 1
 fi
 

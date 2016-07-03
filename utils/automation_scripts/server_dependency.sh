@@ -1,5 +1,7 @@
 #!/bin/bash
+ERROR="ERROR-IN-AUTOMATION"
 dependency=('netperf' 'iperf')
+UPDATE=0
 flag=(1 1)
 clear
 echo "SERVER"
@@ -14,14 +16,18 @@ do
         read choice
         if [ $choice == 'y' ];then
              sudo dpkg --configure -a
-             sudo apt-get update &
-             wait
+            if [ $UPDATE=0 ]
+            then
+                UPDATE=1
+                sudo apt-get update &
+                wait
+            fi
              sudo apt-get build-dep ${dependency[$i]} -y &
              wait
              sudo apt-get install ${dependency[$i]} -y &
              wait
              if [ $? -ne 0 ];then
-                echo -e "\n\t\tCould Not install please try again"
+                echo -e "\n\t\t$ERROR:Could Not install please try again"
                 flag[$i]=0
              fi
         else
@@ -43,7 +49,7 @@ do
             wait
             echo "\n\t\tdone restarting netperf"
             if [ $? -ne 0 ];then
-                echo -e "\n\t\tCould Not restart Netperf please try again"
+                echo -e "\n\t\t$ERROR:Could Not restart Netperf please try again"
                 exit 1
             fi
         fi
@@ -51,7 +57,7 @@ do
         if  ! ps -ef |grep "iperf" | grep -v grep  ;then 
             iperf -s&
             if [ $? -ne 0 ];then
-                echo -e "\n\t\tCould Not restart Iperf please try again"
+                echo -e "\n\t\t$ERROR:Could Not restart Iperf please try again"
                 exit 1
             fi
         fi

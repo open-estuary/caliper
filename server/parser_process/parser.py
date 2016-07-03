@@ -9,6 +9,8 @@ import sys
 import logging
 import re
 import shutil
+import glob
+import yaml
 
 import test_perf_tranver as traverse
 import caliper.server.utils as server_utils
@@ -34,7 +36,6 @@ def get_targets_data(outdir):
 
 
 def traverse_caliper_output(hosts):
-
     YAML_DIR = os.path.join(caliper_path.folder_ope.results_dir, 'yaml')
     host_name = server_utils.get_host_name(hosts)
     host_yaml_name = host_name + '_score.yaml'
@@ -48,7 +49,6 @@ def traverse_caliper_output(hosts):
         if return_code != 1:
             logging.info("there is wrong when dealing the yaml file")
 
-
 def parser_caliper(host):
     try:
         traverse_caliper_output(host)
@@ -60,13 +60,16 @@ def parser_caliper(host):
     (file_lists, json_files) = get_targets_data(
                                 caliper_path.folder_ope.results_dir)
 
-    if not os.path.exists(caliper_path.HTML_DATA_DIR):
-        os.makedirs(caliper_path.HTML_DATA_DIR)
+    if not os.path.exists(caliper_path.HTML_DATA_DIR_INPUT):
+        os.makedirs(caliper_path.HTML_DATA_DIR_INPUT)
+
+    if not os.path.exists(caliper_path.HTML_DATA_DIR_OUTPUT):
+        os.makedirs(caliper_path.HTML_DATA_DIR_OUTPUT)
 
     if file_lists:
         for yaml_file in file_lists:
-            shutil.copy(yaml_file, caliper_path.HTML_DATA_DIR)
+            shutil.copy(yaml_file, caliper_path.HTML_DATA_DIR_INPUT)
 
     if json_files:
         for json_file in json_files:
-            shutil.copy(json_file, caliper_path.HTML_DATA_DIR)
+            shutil.copy(json_file, caliper_path.HTML_DATA_DIR_INPUT)

@@ -27,13 +27,8 @@ test_name="$PWD/sysbench-0.5/sysbench/tests/db/oltp.lua"
 echo "max_requests are $max_requests"
 sudo apt-get install libtool autoconf automake -y
 
-#exists=$(ps -aux | grep 'mysqld')
-mysql_version=$(mysql --version | awk '{ print $1"-" $2 ": " $3}')
-exists=$(echo $mysql_version|awk -F":" '{print $1}')
-if [ "$exists"x = "mysql-Ver"x ]; then
-    echo "Found  $mysql_version  installed"
-else
-    echo "The mysql server has not been installed,Please install mysql,Refe caliper documentation"
+if ! hash mysqld; then
+    echo 'The mysql server has not been installed'
     exit 1
 fi
 
@@ -43,36 +38,39 @@ sudo apt-get install libmysqld-dev -y
 sudo apt-get install bzr -y
 
 if [ ! -d $sysbench_dir ]; then
-  bzr branch lp:~sysbench-developers/sysbench/0.5 $sysbench_dir
-  if [ $? -ne 0 ]; then
-    echo 'Download the sysbench failed'
-    exit 1
-  fi
+    n1=0
+    iRt1=1
+    s1=
+    while [ ${n1} -lt 5 ]; do
+        s1=$(bzr branch lp:~sysbench-developers/sysbench/0.5 $sysbench_dir 2>&1)
+        if [ $? -eq 0 ]; then
+            iRt1=0
+            break;
+        fi
+        let n1+=1
+    done
+    printf "%s[%3s]%5s: bzr [${PWD}] while [${n1}] times status[${iRt1}]\n" "${FUNCNAME[0]}" ${LINENO} "Info"
+    echo "${s1}"
+    if [ ${iRt1} -ne 0 ]; then
+        echo 'Download the sysbench failed'
+        exit 1
+    fi
 fi
 
-mysql_location=$(whereis mysql)
-
-declare -a mysql_loc
-read -a mysql_loc <<< $(echo $mysql_location)
-
-for j in ${mysql_loc[@]}
-do
-echo $j
-done
-
-for i in ${mysql_loc[@]}
-do
-   echo $i
-    tmp=$(echo $i | grep '\/lib\/mysql')
-    tmp1=$(echo $i | grep '\/include\/mysql')
-    if [ "$tmp"x != ""x ]; then
+mysql_loc=($(whereis mysql))
+for i in ${mysql_loc[@]}; do
+    tmp=$(echo $i | grep '/lib/mysql')
+    if [ $? -eq 0 ]; then
         mysql_lib=$tmp
-    elif [ "$tmp1"x != ""x ]; then
-        mysql_include=$tmp1
+    else
+        tmp1=$(echo $i | grep '/include/mysql')
+        if [ $? -eq 0 ]; then
+            mysql_include=$tmp1
+        fi
     fi
 done
 
-if [ "$mysql_lib"x = ""x ] or [ "$mysql_include"x = ""x ]; then
+if [ "$mysql_lib" == "" -o "$mysql_include" == "" ]; then
     echo 'mysql has not been installed right'
     exit 1
 fi
