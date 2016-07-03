@@ -8,9 +8,9 @@ build_unixbench() {
        mkdir -p $myOBJPATH
    fi
    pushd $CoreMarkPath
-   if [ $ARCH == "arm_64" || $ARCH == "arm_32" ]
+   if [ $ARCH = "arm_64" -o $ARCH = "arm_32" ]
    then
-	make CC=$GCC
+	    make CC=$GCC
    else
         make
    fi
