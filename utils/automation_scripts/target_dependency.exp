@@ -28,7 +28,7 @@ while true {
 			interact "\r" return
 			send "\r"
 		 }
-        "ailed" {
+        "ERROR-IN-AUTOMATION" {
 			send_user "FAILED IN TARGET DEPENDENY\n"
            	exit 1
         }
