@@ -3146,7 +3146,6 @@ return((1<<bitnumb) & comparray[byteoffset] );
 void DoNNET(void)
 {
 NNetStruct *locnnetstruct;      /* Local ptr to global data */
-char *errorcontext;
 ulong accumtime;
 double iterations;
 
@@ -3154,11 +3153,6 @@ double iterations;
 ** Link to global data
 */
 locnnetstruct=&global_nnetstruct;
-
-/*
-** Set error context
-*/
-errorcontext="CPU:NNET";
 
 /*
 ** Init random number generator.
