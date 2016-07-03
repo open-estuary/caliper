@@ -1,6 +1,6 @@
 #!/usr/bin/expect
 set timeout  -1
-set option [lindex $argv 0]
+set option [ lindex $argv 0 ]
 set i 0
 spawn sudo ./host_dependency.sh $option
 while true {
@@ -18,9 +18,8 @@ while true {
 		}
 		"*\$ " { send_user "HOST dependency exiting \n" }
 		"*\# " { send_user "HOST dependency exiting \n" }
-		"failed" {
-			send_user "U have not selected any choice:"
-			send_user "I will be exiting"
+		"ERROR-IN-AUTOMATION" {
+			send_user "HOST FAILED"
 			exit 1
 		}
 		eof { 

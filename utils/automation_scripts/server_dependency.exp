@@ -33,7 +33,7 @@ while true {
 			send_user "I will be exiting"
 			exit 1
 		}
-		"ailed" {
+		"ERROR-IN-AUTOMATION" {
 			send_user "FAILED IN SERVER DEPENDENCY\n"
 			exit 1
 		}
