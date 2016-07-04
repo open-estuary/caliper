@@ -38,17 +38,18 @@ fi
 ############## get JAVA_HOME which need to be used later ################
 #[ "$(whereis java)"x != ""x ]
 #comment the discard code for reference
-if false; then
-    iRt1=1
-    IFS=:; for d1 in ${PATH}; do IFS=${g_IFS0};
-        s1=$(echo ${d1} | grep 'java' | grep 'bin' | grep -v 'jre')
-        if [ -n "${s1}" ]; then
-            java_loc=${s1%/bin}
-            iRt1=0
-            break
-        fi
-    IFS=$'\n'; done; IFS=${g_IFS0};
-fi
+#if false; then
+#    iRt1=1
+#    IFS=:; for d1 in ${PATH}; do IFS=${g_IFS0};
+#        s1=$(echo ${d1} | grep 'java' | grep 'bin' | grep -v 'jre')
+#        if [ -n "${s1}" ]; then
+#            java_loc=${s1%/bin}
+#            iRt1=0
+#            break
+#        fi
+#    IFS=$'\n'; done; IFS=${g_IFS0};
+#fi
+
 #Is java installed?
 if ! hash java; then
     sudo apt-get -y install openjdk-7-jdk
@@ -75,7 +76,11 @@ pushd $HADOOP_DIR
     popd
 
 /usr/bin/expect  << EOF
+
+    set timeout  300
     spawn $HADOOP_SERVICE/stop-all.sh
+
+      
     expect {
         -re {connecting \(yes/no\)\?} {
             send "yes\n"
@@ -89,11 +94,13 @@ rm -fr $hdfs_tmp
 $HADOOP_BIN/hdfs namenode -format
 
 bOK1=false
-nMax1=5
+nMax1=3
 n1=0
 ##while for fixed the "SecondaryNameNode" not started.
 while [ ${n1} -lt ${nMax1} ]; do
     sInfo1=$(/usr/bin/expect  << EOF
+
+    set timeout  300
     spawn $HADOOP_SERVICE/start-dfs.sh
     expect {
         -re {connecting \(yes/no\)\?} {
@@ -127,6 +134,9 @@ if ! ${bOK1}; then
 fi
 
 /usr/bin/expect  << EOF
+
+   set timeout  300
+  
     spawn $HADOOP_SERVICE/start-yarn.sh
     expect {
         -re {connecting \(yes/no\)\?} {
