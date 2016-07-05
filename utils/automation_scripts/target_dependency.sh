@@ -65,7 +65,7 @@ then
 	   exit 1
     fi
 else
-        if [ `mount -l | grep -c "/dev/sdb on /mnt/sdb"` != 0 ]
+        if [ `mount -l | grep -c "/dev/sdb on /mnt/sdb"` == 0 ]
         then
             sudo mount /dev/sdb /mnt/sdb
 	        if [ $? -ne 0 ]

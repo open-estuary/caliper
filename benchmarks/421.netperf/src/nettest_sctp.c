@@ -55,7 +55,7 @@ char	nettest_sctp[]="\
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
-#include <netinet/sctp.h>
+#include "netinet/sctp.h"
 #include <arpa/inet.h>
 #include <netdb.h>
 
