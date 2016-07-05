@@ -36,19 +36,7 @@ if [ $? -ne 0 ]; then
 fi
 
 ############## get JAVA_HOME which need to be used later ################
-#[ "$(whereis java)"x != ""x ]
-#comment the discard code for reference
-#if false; then
-#    iRt1=1
-#    IFS=:; for d1 in ${PATH}; do IFS=${g_IFS0};
-#        s1=$(echo ${d1} | grep 'java' | grep 'bin' | grep -v 'jre')
-#        if [ -n "${s1}" ]; then
-#            java_loc=${s1%/bin}
-#            iRt1=0
-#            break
-#        fi
-#    IFS=$'\n'; done; IFS=${g_IFS0};
-#fi
+
 
 #Is java installed?
 if ! hash java; then
@@ -94,7 +82,7 @@ rm -fr $hdfs_tmp
 $HADOOP_BIN/hdfs namenode -format
 
 bOK1=false
-nMax1=3
+nMax1=2
 n1=0
 ##while for fixed the "SecondaryNameNode" not started.
 while [ ${n1} -lt ${nMax1} ]; do
