@@ -79,7 +79,7 @@ char nettest_omni_id[]="\
 #endif
 
 #ifdef HAVE_NETINET_SCTP_H
-#include <netinet/sctp.h>
+#include "netinet/sctp.h"
 #endif
 
 #include <arpa/inet.h>

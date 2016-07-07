@@ -106,7 +106,7 @@ char	nettest_id[]="\
 #include <netinet/tcp.h>
 
 #ifdef HAVE_NETINET_SCTP_H
-#include <netinet/sctp.h>
+#include "netinet/sctp.h"
 #endif
 
 #include <arpa/inet.h>
