@@ -5,7 +5,7 @@ set i 0
 spawn sudo ./host_dependency.sh $option
 while true {
 	expect {
-		"yes" { send "yes\r"; exp_continue }
+		"Are you sure you want to continue connecting" { send "yes\r"; exp_continue }
 		"would you like to install" { 
 			 send_user "INSIDE\t"
 			 interact "\r" return
