@@ -53,13 +53,23 @@ done
 if [ ! -d $NFS_mount ]
 then
 	sudo mkdir -p $NFS_mount 
-	sudo chmod -R 775 /opt/caliper_nfs
-	sudo chown -R $USER:$USER /opt/caliper_nfs
 	if [ $? -ne 0 ]
 	then
 		echo "$ERROR:NFS MOUNTING FAILED"
 		exit 1
 	fi
+fi
+sudo chmod -R 775 /opt/caliper_nfs
+if [ $? -ne 0 ]
+then
+	echo "$ERROR:NFS PERMISSION SETTING FAILED"
+	exit 1
+fi
+sudo chown -R $USER:$USER /opt/caliper_nfs
+if [ $? -ne 0 ]
+then
+	echo "$ERROR:NFS OWNER SETTING FAILED"
+	exit 1
 fi
 
 #exporting the path for NFS mounting
@@ -101,7 +111,7 @@ echo "Restarting nfs-kernel-server"
 sudo service nfs-kernel-server restart
 if [ $? -ne 0 ]
 then
-	echo "\n\t\t$ERROR:RESTARTING THE NFS_KERNEL Failed"
+	echo -e "\n\t\t$ERROR:RESTARTING THE NFS_KERNEL Failed"
 	exit 1
 fi
 
