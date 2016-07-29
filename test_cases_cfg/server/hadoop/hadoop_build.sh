@@ -1,7 +1,7 @@
 url='www.estuarydev.org/caliper'
 #url='http://7xjz0v.com1.z0.glb.clouddn.com/caliper_tools'
 filename1='hadoop-2.6.0.tar.gz'
-filename2='HiBench.tar.gz'
+filename2='HiBench-5.0.tar.gz'
 filename3='spark-1.5.1.tgz'
 
 build_hibench() {
