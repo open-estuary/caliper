@@ -9,7 +9,7 @@ import re
 import os
 import sys
 import subprocess
-
+import shutil
 
 def judge_caliper_installed():
     try:
@@ -28,6 +28,53 @@ PARSER_DIR = os.path.abspath(os.path.join(CALIPER_DIR, 'client', 'parser'))
 FRONT_TMP_DIR = os.path.join(CALIPER_DIR, 'frontend')
 
 intermediate = 0
+
+def create_folder(folder, mode=0755):
+    if os.path.exists(folder):
+        shutil.rmtree(folder)
+    try:
+        os.mkdir(folder, mode)
+    except OSError:
+        os.makedirs(folder, mode)
+
+def create_dir():
+
+    if not os.path.exists(FRONT_END_DIR):
+        shutil.copytree(FRONT_TMP_DIR,
+                        FRONT_END_DIR)
+    if not os.path.exists(HTML_DATA_DIR_INPUT):
+        create_folder(HTML_DATA_DIR_INPUT)
+    if not os.path.exists(HTML_DATA_DIR_OUTPUT):
+        create_folder(HTML_DATA_DIR_OUTPUT)
+
+    if not os.path.exists(DATA_DIR_INPUT):
+        create_folder(DATA_DIR_INPUT)
+    if not os.path.exists(OPENSSL_DATA_DIR_INPUT):
+        create_folder(OPENSSL_DATA_DIR_INPUT)
+    if not os.path.exists(COV_DATA_DIR_INPUT):
+        create_folder(COV_DATA_DIR_INPUT)
+    for i in range(1,6):
+        if not os.path.exists(os.path.join(COV_DATA_DIR_INPUT,str(i))):
+            create_folder(os.path.join(COV_DATA_DIR_INPUT,str(i)))
+    if not os.path.exists(CONSOLIDATED_DATA_DIR_INPUT):
+        create_folder(CONSOLIDATED_DATA_DIR_INPUT)
+    if not os.path.exists(HW_DATA_DIR_INPUT):
+        create_folder(HW_DATA_DIR_INPUT)
+    if not os.path.exists(HTML_DATA_DIR):
+        create_folder(HTML_DATA_DIR)
+    if not os.path.exists(COV_DATA_DIR_OUTPUT):
+        create_folder(COV_DATA_DIR_OUTPUT)
+    if not os.path.exists(EXCEL_DATA_DIR_OUTPUT):
+        create_folder(EXCEL_DATA_DIR_OUTPUT)
+    if not os.path.exists(TEMPLATE_DATA_DIR):
+        create_folder(TEMPLATE_DATA_DIR)
+
+
+
+
+
+
+
 
 if not judge_caliper_installed():
     # This means caliper is not installed and execution will be local.
@@ -55,8 +102,19 @@ GEN_DIR = os.path.join(CALIPER_REPORT_HOME, 'binary')
 
 FRONT_END_DIR = os.path.join(CALIPER_REPORT_HOME, 'frontend')
 HTML_DATA_DIR = os.path.join(FRONT_END_DIR, 'frontend', 'data_files')
-HTML_DATA_DIR_INPUT = os.path.join(HTML_DATA_DIR, 'Input_Logs')
+
+DATA_DIR_INPUT = os.path.join(HTML_DATA_DIR, 'Input_Logs')
+HTML_DATA_DIR_INPUT = os.path.join(DATA_DIR_INPUT, 'Input_Report')
+OPENSSL_DATA_DIR_INPUT = os.path.join(DATA_DIR_INPUT,'Input_Openssl')
+COV_DATA_DIR_INPUT = os.path.join(DATA_DIR_INPUT,'Input_Cov')
+CONSOLIDATED_DATA_DIR_INPUT = os.path.join(DATA_DIR_INPUT,'Input_Consolidated')
+HW_DATA_DIR_INPUT = os.path.join(DATA_DIR_INPUT,'Input_Hardware')
+HW_DATA_DIR_OUTPUT = os.path.join(FRONT_END_DIR, 'polls', 'static', 'TargetInfo')
 HTML_DATA_DIR_OUTPUT = os.path.join(HTML_DATA_DIR, 'Normalised_Logs')
+COV_DATA_DIR_OUTPUT = os.path.join(FRONT_END_DIR, 'polls', 'static', 'TestInfo','Iterations')
+EXCEL_DATA_DIR_OUTPUT = os.path.join(FRONT_END_DIR, 'polls', 'static', 'TestInfo','Report-Data')
+TEMPLATE_DATA_DIR = os.path.join(FRONT_END_DIR,'polls','templates','polls')
+
 HTML_PICTURE_DIR = os.path.join(FRONT_END_DIR, 'polls', 'static', 'polls',
                                 'pictures')
 
