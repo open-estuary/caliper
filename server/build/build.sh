@@ -137,7 +137,7 @@ build_cleanup()
     fi
 }
 
-OBJDIR=binary
+OBJDIR=$4
 TMP_DIR=$3
 if [ $# -eq 0 ]; then
    ARCH=x86_64

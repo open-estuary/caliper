@@ -51,6 +51,9 @@ build_hibench() {
         rm -fr $HADOOP_DIR/lib
         tar xzf $SrcPath/hadoop_native_lib.tar.gz -C $HADOOP_DIR/
     fi
+    cd $INSTALL_DIR/../
+    tar cvf hadoop_tar.gz hadoop
+    cd -
 }
 
 build_hibench

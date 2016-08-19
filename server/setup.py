@@ -45,7 +45,7 @@ def _get_data_files(path):
             fdir[rel_dir].append(fullname)
         if fdir[rel_dir]:
             file_list.append(
-                    (os.path.join('/etc', 'caliper', rel_dir), fdir[rel_dir]))
+                    (os.path.join(os.environ['HOME'], 'caliper_output', 'configuration',rel_dir), fdir[rel_dir]))
     return file_list
 
 
@@ -72,7 +72,7 @@ def get_filelist():
 
 def get_package_data():
     return {'caliper': get_filelist(), 'caliper.server':
-            ['build/build.sh', ]}
+            ['build/build.sh', 'build/building_timing.yaml', ]}
 
 
 def get_scripts():
@@ -86,7 +86,7 @@ def get_data_files():
     test_cfg_lists = []
     test_cfg_lists = _get_data_files(
             os.path.join(caliper_dir, 'test_cases_cfg'))
-    return [('/etc/caliper/config', config_filelist)] + test_cfg_lists
+    return [((os.path.join(os.environ['HOME'], 'caliper_output/configuration/config')), config_filelist)] + test_cfg_lists
 
 
 params = dict(name='caliper',

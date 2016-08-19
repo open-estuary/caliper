@@ -17,6 +17,7 @@ import signal
 import datetime
 import commands
 import subprocess
+import glob
 
 from argparse import ArgumentParser
 
@@ -43,13 +44,13 @@ from caliper.server.parser_process import openssl
 from caliper.server.parser_process import hardware
 from caliper.server.parser_process import performance_functional
 from caliper.client.shared.caliper_path import intermediate
-import glob
+
 
 logging.basicConfig(level=logging.INFO)
-def build_all_tests(remote_host,f_option):
+def build_all_tests(remote_host,f_option,clear):
     try:
         logging.info("Begining to build Caliper for the remote host")
-        result1 = build.build_for_target(remote_host,f_option)
+        result1 = build.build_for_target(remote_host,f_option,clear)
     except Exception, e:
         logging.info(e)
         raise
@@ -213,9 +214,11 @@ def normalize_scores():
 if __name__=="__main__":
     parser = ArgumentParser()
     parser.add_argument("-b", "--build", action="store_true",
-            dest="build", default=True,help="select to build the selected test tools")
+            dest="build", default=True,help="select to incrementally build the selected test tools")
     parser.add_argument("-B", "--nobuild", action="store_false",
-            dest="build", help="select not to build process of test tools")
+            dest="build", help="select not to incrementally build process of test tools")
+    parser.add_argument("-c", "--cleanbuild", action="store_true",
+            dest="cleanbuild", help="select to clean build the selected tools")
     parser.add_argument("-r", "--run", action="store_true", dest="run", default=True,
             help="select to run the selected test tools")
     parser.add_argument("-R", "--norun", action="store_false", dest="run", help=
@@ -234,10 +237,28 @@ if __name__=="__main__":
             default=False, help="Select to send mail to the receivers or not")
     parser.add_argument( "-f", "--folder", action="store", dest="folder",
             default="", help="assign a folder to store the results")
-    parser.add_argument("-c", "--config", action="store", dest="config_file",
+    parser.add_argument("-C", "--config", action="store", dest="config_file",
             default="", help="specify the location of config file")
     args = parser.parse_args()
     start_time = datetime.datetime.now()
+
+    f_option = 0
+    if args.folder:
+        f_option = 1
+        caliper_path.folder_ope.workspace = args.folder
+        caliper_path.folder_ope.set_up_path()
+        from caliper.client.shared.caliper_path import folder_ope as FOLDER
+        if os.path.exists(FOLDER.caliper_log_file):
+            fp = open(FOLDER.caliper_log_file,'a+')
+            fp.write("re-execution with -f .It may be execution of all the tools or some specific tools as specified in the config file \n")
+            fp.close()
+
+    if not os.path.exists(caliper_path.folder_ope.workspace):
+        try:
+            os.makedirs(caliper_path.folder_ope.workspace)
+        except Exception as e:
+            print e
+            sys.exit(1)
 
     if args.config_file:
         caliper_path.config_files.name = args.config_file
@@ -252,24 +273,27 @@ if __name__=="__main__":
                                 caliper_path.config_files.config_dir,
                                 'client_config.cfg'
                                 ))
-    remote_host = get_remote_host()
-    f_option = 0
-    if args.folder:
-        f_option = 1
-        caliper_path.folder_ope.name = args.folder
-        caliper_path.folder_ope.set_up_path()
-        if os.path.exists(FOLDER.caliper_log_file):
-            fp = open(FOLDER.caliper_log_file,'a+')
-            fp.write("re-execution with -f .It may be execution of all the tools or some specific tools as specified in the config file \n")
-            fp.close()
-    if not os.path.exists(caliper_path.folder_ope.name):
-        os.makedirs(caliper_path.folder_ope.name)
+    else:
+        caliper_path.config_files.name = caliper_path.folder_ope.workspace
+        caliper_path.config_files.setup_path()
+        if not os.path.exists(caliper_path.folder_ope.workspace +"/test_cases_cfg"):
+            shutil.copytree(caliper_path.caliper_test_def, caliper_path.folder_ope.workspace + "/test_cases_cfg")
 
+        if not os.path.exists(caliper_path.folder_ope.workspace + "/config"):
+            shutil.copytree(caliper_path.caliper_config_file, caliper_path.folder_ope.workspace + "/config")
+
+        settings.set_config_files(os.path.join(
+            caliper_path.config_files.config_dir,
+            'client_config.cfg'
+        ))
+    remote_host = get_remote_host()
     caliper_path.create_dir()
     if args.build:
         try:
-
-            result1 = build_all_tests(remote_host,f_option)
+	    clear = 0
+            if args.cleanbuild:
+                clear = 1
+            result1 = build_all_tests(remote_host,f_option,clear)
             if result1:
                 sys.exit()
         except Exception, e:
