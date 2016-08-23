@@ -386,6 +386,11 @@ def get_targets_data(outdir):
 
 def normalize_caliper():
     try:
+        for files in glob.glob(os.path.join(caliper_path.HTML_DATA_DIR_OUTPUT, "*")):
+            os.remove(files)
+    except:
+        pass
+    try:
         normalize_caliper_output(caliper_path.HTML_DATA_DIR_INPUT)
     except Exception, e:
         logging.info(e.args[0], e.args[1])
