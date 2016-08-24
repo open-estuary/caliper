@@ -4,7 +4,7 @@
 #   Date    :   15/01/04 16:32:44
 #   Desc    :
 #
-
+from __future__ import print_function
 import os
 import random
 import select
@@ -20,12 +20,43 @@ from threading import Thread, Lock
 import commands
 import string
 import ConfigParser
+import fcntl
+import errno
 
 from caliper.client.shared import error, logging_manager
 from caliper.client.shared.settings import settings
 from caliper.client.shared import caliper_path
 from caliper.client.shared.tests_setting import BaseCfg
 
+
+class SimpleFlock:
+   def __init__(self, path, timeout = None):
+      self._path = path
+      self._timeout = timeout
+      self._fd = None
+
+   def __enter__(self):
+      self._fd = os.open(self._path,os.O_CREAT)
+      start_lock_search = time.time()
+      while True:
+         try:
+            fcntl.flock(self._fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            # Lock acquired!
+            return self._fd
+         except (OSError, IOError) as ex:
+            if ex.errno != errno.EAGAIN: # Resource temporarily unavailable
+               print(ex)
+               raise
+            elif self._timeout is not None and time.time() > (start_lock_search + self._timeout):
+               # Exceeded the user-specified timeout.
+               print("TIMEOUT")
+               raise
+         time.sleep(0.1)
+
+   def __exit__(self, *args):
+      fcntl.flock(self._fd, fcntl.LOCK_UN)
+      os.close(self._fd)
+      self._fd = None
 
 class _NullStream(object):
     def write(self, data):
@@ -109,11 +140,7 @@ def get_config_value(config_name, section, key):
 def get_fault_tolerance_config(section, key):
     flag = 0
     logging.debug(caliper_path.config_files.config_dir)
-    if caliper_path.judge_caliper_installed():
-        cfg_file = os.path.join('/etc', 'caliper', 'config',
-                'execution_contl.cfg')
-    else:
-        cfg_file = os.path.join(caliper_path.config_files.config_dir,
+    cfg_file = os.path.join(caliper_path.config_files.config_dir,
                                     'execution_contl.cfg')
     try:
         tolerence_cfg = BaseCfg(cfg_file)
@@ -578,7 +605,7 @@ def get_field(data, param, linestart="", sep=" "):
     if find is not None:
         return re.split("%s" % sep, find.group(1))[param]
     else:
-        print "There is no line which starts with %s in data." % linestart
+        logging.info("There is no line which starts with {} in data." %(linestart))
         return None
 
 

@@ -386,6 +386,11 @@ def get_targets_data(outdir):
 
 def normalize_caliper():
     try:
+        for files in glob.glob(os.path.join(caliper_path.HTML_DATA_DIR_OUTPUT, "*")):
+            os.remove(files)
+    except:
+        pass
+    try:
         normalize_caliper_output(caliper_path.HTML_DATA_DIR_INPUT)
     except Exception, e:
         logging.info(e.args[0], e.args[1])
@@ -450,7 +455,7 @@ def normalize_score(results):
             test_case_dic = test_point_dic[test_point]
             point_values = test_case_dic[point_str].values()
             useful_values = [string.atof(x) for x in point_values
-                                if string.atof(x) != 0]
+                                if string.atof(x) >= 0]
             if len(useful_values) < 1:
                 last_result = 0
             else:

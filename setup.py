@@ -8,6 +8,8 @@
 import os
 import stat
 import shutil
+import glob
+from pwd import getpwnam  
 
 try:
     import caliper.common as common
@@ -42,9 +44,29 @@ def get_package_dirs():
             )
 
 
+def recursive_file_permissions(path, mode, uid=-1, gid=-1):
+    '''
+    Recursively updates file permissions on a given path.
+    UID and GID default to -1, and mode is required
+    '''
+    for item in glob.glob(path + '/*'):
+        if os.path.isdir(item):
+	    os.chown(item, uid, gid)
+            recursive_file_permissions(os.path.join(path, item), mode, uid, gid)
+        else:
+            try:
+                os.chown(os.path.join(path, item), uid, gid)
+                os.chmod(os.path.join(path, item), mode)
+            except:
+                print('File permissions on {0} not updated due to error.'.format(os.path.join(path, item)))
+
 def run():
     caliper_data_dir = os.path.join(os.environ['HOME'], '.caliper')
     caliper_tmp_dir = os.path.join(caliper_data_dir, 'benchmarks')
+    caliper_output = os.path.join(os.environ['HOME'], 'caliper_output')
+    caliper_configuration = os.path.join(caliper_output,'configuration')
+    caliper_config_file = os.path.join(caliper_configuration,'config')
+    caliper_test_def = os.path.join(caliper_configuration,'test_cases_def')
     if os.path.exists(caliper_tmp_dir):
         shutil.rmtree(caliper_tmp_dir)
 
@@ -72,6 +94,9 @@ def run():
                 'pyYAML',
                 'django >= 1.6.1', ]
             )
+    os.chown(caliper_output,getpwnam(os.environ['HOME'].split('/')[-1]).pw_uid,-1)
+    recursive_file_permissions(path=caliper_output,mode=0775,uid=getpwnam(os.environ['HOME'].split('/')[-1]).pw_uid,gid=-1)
+
     if os.path.exists('caliper.egg-info'):
         shutil.rmtree('caliper.egg-info')
     if os.path.exists('dist'):

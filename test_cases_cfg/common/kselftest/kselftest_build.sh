@@ -15,6 +15,9 @@ build_kselftest() {
     else
         make CC=$GCC
         cp -r * $myOBJPATH/
+        cd $myOBJPATH/../
+        tar -cvf kselftest.tar.gz kselftest
+        rm -fr kselftest
         make clean
     fi
     make clean
