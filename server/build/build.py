@@ -576,7 +576,7 @@ def build_each_tool(dirname, section_name, des_build_file, arch='x86_86'):
                                         FOLDER.caliper_log_file), shell=True)
         result = subprocess.call("%s %s %s %s %s >> %s 2>&1"
                                     % (des_build_file, arch,
-                                        CALIPER_DIR, TMP_DIR, "/".join(WS_GEN_DIR.split('/')[4:]), log_file),
+                                        CALIPER_DIR, TMP_DIR, "/".join(WS_GEN_DIR.split('/')[-2:]), log_file),
                                         shell=True)
     except Exception:
         logging.info('There is exception when building the benchmarks')

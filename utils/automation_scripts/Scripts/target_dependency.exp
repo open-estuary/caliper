@@ -8,6 +8,7 @@ set option [lindex $argv 0]
 set client_user [lindex $argv 1]
 set client_ip [lindex $argv 2]
 set passwd [lindex $argv 3]
+set mount_point [lindex $argv 4]
 set i 0
 
 spawn scp target_dependency.sh $client_user@$client_ip:./
@@ -18,7 +19,7 @@ expect {
 }
 
 set i 0
-spawn ssh -t $client_user@$client_ip "sudo ./target_dependency.sh $option"
+spawn ssh -t $client_user@$client_ip "sudo ./target_dependency.sh $option $mount_point"
 while true {
 	expect {
 		"Are you sure you want to continue connecting" { send "yes\r"; exp_continue}
@@ -28,10 +29,10 @@ while true {
 			interact "\r" return
 			send "\r"
 		 }
-        "ERROR-IN-AUTOMATION" {
+        	"ERROR-IN-AUTOMATION" {
 			send_user "FAILED IN TARGET DEPENDENY\n"
-           	exit 1
-        }
+           		exit 1
+        	}
 		timeout {
 			send_user "U have not selected any choice:"
 			send_user "I will be exiting"
