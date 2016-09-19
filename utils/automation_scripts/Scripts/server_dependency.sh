@@ -13,9 +13,16 @@ do
         echo -e "\n ${dependency[$i]} is already installed  "
     else
         echo -e "\n ${dependency[$i]}  is not installed.do u want to install(y/n)"
-        read choice
+	# if force option is passed thn forcefully run the scripts
+        if [ $1 = "y" ]
+        then
+            choice="y"
+        else
+            echo "${host_packages[$i]} is not installed, would you like to install(y/n)"
+            read choice
+        fi
         if [ $choice == 'y' ];then
-             sudo dpkg --configure -a
+            sudo dpkg --configure -a
             if [ $UPDATE=0 ]
             then
                 UPDATE=1

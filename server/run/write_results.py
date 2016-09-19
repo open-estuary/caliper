@@ -142,23 +142,26 @@ def round_perf(score):
 
 def write_yaml_perf(yaml_file, tmp, result, kind=1):
     flag = 0
-    if not os.path.exists(yaml_file):
-        os.mknod(yaml_file)
-        if yaml_file.endswith("_score.yaml"):
-            file_name = yaml_file.split('/')[-1]
-            file_name = file_name.split("_score")[0] + ".yaml"
-            abs_path = yaml_file.split('/')
-            abs_path[-1] = file_name
-            file_name = "/".join(abs_path)
-            with open(yaml_file,'w') as fp:
-                tp = open(file_name)
-                dic = yaml.load(tp)
-                dic_new = {}
-                dic_new['Configuration'] = {}
-                dic_new['Configuration'] = dic['Configuration']
-                dic_new['name'] = {}
-                dic_new['name'] = dic['name']
-                fp.write(yaml.dump(dic_new,default_flow_style=False))
+    try:
+        if not os.path.exists(yaml_file):
+            os.mknod(yaml_file)
+            if yaml_file.endswith("_score.yaml"):
+                file_name = yaml_file.split('/')[-1]
+                file_name = file_name.split("_score")[0] + ".yaml"
+                abs_path = yaml_file.split('/')
+                abs_path[-1] = file_name
+                file_name = "/".join(abs_path)
+                with open(yaml_file,'w') as fp:
+                    tp = open(file_name)
+                    dic = yaml.load(tp)
+                    dic_new = {}
+                    dic_new['Configuration'] = {}
+                    dic_new['Configuration'] = dic['Configuration']
+                    dic_new['name'] = {}
+                    dic_new['name'] = dic['name']
+                    fp.write(yaml.dump(dic_new,default_flow_style=False))
+    except:
+        pass
     fp = open(yaml_file)
     result = round_perf(result)
     x = yaml.load(fp)

@@ -11,7 +11,7 @@ do
     check=`dpkg-query -W -f='${Status}' ${target_packages[$i]} | grep -c "ok installed"`
     if [ $check -eq 0 ] 
     then
-       if [ $1 == "-f" ]
+       if [ $1 == "y" ]
        then
             choice="y"
        else
@@ -58,16 +58,16 @@ then
     sudo mkdir -p /mnt/sdb/
 	sudo chmod -R 775 /mnt/sdb
 	sudo chown -R $USER:$USER /mnt/sdb
-	sudo mount /dev/sdb /mnt/sdb
+	sudo mount $2 /mnt/sdb
 	if [ $? -ne 0 ]
 	then
        echo -e "\n$ERROR:Creating a Mount Path for Fio testing Failed\n"
 	   exit 1
     fi
 else
-        if [ `mount -l | grep -c "/dev/sdb on /mnt/sdb"` == 0 ]
+        if [ `mount -l | grep -c "$2 on /mnt/sdb"` == 0 ]
         then
-            sudo mount /dev/sdb /mnt/sdb
+            sudo mount $2 /mnt/sdb
 	        if [ $? -ne 0 ]
 	        then
                 echo -e "\n$ERROR:Creating a Mount Path for Fio testing Failed\n"
