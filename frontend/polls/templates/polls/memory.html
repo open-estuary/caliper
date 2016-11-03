@@ -49,6 +49,18 @@
  <link rel="stylesheet" type="text/css" href="../static/css/caliper_report.css"/>
 
 
+<!-- To resize the windows while opening int he new window -->
+<script type="text/javascript">
+function changeSize( w, h){    
+    window.resizeTo(w,h);
+}
+function movePosition( x, y){    
+    window.moveTo(x,y);
+}
+//$( document ).ready(function() {
+changeSize(1000,700);
+//});
+</script>
 </head>
 <body>
 <div class="example">
@@ -72,17 +84,10 @@ The <b>score summary</b> is the percentage of performance of each platform for i
         2. <b>Lmbench</b> : lmbench is a series of micro benchmarks intended to measure basic operating system and hardware system metrics.<br>
         3. <b>Cachebench</b> : CacheBench is a benchmark designed to evaluate the performance of the memory hierarchy.  
      </p>
-     <p>
-	Currently Caliper executes various benchmark and developed scripts to evaluate the performance focusing the memory subsystem.   </p>
-
-	<p> To have a very quick reference of the hardware configurations of platforms evaluated, please refer to <a href="{%static '../static/TargetInfo/Platform_Configuration.xlsx' %}" target ="_blank"> 		<b>Platform_Configuration.xlsx </b> </a>
-  <h1><small>Report Layout </small></h1>
-     <p> The scores of each scenario  shown below is followed by the participating tests cases from each of these scenarios. Remember the scores are based on the percentile ranking across each participating platforms which is already discussed <a href="score_Calculation.html" target="_blank"> <b>here.</b></a>    </p>
-
-    </div>
+   </div>
 	
     {% if sum %}
-    <h1><small>Memory Score Summary</small></h1>
+    <h1 id="tiny_bandwidth" ><small>Memory Score Summary</small></h1>
     <div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/memory_summary.png' %}" height="300"
     width="600" /> </p>

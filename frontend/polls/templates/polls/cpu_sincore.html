@@ -54,6 +54,18 @@
  <link rel="stylesheet" type="text/css" href="../static/css/caliper_report.css"/>
  
 
+<!-- To resize the windows while opening int he new window -->
+<script type="text/javascript">
+function changeSize( w, h){    
+    window.resizeTo(w,h);
+}
+function movePosition( x, y){    
+    window.moveTo(x,y);
+}
+//$( document ).ready(function() {
+changeSize(1000,700);
+//});
+</script>
 </head>
 <body>
 <div class="example">
@@ -88,7 +100,7 @@
 	<p> To have a very quick reference of the hardware configurations of platforms evaluated, please refer to <a href="{%static '../static/TargetInfo/Platform_Configuration.xlsx' %}" target ="_blank"> 		<b>Platform_Configuration.xlsx </b> </a></p>
    </div>
     {% if sum %}
-    <h1><small>CPU Score Summary</small></h1> <!--SKD++-->
+    <h1><small>CPU Single Score Summary</small></h1> 
 	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/cpu_sincore_summary.png' %}" height="400" width="700" /> </p>
 	</div>
@@ -114,7 +126,7 @@
     {% endif %}
 
     {% if sincore_int %}
-	<h2><small>CPU Score Details: Single Core Integer </small></h2>
+	<h2 id= "Single Core Integer"><small>CPU Score Details: Single Core Integer </small></h2>
 	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/cpu_sincore_sincore_int.png' %}" height="400" width="800" /> </p>
 	</div>
@@ -122,7 +134,7 @@
     {% endif %}
 
     {% if sincore_misc %}
-    <h2><small>CPU Score Details: Single Core Misc </small></h2>
+    <h2 id="Single Core Misc" ><small>CPU Score Details: Single Core Misc </small></h2>
 	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/cpu_sincore_sincore_misc.png' %}" height="400" width="850" /> </p>
 	</div>

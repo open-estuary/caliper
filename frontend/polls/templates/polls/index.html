@@ -44,6 +44,7 @@
 
 <!-- link the caliper report css here -->
 <link rel="stylesheet" type="text/css" href="../static/css/caliper_report.css"/>	
+    <!-- End : Caliper Head section -->
 
 </head>
 <body>
@@ -54,25 +55,29 @@
     <h1> Caliper Benchmarking Report </h1> <!--SKD++-->
     <p><b>Report Version & Date : Version-yyyymmdd</b> </p>
     </div>
-<!-- START Updating data-->
-<h2> Introduction </h2>
-	<p>
-	Caliper is a test framework focuses on benchmarking and performance 
-evaluation of server platforms. It can access the performance of ARM as 
-well as X86 platforms . Caliper allows you to build, 	 execute and 
-create a benchmarking report of the platforms under evaluation. It can 
-help to discover issues related to hardware or software.
-	</p>
+    <!-- START Updating data-->
+    <p>
+        <b>Caliper</b> is a benchmarking framework for <b>server platforms</b>, integrated with industry standard tools
+        and test cases. It provides detailed performance assessments for <b>server platforms</b> based on ARM and x86.
+        The <b>uniqueness</b> of Caliper is a consolidated score based evaluation. The best performance in each test
+        will get a score of 100. All other test scores are calculated relative to this. This provides a clear relative
+        positioning of each target platform. It enables easy analysis of the performance levels and bottlenecks.
+    </p>
 
-<h2> Test classification  </h2>
-	<p>
-	Caliper has already integrated with many industry standard open source 
-benchmarking tools. Even though Caliper mainly focuses on the 
-performance aspects of the system, it gives some insight on the 
-functional aspects as well. The integrated tools are divided under two 
-top dimensions, Performance and Functional. Under each of these 
-categories sub subcategories and then the test cases are organised.	
-	</p>
+    <p>
+        As the performance testing can depend on system hardware resources at the time of execution, it is bound to vary
+        over repeated testing. In general, this makes it difficult to analyse the performance results. Caliper tries to
+        solve it for the performance analysts by executing at least <b>5 iterations of each test on every platform and
+        ensure low variance</b>. This provides a more believable and stable scores throughout the report.<br>
+
+        This version of report is prepared with:
+        <mark>
+            5 executions each on 8 target platforms. Each execution consists of 27 test suits collecting 2052 test
+            points
+            across all platforms.
+        </mark>
+
+    </p>
 
 <h2> Report presentation </h2>
 	<p>

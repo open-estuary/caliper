@@ -51,6 +51,18 @@
 <!-- link the caliper report css here  -->
  <link rel="stylesheet" type="text/css" href="../static/css/caliper_report.css"/>
 
+<!-- To resize the windows while opening int he new window -->
+<script type="text/javascript">
+function changeSize( w, h){    
+    window.resizeTo(w,h);
+}
+function movePosition( x, y){    
+    window.moveTo(x,y);
+}
+//$( document ).ready(function() {
+changeSize(1000,700);
+//});
+</script>
 </head>
 
 <body>
@@ -73,7 +85,7 @@ The <b>score summary</b> is the percentage of performance of each platform for i
      <p> <li><b>Openssl Benchmark Suite</b> :  This tool tests all the openssl ciphers and measures the performance. The test suite is executed in single thread hence it measures the single core performance. </p></li>
 <mark><p> <b>Notes: </b> In D02/D03 platform, the hardware accelerators for algorithms are not utilized. Hence the D02 results may be lower and is expected. We can expect better results once the drivers enable the hardware accelerators </p></mark>
 
-	<p> To have a very quick reference of the hardware configurations of platforms evaluated, please refer to <a href="{%static '../static/TargetInfo/Platform_Configuration.xlsx' %}" target ="_blank"> <b>Platform_Configuration.xlsx </b> </a></p>
+
 	<p> We have preserved block-wise performance details of each cipher across platforms, please refer to <a href="{%static '../static/TestInfo/Report-Data/openssl_TestCases.xlsx' %}" target ="_blank"> <b>Openssl_TestCases.xlsx </b> </a></p>
     </div>
 	
@@ -105,7 +117,7 @@ The <b>score summary</b> is the percentage of performance of each platform for i
     <p><b>Note: </b> The test case names are same for Digital Verify and Digital Sign. However encryption is tested for Digital Sign and decryption is tested for Digital Verify.</p>	
 
     {% if hash_algorithm %}
-    <h2><small>Algorithm Score Details: Hash Algorithm</small></h2>
+    <h2 id="hash"> <small>Algorithm Score Details: Hash Algorithm</small></h2>
 	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/algorithm_hash_algorithm.png' %}" height="400" width="850" /> </p>
 	</div>
@@ -113,7 +125,7 @@ The <b>score summary</b> is the percentage of performance of each platform for i
     {% endif %}
 
     {% if symmetric_cyphers %}
-    <h2><small>Algorithm Score Details: Symmetric Cyphers</small></h2>
+    <h2 id="Symmetric Ciphers"><small>Algorithm Score Details: Symmetric Cyphers</small></h2>
 	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/algorithm_symmetric_cyphers.png' %}" height="400" width="900" /> </p>
 	</div>
