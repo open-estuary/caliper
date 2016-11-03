@@ -9,6 +9,10 @@ import re
 import os
 import sys
 import subprocess
+import datetime
+import shutil
+import ConfigParser
+import logging
 
 
 def judge_caliper_installed():
@@ -22,12 +26,96 @@ def judge_caliper_installed():
             return 1
         else:
             return 0
+
+
+
 CURRENT_PATH = os.path.dirname(sys.modules[__name__].__file__)
 CALIPER_DIR = os.path.abspath(os.path.join(CURRENT_PATH, '..', '..'))
 PARSER_DIR = os.path.abspath(os.path.join(CALIPER_DIR, 'client', 'parser'))
 FRONT_TMP_DIR = os.path.join(CALIPER_DIR, 'frontend')
 
+
+
+caliper_output = os.path.join(os.environ['HOME'], 'caliper_output', 'configuration')
+caliper_config_file = os.path.join(caliper_output,'config')
+caliper_test_def = os.path.join(caliper_output,'test_cases_cfg')
+TIMP_STAMP = datetime.datetime.now().strftime("%y-%m-%d_%H-%M-%S")
+
+
+
+# FETCHING THE TARGET HOST NAME AND ARCH FOR CREATING THE WORKSPACE
+def ConfigValue(path=None,section=None,key=None,action='get',value=None):
+    config = ConfigParser.ConfigParser()
+    config.read(path)
+    if action == 'get':
+        return config.get(section, key)
+    else:
+        return config.set(section,key,value)
+
+client_ip = ConfigValue(path=os.path.join(caliper_output,'config','client_config.cfg'), section='CLIENT', key='ip',action='get')
+client_user = ConfigValue(path=os.path.join(caliper_output,'config','client_config.cfg'), section='CLIENT', key='user',action='get')
+platForm_name = ConfigValue(path=os.path.join(caliper_output,'config','client_config.cfg'), section='CLIENT', key='Platform_name',action='get')
+
+if not platForm_name:
+    try:
+        hostName = subprocess.Popen('ssh '+str(client_user)+"@"+str(client_ip)+" 'hostname'", shell=True,
+                              stdout=subprocess.PIPE)
+        hostName = hostName.communicate()
+    except Exception as e:
+        logging.error(e)
+        sys.exit(1)
+    WORKSPACE = os.path.join(os.environ['HOME'],'caliper_output', str(hostName[0].strip()) + '_WS_'+ TIMP_STAMP)
+else:
+    WORKSPACE = os.path.join(os.environ['HOME'], 'caliper_output',
+                             str(platForm_name) + '_WS_' + TIMP_STAMP)
 intermediate = 0
+
+def create_folder(folder, mode=0755):
+    if os.path.exists(folder):
+        shutil.rmtree(folder)
+    try:
+        os.mkdir(folder, mode)
+    except OSError:
+        os.makedirs(folder, mode)
+
+def create_dir():
+
+    if not os.path.exists(FRONT_END_DIR):
+        shutil.copytree(FRONT_TMP_DIR,
+                        FRONT_END_DIR)
+    if not os.path.exists(HTML_DATA_DIR_INPUT):
+        create_folder(HTML_DATA_DIR_INPUT)
+    if not os.path.exists(HTML_DATA_DIR_OUTPUT):
+        create_folder(HTML_DATA_DIR_OUTPUT)
+
+    if not os.path.exists(DATA_DIR_INPUT):
+        create_folder(DATA_DIR_INPUT)
+    if not os.path.exists(OPENSSL_DATA_DIR_INPUT):
+        create_folder(OPENSSL_DATA_DIR_INPUT)
+    if not os.path.exists(COV_DATA_DIR_INPUT):
+        create_folder(COV_DATA_DIR_INPUT)
+    for i in range(1,6):
+        if not os.path.exists(os.path.join(COV_DATA_DIR_INPUT,str(i))):
+            create_folder(os.path.join(COV_DATA_DIR_INPUT,str(i)))
+    if not os.path.exists(CONSOLIDATED_DATA_DIR_INPUT):
+        create_folder(CONSOLIDATED_DATA_DIR_INPUT)
+    if not os.path.exists(HW_DATA_DIR_INPUT):
+        create_folder(HW_DATA_DIR_INPUT)
+    if not os.path.exists(HTML_DATA_DIR):
+        create_folder(HTML_DATA_DIR)
+    if not os.path.exists(COV_DATA_DIR_OUTPUT):
+        create_folder(COV_DATA_DIR_OUTPUT)
+    if not os.path.exists(EXCEL_DATA_DIR_OUTPUT):
+        create_folder(EXCEL_DATA_DIR_OUTPUT)
+    if not os.path.exists(TEMPLATE_DATA_DIR):
+        create_folder(TEMPLATE_DATA_DIR)
+
+
+
+
+
+
+
 
 if not judge_caliper_installed():
     # This means caliper is not installed and execution will be local.
@@ -35,28 +123,36 @@ if not judge_caliper_installed():
     # This will allow multi instance of caliper to execute.
     # fixme CALIPER_REPORT_HOME ??? replace it with CALIPER_REPORT_HOME
     CALIPER_REPORT_HOME = os.path.join(CALIPER_DIR, 'caliper_output')
-    if not os.path.exists(CALIPER_REPORT_HOME):
-        os.mkdir(CALIPER_REPORT_HOME)
     BENCHS_DIR = os.path.join(CALIPER_DIR, 'benchmarks')
 else:
     # This means that the caliper is already installed. Only instance can
     # execute as the updatation of the results will happen under
     # ~/home/user/caliper_workspace
     CALIPER_TMP_DIR = os.path.join(os.environ['HOME'], 'caliper_output')
-    if not os.path.exists(CALIPER_TMP_DIR):
-        os.mkdir(CALIPER_TMP_DIR)
     CALIPER_REPORT_HOME = CALIPER_TMP_DIR
     BENCHS_DIR = os.path.join(os.environ['HOME'], '.caliper', 'benchmarks')
 
 BUILD_FILE = 'build.sh'
+BUILD_TIME = os.path.join(CALIPER_DIR,"server","build","building_timing.yaml")
 SOURCE_BUILD_FILE = os.path.join(CALIPER_DIR, 'server', 'build', 'build.sh')
-TMP_DIR = os.path.join('/tmp', 'caliper.tmp')
+TMP_DIR = os.path.join('/tmp', 'caliper.tmp'+ "_" + TIMP_STAMP)
 GEN_DIR = os.path.join(CALIPER_REPORT_HOME, 'binary')
-
-FRONT_END_DIR = os.path.join(CALIPER_REPORT_HOME, 'frontend')
+BUILD_LOGS = os.path.join(os.environ['HOME'],'.caliper_build_logs')
+FRONT_END_DIR = os.path.join(CALIPER_REPORT_HOME,'frontend')
 HTML_DATA_DIR = os.path.join(FRONT_END_DIR, 'frontend', 'data_files')
-HTML_DATA_DIR_INPUT = os.path.join(HTML_DATA_DIR, 'Input_Logs')
+
+DATA_DIR_INPUT = os.path.join(HTML_DATA_DIR, 'Input_Logs')
+HTML_DATA_DIR_INPUT = os.path.join(DATA_DIR_INPUT, 'Input_Report')
+OPENSSL_DATA_DIR_INPUT = os.path.join(DATA_DIR_INPUT,'Input_Openssl')
+COV_DATA_DIR_INPUT = os.path.join(DATA_DIR_INPUT,'Input_Cov')
+CONSOLIDATED_DATA_DIR_INPUT = os.path.join(DATA_DIR_INPUT,'Input_Consolidated')
+HW_DATA_DIR_INPUT = os.path.join(DATA_DIR_INPUT,'Input_Hardware')
+HW_DATA_DIR_OUTPUT = os.path.join(FRONT_END_DIR, 'polls', 'static', 'TargetInfo')
 HTML_DATA_DIR_OUTPUT = os.path.join(HTML_DATA_DIR, 'Normalised_Logs')
+COV_DATA_DIR_OUTPUT = os.path.join(FRONT_END_DIR, 'polls', 'static', 'TestInfo','Iterations')
+EXCEL_DATA_DIR_OUTPUT = os.path.join(FRONT_END_DIR, 'polls', 'static', 'TestInfo','Report-Data')
+TEMPLATE_DATA_DIR = os.path.join(FRONT_END_DIR,'polls','templates','polls')
+
 HTML_PICTURE_DIR = os.path.join(FRONT_END_DIR, 'polls', 'static', 'polls',
                                 'pictures')
 
@@ -81,6 +177,7 @@ class Singleton(object):
 
 
 class Folder(Singleton):
+    workspace = ''
     name = ''
     build_dir = ''
     exec_dir = ''
@@ -92,26 +189,29 @@ class Folder(Singleton):
 
     def __init__(self, folder=""):
         if folder:
-            self.name = folder
+            self.workspace = folder
         if not folder:
-            self.name = '_'.join(['output', str(get_caliper_num())])
-        self.name = os.path.join(CALIPER_REPORT_HOME, self.name)
+            self.workspace = WORKSPACE
+        self.name = os.path.join('output')
 
     def set_up_path(self):
-        self.build_dir = os.path.join(CALIPER_REPORT_HOME, self.name,
+        self.workspace = os.path.join(os.path.join(os.environ['HOME'], 'caliper_output', self.workspace))
+        self.name = os.path.join('output')
+        self.build_dir = os.path.join(self.workspace, self.name,
                                             'caliper_build')
-        self.exec_dir = os.path.join(CALIPER_REPORT_HOME, self.name,
+        self.exec_dir = os.path.join(self.workspace, self.name,
                                             'caliper_exec')
-        self.results_dir = os.path.join(CALIPER_REPORT_HOME, self.name,
+        self.results_dir = os.path.join(self.workspace, self.name,
                                             'results')
-        self.caliper_log_file = os.path.join(CALIPER_REPORT_HOME, self.name,
+        self.caliper_log_file = os.path.join(self.workspace, self.name,
                                             'caliper_exe.log')
-        self.summary_file = os.path.join(CALIPER_REPORT_HOME, self.name,
+        self.summary_file = os.path.join(self.workspace, self.name,
                                             'results_summary.log')
-        self.final_parser = os.path.join(CALIPER_REPORT_HOME, self.name,'final_parsing_logs.yaml')
+        self.final_parser = os.path.join(self.workspace, self.name,'final_parsing_logs.yaml')
         self.yaml_dir = os.path.join(self.results_dir, 'yaml')
         self.html_dir = os.path.join(self.results_dir, 'html')
-        self.name = os.path.join(CALIPER_REPORT_HOME, self.name)
+
+
 
 folder_ope = Folder()
 folder_ope.set_up_path()
@@ -127,7 +227,7 @@ class ConfigFile(Singleton):
             self.name = os.path.abspath(folder)
         else:
             if judge_caliper_installed():
-                self.name = os.path.join('/etc', 'caliper')
+                self.name = caliper_output
             else:
                 self.name = CALIPER_DIR
 

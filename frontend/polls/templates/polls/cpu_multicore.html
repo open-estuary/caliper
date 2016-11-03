@@ -43,6 +43,18 @@
 <!-- link the caliper report css here -->
  <link rel="stylesheet" type="text/css" href="../static/css/caliper_report.css"/>
 
+<!-- To resize the windows while opening int he new window -->
+<script type="text/javascript">
+function changeSize( w, h){    
+    window.resizeTo(w,h);
+}
+function movePosition( x, y){    
+    window.moveTo(x,y);
+}
+//$( document ).ready(function() {
+changeSize(1000,700);
+//});
+</script>
 </head>
 <body>
 <div class="example">
@@ -71,10 +83,10 @@
 	
     </p>
 
-	<p> To have a very quick reference of the hardware configurations of platforms evaluated, please refer to <a href="{%static '../static/TargetInfo/Platform_Configuration.xlsx' %}" target ="_blank"> 		<b>Platform_Configuration.xlsx </b> </a></p>
+	
    </div>
     {% if sum %}
-    <h1><small>CPU Score Summary</small></h1> <!--SKD++-->
+    <h1><small>CPU Multi Core Score Summary</small></h1> 
 	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/cpu_multicore_summary.png' %}" height="400" width="700" /> </p>
 	</div>

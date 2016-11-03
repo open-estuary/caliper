@@ -15,7 +15,7 @@ do
     if [ $check -eq 0 ] 
     then
 	# if force option is passed thn forcefully run the scripts
-       if [ $1 = "-f" ]
+       if [ $1 = "y" ]
        then
             choice="y"
        else

@@ -1,0 +1,10 @@
+usage: ./main.sh [-h] [-d] [-D] [-c] [-C] [-o'CALIPER_OPTION'] 
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -d, --check           select to check the dependencies
+  -D, --dontcheck       select not to check the dependencies
+  -c, --copy            select to copy the output files to database
+  -C, --dontcopy        select not to copy the output files to database
+  -o'CALIPER_OPTION', --caliper_option='CALIPER_OPTION'          
+		  	select to Parse the selected test tools

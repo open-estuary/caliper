@@ -106,7 +106,7 @@ build_prepare() {
 
     caliper_exists=$(which caliper)
     if [ "$caliper_exists"x != ""x ]; then
-        INSTALL_DIR="/home/$(whoami)/caliper_output/$OBJPATH"
+        INSTALL_DIR="$HOME/caliper_output/$OBJPATH"
         BENCH_PATH=$TMP_DIR/$BENCH_PATH
         CURRENT_PATH=""
     else
@@ -137,7 +137,7 @@ build_cleanup()
     fi
 }
 
-OBJDIR=binary
+OBJDIR=$4
 TMP_DIR=$3
 if [ $# -eq 0 ]; then
    ARCH=x86_64

@@ -69,18 +69,21 @@ def parse_all_cases(target_exec_dir, target, kind_bench, bench_name,
         raise AttributeError
     except Exception:
         raise
+    bench_test = "ltp"
     logging.debug("the sections to run are: %s" % sections_run)
     if not os.path.exists(Folder.exec_dir):
         os.mkdir(Folder.exec_dir)
     log_bench = os.path.join(Folder.exec_dir, bench_name)
     logfile = log_bench + "_output.log"
+    if bench_name != bench_test:
+    	if not os.path.exists(logfile):
+	    return -1
     tmp_log_file = log_bench + "_output_tmp.log"
     parser_result_file = log_bench + "_parser.log"
     tmp_parser_file = log_bench + "_parser_tmp.log"
     if os.path.exists(parser_result_file):
         os.remove(parser_result_file)
     #output_logs_names = glob.glob(Folder.exec_dir+"/*output.log")
-    bench_test = "ltp"
 
     # for each command in run config file, read the config for the benchmark
     for i in range(0, len(sections_run)):
@@ -98,6 +101,8 @@ def parse_all_cases(target_exec_dir, target, kind_bench, bench_name,
 	if bench_name == bench_test:
 	    subsection = sections_run[i].split(" ")[1]
 	    subsection_file = log_bench + "_" + subsection + "_output.log"
+            if not os.path.exists(subsection_file):
+            	continue
         if os.path.exists(tmp_parser_file):
             os.remove(tmp_parser_file)
         # parser the result in the tmp_log_file, the result is the output of
@@ -711,6 +716,9 @@ def deal_dic_for_yaml(result, tmp, score_way, yaml_file,flag):
                                             yaml_file, flag)
     return status
 
+def system_initialise(target):
+    target.run(" sync; echo 3 > /proc/sys/vm/drop_caches; swapoff -a && swapon -a ")
+
 
 def caliper_run(target_exec_dir, target):
     # get the test cases defined files
@@ -752,6 +760,7 @@ def caliper_run(target_exec_dir, target):
             logging.info("Running %s" % sections[i])
             bench = os.path.join(classify, sections[i])
             try:
+                system_initialise(target)
                 result = run_all_cases(target_exec_dir, target, bench,
                                         sections[i], run_file)
             except Exception:
@@ -811,6 +820,7 @@ def parsing_run(target_exec_dir, target):
             print_format()
             logging.info("Parsing %s" % sections[i])
             bench = os.path.join(classify, sections[i])
+
             try:
                 result = parse_all_cases(target_exec_dir, target, bench,
                                        sections[i], run_file,parser,dic)
@@ -827,7 +837,9 @@ def parsing_run(target_exec_dir, target):
             else:
                 logging.info("Parsing %s Finished" % sections[i])
                 print_format()
-    outfp = open(caliper_path.folder_ope.name.strip()+"/final_parsing_logs.yaml",'w')
+    outfp = open(os.path.join(caliper_path.folder_ope.workspace,
+                              caliper_path.folder_ope.name.strip()
+                              +"/final_parsing_logs.yaml"),'w')
     outfp.write(yaml.dump(dic, default_flow_style=False))
     outfp.close()
     return 0

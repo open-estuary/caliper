@@ -51,8 +51,21 @@
  <!-- link the caliper report css here  -->
  <link rel="stylesheet" type="text/css" href="../static/css/caliper_report.css"/>
 
-
+<!-- To resize the windows while opening int he new window -->
+<script type="text/javascript">
+function changeSize( w, h){    
+    window.resizeTo(w,h);
+}
+function movePosition( x, y){    
+    window.moveTo(x,y);
+}
+//$( document ).ready(function() {
+changeSize(1000,700);
+//});
+</script>
 </head>
+
+
 <body>
 <div class="example">
     <div><input type="hidden" id="latency_tst" value="{{ dic_lat }}"> </div>
@@ -64,13 +77,20 @@
 
     <div style="text-align: left;">
      <p> The test under this section is mainly targetted towards the performance evaluation of Latency in the sytems through various benchmarking tests which exercises it.</p>
-  <h1><small>Report Layout </small></h1>
-     <p> The scores of each scenario  shown below is followed by the participating tests cases from each of these scenarios. Remember the scores are based on the percentile ranking across each participating platforms which is already discussed <a href="{% static 'polls/pictures/score_Calculation.html' %}" target="_blank"> <b>here.</b></a>    </p>
-   <h1><small>Test description </small></h1>
-     <p>
-Currently Caliper derives these tests from various well known open source tools to test performance.   </p>
+ 
+	<h1><small>Report Layout </small></h1>
+	<p> The score of each test item is represented as the percentage of performance compared to the highest value obtained across all platform. So a value of <b>x%</b> means that the test case/	 	 scenario performance is <b> x% </b> compared to the highest scored platform, which is always given <b> 100% </b>.</br>
+        To know the ranking calculation and actual values scored by each platform on specific test cases, please refer to the raw values excel provided along with the report.
+        Please click <a href="{% static 'polls/pictures/score_Calculation.html' %}" target="_blank"> <b>here</b></a> for more details. </p>
+	The <b>score summary</b> is the percentage of performance of each platform for individual test scenarios. The detailed sections shows the individual test case score(rank) in the same fashion. <br>
 
-	<p> To have a very quick reference of the hardware configurations of platforms evaluated, please refer to <a href="{%static '../static/TargetInfo/Platform_Configuration.xlsx' %}" target ="_blank"> <b>Platform_Configuration.xlsx </b> </a>
+   <h1><small>Test description </small></h1>
+    <p> Tests under this section captures the performace of the system measuring latencies for various system operations using following tools: </li>
+         <li><b>LMBENCH </b>:This is a series of micro benchmarks intended to measure basic operating system and hardware system metrics. </li>
+	 <li><b>RTTEST</b> : This is a set of programs that test and measure various components of real-time kernel behavior such as timer, signal, and hardware latency.</li>
+	 
+     </p>
+	
     </div>
 
     {% if sum %}
@@ -83,13 +103,9 @@ Currently Caliper derives these tests from various well known open source tools 
 
     <div id="lat-summary" class="sensei-grid"></div>
     {% endif %}
-    <p><b>FixMe: </b>file/vm overall score above shows PC-I5650_U15.04 as 100. This is has a minor issue.
-                   Based on the analysis of data in detail, <b>MOONSHOT-M710P_U14.04 score should be 100 for file/vm.</b>
-                   <br>Please check the 'Latency Score Details: File/VM Latency' section below. Its very clear. 
-                       However, due to a page-fault during the test on PC-I5650_U15.04, there was one unwanted data observed in the test results. Hence, the overall score calculation had a minor issue. This will be fixed in the next report.</p>	
 
     {% if ctx %}
-    <h2><small>Latency Score Details: Context Switch</small></h2>
+    <h2 id="Context Switch"><small>Latency Score Details: Context Switch</small></h2>
 	<div style="text-align: center;">
     <p> <img src="{% static 'polls/pictures/latency_ctx.png' %}" height="400" width="750" /> </p>
 	</div>

@@ -20,6 +20,9 @@ build_sysbench() {
 
     cp $SrcPath/*  $INSTALL_DIR
     cp -r $download_dir/$filename $INSTALL_DIR
+    cd $INSTALL_DIR/../
+    tar -cvf sysbench_tar.gz sysbench
+    rm -fr sysbench
 }
 
 build_sysbench

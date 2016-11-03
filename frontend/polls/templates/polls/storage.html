@@ -48,6 +48,19 @@
 <!-- link the caliper report css here -->
 <link rel="stylesheet" type="text/css" href="../static/css/caliper_report.css"/>
 
+
+<!-- To resize the windows while opening int he new window -->
+<script type="text/javascript">
+function changeSize( w, h){    
+    window.resizeTo(w,h);
+}
+function movePosition( x, y){    
+    window.moveTo(x,y);
+}
+//$( document ).ready(function() {
+changeSize(1000,700);
+//});
+</script>
 </head>
 <body>
 <div class="example">
@@ -72,7 +85,7 @@
      Tests under this section captures the performace of disk and file system.
      <li><b>Iozone </b>: This is a filesystem benchmark tool. The benchmark tests file I/O performance for the following operations. <b> Read, write, re-read, re-write, read backwards, read strided, fread, fwrite, random read/write etc </b> </li>
      <li><b>Fio </b>: This is the most powerful IO benchmarking tool available today which is very flexible to create various io workloads and to execute them. </b> </li>
-	<p> To have a very quick reference of the hardware configurations of platforms evaluated, please refer to <a href="{%static '../static/TargetInfo/Platform_Configuration.xlsx' %}" target ="_blank"> 		<b>Platform_Configuration.xlsx </b> </a></p>
+
 
     {% if sum %}
     <h1><small>Storage Score Summary</small></h1> 
