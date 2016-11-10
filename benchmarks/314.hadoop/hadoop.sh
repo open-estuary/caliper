@@ -149,16 +149,15 @@ popd
 pushd $HIBENCH_DIR
     sed -i 's/^spark/#spark/g'  $HIBENCH_LAN_API
     # benchmarks.lst modify
-    sed -i 's/^aggregation/#aggregation/g' $HIBENCH_BENCH_LIST
-    sed -i 's/^join/#join/g' $HIBENCH_BENCH_LIST
-    sed -i 's/^pagerank/#pagerank/g' $HIBENCH_BENCH_LIST
-    sed -i 's/^scan/#scan/g' $HIBENCH_BENCH_LIST
     sed -i 's/^nutchindexing/#nutchindexing/g' $HIBENCH_BENCH_LIST
+
+
     # modify 99-user_defined_properties.conf        
     pushd $HIBENCH_CONF
         cp 99-user_defined_properties.conf.template 99-user_defined_properties.conf
         USER_DEFINED_FILE=$HIBENCH_CONF/99-user_defined_properties.conf
-        hdfs_url="\/URL\/TO\/YOUR\/HDFS"
+#        hdfs_url="\/URL\/TO\/YOUR\/HDFS"
+	 hdfs_url="hdfs\:\/\/HOSTNAME:HDFSPORT"
         hadoop_str="\/PATH\/TO\/YOUR\/HADOOP\/ROOT"
         hdfs_server="hdfs\:\/\/127\.0\.0\.1\:9000"
         spark_str="\/PATH\/TO\/YOUR\/SPARK\/ROOT"
