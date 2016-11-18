@@ -20,7 +20,7 @@ HIBENCH_BIN=$HIBENCH_DIR/bin
 HIBENCH_OUTPUT=$HIBENCH_DIR/report
 HIBENCH_BENCH_LIST=$HIBENCH_CONF/benchmarks.lst
 HIBENCH_LAN_API=$HIBENCH_CONF/languages.lst
-
+HIBENCH_DATA_PROFILE=$HIBENCH_CONF/10-data-scale-profile.conf
 sudo apt-get install expect -y
 
 ##### set the ssh no-passwd login #####
@@ -172,6 +172,11 @@ echo $hadoop_dir
         sed -i 's/ 4 / 2 /g' $USER_DEFINED_FILE
         sed -i '52,67s/12/2/g' $USER_DEFINED_FILE
         sed -i '52,67s/6/1/g'  $USER_DEFINED_FILE
+	sed -i 's/.*hibench.dfsioe.large.read.number_of_files.*/hibench.dfsioe.large.read.number_of_files        40/'   $HIBENCH_DATA_PROFILE
+        sed -i 's/.*hibench.dfsioe.large.read.file_size.*/hibench.dfsioe.large.read.file_size                  1024/'   $HIBENCH_DATA_PROFILE
+        sed -i 's/.*hibench.dfsioe.large.write.number_of_files.*/hibench.dfsioe.large.write.number_of_files      40/'   $HIBENCH_DATA_PROFILE
+        sed -i 's/.*hibench.dfsioe.large.write.file_size.*/hibench.dfsioe.large.write.file_size                1024/'   $HIBENCH_DATA_PROFILE
+
     popd
 
     RESULT=$HIBENCH_DIR/report/hibench.report
