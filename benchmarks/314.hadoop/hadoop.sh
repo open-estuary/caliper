@@ -5,7 +5,16 @@
 #we can add it to the corresponding position.
 #set -x
 
-hdfs_tmp=/tmp/hadoop-${USER}
+#hdfs_tmp=/tmp/hadoop-${USER}
+. ~/.bashrc
+
+echo  "$HADOOP_TMP  the hadoop tmp directory"
+
+if [ -e  $HADOOP_TMP ] ; then 
+rm -r  $HADOOP_TMP
+fi
+
+hdfs_tmp=$HADOOP_TMP
 
 HADOOP_DIR=$PWD/hadoop
 HADOOP_CONF=$HADOOP_DIR/etc/hadoop
