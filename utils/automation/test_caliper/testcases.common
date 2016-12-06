@@ -1,0 +1,603 @@
+
+g_flParent="${BASH_SOURCE[1]}"
+g_fnCur=$(basename "${BASH_SOURCE[0]}")
+g_dpCur=$(dirname  "${BASH_SOURCE[0]}")
+drCur0=${PWD}
+cd "${g_dpCur}" >/dev/null
+g_dpCur=${PWD}
+cd "${drCur0}" >/dev/null
+g_pfnCur=${g_dpCur}/${g_fnCur}
+
+#####################
+#check load from command line
+if [ -z ${g_flParent} ]; then
+    g_defSourceFiles=$(grep -vF "${g_pfnCur}" <<< "${g_defSourceFiles}")
+fi
+
+#check loaded already
+sPF1=$(grep -F "${g_pfnCur}" <<< "${g_defSourceFiles}")
+if [ "${sPF1}" == "${g_pfnCur}" ]; then
+	return 100
+fi
+export g_defSourceFiles=${g_defSourceFiles}${g_pfnCur}$'\n'
+printf "%s[%3d]%5s: Load [${g_pfnCur}] call by [${g_flParent}]\n" "${FUNCNAME[0]}" ${LINENO} "Info"
+
+#####################
+#Load Public functions
+export g_fn_testcases_common=${g_fnCur}
+export g_dp_testcases_common=${g_dpCur}
+
+drCur1=${g_dpCur}
+fsrc1=funcs.common
+flPub1=${drCur1}/${fsrc1}
+if [ ! -f "${flPub1}" ]; then
+    s1=$(find ${drCur1}/.. -type f -name "${fsrc1}")
+    if [ -z "${s1}" ]; then
+        printf "%s[%3d]%5s: Not found ${fsrc1}\n" "${FUNCNAME[0]}" ${LINENO} "Info"
+        exit 1
+    fi
+    flPub1=${s1}
+fi
+$(sed "s#^#. #" <<< "${flPub1}")
+
+#####################
+#Load config
+g_fnCur=${g_fn_testcases_common}
+g_dpCur=${g_dp_testcases_common}
+
+. ${g_dpCur}/${g_fnCur%%.*}.cfg
+
+#####################
+#init
+export g_flLog=${g_drTmp}/${g_fnCur%%.*}.log
+if [ -f "${g_flLog}" ]; then
+    mv ${g_flLog} ${g_flLog}.bak
+fi
+
+export g_flList=$(echo "${g_flList}" |sed "/^[ \t]*#/d")
+
+grep -q "^\.\(/\|\$\)" <<< "${g_drProSetCaliperCfg}"
+if [ $? -eq 0 ]; then
+    g_drProSetCaliperCfg=$(sed "s#^\.#${g_dp_testcases_common}#" <<< "${g_drProSetCaliperCfg}")
+fi
+
+###########
+export g_flBaseLog=${g_drTmp}/${g_fnCur%.*}
+if [ -d "${g_flBaseLog}_bak" ]; then
+    rm -rf "${g_flBaseLog}_bak"
+fi
+mkdir -p ${g_flBaseLog}_bak
+
+sList=$(ls -d "${g_flBaseLog}".* 2>/dev/null)
+if [ -n "${sList}" ]; then
+    mv ${sList} ${g_flBaseLog}_bak
+fi
+
+if [ -f "${g_flLogStatus}" ]; then
+    mv "${g_flLogStatus}" ${g_flLogStatus}_bak
+fi
+
+flGcc=$(find "${g_drArmGccBin}" -name "aarch64-linux-gnu-gcc")
+if [ -z "${flGcc}" ]; then
+    printf "%s[%3d]%5s: not found [find \"${g_drArmGccBin}\" -name \"aarch64-linux-gnu-gcc\"]\n" "${FUNCNAME[0]}" ${LINENO} "Error" |tee -a ${g_flBaseLog}.log
+    exit 1
+fi
+
+grep -qF "${g_drArmGccBin}" <<< "${PATH}"
+if [ $? -ne 0 ]; then
+    export PATH=${g_drArmGccBin}:${PATH}
+fi
+
+#####################
+#Alone Functions
+CheckCondition()
+{
+    sCheckArg1=${1}
+    sOption=${2}
+    sCheckArg2=${3}
+    sTestCaseID1=${4}
+    sTestCaseTag=${5}
+    sVarIDs=${6}
+    bWhenPrint=${7}
+    varSucc1=${8}
+    varFail1=${9}
+
+    if [ -z "${sCheckArg1}" ]; then
+        sCheckArg1=${sOption}
+        sOption=
+    fi
+
+    if [ -v "${sVarIDs}" ]; then
+        eval sShowSTSIDs=\${${sVarIDs}}
+    else
+        sShowSTSIDs=
+    fi
+
+    bPrint=false
+    nFail1=0
+
+    if [ "${sCheckArg1}" ${sOption} "${sCheckArg2}" ]; then
+        sStatus=${g_success}
+        sLogLvl=Info
+        #when true print
+        if [ "${bWhenPrint}" == "true" ]; then
+            bPrint=true
+        fi
+    else
+        sStatus=${g_failure}
+        sLogLvl=Error
+        printf "%s[%3d]%s[%3d]%5s: [ \"${sCheckArg1}\" ${sOption} \"${sCheckArg2}\" ] is false [${sTestCaseID1}]\n" "${FUNCNAME[1]}" "${BASH_LINENO[0]}" "${FUNCNAME[0]}" ${LINENO} "Info" |tee -a ${g_flBaseLog}.log
+        #when false print
+        if [ "${bWhenPrint}" == "false" ]; then
+            bPrint=true
+        fi
+        nFail1=1
+    fi
+    if [ "${bWhenPrint}" == "all" ]; then
+        bPrint=true
+    fi
+    grep -q "\(^${sTestCaseID1}\$\|^${sTestCaseID1}[, \t]\+\|[, \t]\+${sTestCaseID1}\$\|[, \t]\+${sTestCaseID1}[, \t]\+\)" <<< "${sShowSTSIDs}"
+    if [ $? -eq 0 ]; then
+        if ${bPrint}; then
+            printf "%s[%3d]%5s: ${sTestCaseTag}: [${g_sPKTSIDInLog}]: [${sTestCaseID1}]: [${sStatus}]\n" "${FUNCNAME[0]}" ${LINENO} "${sLogLvl}" |tee -a ${g_flLogStatus}
+            if [ ${nFail1} -eq 0 ]; then
+                let ${varSucc1}+=1
+            else
+                let ${varFail1}+=1
+            fi
+        fi
+    fi
+
+    return ${nFail1}
+}
+export -f CheckCondition
+
+GetDicValue()
+{
+    local sVarN=${1}
+    local sKey1=${2}
+    local dicN1=${3}
+
+    eval sKeys=\${!${dicN1}[@]}
+    #avoid dictionary[""] error occurred
+    sKey2=$(sed "s#[ \t]\+#\n#g" <<< "${sKeys}" |grep -i "${sKey1}")
+    if [ -n "${sKey2}" ]; then
+        eval sKey2=\${${dicN1}[${sKey2}]}
+    fi
+    eval ${sVarN}=\${sKey2}
+}
+export -f GetDicValue
+
+CheckVarDefined()
+{
+    local sVarN=${1}
+    local sVars=${2}
+
+    if ! grep -q "^[ \t]*${sVarN}=" <<< "${sVars}"
+    then
+        printf "%s[%3d]%5s: [${sVarN}] not defined!\n" "${FUNCNAME[0]}" ${LINENO} "Error" |tee -a ${g_flBaseLog}.log
+        exit 1
+    fi
+
+    return 0
+}
+export -f CheckVarDefined
+
+CheckOption()
+{
+    cOption=${1}
+    sCmd=${2}
+
+    grep -q "^[ \t]*[A-Za-z_]\+[0-9A-Za-z_]*[ \t]\+-[A-Za-z]\+" <<< "${sCmd}"
+    if [ $? -eq 0 ]; then
+        s1=$(sed "s/^[ \t]*[A-Za-z_]\+[0-9A-Za-z_]*\([ \t]\+-[A-Za-z]\+.*\)\$/\1/" <<< "${sCmd}")
+        grep -q "[ \t]\+-[A-Za-z]*${cOption}[A-Za-z]*" <<< "${s1}"
+        return $?
+    fi
+
+    return 1
+}
+export -f CheckOption
+
+##########
+#Complex Functions
+CheckCaliperOutputDir()
+{
+    local drLogMainVar=${1}
+    local sCmdCaliper=${2}
+    local flLog=${3}
+
+    #Get the caliper log output directory
+    #e.g: /home/hezhongyan/caliper_output/d02_20160918_WS_16-09-18_14-31-09
+    drLogMain=$(grep "${g_sKeyDir}" "${flLog}")
+    if [ $? -eq 0 ]; then
+        drLogMain=$(sed "s#^.*${g_sKeyDir}[ \t]*\(.\+\)[ \t]*\$#\1#" <<< "${drLogMain}")
+        eval ${drLogMainVar}=\${drLogMain}
+        return 0
+    fi
+
+    local sCmdName=$(grep "\(^\|^[ \t]*[^#]\)[ \t]*\<caliper\>" <<< "${sCmdCaliper}")
+    nRow1=$(wc -l <<< "${sCmdName}")
+    if [ -z "${sCmdName}" -o ${nRow1} -ne 1 ]; then
+        printf "%s[%3d]%5s: [${sCmdName}] not find caliper command\n" "${FUNCNAME[0]}" ${LINENO} "Error" |tee -a ${g_flBaseLog}.log
+        eval ${drLogMainVar}=
+        return 1
+    fi
+    CheckOption f "${sCmdName}"
+    if [ $? -eq 0 ]; then
+        drLogMain=${g_drBase}/$(sed "s/^[ \t#]*[A-Za-z_]\+[0-9A-Za-z_]*[ \t]\+-[bBrRpPsS]*f[ \t]\+\(.*\)[ \t]*\$/\1/" <<< "${sCmdName}")
+        eval ${drLogMainVar}=\${drLogMain}
+        return 0
+    else
+        printf "%s[%3d]%5s: [${g_sKeyDir}] not found in [${flLog}]\n" "${FUNCNAME[0]}" ${LINENO} "Error" |tee -a ${g_flBaseLog}.log
+        eval ${drLogMainVar}=
+        return 1
+    fi
+}
+export -f CheckCaliperOutputDir
+
+DirFrom()
+{
+    local varPlatformNLog=${1}
+    local varPlatformNFCH=${2}
+    local sCaliperCmd=${3}
+    local sPathOutput=${4}
+    local sVarTargetName=${5}
+
+    local sPlatformNLog1=$(basename "${sPathOutput}")
+
+    flTxtCfg=$(cat "${sPathOutput}/config/client_config.cfg")
+    GetFieldOfMenu "[CLIENT]" Platform_name sPlatformName1 flTxtCfg true
+    if [ -n "${sPlatformName1}" ]; then
+        eval ${sVarTargetName}=\${sPlatformName1}
+    fi
+
+    CheckOption f "${sCaliperCmd}"
+    if [ $? -eq 0 ]; then
+        sPlatformNFCH1=$(sed "s/^[ \t#]*[A-Za-z_]\+[0-9A-Za-z_]*[ \t]\+-[bBrRpPsS]*f[ \t]\+\(.*\)[ \t]*\$/\1/" <<< "${sCaliperCmd}")
+    else
+        sPlatformNLog1=$(awk -F'_WS_' '{print $1}' <<< "${sPlatformNLog1}")
+        eval sPlatformNFCH1=\${${sVarTargetName}}
+        #printf "%s[%3d]%5s: [${sPlatformNFCH1}]\n" "${FUNCNAME[0]}" ${LINENO} "Info" |tee -a ${g_flBaseLog}.log
+    fi
+
+    eval ${varPlatformNLog}=\${sPlatformNLog1}
+    eval ${varPlatformNFCH}=\${sPlatformNFCH1}
+}
+export -f DirFrom
+
+BaseTest01()
+{
+    local sTCIDPre=${1}
+    local sTag1=${2}
+    local sTCIDs=${3}
+    local sCaliperCmd=${4}
+    local sBenchTools=${5}
+    local flLogCaliper=${6}
+    local sOtherArgs=${7}
+
+    ##########
+    #args correct
+    PureMarkSign sTCIDPre
+    sTCIDPre=${sTCIDPre}_TC_
+    CountLineFields ',' "${sTCIDs}" nField
+    nListCheckID="01,02A,02B,02C,02D,02,02C_01,02C_02,02C_03,02C_04"
+        #sTCID1=$(sed "s/${sTCIDPre}//" <<< "${sTCIDs}")
+
+    sOtherArgs1=$(sed "s/^[ \t]*\(${g_reName}=\)/local \1/" <<< "${sOtherArgs}")
+    eval "${sOtherArgs1}"
+    CheckVarDefined varSucc "${sOtherArgs}"
+    CheckVarDefined varFail "${sOtherArgs}"
+    CheckVarDefined sArchTarget "${sOtherArgs}"
+    CheckVarDefined sIPTarget "${sOtherArgs}"
+
+    ##########
+    nErrs=0
+
+    eval "${sCaliperCmd}" 2>&1 |tee ${flLogCaliper}
+
+    CheckCaliperOutputDir sPathLogMain "${sCaliperCmd}" "${flLogCaliper}"
+    CheckCondition "" "-d" "${sPathLogMain}" ${sTCIDPre}01 "${sTag1}" sTCIDs false "${varSucc}" "${varFail}"
+    nErr1=$?
+    if [ ${nErr1} -ne 0 ]; then
+        printf "%s[%3d]%5s: platform log folder [${sPathLogMain}] not exist\n" "${FUNCNAME[0]}" ${LINENO} "Error" |tee -a ${g_flBaseLog}.log
+        exit ${nErr1}
+    fi
+    g_drsWReport=${g_drsWReport}$'\n'${sPathLogMain}
+
+    sHostNameTarget=$(ExpectExecCmd "ssh root@${sIPTarget} "'"echo -n \${HOSTNAME}"')
+    if [ -z "${sHostNameTarget}" ]; then
+        printf "%s[%3d]%s[%3d]%5s: Can't get the hostname [ssh root@${sIPTarget} '\"echo -n \${HOSTNAME}\"']\n" "${FUNCNAME[1]}" "${BASH_LINENO[0]}" "${FUNCNAME[0]}" ${LINENO} "Info" |tee -a ${g_flBaseLog}.log
+        exit 1
+    fi
+    sPlatformName=${sHostNameTarget}
+    DirFrom sPlatformNLog sPlatformNFCH "${sCaliperCmd}" "${sPathLogMain}" "sPlatformName"
+    CheckCondition "${sPlatformNLog}" "==" "${sPlatformNFCH}" ${sTCIDPre}01 "${sTag1}" sTCIDs all "${varSucc}" "${varFail}"
+    let nErrs+=$?
+
+    #sPathLogMain=~/caliper_output/d02_20160918_WS_16-09-18_15-35-53
+    ##########
+    #check some sub directorys
+    local nErr2=0
+    CheckCondition "" "-d" "${sPathLogMain}/binary" ${sTCIDPre}02A "${sTag1}" sTCIDs false "${varSucc}" "${varFail}"
+    nErr1=$?
+    if [ ${nErr1} -eq 0 ]; then
+        drArch=
+        #printf "%s[%3d]%5s: sArchTarget[${sArchTarget}]\n" "${FUNCNAME[0]}" ${LINENO} "Info" |tee -a ${g_flBaseLog}.log
+        case "${sArchTarget}" in
+        x86_64)
+            drArch=x86_64
+            ;;
+        aarch64)
+            drArch=arm_64
+            ;;
+        esac
+        CheckCondition "" "-n" "${drArch}" ${sTCIDPre}02A "${sTag1}" sTCIDs false "${varSucc}" "${varFail}"
+        nErr1=$?
+        if [ ${nErr1} -eq 0 ]; then
+            CheckCondition "" "-d" "${sPathLogMain}/binary/${drArch}" ${sTCIDPre}02A "${sTag1}" sTCIDs false "${varSucc}" "${varFail}"
+            nErr1=$?
+            if [ ${nErr1} -eq 0 ]; then
+                sOther=$(ls "${sPathLogMain}/binary" |grep -v "${drArch}")
+                CheckCondition "" "-z" "${sOther}" ${sTCIDPre}02A "${sTag1}" sTCIDs all "${varSucc}" "${varFail}"
+                nErr1=$?
+            fi
+        fi
+    fi
+    let nErrs+=nErr1
+    let nErr2+=nErr1
+
+    CheckCondition "" "-d" "${sPathLogMain}/config" ${sTCIDPre}02B "${sTag1}" sTCIDs all "${varSucc}" "${varFail}"
+    nErr1=$?
+    let nErrs+=nErr1
+    let nErr2+=nErr1
+    CheckCondition "" "-d" "${sPathLogMain}/output" ${sTCIDPre}02C "${sTag1}" sTCIDs all "${varSucc}" "${varFail}"
+    nErr1=$?
+    let nErrs+=nErr1
+    let nErr2+=nErr1
+    CheckCondition "" "-d" "${sPathLogMain}/test_cases_cfg" ${sTCIDPre}02D "${sTag1}" sTCIDs all "${varSucc}" "${varFail}"
+    nErr1=$?
+    let nErrs+=nErr1
+    let nErr2+=nErr1
+    CheckCondition "${nErr2}" "-eq" "0" ${sTCIDPre}02 "${sTag1}" sTCIDs all "${varSucc}" "${varFail}"
+    let nErrs+=$?
+
+    CheckCondition "" "-d" "${sPathLogMain}/output/caliper_build" ${sTCIDPre}02C_01 "${sTag1}" sTCIDs all "${varSucc}" "${varFail}"
+    let nErrs+=$?
+    CheckCondition "" "-d" "${sPathLogMain}/output/caliper_exec" ${sTCIDPre}02C_02 "${sTag1}" sTCIDs all "${varSucc}" "${varFail}"
+    let nErrs+=$?
+
+    CheckOption p "${sCaliperCmd}"
+    CheckCondition "$?" "-ne" 0 ${sTCIDPre}02C_03 "${sTag1}" sTCIDs true "${varSucc}" "${varFail}"
+    if [ $? -ne 0 ]; then
+        flFinal="${sPathLogMain}/output/final_parsing_logs.yaml"
+        CheckCondition "" "-f" "${flFinal}" ${sTCIDPre}02C_03 "${sTag1}" sTCIDs false "${varSucc}" "${varFail}"
+        if [ $? -eq 0 ]; then
+            sBenchToolsFinal=$(grep "^[A-Za-z_]\+[A-Za-z_0-9]*:" "${flFinal}")
+            PureMarkSign sBenchToolsFinal true
+            sBenchToolsFinal=$(tr '\n' ',' <<< "${sBenchToolsFinal}")
+            CheckCondition "${sBenchTools}" "==" "${sBenchToolsFinal}" ${sTCIDPre}02C_03 "${sTag1}" sTCIDs all "${varSucc}" "${varFail}"
+            let nErrs+=$?
+        else
+            let nErrs+=1
+        fi
+    fi
+
+    CheckCondition "" "-d" "${sPathLogMain}/output/results" ${sTCIDPre}02C_04 "${sTag1}" sTCIDs false "${varSucc}" "${varFail}"
+    nErr1=$?
+    if [ ${nErr1} -eq 0 ]; then
+        grep -q "^[ \t]*\[\{0,1\}[ \t]*hardware_info[ \t]*\]\{0,1\}[ \t]*\$" <<< "${sBenchTools}"
+        if [ $? -eq 0 ]; then
+            CheckCondition "" "-f" "${sPathLogMain}/output/results/yaml/${sPlatformName}_hw_info.yaml" ${sTCIDPre}02C_04 "${sTag1}" sTCIDs false "${varSucc}" "${varFail}"
+            nErr1=$?
+        fi
+        if [ ${nErr1} -eq 0 ]; then
+            CheckOption p "${sCaliperCmd}"
+            if [ $? -eq 0 ]; then
+                CheckCondition "" "-f" "${sPathLogMain}/output/results/yaml/${sPlatformName}.yaml" ${sTCIDPre}02C_04 "${sTag1}" sTCIDs false "${varSucc}" "${varFail}"
+                nErr1=$?
+            fi
+            if [ ${nErr1} -eq 0 ]; then
+                CheckOption s "${sCaliperCmd}"
+                if [ $? -eq 0 ]; then
+                    CheckCondition "" "-f" "${sPathLogMain}/output/results/yaml/${sPlatformName}_score.yaml" ${sTCIDPre}02C_04 "${sTag1}" sTCIDs false "${varSucc}" "${varFail}"
+                    nErr1=$?
+                fi
+                CheckCondition "${nErr1}" "-eq" 0 ${sTCIDPre}02C_04 "${sTag1}" sTCIDs true "${varSucc}" "${varFail}"
+            fi
+        fi
+    fi
+    let nErrs+=${nErr1}
+
+    #total test status
+    if [ ${nField} -eq 1 ]; then
+        CheckCondition "${nErrs}" "-eq" 0 "${sTCIDs}" "${sTag1}" sTCIDs all "${varSucc}" "${varFail}"
+        let nErrs=$?
+    fi
+
+    ##########
+    return ${nErrs}
+}
+export -f BaseTest01
+
+WReport()
+{
+    local sTCIDPre=${1}
+    local sTag1=${2}
+    local sTCIDs=${3}
+    local sCaliperCmd=${4}
+    local sBenchTools=${5}
+    local flLogCaliper=${6}
+    local sOtherArgs=${7}
+
+    ##########
+    #args correct
+    PureMarkSign sTCIDPre
+    sTCIDPre=${sTCIDPre}_TC_
+    CountLineFields ',' "${sTCIDs}" nField
+
+    sOtherArgs1=$(sed "s/^[ \t]*\(${g_reName}=\)/local \1/" <<< "${sOtherArgs}")
+    eval "${sOtherArgs1}"
+    CheckVarDefined varSucc "${sOtherArgs}"
+    CheckVarDefined varFail "${sOtherArgs}"
+    CheckVarDefined sArchTarget "${sOtherArgs}"
+    CheckVarDefined sIPTarget "${sOtherArgs}"
+
+    ##########
+    nErrs=0
+
+    flSetCaliperCfgProCfg="${g_drProSetCaliperCfg}/caliper.cfg"
+    sTxtCfg=$(cat ${flSetCaliperCfgProCfg})
+    sTxtModify=
+
+    if false; then
+    g_drsWReport="
+        /home/jenkins/caliper_output/d02_20161125_150529
+        /home/jenkins/caliper_output/d02_20161125_151120
+        /home/jenkins/caliper_output/d02_20161125_151654
+        /home/jenkins/caliper_output/d02_20161125_151713
+    "
+    fi
+    #rm -rf !(configuration|d02_20161125_150529|d02_20161125_151120|d02_20161125_151654|d02_20161125_151713)
+    #caliper -BRPS
+    local drsWReport="\"
+        ${g_drsWReport}
+    \""
+    SetSetCaliperCfgCfg g_drPlatform "${drsWReport}" "sTxtModify" "sTxtCfg" "${flSetCaliperCfgProCfg}" true
+    if [ -n "${sTxtModify}" ]; then
+        echo "${sTxtCfg}" >${flSetCaliperCfgProCfg}
+        printf "%s[%3d]%5s: [${flSetCaliperCfgProCfg}] modify:${sTxtModify}\n" "${FUNCNAME[0]}" ${LINENO} "Info" |tee -a ${g_flBaseLog}.log
+    fi
+    ${g_drProSetCaliperCfg}/caliper.WReport.sh |tee -a ${g_flBaseLog}.log
+
+    drOut1=$(ls "${g_drBase}")
+    eval "${sCaliperCmd}" 2>&1 |tee ${flLogCaliper}
+    drOut2=$(ls "${g_drBase}")
+    IFS=$'\n'; for d1 in ${drOut1}; do IFS=${g_IFS0};
+        d2=$(sed "s#/#\\\/#g" <<< "${d1}")
+        drOut2=$(sed "/${d2}/d" <<< "${drOut2}")
+    IFS=$'\n'; done; IFS=${g_IFS0};
+    sPathLogMain=${g_drBase}/${drOut2}
+
+    #CheckCaliperOutputDir sPathLogMain "${sCaliperCmd}" "${flLogCaliper}"
+    CheckCondition "" "-d" "${sPathLogMain}" ${sTCIDPre}01 "${sTag1}" sTCIDs false "${varSucc}" "${varFail}"
+    nErr1=$?
+    if [ ${nErr1} -ne 0 ]; then
+        printf "%s[%3d]%5s: folder [${sPathLogMain}] not exist\n" "${FUNCNAME[0]}" ${LINENO} "Error" |tee -a ${g_flBaseLog}.log
+        exit ${nErr1}
+    fi
+    g_drsWReport=${g_drsWReport}$'\n'${sPathLogMain}
+
+    sHostNameTarget=$(ExpectExecCmd "ssh root@${sIPTarget} "'"echo -n \${HOSTNAME}"')
+    if [ -z "${sHostNameTarget}" ]; then
+        printf "%s[%3d]%s[%3d]%5s: Can't get the hostname [ssh root@${sIPTarget} '\"echo -n \${HOSTNAME}\"']\n" "${FUNCNAME[1]}" "${BASH_LINENO[0]}" "${FUNCNAME[0]}" ${LINENO} "Info" |tee -a ${g_flBaseLog}.log
+        exit 1
+    fi
+    sPlatformName=${sHostNameTarget}
+    DirFrom sPlatformNLog sPlatformNFCH "${sCaliperCmd}" "${sPathLogMain}" "sPlatformName"
+    CheckCondition "${sPlatformNLog}" "==" "${sPlatformNFCH}" ${sTCIDPre}01 "${sTag1}" sTCIDs all "${varSucc}" "${varFail}"
+    let nErrs+=$?
+
+    ##########
+    return ${nErrs}
+}
+export -f WReport
+
+#check output folder
+CheckOutputFolder()
+{
+    local sTCIDPre=${1}
+    local sTag1=${2}
+    local sTCIDs=${3}
+    local sCaliperCmd=${4}
+    local sBenchTools=${5}
+    local flLogCaliper=${6}
+    local sOtherArgs=${7}
+
+    ##########
+    #args correct
+    PureMarkSign sTCIDPre
+    sTCIDPre=${sTCIDPre}_TC_
+    CountLineFields ',' "${sTCIDs}" nField
+    if [ "${nField}" -ne 1 ]; then
+        printf "%s[%3d]%5s: [${sTCIDs}] not support so many IDs\n" "${FUNCNAME[0]}" ${LINENO} "Error" |tee -a ${g_flBaseLog}.log
+        exit 1
+    fi
+
+    sOtherArgs1=$(sed "s/^[ \t]*\(${g_reName}=\)/local \1/" <<< "${sOtherArgs}")
+    eval "${sOtherArgs1}"
+    CheckVarDefined varSucc "${sOtherArgs}"
+    CheckVarDefined varFail "${sOtherArgs}"
+    CheckVarDefined sArchTarget "${sOtherArgs}"
+    CheckVarDefined sIPTarget "${sOtherArgs}"
+
+    ##########
+    nErrs=0
+
+    eval "${sCaliperCmd}" 2>&1 |tee ${flLogCaliper}
+
+    #need a new caliper log
+    CheckCaliperOutputDir sPathLogMain "${sCaliperCmd}" "${flLogCaliper}"
+    CheckCondition "" "-d" "${sPathLogMain}" "${sTCIDs}" "${sTag1}" sTCIDs false "${varSucc}" "${varFail}"
+    nErr1=$?
+    if [ ${nErr1} -ne 0 ]; then
+        printf "%s[%3d]%5s: folder [${sPathLogMain}] not exist\n" "${FUNCNAME[0]}" ${LINENO} "Error" |tee -a ${g_flBaseLog}.log
+        exit ${nErr1}
+    fi
+
+    sHostNameTarget=$(ExpectExecCmd "ssh root@${sIPTarget} "'"echo -n \${HOSTNAME}"')
+    if [ -z "${sHostNameTarget}" ]; then
+        printf "%s[%3d]%s[%3d]%5s: Can't get the hostname [ssh root@${sIPTarget} '\"echo -n \${HOSTNAME}\"']\n" "${FUNCNAME[1]}" "${BASH_LINENO[0]}" "${FUNCNAME[0]}" ${LINENO} "Info" |tee -a ${g_flBaseLog}.log
+        exit 1
+    fi
+    sPlatformName=${sHostNameTarget}
+    DirFrom sPlatformNLog sPlatformNFCH "${sCaliperCmd}" "${sPathLogMain}" "sPlatformName"
+    CheckCondition "${sPlatformNLog}" "==" "${sPlatformNFCH}" "${sTCIDs}" "${sTag1}" sTCIDs all "${varSucc}" "${varFail}"
+    let nErrs+=$?
+
+    ##########
+    return ${nErrs}
+}
+export -f CheckOutputFolder
+
+GetToolNamesFromLog()
+{
+    local sToolsVar=${1}
+    local flLogCaliper=${2}
+
+    sKey1=":Building"
+    sKey2=" is already build"
+    sInfo1=$(grep -B 1 "${sKey1} \(Failed\|Successful\)" ${flLogCaliper} |grep -v "${sKey1} \(Failed\|Successful\)")
+    sInfo2=$(grep "${sKey2}" "${flLogCaliper}")
+    sInfo1=$(sed "s/^.*${sKey1}[ \t]\+\([A-Za-z_]\+[0-9A-Za-z_]*\)[ \t]*\$/\1/" <<< "${sInfo1}")
+    sInfo2=$(sed "s/^.*:[ \t]*\([A-Za-z_]\+[0-9A-Za-z_]*\)${sKey2}.*\$/\1/" <<< "${sInfo2}")
+    sToolsLog="${sInfo1}"$'\n'"${sInfo2}"
+    sToolsLog=$(sed "/--/d;/^[ \t]*$/d" <<< "${sToolsLog}")
+    PureMarkSign sToolsLog true
+
+    eval ${sToolsVar}=\${sToolsLog}
+}
+export -f GetToolNamesFromLog
+
+SetSetCaliperCfgCfg()
+{
+    local sKey=${1}
+    local sVal=${2}
+    local sVarModifyN=${3}
+    local sVarN=${4}
+    local flCfgN=${5}
+    local bAlign=${6:-false}
+
+    SetShellCfg "${sKey}" "${sVal}" "${sVarN}" "${sVarModifyN}" "${bAlign}"
+    if [ $? -ne 0 ]; then
+        printf "%s[%3d]%5s: [${sKey}] in [${flCfgN}]\n" "${FUNCNAME[0]}" ${LINENO} "Error" |tee -a ${g_flBaseLog}.log
+        exit 1
+    fi
+}
+export -f SetSetCaliperCfgCfg
+
+#####################
+#init2
+
+#####################
+
