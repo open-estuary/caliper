@@ -7,7 +7,10 @@
 
 #hdfs_tmp=/tmp/hadoop-${USER}
 . ~/.bashrc
+<<<<<<< HEAD
 . /etc/environment
+=======
+>>>>>>> f02947be979cbabd692e363e1b0277ba8be95e96
 
 echo  "$HADOOP_TMP  the hadoop tmp directory"
 
@@ -183,9 +186,15 @@ echo $hadoop_dir
         sed -i '52,67s/12/2/g' $USER_DEFINED_FILE
         sed -i '52,67s/6/1/g'  $USER_DEFINED_FILE
 	sed -i 's/.*hibench.dfsioe.large.read.number_of_files.*/hibench.dfsioe.large.read.number_of_files        40/'   $HIBENCH_DATA_PROFILE
+<<<<<<< HEAD
         sed -i 's/.*hibench.dfsioe.large.read.file_size.*/hibench.dfsioe.large.read.file_size                  2048/'   $HIBENCH_DATA_PROFILE
         sed -i 's/.*hibench.dfsioe.large.write.number_of_files.*/hibench.dfsioe.large.write.number_of_files      40/'   $HIBENCH_DATA_PROFILE
         sed -i 's/.*hibench.dfsioe.large.write.file_size.*/hibench.dfsioe.large.write.file_size                2048/'   $HIBENCH_DATA_PROFILE
+=======
+        sed -i 's/.*hibench.dfsioe.large.read.file_size.*/hibench.dfsioe.large.read.file_size                  1024/'   $HIBENCH_DATA_PROFILE
+        sed -i 's/.*hibench.dfsioe.large.write.number_of_files.*/hibench.dfsioe.large.write.number_of_files      40/'   $HIBENCH_DATA_PROFILE
+        sed -i 's/.*hibench.dfsioe.large.write.file_size.*/hibench.dfsioe.large.write.file_size                1024/'   $HIBENCH_DATA_PROFILE
+>>>>>>> f02947be979cbabd692e363e1b0277ba8be95e96
 
     popd
 
