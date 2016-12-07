@@ -5,7 +5,20 @@
 #we can add it to the corresponding position.
 #set -x
 
-hdfs_tmp=/tmp/hadoop-${USER}
+#hdfs_tmp=/tmp/hadoop-${USER}
+. ~/.bashrc
+<<<<<<< HEAD
+. /etc/environment
+=======
+>>>>>>> f02947be979cbabd692e363e1b0277ba8be95e96
+
+echo  "$HADOOP_TMP  the hadoop tmp directory"
+
+if [ -e  $HADOOP_TMP ] ; then 
+rm -r  $HADOOP_TMP
+fi
+
+hdfs_tmp=$HADOOP_TMP
 
 HADOOP_DIR=$PWD/hadoop
 HADOOP_CONF=$HADOOP_DIR/etc/hadoop
@@ -20,7 +33,7 @@ HIBENCH_BIN=$HIBENCH_DIR/bin
 HIBENCH_OUTPUT=$HIBENCH_DIR/report
 HIBENCH_BENCH_LIST=$HIBENCH_CONF/benchmarks.lst
 HIBENCH_LAN_API=$HIBENCH_CONF/languages.lst
-
+HIBENCH_DATA_PROFILE=$HIBENCH_CONF/10-data-scale-profile.conf
 sudo apt-get install expect -y
 
 ##### set the ssh no-passwd login #####
@@ -149,16 +162,15 @@ popd
 pushd $HIBENCH_DIR
     sed -i 's/^spark/#spark/g'  $HIBENCH_LAN_API
     # benchmarks.lst modify
-    sed -i 's/^aggregation/#aggregation/g' $HIBENCH_BENCH_LIST
-    sed -i 's/^join/#join/g' $HIBENCH_BENCH_LIST
-    sed -i 's/^pagerank/#pagerank/g' $HIBENCH_BENCH_LIST
-    sed -i 's/^scan/#scan/g' $HIBENCH_BENCH_LIST
     sed -i 's/^nutchindexing/#nutchindexing/g' $HIBENCH_BENCH_LIST
+
+
     # modify 99-user_defined_properties.conf        
     pushd $HIBENCH_CONF
         cp 99-user_defined_properties.conf.template 99-user_defined_properties.conf
         USER_DEFINED_FILE=$HIBENCH_CONF/99-user_defined_properties.conf
-        hdfs_url="\/URL\/TO\/YOUR\/HDFS"
+#        hdfs_url="\/URL\/TO\/YOUR\/HDFS"
+	 hdfs_url="hdfs\:\/\/HOSTNAME:HDFSPORT"
         hadoop_str="\/PATH\/TO\/YOUR\/HADOOP\/ROOT"
         hdfs_server="hdfs\:\/\/127\.0\.0\.1\:9000"
         spark_str="\/PATH\/TO\/YOUR\/SPARK\/ROOT"
@@ -173,6 +185,17 @@ echo $hadoop_dir
         sed -i 's/ 4 / 2 /g' $USER_DEFINED_FILE
         sed -i '52,67s/12/2/g' $USER_DEFINED_FILE
         sed -i '52,67s/6/1/g'  $USER_DEFINED_FILE
+	sed -i 's/.*hibench.dfsioe.large.read.number_of_files.*/hibench.dfsioe.large.read.number_of_files        40/'   $HIBENCH_DATA_PROFILE
+<<<<<<< HEAD
+        sed -i 's/.*hibench.dfsioe.large.read.file_size.*/hibench.dfsioe.large.read.file_size                  2048/'   $HIBENCH_DATA_PROFILE
+        sed -i 's/.*hibench.dfsioe.large.write.number_of_files.*/hibench.dfsioe.large.write.number_of_files      40/'   $HIBENCH_DATA_PROFILE
+        sed -i 's/.*hibench.dfsioe.large.write.file_size.*/hibench.dfsioe.large.write.file_size                2048/'   $HIBENCH_DATA_PROFILE
+=======
+        sed -i 's/.*hibench.dfsioe.large.read.file_size.*/hibench.dfsioe.large.read.file_size                  1024/'   $HIBENCH_DATA_PROFILE
+        sed -i 's/.*hibench.dfsioe.large.write.number_of_files.*/hibench.dfsioe.large.write.number_of_files      40/'   $HIBENCH_DATA_PROFILE
+        sed -i 's/.*hibench.dfsioe.large.write.file_size.*/hibench.dfsioe.large.write.file_size                1024/'   $HIBENCH_DATA_PROFILE
+>>>>>>> f02947be979cbabd692e363e1b0277ba8be95e96
+
     popd
 
     RESULT=$HIBENCH_DIR/report/hibench.report
