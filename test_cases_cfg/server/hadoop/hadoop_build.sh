@@ -52,7 +52,7 @@ build_hibench() {
         tar xzf $SrcPath/hadoop_native_lib.tar.gz -C $HADOOP_DIR/
     fi
     cd $INSTALL_DIR/../
-    tar cvf hadoop_tar.gz hadoop
+    tar cf hadoop_tar.gz hadoop
     cd -
 }
 
