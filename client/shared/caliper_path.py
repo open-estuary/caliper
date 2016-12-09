@@ -33,7 +33,7 @@ CURRENT_PATH = os.path.dirname(sys.modules[__name__].__file__)
 CALIPER_DIR = os.path.abspath(os.path.join(CURRENT_PATH, '..', '..'))
 PARSER_DIR = os.path.abspath(os.path.join(CALIPER_DIR, 'client', 'parser'))
 FRONT_TMP_DIR = os.path.join(CALIPER_DIR, 'frontend')
-
+SERVER_SYNC_FILE_SRC=os.path.join(CALIPER_DIR,'client','server.py')
 
 
 caliper_output = os.path.join(os.environ['HOME'], 'caliper_output', 'configuration')

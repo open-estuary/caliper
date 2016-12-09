@@ -18,25 +18,21 @@ def iperf_parser(content, outfp, tag):
     count = 0
     if (tag == 'iperf TCP'):
         if re.search('SUM', content):
-            for speed in re.findall("SUM.*?MBytes(.*?)MBytes/sec", content):
-                sum_score = string.atof(speed.strip()) + sum_score
-                count = count + 1
+            for speed in re.findall("\[SUM\].*?[MG]Bytes(.*?)MBytes/sec.*?sender", content):
+                score = string.atof(speed.strip())
         else:
-            for speed in re.findall("MBytes(.*?)MBytes/sec", content):
-                sum_score = string.atof(speed.strip()) + sum_score
-                count = count + 1
+            for speed in re.findall("[MG]Bytes(.*?)MBytes/sec.*?sender", content):
+                score = string.atof(speed.strip())
     else:
         if (tag == 'iperf UDP'):
-            speeds = re.findall("MBytes(.*?)MBytes/sec", content)
-            if len(speeds) > 1:
-                for speed in speeds[1:]:
-                    sum_score = string.atof(speed.strip()) + sum_score
-                    count = count + 1
+            if re.search('SUM', content):
+                for speed in re.findall("\[SUM\].*?[MG]Bytes(.*?)MBytes/sec.*?/.*?", content):
+                    score = string.atof(speed.strip())
+            else:
+                for speed in re.findall("[MG]Bytes(.*?)MBytes/sec.*?/.*?", content):
+                    score = string.atof(speed.strip())
 
-    if count != 0:
-        score = sum_score / count
-        outfp.write("speed of %s is %.3f Mbits/sec\n" % (tag, score))
-    return score
+    return score * 8
 
 
 def iperf_TCP_parser(content, outfp):
@@ -50,10 +46,14 @@ def iperf_UDP_parser(content, outfp):
 if __name__ == "__main__":
     infp = open("iperf_output.log", "r")
     content = infp.read()
+    content = re.findall(r'<<<BEGIN TEST>>>(.*?)<<<END>>>',content,re.DOTALL)
     outfp = open("2.txt", "a+")
-    pdb.set_trace()
-    iperf_TCP_parser(content, outfp)
-
-    iperf_UDP_parser(content, outfp)
+    count = 0
+    for data in content:
+        if count < 8:
+            iperf_TCP_parser(data, outfp)
+        else:
+            iperf_UDP_parser(data, outfp)
+        count += 1
     outfp.close()
     infp.close()
