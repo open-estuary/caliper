@@ -70,6 +70,8 @@ def populate_excels():
 
     cov_files_list = performance_functional.get_cov_file_list(input_cov)
 
+    Iteration_len = len(cov_files_list[0])
+
     for item in cov_files_list:
         file_name = ".".join(item[0].split("/")[-1].split(".")[0:-1])
         output_excel_path = os.path.join(output_cov, file_name)
@@ -78,7 +80,7 @@ def populate_excels():
         try:
             col_end = performance_functional.populate_excel(item, output_excel_path, template_dir,1)
             performance_functional.mean_cov_populate( output_excel_path, col_end,file_name)#for each platforms in the Input_Cov folder generate the Iteration excel
-            performance_functional.get_COV_excel(output_excel_path,file_name,output_cov,col,template_dir)#copy the COV values to final COV excel
+            performance_functional.get_COV_excel(output_excel_path,file_name,output_cov,col,template_dir,Iteration_len)#copy the COV values to final COV excel
         except Exception as e:
             logging.info(e)
         col += 1

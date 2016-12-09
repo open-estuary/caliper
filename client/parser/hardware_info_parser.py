@@ -344,12 +344,30 @@ def hardware_info_parser(content,outfp):
     contents = content.split('\n\n\n')
     for key,value in category.iteritems():
         value(dic)
-    os_populate(dic,contents)
-    cpu_populate(dic,contents)
-    memory_populate(dic,contents)
-    disk_populate(dic,contents)
-    kernel_populate(dic,contents)
-    network_populate(dic,contents)
+    try:
+    	os_populate(dic,contents)
+    except Exception as e:
+	pass
+    try:
+    	cpu_populate(dic,contents)
+    except Exception as e:
+	pass
+    try:
+    	memory_populate(dic,contents)
+    except Exception as e:
+	pass
+    try:
+    	disk_populate(dic,contents)
+    except Exception as e:
+	pass
+    try:
+    	kernel_populate(dic,contents)
+    except Exception as e:
+	pass
+    try:
+    	network_populate(dic,contents)
+    except Exception as e:
+	pass
     update(dic,outfp)
     host = get_remote_host()
     dic_yaml['Configuration']['CPU'] = dic['Hardware_Info']['CPU']['CPU_Cores']
