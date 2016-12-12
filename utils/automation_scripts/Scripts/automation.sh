@@ -18,9 +18,11 @@ workspace=""
 foldername=""
 folder=""
 checkDependency='y'
+build_number=$2
 copy=0
 
 source helper_functions.sh
+
 
 # read the options
 if [ -f "$automationFile" ]
@@ -93,16 +95,21 @@ fi
 
 if [ -z $folder ] 
 then
+	echo "client ip = "$client_user@$client_ip	
 	target_host=`ssh $client_user@$client_ip "hostname"`
 	sleep 2
 	TimeStamp=$(date "+%y-%m-%d_%H-%M-%S") 
-	foldername=$(echo $target_host"_WS_"$TimeStamp )
-	workspace=$wspath$target_host"_WS_"$TimeStamp
+	foldername=$(echo $target_host"_"$build_number )
+	workspace=$wspath$target_host"_"$build_number
 	
 else
+	folder=$( echo $folder"_"$build_number )
 	workspace=$wspath$folder
 	echo $workspace
 	foldername=$folder
+	list=(${caliper_option// / })
+	cal_option=${list[0]}
+	caliper_option=$(echo "$cal_option $folder" )
 fi
 
 if [[ ! -e $workspace ]]
@@ -138,7 +145,7 @@ else
 fi
 
 path_config="$workspace/config/client_config.cfg"
-./modify.py "$path_config" "$client_ip" "$server_ip"
+./modify.py "$path_config" "$client_ip" "$server_ip" "$Platform_name"
 if [ $? -ne 0 ]
 then
 	echo "FAILED TO MODIFY $path_config"
@@ -150,7 +157,6 @@ if [  -z $folder ]
 then
 	caliper_option=$(echo $caliper_option"f $foldername")
 fi	
-
 
 #Comparing the tool chain
 target_arch=`ssh $client_user@$client_ip "uname -a"`
@@ -212,5 +218,5 @@ fi
 
 if [ $copy -eq 1 ]
 then
-	./copy.sh "$copycfg" "$foldername"
+	./copy.sh "$copycfg" "$foldername" "$build_number"
 fi
