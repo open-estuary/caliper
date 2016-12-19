@@ -173,7 +173,7 @@ def populate_excel(ip_file_list,output_path,template_dir,cov_flag):
         col = col_start
         wb.save(output_excel)
     return col_end-1
-def get_COV_excel(input_excel_path,file_name,output_excel_path,col,template_dir):
+def get_COV_excel(input_excel_path,file_name,output_excel_path,col,template_dir,Iteration_len):
 
     for key in keys:
         input_excel_name =  key + "_" + file_name + "-Tests.xlsx"
@@ -196,8 +196,8 @@ def get_COV_excel(input_excel_path,file_name,output_excel_path,col,template_dir)
             ip_sheet = wb.get_sheet_by_name(sheets)
             op_sheet = rb.get_sheet_by_name(sheets)
             op_sheet.cell(row=row_start-1, column=col).value = file_name
-            while ip_sheet.cell(row= rows,column = 12).value != None:
-                op_sheet.cell(row = rows, column = col ).value = ip_sheet.cell(row= rows,column = 12).value
+            while ip_sheet.cell(row= rows,column = 7 + Iteration_len).value != None:
+                op_sheet.cell(row = rows, column = col ).value = ip_sheet.cell(row= rows,column = 7 + Iteration_len).value
                 rows += 1
             rows = row_start
         rb.save(output_excel_name)
