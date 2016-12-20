@@ -98,10 +98,10 @@ def populate_excels():
 
 
 
-def run_caliper(remote_host,f_option):
+def run_caliper(remote_host,server_host,f_option):
     try:
         logging.debug("begining to run Caliper")
-        result = test_run.run_caliper_tests(remote_host,f_option)
+        result = test_run.run_caliper_tests(remote_host,server_host,f_option)
     except Exception, e:
         print e
         logging.info("There is wrong when running Caliper")
@@ -143,6 +143,25 @@ def get_remote_host():
         user = os.getlogin()
     try:
         password = settings.get_value('CLIENT', 'password', type=str)
+    except Exception, e:
+        raise error.ServRunError(e.args[0], e.args[1])
+
+    remote_host = host_factory.create_host(client_ip, user, password, port)
+    return remote_host
+
+def get_server_host():
+    try:
+        client_ip = settings.get_value('SERVER', 'ip', type=str)
+    except Exception, e:
+        client_ip = '127.0.0.1'
+
+    port = 22
+    try:
+        user = settings.get_value('SERVER', 'user', type=str)
+    except Exception, e:
+        user = os.getlogin()
+    try:
+        password = settings.get_value('SERVER', 'password', type=str)
     except Exception, e:
         raise error.ServRunError(e.args[0], e.args[1])
 
@@ -287,6 +306,14 @@ if __name__=="__main__":
             'client_config.cfg'
         ))
     remote_host = get_remote_host()
+    server_host = get_server_host()
+    try:
+        build.copy_gen_to_server(server_host,caliper_path.SERVER_SYNC_FILE_SRC)
+    except Exception as e:
+        logging.error(e)
+        logging.error("ERROR IN COPYTING THE %s FILE TO SERVER" % caliper_path.SERVER_SYNC_FILE_SRC)
+        pass
+
     caliper_path.create_dir()
     if args.build:
         try:
@@ -302,7 +329,7 @@ if __name__=="__main__":
 
     if args.run: 
         try:
-            result2 = run_caliper(remote_host, f_option)
+            result2 = run_caliper(remote_host,server_host, f_option)
             if result2:
                 sys.exit()
 
