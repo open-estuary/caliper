@@ -232,28 +232,33 @@ def ideal_dic(scoreFile_dic):
     except Exception as e:
         logging.info(e)
         sys.exit()
-
-    for i in range(1,len(scoreFile_dic)):
-        func_dic = (scoreFile_dic[i])['results']['Functional']
-        perf_dic = (scoreFile_dic[i])['results']['Performance']
-        populate_dic(dic_ideal['results']['Functional'], func_dic)
-        populate_dic(dic_ideal['results']['Performance'], perf_dic)
-    return dic_ideal
+    try:
+        for i in range(1,len(scoreFile_dic)):
+            func_dic = (scoreFile_dic[i])['results']['Functional']
+            perf_dic = (scoreFile_dic[i])['results']['Performance']
+            populate_dic(dic_ideal['results']['Functional'], func_dic)
+            populate_dic(dic_ideal['results']['Performance'], perf_dic)
+    except Exception as e:
+     pass
+     return dic_ideal
 
 def populate_dic(dic_ideal, sub_dic):
-    populate_dic_values(dic_ideal, sub_dic)
-    populate_dic_values(dic_ideal, sub_dic, 1)
-    return
+    try:
+        populate_dic_values(dic_ideal, sub_dic)
+        populate_dic_values(dic_ideal, sub_dic, 1)
+    except Exception as e:
+     pass
+     return
 
 def populate_dic_values(dic_ideal, sub_dic, reverse=0):
-    try:
-        if reverse == 1:
-            subsystem_ideal = sub_dic.keys()
-            subsystem_practical = dic_ideal.keys()
-        else:
-            subsystem_practical = sub_dic.keys()
-            subsystem_ideal = dic_ideal.keys()
-        for i in subsystem_practical:
+
+    if reverse == 1:
+        subsystem_ideal = sub_dic.keys()
+        subsystem_practical = dic_ideal.keys()
+    else:
+         subsystem_practical = sub_dic.keys()
+         subsystem_ideal = dic_ideal.keys()
+    for i in subsystem_practical:
             if i in subsystem_ideal:
                 if reverse == 1:
                     scenario_ideal = sub_dic[i].keys()
@@ -279,21 +284,22 @@ def populate_dic_values(dic_ideal, sub_dic, reverse=0):
                         dic_ideal[i][j] = 'INVALID'
             else:
                 dic_ideal[i] = 'INVALID'
-    except:
-        pass
     return
 
 def delete_dic(dic_ideal, scoreFile_dic):
-    for i in range(len(scoreFile_dic)):
-        delete_dic_values(dic_ideal['results']['Functional'], (scoreFile_dic[i])['results']['Functional'])
-        if (scoreFile_dic[i])['results']['Functional'] == {}:
-            del (scoreFile_dic[i])['results']['Functional']
-        delete_dic_values(dic_ideal['results']['Performance'], (scoreFile_dic[i])['results']['Performance'])
+  try:
+        for i in range(len(scoreFile_dic)):
+         delete_dic_values(dic_ideal['results']['Functional'], (scoreFile_dic[i])['results']['Functional'])
+         if (scoreFile_dic[i])['results']['Functional'] == {}:
+          del (scoreFile_dic[i])['results']['Functional']
+         delete_dic_values(dic_ideal['results']['Performance'], (scoreFile_dic[i])['results']['Performance'])
         if (scoreFile_dic[i])['results']['Performance'] == {}:
-            del (scoreFile_dic[i])['results']['Performance']
+             del (scoreFile_dic[i])['results']['Performance']
         if (scoreFile_dic[i])['results'] == {}:
-            del (scoreFile_dic[i])['results']
-    return dic_ideal
+          del (scoreFile_dic[i])['results']
+  except:
+   pass
+   return dic_ideal
 
 def delete_dic_values(dic_ideal, sub_dic):
     try:
@@ -328,11 +334,11 @@ def delete_dic_values(dic_ideal, sub_dic):
                             if delete_in_dic(dic = sub_dic, key = key[l],L1 = subsystem[i],L2 = scenario[j],L3 = points_score[k]):
                                 break
     except Exception as e:
-        pass
-    return
+     pass
+     return
 
 def delete_in_dic(dic, key, L1 = None, L2 = None, L3 = None):
-    try:
+
         flag = 0
         count = 0
         if L1:
@@ -368,9 +374,8 @@ def delete_in_dic(dic, key, L1 = None, L2 = None, L3 = None):
             if dic == {}:
                 del dic
                 flag = 1
-    except:
-        pass
-    return flag
+
+        return flag
 
 def get_targets_data(outdir):
     yaml_dir = os.path.join(outdir, 'yaml')
