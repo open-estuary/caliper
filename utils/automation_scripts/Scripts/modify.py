@@ -20,7 +20,6 @@ def modify_client(path, autocheck, dpe_option, Platform_name, client_user, clien
          config = ConfigParser.ConfigParser()
 	 config.optionxform=str
          config.read(path)
-         #serverpwd = insertChar(serverpwd,serverpwd.index('$'), '\\')
          if hostpwd.find("$") !=-1 :
      	     hostpwd = insertChar(hostpwd,hostpwd.index('$'), '\\')
          # change a value in the config
@@ -49,7 +48,7 @@ def modify_client(path, autocheck, dpe_option, Platform_name, client_user, clien
 	 sys.exit(1)
 
 #----------------------------------------------------------------------
-def modify(path, client_ip, server_ip):
+def modify(path, client_ip, server_ip, Platform_name):
     """
     Create, read, update, delete config
     """
@@ -69,21 +68,7 @@ def modify(path, client_ip, server_ip):
          config.set("SERVER", "port", "22")
          config.set("CLIENT", "user", "root")
          config.set("CLIENT", "password", "None")
-         dic_mapping = {
-              "192.168.40.9":"RH2288-E52690V3-U15.04",
-              "192.168.40.8":"RH2285-E52420V2-U15.04",
-              "192.168.40.26":"D03-EST2.2-U15.04",
-              "192.168.40.33":"D02-32G-EST2.2-U15.04",
-              "192.168.40.49":"PC-I5650-U15.04",
-              "192.168.40.7":"DELLR7-E5606-U15.04"
-              }
-         if client_ip in dic_mapping.keys():
-             if bool(config.get("CLIENT","Platform_name")):
-                 if config.get("CLIENT","Platform_name") != dic_mapping[client_ip]:
-                      config.set("CLIENT", "Platform_name", "")
-         if not bool(config.get("CLIENT","Platform_name")):
-             if client_ip in dic_mapping.keys():
-                 config.set("CLIENT", "Platform_name", dic_mapping[client_ip])
+         config.set("CLIENT", "Platform_name", Platform_name)
          # write changes back to the config file
          with open(path, "wb") as config_file:
              config.write(config_file)
@@ -94,7 +79,7 @@ def modify(path, client_ip, server_ip):
 #----------------------------------------------------------------------
 if __name__ == "__main__":
      argcount = len(sys.argv)
-     if argcount == 4:
-	modify( sys.argv[1], sys.argv[2], sys.argv[3] )
+     if argcount == 5:
+	modify( sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
      elif argcount == 16:
 	modify_client(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7], sys.argv[8], sys.argv[9],sys.argv[10], sys.argv[11],sys.argv[12],sys.argv[13],sys.argv[14], sys.argv[15])
