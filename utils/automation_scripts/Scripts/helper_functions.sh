@@ -1,6 +1,6 @@
 #!/bin/bash
 release=`lsb_release -a | grep Release | awk -F ':' '{ print $2 }'`
-delimiter_version="14.04"
+delimiter_version="16.04"
 
 autoSSH()
 {

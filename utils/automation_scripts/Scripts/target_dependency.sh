@@ -1,5 +1,9 @@
 #!/bin/bash
+<<<<<<< HEAD
 target_packages=('stress' 'make' 'build-essential' 'linux-tools-generic' 'linux-tools-common' 'gcc g++' 'nfs-common' 'automake' 'autoconf' 'openjdk-7-jre' 'openjdk-7-jdk' 'mysql-server' 'libmysqlclient-dev''wamerican' 'cracklib-runtime')
+=======
+target_packages=('stress' 'make' 'build-essential' 'linux-tools-generic' 'linux-tools-common' 'gcc g++' 'nfs-common' 'automake' 'autoconf' 'openjdk-7-jre' 'openjdk-7-jdk' 'mysql-server.*' 'libmysqlclient-dev')
+>>>>>>> cad8a1b7dec8babfb8c9d468d7f8283c75e5a112
 ERROR="ERROR-IN-AUTOMATION"
 UPDATE=0
 clear
@@ -21,7 +25,7 @@ do
            
        if [ $choice == 'y' ]
        then
-	   		if [ ${target_packages[$i]} == 'mysql-server' -o ${target_packages[$i]} == 'libmysqlclient-dev' ]
+	   		if [ ${target_packages[$i]} == 'mysql-server-5.6' -o ${target_packages[$i]} == 'libmysqlclient-dev' ]
 			then
 				echo -e "$ERROR:The ${target_packages[$i]} package is not present . Please install it manually"
 			else
