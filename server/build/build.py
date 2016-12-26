@@ -357,7 +357,6 @@ def build_caliper(target_arch, flag=0,clear=0):
                 logging.debug(e)
                 sys.exit(1)
 
-
             if BUILD == 0:
                 #Collecting the build files in the Workspace binary dir and main binary dir
                 WS_prev_build_files = getAllFilesRecursive(WS_GEN_DIR)

@@ -6,17 +6,84 @@
 #set -x
 
 #hdfs_tmp=/tmp/hadoop-${USER}
+
+
+if [[ "$#" -ne 2  ]] 
+then
+   echo "The number of command line arguments for hadoop.sh  should be 2,mount disk and mount point"
+   exit 1
+fi
+
+
+disk=$( echo $1 | cut -d "/" -f 3 )
+
+echo "Disk used is $disk"
+
+
+if [ `lsblk | grep -c "$disk"` == 0 ]
+then
+   echo "The disk specified for hadoop testing $1 is not vailable "
+   exit 1
+fi
+
+
+
+if [ ! -d $2 ]
+then
+    echo -e "\nCreating Mount Partition for hadoop testing\n"
+        sudo mkdir -p $2
+        sudo chmod -R 775 $2
+        sudo chown -R $USER:$USER $2
+        sudo mount "$1" $2
+
+
+        if [ $? -ne 0 ]
+        then
+       echo -e "\n$ERROR:Creating a Mount Path for Hadoop  testing Failed\n"
+           exit 1
+    fi
+else
+        if [ `mount -l | grep -c "$1 on $2"` == 0 ]
+        then
+            sudo mount "$1" $2
+                if [ $? -ne 0 ]
+                then
+                echo -e "\n$ERROR:Creating a Mount Path for hadoop testing Failed\n"
+                    exit 1
+            fi
+        fi
+        echo -e "\nMount Partition for fio testing Already exits\n"
+fi
+
+HADOOP_TMP=$2
+ 
+
+ grep HADOOP_TMP /etc/environment >> /dev/null
+
+
+if [ $? = 0  ] 
+ then 
+        HADOOP_TMP=$(echo "$HADOOP_TMP" | sed 's/\//\\\//g')
+        echo $HADOOP_TMP
+        sed -i "s/^.*HADOOP_TMP.*/HADOOP_TMP=$HADOOP_TMP/"  /etc/environment
+        echo " Replacing HADOOP_TMP variable value with $2  in /etc/environment "
+else 
+
+         echo "HADOOP_TMP=$HADOOP_TMP" >> /etc/environment 
+         echo " Adding HADOOP_TMP variable $2 in /etc/environment "
+fi
+
+
 . ~/.bashrc
 . /etc/environment
 
 
-echo  "$HADOOP_TMP  the hadoop tmp directory"
+echo  "$HADOOP_TMP  the hadoop tmp directory for testing"
 
 if [ -e  $HADOOP_TMP ] ; then 
-rm -r  $HADOOP_TMP
+rm -r  $HADOOP_TMP/dfs
 fi
 
-hdfs_tmp=$HADOOP_TMP
 
 HADOOP_DIR=$PWD/hadoop
 HADOOP_CONF=$HADOOP_DIR/etc/hadoop
@@ -32,6 +99,7 @@ HIBENCH_OUTPUT=$HIBENCH_DIR/report
 HIBENCH_BENCH_LIST=$HIBENCH_CONF/benchmarks.lst
 HIBENCH_LAN_API=$HIBENCH_CONF/languages.lst
 HIBENCH_DATA_PROFILE=$HIBENCH_CONF/10-data-scale-profile.conf
+
 sudo apt-get install expect -y
 
 ##### set the ssh no-passwd login #####
@@ -89,7 +157,6 @@ pushd $HADOOP_DIR
     }
 EOF
 
-rm -fr $hdfs_tmp
 $HADOOP_BIN/hdfs namenode -format
 
 bOK1=false
