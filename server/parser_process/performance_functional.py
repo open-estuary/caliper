@@ -20,26 +20,31 @@ del_list = ["peripheral"]
 
 
 def populate_excel_to_yaml(row,c,dic,scenario_col,testcase_col,key,wb,file_name):
-    for i in range(0,len(dic['results'][key].keys())):
-        sheet_name = dic['results'][key].keys()[i]
+    # adding exception block to handill the exception during the web report generation
+    # when any one of Functional or Performance is missing in .yaml files
+    try:
+        for i in range(0,len(dic['results'][key].keys())):
+            sheet_name = dic['results'][key].keys()[i]
 
-        if sheet_name in del_list:
-            continue
-        sheet = wb.get_sheet_by_name(sheet_name)
-        r = row
-        head_row = row-1
-        sheet.cell(row = head_row, column = c).value = file_name
+            if sheet_name in del_list:
+                continue
+            sheet = wb.get_sheet_by_name(sheet_name)
+            r = row
+            head_row = row-1
+            sheet.cell(row = head_row, column = c).value = file_name
 
-        while(sheet.cell(row = r,column = scenario_col).value != None):
+            while(sheet.cell(row = r,column = scenario_col).value != None):
 
-            try:
-                if(dic['results'][key][sheet_name][sheet.cell(row = r,column = scenario_col).value][sheet.cell(row = r,column = testcase_col).value] >0):
-                    sheet.cell(row = r,column = c).value = dic['results'][key][sheet_name][sheet.cell(row = r,column = scenario_col).value][sheet.cell(row = r,column = testcase_col).value]
-                else:
-                    sheet.cell(row=r, column=c).value = "Missing"
-            except:
-                sheet.cell(row = r,column = c).value = "Missing"
-            r += 1
+                try:
+                    if(dic['results'][key][sheet_name][sheet.cell(row = r,column = scenario_col).value][sheet.cell(row = r,column = testcase_col).value] >0):
+                        sheet.cell(row = r,column = c).value = dic['results'][key][sheet_name][sheet.cell(row = r,column = scenario_col).value][sheet.cell(row = r,column = testcase_col).value]
+                    else:
+                        sheet.cell(row=r, column=c).value = "Missing"
+                except:
+                    sheet.cell(row = r,column = c).value = "Missing"
+                r += 1
+    except Exception as e:
+        pass
 
 def get_cov_file_list(input_cov):
     file_dir_list = []
