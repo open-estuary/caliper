@@ -59,7 +59,7 @@ platForm_name = ConfigValue(path=os.path.join(caliper_output,'config','client_co
 if not platForm_name:
     try:
         hostName = subprocess.Popen('ssh '+str(client_user)+"@"+str(client_ip)+" 'hostname'", shell=True,
-                              stdout=subprocess.PIPE)
+                              stdout=subprocess.PIPE , stderr=subprocess.PIPE)
         hostName = hostName.communicate()
     except Exception as e:
         logging.error(e)

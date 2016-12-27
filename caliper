@@ -307,14 +307,15 @@ if __name__=="__main__":
             caliper_path.config_files.config_dir,
             'client_config.cfg'
         ))
-    remote_host = get_remote_host()
-    server_host = get_server_host()
+    if args.webpage != True:
+       remote_host = get_remote_host()
+       server_host = get_server_host()
     try:
-        build.copy_gen_to_server(server_host,caliper_path.SERVER_SYNC_FILE_SRC)
+         build.copy_gen_to_server(server_host,caliper_path.SERVER_SYNC_FILE_SRC)
     except Exception as e:
-        logging.error(e)
-        logging.error("ERROR IN COPYTING THE %s FILE TO SERVER" % caliper_path.SERVER_SYNC_FILE_SRC)
-        pass
+         logging.error(e)
+         logging.error("ERROR IN COPYTING THE %s FILE TO SERVER" % caliper_path.SERVER_SYNC_FILE_SRC)
+         pass
 
     caliper_path.create_dir()
     if args.build:
