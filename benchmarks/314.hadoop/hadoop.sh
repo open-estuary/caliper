@@ -5,7 +5,91 @@
 #we can add it to the corresponding position.
 #set -x
 
-hdfs_tmp=/tmp/hadoop-${USER}
+#hdfs_tmp=/tmp/hadoop-${USER}
+
+
+if [[ "$#" -ne 2  ]] 
+then
+   echo -e "Usage : The number of command line arguments for hadoop.sh  should be 2 ,mount disk and mount point \n"
+   echo -e   " hadoop.sh <disk> <mount_point> \n"
+   echo -e  "Add the arguments in configuration/test_cases_cfg/common/hadoop/hadoop_run.cfg in command section as below \n"
+   echo -e  "command = if [ -f hadoop_tar.gz ]; then tar -xvf hadoop_tar.gz; rm hadoop_tar.gz; fi; pushd hadoop; ./hadoop.sh <disk> <mount_point>; popd \n"
+   echo -e "example: \n"
+   echo -e "command = if [ -f hadoop_tar.gz ]; then tar -xvf hadoop_tar.gz; rm hadoop_tar.gz; fi; pushd hadoop; ./hadoop.sh /dev/sda /mnt/hadoop ; popd \n"
+
+   exit 1
+fi
+
+
+disk=$( echo $1 | cut -d "/" -f 3 )
+
+echo "Disk used for mounting is  $disk"
+
+
+if [ `lsblk | grep -c "$disk"` == 0 ]
+then
+   echo "The disk specified for hadoop testing $1 is not vailable "
+   exit 1
+fi
+
+
+
+if [ ! -d $2 ]
+then
+    echo -e "\nCreating Mount Partition for hadoop testing\n"
+        sudo mkdir -p $2
+        sudo chmod -R 775 $2
+        sudo chown -R $USER:$USER $2
+        sudo mount "$1" $2
+
+
+        if [ $? -ne 0 ]
+        then
+       echo -e "\n$ERROR:Creating a Mount Path for Hadoop  testing Failed\n"
+           exit 1
+    fi
+else
+        if [ `mount -l | grep -c "$1 on $2"` == 0 ]
+        then
+            sudo mount "$1" $2
+                if [ $? -ne 0 ]
+                then
+                echo -e "\n$ERROR:Creating a Mount Path for hadoop testing Failed\n"
+                    exit 1
+            fi
+        fi
+        echo -e "\nMount Partition for fio testing Already exits\n"
+fi
+
+HADOOP_TMP=$2
+ 
+
+ grep HADOOP_TMP /etc/environment >> /dev/null
+
+
+if [ $? = 0  ] 
+ then 
+        HADOOP_TMP=$(echo "$HADOOP_TMP" | sed 's/\//\\\//g')
+        echo $HADOOP_TMP
+        sed -i "s/^.*HADOOP_TMP.*/HADOOP_TMP=$HADOOP_TMP/"  /etc/environment
+        echo " Replacing HADOOP_TMP variable value with $2  in /etc/environment "
+else 
+
+         echo "HADOOP_TMP=$HADOOP_TMP" >> /etc/environment 
+         echo " Adding HADOOP_TMP variable $2 in /etc/environment "
+fi
+
+
+. ~/.bashrc
+. /etc/environment
+
+
+echo  "$HADOOP_TMP  the hadoop tmp directory for testing"
+
+if [ -e  $HADOOP_TMP ] ; then 
+rm -r  $HADOOP_TMP/dfs
+fi
+
 
 HADOOP_DIR=$PWD/hadoop
 HADOOP_CONF=$HADOOP_DIR/etc/hadoop
@@ -20,6 +104,7 @@ HIBENCH_BIN=$HIBENCH_DIR/bin
 HIBENCH_OUTPUT=$HIBENCH_DIR/report
 HIBENCH_BENCH_LIST=$HIBENCH_CONF/benchmarks.lst
 HIBENCH_LAN_API=$HIBENCH_CONF/languages.lst
+HIBENCH_DATA_PROFILE=$HIBENCH_CONF/10-data-scale-profile.conf
 
 sudo apt-get install expect -y
 
@@ -78,7 +163,6 @@ pushd $HADOOP_DIR
     }
 EOF
 
-rm -fr $hdfs_tmp
 $HADOOP_BIN/hdfs namenode -format
 
 bOK1=false
@@ -149,16 +233,14 @@ popd
 pushd $HIBENCH_DIR
     sed -i 's/^spark/#spark/g'  $HIBENCH_LAN_API
     # benchmarks.lst modify
-    sed -i 's/^aggregation/#aggregation/g' $HIBENCH_BENCH_LIST
-    sed -i 's/^join/#join/g' $HIBENCH_BENCH_LIST
-    sed -i 's/^pagerank/#pagerank/g' $HIBENCH_BENCH_LIST
-    sed -i 's/^scan/#scan/g' $HIBENCH_BENCH_LIST
     sed -i 's/^nutchindexing/#nutchindexing/g' $HIBENCH_BENCH_LIST
+
+
     # modify 99-user_defined_properties.conf        
     pushd $HIBENCH_CONF
         cp 99-user_defined_properties.conf.template 99-user_defined_properties.conf
         USER_DEFINED_FILE=$HIBENCH_CONF/99-user_defined_properties.conf
-        hdfs_url="\/URL\/TO\/YOUR\/HDFS"
+	 hdfs_url="hdfs\:\/\/HOSTNAME:HDFSPORT"
         hadoop_str="\/PATH\/TO\/YOUR\/HADOOP\/ROOT"
         hdfs_server="hdfs\:\/\/127\.0\.0\.1\:9000"
         spark_str="\/PATH\/TO\/YOUR\/SPARK\/ROOT"
@@ -173,6 +255,11 @@ echo $hadoop_dir
         sed -i 's/ 4 / 2 /g' $USER_DEFINED_FILE
         sed -i '52,67s/12/2/g' $USER_DEFINED_FILE
         sed -i '52,67s/6/1/g'  $USER_DEFINED_FILE
+	sed -i 's/.*hibench.dfsioe.large.read.number_of_files.*/hibench.dfsioe.large.read.number_of_files        40/'   $HIBENCH_DATA_PROFILE
+        sed -i 's/.*hibench.dfsioe.large.read.file_size.*/hibench.dfsioe.large.read.file_size                  2048/'   $HIBENCH_DATA_PROFILE
+        sed -i 's/.*hibench.dfsioe.large.write.number_of_files.*/hibench.dfsioe.large.write.number_of_files      40/'   $HIBENCH_DATA_PROFILE
+        sed -i 's/.*hibench.dfsioe.large.write.file_size.*/hibench.dfsioe.large.write.file_size                2048/'   $HIBENCH_DATA_PROFILE
+
     popd
 
     RESULT=$HIBENCH_DIR/report/hibench.report

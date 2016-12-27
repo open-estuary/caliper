@@ -4,6 +4,10 @@ filename1='hadoop-2.6.0.tar.gz'
 filename2='HiBench.tar.gz'
 filename3='spark-1.5.1.tgz'
 
+
+
+
+
 build_hibench() {
     SrcPath=$BENCH_PATH"314.hadoop"
     INSTALL_DIR="$INSTALL_DIR/hadoop"
@@ -14,6 +18,8 @@ build_hibench() {
     HADOOP_DIR=$INSTALL_DIR/hadoop
     HIBENCH_DIR=$INSTALL_DIR/hibench
     SPARK_DIR=$INSTALL_DIR/spark
+
+
 
     cp $SrcPath/*.sh  $INSTALL_DIR
     ####
@@ -52,9 +58,11 @@ build_hibench() {
         tar xzf $SrcPath/hadoop_native_lib.tar.gz -C $HADOOP_DIR/
     fi
     cd $INSTALL_DIR/../
-    tar cvf hadoop_tar.gz hadoop
+    tar cf hadoop_tar.gz hadoop
     cd -
 }
 
 build_hibench
+
+
 
