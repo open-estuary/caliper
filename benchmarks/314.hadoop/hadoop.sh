@@ -10,14 +10,20 @@
 
 if [[ "$#" -ne 2  ]] 
 then
-   echo "The number of command line arguments for hadoop.sh  should be 2,mount disk and mount point"
+   echo -e "Usage : The number of command line arguments for hadoop.sh  should be 2 ,mount disk and mount point \n"
+   echo -e   " hadoop.sh <disk> <mount_point> \n"
+   echo -e  "Add the arguments in configuration/test_cases_cfg/common/hadoop/hadoop_run.cfg in command section as below \n"
+   echo -e  "command = if [ -f hadoop_tar.gz ]; then tar -xvf hadoop_tar.gz; rm hadoop_tar.gz; fi; pushd hadoop; ./hadoop.sh <disk> <mount_point>; popd \n"
+   echo -e "example: \n"
+   echo -e "command = if [ -f hadoop_tar.gz ]; then tar -xvf hadoop_tar.gz; rm hadoop_tar.gz; fi; pushd hadoop; ./hadoop.sh /dev/sda /mnt/hadoop ; popd \n"
+
    exit 1
 fi
 
 
 disk=$( echo $1 | cut -d "/" -f 3 )
 
-echo "Disk used is $disk"
+echo "Disk used for mounting is  $disk"
 
 
 if [ `lsblk | grep -c "$disk"` == 0 ]

@@ -1,9 +1,5 @@
 #!/bin/bash
-<<<<<<< HEAD
 target_packages=('stress' 'make' 'build-essential' 'linux-tools-generic' 'linux-tools-common' 'gcc g++' 'nfs-common' 'automake' 'autoconf' 'openjdk-7-jre' 'openjdk-7-jdk' 'mysql-server' 'libmysqlclient-dev''wamerican' 'cracklib-runtime')
-=======
-target_packages=('stress' 'make' 'build-essential' 'linux-tools-generic' 'linux-tools-common' 'gcc g++' 'nfs-common' 'automake' 'autoconf' 'openjdk-7-jre' 'openjdk-7-jdk' 'mysql-server.*' 'libmysqlclient-dev')
->>>>>>> cad8a1b7dec8babfb8c9d468d7f8283c75e5a112
 ERROR="ERROR-IN-AUTOMATION"
 UPDATE=0
 clear
