@@ -20,6 +20,8 @@ del_list = ["peripheral"]
 
 
 def populate_excel_to_yaml(row,c,dic,scenario_col,testcase_col,key,wb,file_name):
+    # adding exception block to handill the exception during the web report generation
+    # when any one of Functional or Performance is missing in .yaml files
     try:
         for i in range(0,len(dic['results'][key].keys())):
             sheet_name = dic['results'][key].keys()[i]

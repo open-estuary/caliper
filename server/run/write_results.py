@@ -227,6 +227,8 @@ def yaml_filter(yamlPath):
     return
 
 def ideal_dic(scoreFile_dic):
+    # adding exception block to handile the exception during the web report generation
+    #  when any one of Functional or Performance is missing in .yaml files
     try:
         dic_ideal = copy.deepcopy(scoreFile_dic[0])
     except Exception as e:
@@ -243,6 +245,8 @@ def ideal_dic(scoreFile_dic):
      return dic_ideal
 
 def populate_dic(dic_ideal, sub_dic):
+    # adding exception block to handile the exception during the web report generation
+    #  when any one of Functional or Performance is missing in .yaml files
     try:
         populate_dic_values(dic_ideal, sub_dic)
         populate_dic_values(dic_ideal, sub_dic, 1)
@@ -287,6 +291,8 @@ def populate_dic_values(dic_ideal, sub_dic, reverse=0):
     return
 
 def delete_dic(dic_ideal, scoreFile_dic):
+    # adding exception block to handile the exception during the web report generation
+    #  when any one of Functional or Performance is missing in .yaml files
   try:
         for i in range(len(scoreFile_dic)):
          delete_dic_values(dic_ideal['results']['Functional'], (scoreFile_dic[i])['results']['Functional'])
@@ -302,6 +308,8 @@ def delete_dic(dic_ideal, scoreFile_dic):
    return dic_ideal
 
 def delete_dic_values(dic_ideal, sub_dic):
+    # adding exception block to handile the exception during the web report generation
+    # when any one of Functional or Performance is present in .yaml files
     try:
         if dic_ideal == 'INVALID' or dic_ideal == None :
             del sub_dic
