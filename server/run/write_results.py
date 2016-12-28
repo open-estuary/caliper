@@ -227,22 +227,32 @@ def yaml_filter(yamlPath):
     return
 
 def ideal_dic(scoreFile_dic):
+    # adding exception block to handile the exception during the web report generation
+    #  when any one of Functional or Performance is missing in .yaml files
     try:
         dic_ideal = copy.deepcopy(scoreFile_dic[0])
     except Exception as e:
         logging.info(e)
         sys.exit()
 
-    for i in range(1,len(scoreFile_dic)):
+    try:
+     for i in range(1,len(scoreFile_dic)):
         func_dic = (scoreFile_dic[i])['results']['Functional']
         perf_dic = (scoreFile_dic[i])['results']['Performance']
         populate_dic(dic_ideal['results']['Functional'], func_dic)
         populate_dic(dic_ideal['results']['Performance'], perf_dic)
+    except Exception as e:
+     pass
     return dic_ideal
 
 def populate_dic(dic_ideal, sub_dic):
-    populate_dic_values(dic_ideal, sub_dic)
-    populate_dic_values(dic_ideal, sub_dic, 1)
+    # adding exception block to handile the exception during the web report generation
+    #  when any one of Functional or Performance is missing in .yaml files
+    try:
+     populate_dic_values(dic_ideal, sub_dic)
+     populate_dic_values(dic_ideal, sub_dic, 1)
+    except Exception as e:
+        pass
     return
 
 def populate_dic_values(dic_ideal, sub_dic, reverse=0):
@@ -284,7 +294,10 @@ def populate_dic_values(dic_ideal, sub_dic, reverse=0):
     return
 
 def delete_dic(dic_ideal, scoreFile_dic):
-    for i in range(len(scoreFile_dic)):
+    # adding exception block to handile the exception during the html report generation
+    #  when any one of Functional or Performance is missing in .yaml files
+    try:
+     for i in range(len(scoreFile_dic)):
         delete_dic_values(dic_ideal['results']['Functional'], (scoreFile_dic[i])['results']['Functional'])
         if (scoreFile_dic[i])['results']['Functional'] == {}:
             del (scoreFile_dic[i])['results']['Functional']
@@ -293,6 +306,8 @@ def delete_dic(dic_ideal, scoreFile_dic):
             del (scoreFile_dic[i])['results']['Performance']
         if (scoreFile_dic[i])['results'] == {}:
             del (scoreFile_dic[i])['results']
+    except Exception as e:
+        pass
     return dic_ideal
 
 def delete_dic_values(dic_ideal, sub_dic):
