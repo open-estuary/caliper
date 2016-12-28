@@ -307,8 +307,10 @@ if __name__=="__main__":
             caliper_path.config_files.config_dir,
             'client_config.cfg'
         ))
-    remote_host = get_remote_host()
-    server_host = get_server_host()
+        # skipping the remote_host connection to target for "web report generation" option:
+    if args.webpage != True:
+     remote_host = get_remote_host()
+     server_host = get_server_host()
     try:
         build.copy_gen_to_server(server_host,caliper_path.SERVER_SYNC_FILE_SRC)
     except Exception as e:
