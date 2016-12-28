@@ -20,7 +20,10 @@ del_list = ["peripheral"]
 
 
 def populate_excel_to_yaml(row,c,dic,scenario_col,testcase_col,key,wb,file_name):
-    for i in range(0,len(dic['results'][key].keys())):
+    # adding exception block to handill the exception during the web report generation
+    # when any one of Functional or Performance is missing in .yaml files
+    try:
+      for i in range(0,len(dic['results'][key].keys())):
         sheet_name = dic['results'][key].keys()[i]
 
         if sheet_name in del_list:
@@ -40,6 +43,8 @@ def populate_excel_to_yaml(row,c,dic,scenario_col,testcase_col,key,wb,file_name)
             except:
                 sheet.cell(row = r,column = c).value = "Missing"
             r += 1
+    except Exception as e:
+        pass
 
 def get_cov_file_list(input_cov):
     file_dir_list = []

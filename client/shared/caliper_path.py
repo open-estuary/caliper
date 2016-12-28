@@ -57,9 +57,10 @@ client_user = ConfigValue(path=os.path.join(caliper_output,'config','client_conf
 platForm_name = ConfigValue(path=os.path.join(caliper_output,'config','client_config.cfg'), section='CLIENT', key='Platform_name',action='get')
 
 if not platForm_name:
+    # Redirecting the ssh warning to the standard "stderr" File
     try:
         hostName = subprocess.Popen('ssh '+str(client_user)+"@"+str(client_ip)+" 'hostname'", shell=True,
-                              stdout=subprocess.PIPE)
+                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         hostName = hostName.communicate()
     except Exception as e:
         logging.error(e)
