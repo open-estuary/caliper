@@ -55,14 +55,21 @@ def get_cov_file_list(input_cov):
         file_dir_list.append(x[0])
         file_name_list.append(x[2])
     del file_dir_list[0]
-    for files in file_name_list[1]:
+
+
+    # save the count of number directories inside Input_Cov
+    len_file_name_list = len(file_name_list)
+    # Take the yaml file list from Input_Cov/1 directory, as this directory contains
+    # yaml files. Because at least one iteration should have execute to generate report.
+    for files in file_name_list[len_file_name_list-1]:
         files_temp_list = []
+        i = 1
         for dir in file_dir_list:
-
-            file_name = os.path.join(dir, files)
-            files_temp_list.append(file_name)
-        files_list.append(files_temp_list)
-
+            if len(file_name_list[i]):
+                file_name = os.path.join(dir, files)
+                files_temp_list.append(file_name)
+            i += 1
+         files_list.append(files_temp_list)
 
     return files_list
 

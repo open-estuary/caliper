@@ -95,6 +95,12 @@ def create_dir():
         create_folder(OPENSSL_DATA_DIR_INPUT)
     if not os.path.exists(COV_DATA_DIR_INPUT):
         create_folder(COV_DATA_DIR_INPUT)
+
+    # Reverte the code as before
+    for i in range(1,6):                                              
+        if not os.path.exists(os.path.join(COV_DATA_DIR_INPUT,str(i)))
+            create_folder(os.path.join(COV_DATA_DIR_INPUT,str(i)))   
+
     if not os.path.exists(CONSOLIDATED_DATA_DIR_INPUT):
         create_folder(CONSOLIDATED_DATA_DIR_INPUT)
     if not os.path.exists(HW_DATA_DIR_INPUT):
