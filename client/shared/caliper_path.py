@@ -98,7 +98,7 @@ def create_dir():
 
     # Reverte the code as before
     for i in range(1,6):                                              
-        if not os.path.exists(os.path.join(COV_DATA_DIR_INPUT,str(i)))
+        if not os.path.exists(os.path.join(COV_DATA_DIR_INPUT,str(i))):
             create_folder(os.path.join(COV_DATA_DIR_INPUT,str(i)))   
 
     if not os.path.exists(CONSOLIDATED_DATA_DIR_INPUT):

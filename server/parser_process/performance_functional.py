@@ -69,7 +69,7 @@ def get_cov_file_list(input_cov):
                 file_name = os.path.join(dir, files)
                 files_temp_list.append(file_name)
             i += 1
-         files_list.append(files_temp_list)
+        files_list.append(files_temp_list)
 
     return files_list
 
