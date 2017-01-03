@@ -7,6 +7,8 @@
 
 #hdfs_tmp=/tmp/hadoop-${USER}
 
+Osname_Ubuntu=`cat /etc/*release | grep -c "Ubuntu"`
+Osname_CentOS=`cat /etc/*release | grep -c "CentOS"`
 
 if [[ "$#" -ne 2  ]] 
 then
@@ -33,7 +35,66 @@ then
 fi
 
 
+HADOOP_DIR=$PWD/hadoop
+HADOOP_CONF=$HADOOP_DIR/etc/hadoop
+HADOOP_BIN=$HADOOP_DIR/bin
+HADOOP_SERVICE=$HADOOP_DIR/sbin
 
+SPARK_DIR=$PWD/spark
+
+HIBENCH_DIR=$PWD/hibench
+HIBENCH_CONF=$HIBENCH_DIR/conf
+HIBENCH_BIN=$HIBENCH_DIR/bin
+HIBENCH_OUTPUT=$HIBENCH_DIR/report
+HIBENCH_BENCH_LIST=$HIBENCH_CONF/benchmarks.lst
+HIBENCH_LAN_API=$HIBENCH_CONF/languages.lst
+HIBENCH_DATA_PROFILE=$HIBENCH_CONF/10-data-scale-profile.conf
+
+##### set the ssh no-passwd login #####
+if [ ! -f ~/.ssh/*.pub ]; then
+    ./generate_keys.sh
+fi
+sKeyPub=$(cat ~/.ssh/id_*.pub)
+f0=~/.ssh/authorized_keys
+##Avoid duplication to add
+grep -q "${sKeyPub}" ${f0} 2>/dev/null
+if [ $? -ne 0 ]; then
+    cat ~/.ssh/*.pub >>${f0}
+fi
+
+############## get JAVA_HOME which need to be used later ################
+#Get the java path
+java_loc=$(find /usr/lib -name 'java-*-openjdk*' |sed -n "1p")
+printf "%s[%3s]%5s: ${java_loc}\n" "${FUNCNAME[0]}" ${LINENO} "Info"
+
+export JAVA_HOME=$java_loc
+export CLASSPATH=.:$JAVA_HOME/lib:$JAVA_HOME/jre/lib
+
+pushd $HADOOP_DIR
+    pushd $HADOOP_CONF
+    grep -q "export JAVA_HOME=$java_loc" $HADOOP_CONF/hadoop-env.sh
+    if [ $? -ne 0 ]; then
+        echo "export JAVA_HOME=$java_loc" >> $HADOOP_CONF/hadoop-env.sh
+    fi
+    popd
+############# stopping any previous running hadoop services ################
+/usr/bin/expect  << EOF
+
+    set timeout  300
+    spawn $HADOOP_SERVICE/stop-all.sh
+
+      
+    expect {
+        -re {connecting \(yes/no\)\?} {
+            send "yes\n"
+            exp_continue
+        }
+        eof
+    }
+EOF
+
+
+#Creating mount point and mounting disk
 if [ ! -d $2 ]
 then
     echo -e "\nCreating Mount Partition for hadoop testing\n"
@@ -67,6 +128,8 @@ HADOOP_TMP=$2
  grep HADOOP_TMP /etc/environment >> /dev/null
 
 
+#Adding HADOOP_TMP environment variable in /etc/environment
+
 if [ $? = 0  ] 
  then 
         HADOOP_TMP=$(echo "$HADOOP_TMP" | sed 's/\//\\\//g')
@@ -86,88 +149,20 @@ fi
 
 echo  "$HADOOP_TMP  the hadoop tmp directory for testing"
 
+
+######## Cleaning up the hadoop  tmp directory########
 if [ -e  $HADOOP_TMP ] ; then 
 rm -r  $HADOOP_TMP/dfs
 fi
 
-
-HADOOP_DIR=$PWD/hadoop
-HADOOP_CONF=$HADOOP_DIR/etc/hadoop
-HADOOP_BIN=$HADOOP_DIR/bin
-HADOOP_SERVICE=$HADOOP_DIR/sbin
-
-SPARK_DIR=$PWD/spark
-
-HIBENCH_DIR=$PWD/hibench
-HIBENCH_CONF=$HIBENCH_DIR/conf
-HIBENCH_BIN=$HIBENCH_DIR/bin
-HIBENCH_OUTPUT=$HIBENCH_DIR/report
-HIBENCH_BENCH_LIST=$HIBENCH_CONF/benchmarks.lst
-HIBENCH_LAN_API=$HIBENCH_CONF/languages.lst
-HIBENCH_DATA_PROFILE=$HIBENCH_CONF/10-data-scale-profile.conf
-
-sudo apt-get install expect -y
-
-##### set the ssh no-passwd login #####
-if [ ! -f ~/.ssh/*.pub ]; then
-    ./generate_keys.sh
-fi
-sKeyPub=$(cat ~/.ssh/id_*.pub)
-f0=~/.ssh/authorized_keys
-##Avoid duplication to add
-grep -q "${sKeyPub}" ${f0} 2>/dev/null
-if [ $? -ne 0 ]; then
-    cat ~/.ssh/*.pub >>${f0}
-fi
-
-############## get JAVA_HOME which need to be used later ################
-
-
-#Is java installed?
-if ! hash java; then
-    sudo apt-get -y install openjdk-7-jdk
-    if [ $? -ne 0 ]; then
-        printf "%s[%3s]%5s: install openjdk-7-jdk failed\n" "${FUNCNAME[0]}" ${LINENO} "Error" 1>&2
-        exit 1
-    fi
-fi
-
-#Get the java path
-java_loc=$(find /usr/lib -name 'java-*-openjdk*' |sed -n "1p")
-printf "%s[%3s]%5s: ${java_loc}\n" "${FUNCNAME[0]}" ${LINENO} "Info"
-
-export JAVA_HOME=$java_loc
-export CLASSPATH=.:$JAVA_HOME/lib:$JAVA_HOME/jre/lib
-
-############# start the hadoop service ################
-pushd $HADOOP_DIR
-    pushd $HADOOP_CONF
-    grep -q "export JAVA_HOME=$java_loc" $HADOOP_CONF/hadoop-env.sh
-    if [ $? -ne 0 ]; then
-        echo "export JAVA_HOME=$java_loc" >> $HADOOP_CONF/hadoop-env.sh
-    fi
-    popd
-
-/usr/bin/expect  << EOF
-
-    set timeout  300
-    spawn $HADOOP_SERVICE/stop-all.sh
-
-      
-    expect {
-        -re {connecting \(yes/no\)\?} {
-            send "yes\n"
-            exp_continue
-        }
-        eof
-    }
-EOF
-
+########  Formatting HDFS file System################
 $HADOOP_BIN/hdfs namenode -format
 
 bOK1=false
 nMax1=2
 n1=0
+
+############# start the hadoop service ################
 ##while for fixed the "SecondaryNameNode" not started.
 while [ ${n1} -lt ${nMax1} ]; do
     sInfo1=$(/usr/bin/expect  << EOF
@@ -228,6 +223,114 @@ EOF
       exit 1
   fi
 popd
+if [ ! $Osname_CentOS -eq 0 ]
+then
+    SetKeyBlankValue()
+    {
+        local sKey1=${1}
+        local sVal1=${2}
+    	local varTxt=${3}
+        local varNDo=${4}
+
+	sKey1=$(sed "s@\([./]\)@\\\\\1@g" <<< "${sKey1}")
+        sVal1=$(sed "s@\([./]\)@\\\\\1@g" <<< "${sVal1}")
+
+        eval local sTxt1=\${${varTxt}}
+
+        grep -q "^[         ]*${sKey1}[     ]\+" <<< "${sTxt1}"
+        if [ $? -ne 0 ]; then
+            printf "%s[%3d]%s[%3d]%5s: [${sKey1}] not found\n" "${FUNCNAME[1]}" "${BASH_LINENO[0]}" "${FUNCNAME[0]}" ${LINENO} "Error"
+            return 1
+        fi
+
+        #f1="/root/caliper/binary/arm_64/hadoop/hibench/conf/99-user_defined_properties.conf"
+        #grep "hibench.hadoop.home          /root/caliper/binary/arm_64/hadoop/hadoop" "${f1}"
+        grep -q "^[         ]*${sKey1}[     ]\+${sVal1}" <<< "${sTxt1}"
+        if [ $? -ne 0 ]; then
+            sTxt1=$(sed "/^[ \t]*${sKey1}[ \t]\+/{s/^\([ \t]*${sKey1}[ \t]\+\).*\$/\1${sVal1}/}" <<< "${sTxt1}")
+            eval ${varTxt}=\${sTxt1}
+            eval let ${varNDo}+=1
+        fi
+
+        return 0
+    }
+
+
+    AbleKey()
+    {
+        local sKey1=${1}
+        local bAble=${2}
+        local varTxt=${3}
+        local varNDo=${4}
+
+        sKey1=$(sed "s@\([./]\)@\\\\\1@g" <<< "${sKey1}")
+
+        eval local sTxt1=\${${varTxt}}
+
+        grep -q "^[         #]*${sKey1}\([  #;]\+\|\$\)" <<< "${sTxt1}"
+        if [ $? -ne 0 ]; then
+            printf "%s[%3d]%s[%3d]%5s: [${sKey1}] not found\n" "${FUNCNAME[1]}" "${BASH_LINENO[0]}" "${FUNCNAME[0]}" ${LINENO} "Error"
+            return 1
+        fi
+
+        if [ "${bAble}" == "true" ]; then
+            grep -q "^[     ]*#[    ]*${sKey1}\([   #;]\+\|\$\)" <<< "${sTxt1}"
+            if [ $? -eq 0 ]; then
+                sTxt1=$(sed "/^[ \t]*#[ \t]*${sKey1}\([ \t#;]\+\|\$\)/{s/^\([ \t]*\)#\([ \t]*\)\(${sKey1}\)\([ \t#;]\+\|\$\)/\1\2\3\4/}" <<< "${sTxt1}")
+                eval ${varTxt}=\${sTxt1}
+                eval let ${varNDo}+=1
+            fi
+        else
+            grep -q "^[     ]*${sKey1}\([   #;]\+\|\$\)" <<< "${sTxt1}"
+            if [ $? -eq 0 ]; then
+                sTxt1=$(sed "/^[ \t]*${sKey1}\([ \t#;]\+\|\$\)/{s/^\([ \t]*\)\(${sKey1}\)\([ \t#;]\+\|\$\)/\1#\2\3/}" <<< "${sTxt1}")
+                eval ${varTxt}=\${sTxt1}
+                eval let ${varNDo}+=1
+            fi
+        fi
+
+        return 0
+    }
+
+##############################
+sed -i "s@^\([ \t]*\)\(spark/\)@\1#\2@" "${HIBENCH_LAN_API}"
+
+##############################
+flCfgH=${HIBENCH_BENCH_LIST}
+sFlCfgH=$(cat "${flCfgH}")
+nModify=0
+AbleKey "aggregation" true sFlCfgH nModify
+AbleKey "join" true sFlCfgH nModify
+AbleKey "pagerank" true sFlCfgH nModify
+AbleKey "scan" true sFlCfgH nModify
+AbleKey "nutchindexing" false sFlCfgH nModify
+if [ ${nModify} -gt 0 ]; then
+    echo "${sFlCfgH}" > "${flCfgH}"
+fi
+
+##############################
+
+flCfgH=${HIBENCH_CONF}/99-user_defined_properties.conf
+cp "${flCfgH}.template" "${flCfgH}"
+sFlCfgH=$(cat "${flCfgH}")
+
+nModify=0
+SetKeyBlankValue "hibench.hadoop.home" "${HADOOP_DIR}" sFlCfgH nModify
+SetKeyBlankValue "hibench.spark.home" "${SPARK_DIR}" sFlCfgH nModify
+SetKeyBlankValue "hibench.hdfs.master" "hdfs://localhost:9000" sFlCfgH nModify
+SetKeyBlankValue "hibench.default.map.parallelism" "2" sFlCfgH nModify
+SetKeyBlankValue "hibench.default.shuffle.parallelism" "1" sFlCfgH nModify
+#?s/ 4 / 2 /g
+SetKeyBlankValue "hibench.yarn.executor.num" "2" sFlCfgH nModify
+SetKeyBlankValue "hibench.yarn.executor.cores" "2" sFlCfgH nModify
+
+AbleKey "hibench.spark.master" false sFlCfgH nModify
+AbleKey "hibench.spark.version" true sFlCfgH nModify
+
+if [ ${nModify} -gt 0 ]; then
+    echo "${sFlCfgH}" > "${flCfgH}"
+fi
+fi
 
 ############## start hibench testing ################
 pushd $HIBENCH_DIR
@@ -240,7 +343,7 @@ pushd $HIBENCH_DIR
     pushd $HIBENCH_CONF
         cp 99-user_defined_properties.conf.template 99-user_defined_properties.conf
         USER_DEFINED_FILE=$HIBENCH_CONF/99-user_defined_properties.conf
-	 hdfs_url="hdfs\:\/\/HOSTNAME:HDFSPORT"
+	hdfs_url="hdfs\:\/\/HOSTNAME:HDFSPORT"
         hadoop_str="\/PATH\/TO\/YOUR\/HADOOP\/ROOT"
         hdfs_server="hdfs\:\/\/127\.0\.0\.1\:9000"
         spark_str="\/PATH\/TO\/YOUR\/SPARK\/ROOT"
