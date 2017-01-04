@@ -25,7 +25,7 @@ while true {
 			exit 1
 		}
 		eof { 
-			send_user "Everything was successful\n"
+			send_user "host dependency satisfied.\n"
 			break
 		}
 	}

@@ -38,10 +38,12 @@ while true {
 			exit 1
 		}
 		eof {
+			send_user "server dependency satisfied.\n"
 			spawn ssh $server_user@$server_ip "rm server_dependency.sh"
 			break
 		}
 	}
 }
+
 
 
