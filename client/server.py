@@ -103,7 +103,6 @@ if __name__ == "__main__":
         dic = yaml.load(fp)
         if dic["status"] == 1 :
             print("server.py is already running")            
-            subprocess.Popen
             p1 = subprocess.Popen(['ps','-ef'], stdout=subprocess.PIPE)
             p2 = subprocess.Popen(['grep','server.py'], stdin=p1.stdout, stdout=subprocess.PIPE)
             p3 = subprocess.Popen(['awk','-F', ' ','{print $2}'], stdin=p2.stdout, stdout=subprocess.PIPE)
@@ -131,7 +130,6 @@ if __name__ == "__main__":
         # create a socket object
         serversocket = socket.socket(
                         socket.AF_INET, socket.SOCK_STREAM) 
-    
         # get local machine name
         host = ''                           
         
@@ -148,7 +146,7 @@ if __name__ == "__main__":
             clientsocket,addr = serversocket.accept()      
             print("Got a connection from %s" % str(addr))
             currentTime = time.ctime(time.time()) + "\r\n"
-            clientsocket.send("ACCESS GRANTED"+currentTime.encode('ascii'))
+            clientsocket.send("ACCESS GRANTED @ "+currentTime.encode('ascii'))
             print("Waiting for %s to finish its task" % str(addr))
             clientsocket.recv(1024)
             print("%s Completed its task"  % str(addr))
