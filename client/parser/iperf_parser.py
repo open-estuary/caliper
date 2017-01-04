@@ -32,6 +32,8 @@ def iperf_parser(content, outfp, tag):
                 for speed in re.findall("[MG]Bytes(.*?)MBytes/sec.*?/.*?", content):
                     score = string.atof(speed.strip())
 
+    outfp.write("speed of %s is %.3f Mbits/sec\n" % (tag, score))
+
     return score * 8
 
 
