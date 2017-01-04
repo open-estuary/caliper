@@ -8,8 +8,6 @@
 import pdb
 import re
 
-sysbench_dic = {}
-response_times = {}
 
 SYSBENCH_RESULT_NAME_LATENCY = 'sysbench latency'
 NA_UNIT = 'NA'
@@ -20,6 +18,9 @@ RESPONSE_TIME_TOKENS = ['min', 'avg', 'max', 'percentile']
 
 
 def sysbench_oltp_parser(content, outfp):
+
+    sysbench_dic = {}
+    response_times = {}
 
     seen_general_statistics = False
     seen_response_time = False
