@@ -25,17 +25,11 @@ db_driver=mysql
 : ${max_requests:=100000}
 test_name="$PWD/sysbench-0.5/sysbench/tests/db/oltp.lua"
 echo "max_requests are $max_requests"
-sudo apt-get install libtool autoconf automake -y
 
 if ! hash mysqld; then
     echo 'The mysql server has not been installed'
     exit 1
 fi
-
-sudo apt-get install libmysqlclient-dev -y
-sudo apt-get install libmysqld-dev -y
-
-sudo apt-get install bzr -y
 
 if [ ! -d $sysbench_dir ]; then
     n1=0
@@ -58,17 +52,37 @@ if [ ! -d $sysbench_dir ]; then
 fi
 
 mysql_loc=($(whereis mysql))
-for i in ${mysql_loc[@]}; do
-    tmp=$(echo $i | grep '/lib/mysql')
-    if [ $? -eq 0 ]; then
-        mysql_lib=$tmp
-    else
-        tmp1=$(echo $i | grep '/include/mysql')
+
+OSname_Ubuntu=`cat /etc/*release | grep -c "Ubuntu"`
+OSname_CentOS=`cat /etc/*release | grep -c "CentOS"`
+if [ ! $OSname_Ubuntu -eq 0 ]; then
+    for i in ${mysql_loc[@]}; do
+        tmp=$(echo $i | grep '/lib/mysql')
         if [ $? -eq 0 ]; then
-            mysql_include=$tmp1
+            mysql_lib=$tmp
+        else
+            tmp1=$(echo $i | grep '/include/mysql')
+            if [ $? -eq 0 ]; then
+                mysql_include=$tmp1
+            fi
         fi
-    fi
-done
+    done
+elif [ ! $OSname_CentOS -eq 0 ]; then
+    for i in ${mysql_loc[@]}; do
+        grep -q '/lib[0-9]*/mysql' <<< "${i}"
+        if [ $? -eq 0 ]; then
+             mysql_lib=${i}
+        else
+            grep -q '/include/mysql' <<< "${i}"
+            if [ $? -eq 0 ]; then
+                mysql_include=${i}
+            fi
+        fi
+    done
+else
+    echo "selected OS in not Ubuntu or centos"
+    exit 1
+fi
 
 if [ "$mysql_lib" == "" -o "$mysql_include" == "" ]; then
     echo 'mysql has not been installed right'
@@ -89,12 +103,6 @@ pushd $sysbench_dir
   make -s 
   make install
 popd
-
-sudo apt-get install expect -y
-if [ $? -ne 0 ]; then 
-    echo "install expect failed"
-    exit 1
-fi
 
 /usr/bin/expect > /dev/null 2>&1 <<EOF
 set timeout 40
@@ -126,6 +134,18 @@ EOF
 if [ $max_requests -eq 0 ]; then 
     max_requests=100000
 fi
+
+if [ ! $OSname_CentOS -eq 0 ]; then
+    sR1=$(netstat -lnp |grep "[ \t]\+[0-9]\+/mysqld\([ \t]\+\|\$\)" |grep "[ \t]\+[^ \t0-9]\+[ \t]*\$")
+    sockMS=$(sed "s#^.*[ \t]\+\([^ \t0-9]\+\)[ \t]*\$#\1#" <<< "${sR1}")
+    sockSysb="/var/lib/mysql/mysql.sock"
+    if [ "${sockMS}" != "${sockSysb}" ]; then
+        if [ ! -L "${sockSysb}" ]; then
+            ln -s "${sockMS}" "${sockSysb}"
+        fi
+    fi
+fi
+
 set -x
 # prepare the test data
 $sysbench_dir/sysbench/sysbench \
