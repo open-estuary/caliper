@@ -741,15 +741,15 @@ def caliper_run(target_exec_dir, server,target):
 	    	server_ip = settings.get_value("SERVER","ip",type=str)
 	    	server_port = settings.get_value("SERVER","port",type=int)
                 server_user = settings.get_value("SERVER","user",type=str)
-	    	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 logging.info("Please wait while caliper triggers the server.py script in the server")
                 server_pwd = server.run("pwd").stdout
                 server_pwd = server_pwd.split("\n")[0]
-                server_caliper_dir = os.path.join(server_pwd, "caliper")
-                server_caliper_dir = os.path.join(server_caliper_dir, "server","server.py")
+                server_caliper_dir = os.path.join(server_pwd, "caliper_server")
+                server_caliper_dir = os.path.join(server_caliper_dir,"server.py")
+                subprocess.Popen(['ssh', '%s' % server_user, 'python %s' % script])
                 server_user = server_user + '@' + server_ip
                 script = server_caliper_dir + ' ' + str(server_port)
-                subprocess.Popen(['ssh', '%s' %server_user, 'python %s'%script])
+
 
 	    except Exception as e:
 		logging.info(e)
@@ -783,13 +783,13 @@ def caliper_run(target_exec_dir, server,target):
                 system_initialise(target)
 		if classify == "server":
                     logging.info("Waiting for server to grant access")
+                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
   		    sock.connect((server_ip,server_port))
 		    logging.info("%s" % str(sock.recv(1024)))
 
                 result = run_all_cases(target_exec_dir, target, bench,
                                         sections[i], run_file)
 		if classify == "server":
-		    logging.info("Waiting for server to grant access")
 		    sock.send("1")
 		    sock.close()
             except Exception:
