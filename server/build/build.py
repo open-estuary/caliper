@@ -786,20 +786,18 @@ def copy_gen_to_target(target, target_arch):
 
 def copy_gen_to_server(target, path):
     try:
-        result = target.run("test -d caliper", ignore_status=True)
+        result = target.run("test -d caliper_server", ignore_status=True)
     except error.ServRunError, e:
         raise
     else:
         if result.exit_status:
-            target.run("mkdir caliper")
-            target.run("cd caliper;  mkdir -p server")
+            target.run("mkdir -p caliper_server")
 
         remote_pwd = target.run("pwd").stdout
         remote_pwd = remote_pwd.split("\n")[0]
-        remote_caliper_dir = os.path.join(remote_pwd, "caliper")
-        remote_gen_dir = os.path.join(remote_caliper_dir, "server")
+        remote_caliper_dir = os.path.join(remote_pwd, "caliper_server")
         try:
-            target.send_file(path, remote_gen_dir)
+            target.send_file(path, remote_caliper_dir)
         except Exception, e:
             logging.info("There is error when coping files to remote %s"
                                 % target.ip)
