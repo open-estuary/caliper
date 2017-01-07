@@ -64,7 +64,7 @@ fi
 
 ############## get JAVA_HOME which need to be used later ################
 #Get the java path
-java_loc=$(find /usr/lib -name 'java-*-openjdk*' |sed -n "1p")
+java_loc=$(find /usr/lib/jvm -name 'java-*-openjdk*' |sed -n "1p")
 printf "%s[%3s]%5s: ${java_loc}\n" "${FUNCNAME[0]}" ${LINENO} "Info"
 
 export JAVA_HOME=$java_loc
@@ -276,7 +276,7 @@ then
         if [ "${bAble}" == "true" ]; then
             grep -q "^[     ]*#[    ]*${sKey1}\([   #;]\+\|\$\)" <<< "${sTxt1}"
             if [ $? -eq 0 ]; then
-                sTxt1=$(sed "/^[ \t]*#[ \t]*${sKey1}\([ \t#;]\+\|\$\)/{s/^\([ \t]*\)#\([ \t]*\)\(${sKey1}\)\([ \t#;]\+\|\$\)/\1\2\3\4/}" <<< "${sTxt1}")
+                sTxt1=$(sed "/^[ \t]*#[ \t]*${sKey1}\([ \t#;]\+\|\$\)/{s/^\([ \t]*\)\([ \t]*\)\(${sKey1}\)\([ \t#;]\+\|\$\)/\1\2\3\4/}" <<< "${sTxt1}")
                 eval ${varTxt}=\${sTxt1}
                 eval let ${varNDo}+=1
             fi
