@@ -148,7 +148,7 @@ else
 		then
 		        echo "installing stress..." >> target_dependency_output_summary.txt
 		        cd /tmp
-		        sudo wget http://people.seas.harvard.edu/~apw/stress/stress-1.0.4.tar.gz
+		        wget http://people.seas.harvard.edu/~apw/stress/stress-1.0.4.tar.gz
 		        sudo tar xvzf stress-1.0.4.tar.gz
 		        cd stress-1.0.4
 		        ./configure && sudo make && sudo make install
@@ -160,7 +160,7 @@ else
 		then
 		        echo "installing stress-ng..." >> target_dependency_output_summary.txt
 		        cd /tmp
-		        sudo wget https://github.com/ColinIanKing/stress-ng/archive/master.zip
+		        wget https://github.com/ColinIanKing/stress-ng/archive/master.zip
 		        sudo unzip master.zip
 		        cd stress-ng-master
 		        sudo make && sudo make install

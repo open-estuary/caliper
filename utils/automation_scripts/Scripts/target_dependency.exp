@@ -43,6 +43,7 @@ while true {
 			spawn ssh $client_user@$client_ip "rm target_dependency.sh"
 			break
 		}
+                "Is this ok" { send "y\r"; exp_continue }
 	}
 }
 
