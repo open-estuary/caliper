@@ -120,13 +120,13 @@ then
 		exit 1
 	fi
 fi
-sudo chmod -R 775 /opt/caliper_nfs
+sudo chmod -R 775 /opt/caliper_nfs/ltp_log
 if [ $? -ne 0 ]
 then
 	echo "$ERROR:NFS PERMISSION SETTING FAILED" >> host_dependency_output_summary.txt
 	exit 1
 fi
-sudo chown -R $USER:$USER /opt/caliper_nfs
+sudo chown -R $USER:$USER /opt/caliper_nfs/ltp_log
 if [ $? -ne 0 ]
 then
 	echo "$ERROR:NFS OWNER SETTING FAILED" >> host_dependency_output_summary.txt
@@ -136,7 +136,7 @@ fi
 #exporting the path for NFS mounting
 flag=0
 #command="/opt/caliper_nfs *(rw,sync,no_root_squash)"
-command="/opt/caliper_nfs *(rw,sync,no_root_squash,subtree_check)"
+command="/opt/caliper_nfs/ltp_log *(rw,sync,no_root_squash)"
 pattern=`echo "$command" | awk -F ' ' '{ print $1 }'`
 if [ `cat /etc/exports | grep -c "$pattern"` -ge 1 ]
 then
