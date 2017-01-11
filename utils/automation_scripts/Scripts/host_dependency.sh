@@ -16,7 +16,7 @@ fi
 
 host_packages=('libc6' 'libncurses5' 'libstdc++6' 'lib32z1' 'python-dev' 'nfs-common' 'build-essential' 'python-pip' 'automake' 'autoconf' 'make' 'openssh-server' 'libnuma-dev' 'texinfo' 'python-matplotlib' 'python-numpy' 'nfs-kernel-server' 'openjdk-7-jre' 'openjdk-7-jdk' 'lib32stdc++6' 'bzr')
 
-NFS_mount="/opt/caliper_nfs/ltp_log"
+NFS_mount="/mnt/caliper_nfs/ltp_log"
 ERROR="ERROR-IN-AUTOMATION"
 UPDATE=0
 clear 
@@ -120,13 +120,13 @@ then
 		exit 1
 	fi
 fi
-sudo chmod -R 775 /opt/caliper_nfs/ltp_log
+sudo chmod -R 775 /mnt/caliper_nfs/ltp_log
 if [ $? -ne 0 ]
 then
 	echo "$ERROR:NFS PERMISSION SETTING FAILED" >> host_dependency_output_summary.txt
 	exit 1
 fi
-sudo chown -R $USER:$USER /opt/caliper_nfs/ltp_log
+sudo chown -R $USER:$USER /mnt/caliper_nfs/ltp_log
 if [ $? -ne 0 ]
 then
 	echo "$ERROR:NFS OWNER SETTING FAILED" >> host_dependency_output_summary.txt
@@ -136,7 +136,7 @@ fi
 #exporting the path for NFS mounting
 flag=0
 #command="/opt/caliper_nfs *(rw,sync,no_root_squash)"
-command="/opt/caliper_nfs/ltp_log *(rw,sync,no_root_squash)"
+command="/mnt/caliper_nfs/ltp_log *(rw,sync,no_root_squash)"
 pattern=`echo "$command" | awk -F ' ' '{ print $1 }'`
 if [ `cat /etc/exports | grep -c "$pattern"` -ge 1 ]
 then
