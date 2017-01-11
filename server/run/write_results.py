@@ -235,14 +235,17 @@ def ideal_dic(scoreFile_dic):
         logging.info(e)
         sys.exit()
 
-    try:
-     for i in range(1,len(scoreFile_dic)):
-        func_dic = (scoreFile_dic[i])['results']['Functional']
-        perf_dic = (scoreFile_dic[i])['results']['Performance']
-        populate_dic(dic_ideal['results']['Functional'], func_dic)
-        populate_dic(dic_ideal['results']['Performance'], perf_dic)
-    except Exception as e:
-     pass
+    for i in range(1,len(scoreFile_dic)):
+        try:
+            func_dic = (scoreFile_dic[i])['results']['Functional']
+            populate_dic(dic_ideal['results']['Functional'], func_dic)
+        except Exception as e:
+            pass
+        try:
+            perf_dic = (scoreFile_dic[i])['results']['Performance']
+            populate_dic(dic_ideal['results']['Performance'], perf_dic)
+        except Exception as e:
+            pass
     return dic_ideal
 
 def populate_dic(dic_ideal, sub_dic):
@@ -264,31 +267,37 @@ def populate_dic_values(dic_ideal, sub_dic, reverse=0):
             subsystem_practical = sub_dic.keys()
             subsystem_ideal = dic_ideal.keys()
         for i in subsystem_practical:
-            if i in subsystem_ideal:
-                if reverse == 1:
-                    scenario_ideal = sub_dic[i].keys()
-                    scenario_practical = dic_ideal[i].keys()
-                else:
-                    scenario_practical = sub_dic[i].keys()
-                    scenario_ideal = dic_ideal[i].keys()
-                for j in scenario_practical:
-                    if j in scenario_ideal:
-                        if 'Point_Scores' in dic_ideal[i][j].keys():
-                            if reverse == 1:
-                                testcases_ideal = sub_dic[i][j]['Point_Scores'].keys()
-                                testcases_pract = dic_ideal[i][j]['Point_Scores'].keys()
-                            else:
-                                testcases_pract = sub_dic[i][j]['Point_Scores'].keys()
-                                testcases_ideal = dic_ideal[i][j]['Point_Scores'].keys()
-                            for k in testcases_pract:
-                                if k not in testcases_ideal:
-                                    dic_ideal[i][j]['Point_Scores'][k] = 'INVALID'
-                        else:
-                            dic_ideal[i][j]['Point_Scores'] = 'INVALID'
+            try:
+                if i in subsystem_ideal:
+                    if reverse == 1:
+                        scenario_ideal = sub_dic[i].keys()
+                        scenario_practical = dic_ideal[i].keys()
                     else:
-                        dic_ideal[i][j] = 'INVALID'
-            else:
-                dic_ideal[i] = 'INVALID'
+                        scenario_practical = sub_dic[i].keys()
+                        scenario_ideal = dic_ideal[i].keys()
+                    for j in scenario_practical:
+                        try:
+                            if j in scenario_ideal:
+                                if 'Point_Scores' in dic_ideal[i][j].keys():
+                                    if reverse == 1:
+                                        testcases_ideal = sub_dic[i][j]['Point_Scores'].keys()
+                                        testcases_pract = dic_ideal[i][j]['Point_Scores'].keys()
+                                    else:
+                                        testcases_pract = sub_dic[i][j]['Point_Scores'].keys()
+                                        testcases_ideal = dic_ideal[i][j]['Point_Scores'].keys()
+                                    for k in testcases_pract:
+                                        if k not in testcases_ideal:
+                                            dic_ideal[i][j]['Point_Scores'][k] = 'INVALID'
+                                else:
+                                    dic_ideal[i][j]['Point_Scores'] = 'INVALID'
+                            else:
+                                dic_ideal[i][j] = 'INVALID'
+                        except:
+                            pass
+                else:
+                    dic_ideal[i] = 'INVALID'
+            except:
+                pass
     except:
         pass
     return
@@ -296,28 +305,32 @@ def populate_dic_values(dic_ideal, sub_dic, reverse=0):
 def delete_dic(dic_ideal, scoreFile_dic):
     # adding exception block to handile the exception during the html report generation
     #  when any one of Functional or Performance is missing in .yaml files
-    try:
      for i in range(len(scoreFile_dic)):
-        delete_dic_values(dic_ideal['results']['Functional'], (scoreFile_dic[i])['results']['Functional'])
-        if (scoreFile_dic[i])['results']['Functional'] == {}:
-            del (scoreFile_dic[i])['results']['Functional']
-        delete_dic_values(dic_ideal['results']['Performance'], (scoreFile_dic[i])['results']['Performance'])
-        if (scoreFile_dic[i])['results']['Performance'] == {}:
-            del (scoreFile_dic[i])['results']['Performance']
-        if (scoreFile_dic[i])['results'] == {}:
+         try:
+             delete_dic_values(dic_ideal['results']['Functional'], (scoreFile_dic[i])['results']['Functional'])
+             if (scoreFile_dic[i])['results']['Functional'] == {}:
+                del (scoreFile_dic[i])['results']['Functional']
+         except Exception as e:
+             pass
+         try:
+             delete_dic_values(dic_ideal['results']['Performance'], (scoreFile_dic[i])['results']['Performance'])
+             if (scoreFile_dic[i])['results']['Performance'] == {}:
+                del (scoreFile_dic[i])['results']['Performance']
+         except Exception as e:
+             pass
+
+         if (scoreFile_dic[i])['results'] == {}:
             del (scoreFile_dic[i])['results']
-    except Exception as e:
-        pass
-    return dic_ideal
+     return dic_ideal
 
 def delete_dic_values(dic_ideal, sub_dic):
-    try:
-        if dic_ideal == 'INVALID' or dic_ideal == None :
-            del sub_dic
-            return
-        else:
-            subsystem = dic_ideal.keys()
-        for i in range(len(subsystem)):
+    if dic_ideal == 'INVALID' or dic_ideal == None :
+        del sub_dic
+        return
+    else:
+        subsystem = dic_ideal.keys()
+    for i in range(len(subsystem)):
+        try:
             if dic_ideal[subsystem[i]] == 'INVALID' or dic_ideal[subsystem[i]] == None:
                 if delete_in_dic(dic=sub_dic, key = subsystem[i]):
                     break
@@ -325,25 +338,34 @@ def delete_dic_values(dic_ideal, sub_dic):
             else:
                 scenario = dic_ideal[subsystem[i]].keys()
             for j in range(len(scenario)):
-                if dic_ideal[subsystem[i]][scenario[j]] == 'INVALID' or dic_ideal[subsystem[i]][scenario[j]] == None:
-                    if delete_in_dic(dic=sub_dic, L1=subsystem[i], key =scenario[j]):
-                        break
-                    continue
-                else:
-                    points_score = dic_ideal[subsystem[i]][scenario[j]].keys()
-                for k in range(len(points_score)):
-                    if dic_ideal[subsystem[i]][scenario[j]][points_score[k]] == 'INVALID' or dic_ideal[subsystem[i]][scenario[j]][points_score[k]] == None:
-                        if delete_in_dic(dic = sub_dic,key = points_score[k],L1 = subsystem[i],L2 = scenario[j]):
+                try:
+                    if dic_ideal[subsystem[i]][scenario[j]] == 'INVALID' or dic_ideal[subsystem[i]][scenario[j]] == None:
+                        if delete_in_dic(dic=sub_dic, L1=subsystem[i], key =scenario[j]):
                             break
                         continue
                     else:
-                        key = dic_ideal[subsystem[i]][scenario[j]][points_score[k]].keys()
-                    for l in range(len(key)):
-                        if dic_ideal[subsystem[i]][scenario[j]][points_score[k]][key[l]] == 'INVALID' or dic_ideal[subsystem[i]][scenario[j]][points_score[k]][key[l]] == None :
-                            if delete_in_dic(dic = sub_dic, key = key[l],L1 = subsystem[i],L2 = scenario[j],L3 = points_score[k]):
-                                break
-    except Exception as e:
-        pass
+                        points_score = dic_ideal[subsystem[i]][scenario[j]].keys()
+                    for k in range(len(points_score)):
+                        try:
+                            if dic_ideal[subsystem[i]][scenario[j]][points_score[k]] == 'INVALID' or dic_ideal[subsystem[i]][scenario[j]][points_score[k]] == None:
+                                if delete_in_dic(dic = sub_dic,key = points_score[k],L1 = subsystem[i],L2 = scenario[j]):
+                                    break
+                                continue
+                            else:
+                                key = dic_ideal[subsystem[i]][scenario[j]][points_score[k]].keys()
+                            for l in range(len(key)):
+                                try:
+                                    if dic_ideal[subsystem[i]][scenario[j]][points_score[k]][key[l]] == 'INVALID' or dic_ideal[subsystem[i]][scenario[j]][points_score[k]][key[l]] == None :
+                                        if delete_in_dic(dic = sub_dic, key = key[l],L1 = subsystem[i],L2 = scenario[j],L3 = points_score[k]):
+                                            break
+                                except:
+                                    pass
+                        except:
+                            pass
+                except:
+                    pass
+        except Exception as e:
+            pass
     return
 
 def delete_in_dic(dic, key, L1 = None, L2 = None, L3 = None):
