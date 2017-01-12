@@ -1,15 +1,8 @@
-ifneq ($(wildcard config-host.mak),)
-all:
-include config-host.mak
-config-host-mak: configure
-	@echo $@ is out-of-date, running configure
-	@sed -n "/.*Configured with/s/[^:]*: //p" $@ | sh
-else
-config-host.mak:
 ifneq ($(MAKECMDGOALS),clean)
-	@echo "Running configure for you..."
-	@./configure
+ifeq ($(wildcard config-host.mak),)
+$(error "config-host.mak not exist, need execute configure first!")
 endif
+
 all:
 include config-host.mak
 endif
