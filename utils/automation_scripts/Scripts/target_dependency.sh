@@ -85,16 +85,16 @@ then
 else
     if [ ! $architecture_x86_64 -eq 0 ]
     then
-        target_packages=('make' 'wget' 'gcc' 'automake' 'autoconf' 'cmake' 'net-tools' 'lshw' 'bridge-utils' 'java-1.8.0-openjdk.x86_64' 'java-1.8.0-openjdk-devel.x86_64' 'perl' 'lksctp-tools' 'expect' 'gcc-aarch64-linux-gnu' 'ncurses-devel' 'yum-utils' 'dmidecode')
+        target_packages=('make' 'wget' 'gcc' 'automake' 'autoconf' 'cmake' 'net-tools' 'lshw' 'bridge-utils' 'java-1.8.0-openjdk.x86_64' 'java-1.8.0-openjdk-devel.x86_64' 'perl' 'lksctp-tools' 'expect' 'gcc-aarch64-linux-gnu' 'ncurses-devel' 'yum-utils' 'dmidecode' 'words')
     else
-        target_packages=('make' 'wget' 'gcc' 'automake' 'autoconf' 'cmake' 'net-tools' 'lshw' 'bridge-utils' 'java-1.8.0-openjdk.aarch64' 'java-1.8.0-openjdk-devel.aarch64' 'perl'  'lksctp-tools' 'expect' 'gcc-aarch64-linux-gnu' 'ncurses-devel' 'yum-utils' 'dmidecode')
+        target_packages=('make' 'wget' 'gcc' 'automake' 'autoconf' 'cmake' 'net-tools' 'lshw' 'bridge-utils' 'java-1.8.0-openjdk.aarch64' 'java-1.8.0-openjdk-devel.aarch64' 'perl'  'lksctp-tools' 'expect' 'gcc-aarch64-linux-gnu' 'ncurses-devel' 'yum-utils' 'dmidecode' 'words')
     fi
 
     for i in `seq 0 $((${#target_packages[@]}-1)) `
     do
         #checking to see if all the target dependent packages are installed
         check=`rpm -qa ${target_packages[$i]}`
-        if [ ! -z $check ]
+        if [  -z "$check" ]
         then
            if [ $1 == "y" ]
            then
