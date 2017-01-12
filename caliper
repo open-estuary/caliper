@@ -18,6 +18,7 @@ import datetime
 import commands
 import subprocess
 import glob
+import ConfigParser
 
 from argparse import ArgumentParser
 
@@ -307,48 +308,56 @@ if __name__=="__main__":
             caliper_path.config_files.config_dir,
             'client_config.cfg'
         ))
-        # skipping the remote_host connection to target for "web report generation" option:
-    if args.webpage != True:
-     remote_host = get_remote_host()
-     server_host = get_server_host()
-    try:
-        build.copy_gen_to_server(server_host,caliper_path.SERVER_SYNC_FILE_SRC)
-    except Exception as e:
-        logging.error(e)
-        logging.error("ERROR IN COPYTING THE %s FILE TO SERVER" % caliper_path.SERVER_SYNC_FILE_SRC)
-        pass
 
     caliper_path.create_dir()
-    if args.build:
-        try:
-	    clear = 0
-            if args.cleanbuild:
-                clear = 1
-            result1 = build_all_tests(remote_host,f_option,clear)
-            if result1:
+
+    if args.build or args.run:
+        remote_host = get_remote_host()
+
+        sCfgTCTail="_cases_def.cfg"
+        flCfgTCSrv=os.path.join(caliper_path.config_files.tests_cfg_dir, "server"+sCfgTCTail)
+
+        config=ConfigParser.ConfigParser()
+        config.read(flCfgTCSrv)
+        sections=config.sections()
+        nTitleSect=len(sections)
+
+        server_host=None
+        if nTitleSect>0:
+            server_host = get_server_host()
+            try:
+                build.copy_gen_to_server(server_host,caliper_path.SERVER_SYNC_FILE_SRC)
+            except Exception as e:
+                logging.warn("put %s %s" % (caliper_path.SERVER_SYNC_FILE_SRC,e))
+
+        if args.build:
+            try:
+                clear = 0
+                if args.cleanbuild:
+                    clear = 1
+                result1 = build_all_tests(remote_host,f_option,clear)
+                if result1:
+                    sys.exit()
+            except Exception, e:
+                raise
                 sys.exit()
-        except Exception, e:
-            raise
-            sys.exit()
 
-    if args.run: 
-        try:
-            result2 = run_caliper(remote_host,server_host, f_option)
-            if result2:
+        if args.run: 
+            try:
+                result2 = run_caliper(remote_host,server_host, f_option)
+                if result2:
+                    sys.exit()
+
+            except Exception:
+                raise
                 sys.exit()
 
-        except Exception:
-            raise
-            sys.exit()
-
-    end_time = datetime.datetime.now()
-    interval = end_time - start_time
-
-    if args.run:
-        try:
-            summary.output_summary_info(remote_host, interval.seconds)
-        except Exception, e:
-            raise e
+            end_time = datetime.datetime.now()
+            interval = end_time - start_time
+            try:
+                summary.output_summary_info(remote_host, interval.seconds)
+            except Exception, e:
+                raise e
 
     if args.parse:
         try:
