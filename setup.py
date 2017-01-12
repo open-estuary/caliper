@@ -23,7 +23,7 @@ except ImportError:
 
 import client.setup
 import server.setup
-from caliper.client.shared import caliper_path
+
 
 def _combine_dicts(list_dicts):
     result_dict = {}
@@ -94,7 +94,6 @@ def run():
                 'pyYAML',
                 'django >= 1.6.1', ]
             )
-    caliper_path.create_dir()
     os.chown(caliper_output,getpwnam(os.environ['HOME'].split('/')[-1]).pw_uid,-1)
     recursive_file_permissions(path=caliper_output,mode=0775,uid=getpwnam(os.environ['HOME'].split('/')[-1]).pw_uid,gid=-1)
 
@@ -104,7 +103,6 @@ def run():
         shutil.rmtree('dist')
     if os.path.exists('build'):
         shutil.rmtree('build')
-    
 
 if __name__ == "__main__":
     run()
