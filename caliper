@@ -318,7 +318,7 @@ if __name__=="__main__":
         except Exception as e:
             logging.error(e)
             logging.error("ERROR IN COPYTING THE %s FILE TO SERVER" % caliper_path.SERVER_SYNC_FILE_SRC)
-        pass
+            pass
 
     caliper_path.create_dir()
     if args.build:
