@@ -6,10 +6,6 @@ test_name="cpu"
 cpu_max_prime="100000"
 num_threads=$(grep 'processor' /proc/cpuinfo |sort |uniq |wc -l)
 #test_name="$PWD/sysbench-0.5/sysbench/tests/cpu"
-sudo apt-get install libtool autoconf automake -y
-#sudo apt-get install libmysqlclient-dev -y
-#sudo apt-get install libmysqld-dev -y
-sudo apt-get install bzr -y
 if [ ! -d $sysbench_dir ]; then
   bzr branch lp:~sysbench-developers/sysbench/0.5 $sysbench_dir
   if [ $? -ne 0 ]; then

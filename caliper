@@ -65,12 +65,14 @@ def populate_excels():
     output_path = caliper_path.EXCEL_DATA_DIR_OUTPUT
     file_list = []
 
+    Iteration_len = 0
 
     col = performance_functional.col_start
 
     cov_files_list = performance_functional.get_cov_file_list(input_cov)
 
-    Iteration_len = len(cov_files_list[0])
+    if cov_files_list:
+        Iteration_len = len(cov_files_list[0])
 
     for item in cov_files_list:
         file_name = ".".join(item[0].split("/")[-1].split(".")[0:-1])
@@ -309,13 +311,13 @@ if __name__=="__main__":
         ))
         # skipping the remote_host connection to target for "web report generation" option:
     if args.webpage != True:
-     remote_host = get_remote_host()
-     server_host = get_server_host()
-    try:
-        build.copy_gen_to_server(server_host,caliper_path.SERVER_SYNC_FILE_SRC)
-    except Exception as e:
-        logging.error(e)
-        logging.error("ERROR IN COPYTING THE %s FILE TO SERVER" % caliper_path.SERVER_SYNC_FILE_SRC)
+        remote_host = get_remote_host()
+        server_host = get_server_host()
+        try:
+            build.copy_gen_to_server(server_host,caliper_path.SERVER_SYNC_FILE_SRC)
+        except Exception as e:
+            logging.error(e)
+            logging.error("ERROR IN COPYTING THE %s FILE TO SERVER" % caliper_path.SERVER_SYNC_FILE_SRC)
         pass
 
     caliper_path.create_dir()

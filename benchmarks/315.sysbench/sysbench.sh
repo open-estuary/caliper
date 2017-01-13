@@ -26,6 +26,8 @@ db_driver=mysql
 test_name="$PWD/sysbench-0.5/sysbench/tests/db/oltp.lua"
 echo "max_requests are $max_requests"
 
+export PATH=$PATH:/usr/local/mysql/bin
+
 if ! hash mysqld; then
     echo 'The mysql server has not been installed'
     exit 1
@@ -104,7 +106,7 @@ pushd $sysbench_dir
   make install
 popd
 
-/usr/bin/expect > /dev/null 2>&1 <<EOF
+/usr/bin/expect <<EOF
 set timeout 40
 
 spawn mysql -u$mysql_user -p

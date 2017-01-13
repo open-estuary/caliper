@@ -61,7 +61,17 @@ def get_cov_file_list(input_cov):
     len_file_name_list = len(file_name_list)
     # Take the yaml file list from Input_Cov/1 directory, as this directory contains
     # yaml files. Because at least one iteration should have execute to generate report.
-    for files in file_name_list[len_file_name_list-1]:
+
+    min_file_count = 255
+    index = 0
+
+    for i in range(0, len_file_name_list):
+        if len(file_name_list[i]):
+            if min_file_count > len(file_name_list[i]):
+                min_file_count = len(file_name_list[i])
+                index = i
+
+    for files in file_name_list[index]:
         files_temp_list = []
         i = 1
         for dir in file_dir_list:
