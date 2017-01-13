@@ -27,6 +27,12 @@ architecture_arm64=`uname -a | grep -c "arm64"`
 echo "TARGET"
 echo -e "\n\t\t Target dependency"
 
+#CentOS specific
+if [ ! $Osname_CentOS -eq 0 ]
+then
+   sudo sed -i "s/mirrorlist=https/mirrorlist=http/" /etc/yum.repos.d/epel.repo
+fi
+
 if [ ! $Osname_Ubuntu -eq 0 ]
 then
     target_packages=('stress' 'make' 'build-essential' 'linux-tools-generic' 'linux-tools-common' 'gcc g++' 'nfs-common' 'automake' 'autoconf' 'autogen' 'libtool' 'openjdk-7-jre' 'openjdk-7-jdk' 'mysql-server*' 'libmysqlclient-dev' 'stress-ng' 'expect' 'bzr' 'libmysqld-dev' 'lshw' 'bridge-utils' 'dmidecode' 'lsdev')
@@ -81,14 +87,14 @@ else
     then
         target_packages=('make' 'wget' 'gcc' 'automake' 'autoconf' 'cmake' 'net-tools' 'lshw' 'bridge-utils' 'java-1.8.0-openjdk.x86_64' 'java-1.8.0-openjdk-devel.x86_64' 'perl' 'lksctp-tools' 'expect' 'gcc-aarch64-linux-gnu' 'ncurses-devel' 'yum-utils' 'dmidecode')
     else
-        target_packages=('make' 'wget' 'gcc' 'automake' 'autoconf' 'cmake' 'net-tools' 'lshw' 'bridge-utils' 'java-1.8.0-openjdk.aarch64' 'java-1.8.0-openjdk-devel.aarch64' 'perl'  'lksctp-tools' 'expect' 'ncurses-devel' 'yum-utils' 'dmidecode')
+        target_packages=('make' 'wget' 'gcc' 'automake' 'autoconf' 'cmake' 'net-tools' 'lshw' 'bridge-utils' 'java-1.8.0-openjdk.aarch64' 'java-1.8.0-openjdk-devel.aarch64' 'perl'  'lksctp-tools' 'expect' 'gcc-aarch64-linux-gnu' 'ncurses-devel' 'yum-utils' 'dmidecode')
     fi
 
     for i in `seq 0 $((${#target_packages[@]}-1)) `
     do
         #checking to see if all the target dependent packages are installed
         check=`rpm -qa ${target_packages[$i]}`
-        if [ -z $check ]
+        if [ ! -z $check ]
         then
            if [ $1 == "y" ]
            then
@@ -125,9 +131,16 @@ else
 
 	if [ $choice == 'y' ]
 	then
-		if [ ! `sudo find /usr/local/mysql/bin -name mysql` ];
+		if [ ! `sudo find /usr/bin -name mysql` ];
 		then
-		        echo "install mysql-server manually..." >> target_dependency_output_summary.txt
+		        echo "installing mysql..." >> target_dependency_output_summary.txt
+		        cd /tmp
+		        wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
+		        sudo rpm -ivh mysql-community-release-el7-5.noarch.rpm
+		        yum update
+		        sudo yum install -y mysql-server
+		        sudo systemctl start mysqld
+		        sudo yum install -y mysql-devel
 		else
 		        echo "mysql is installed" >> target_dependency_output_summary.txt
 		fi
@@ -135,7 +148,7 @@ else
 		then
 		        echo "installing stress..." >> target_dependency_output_summary.txt
 		        cd /tmp
-		        wget http://www.estuarydev.org/caliper/stress-1.0.4.tar.gz
+		        wget http://people.seas.harvard.edu/~apw/stress/stress-1.0.4.tar.gz
 		        sudo tar xvzf stress-1.0.4.tar.gz
 		        cd stress-1.0.4
 		        ./configure && sudo make && sudo make install
@@ -147,8 +160,8 @@ else
 		then
 		        echo "installing stress-ng..." >> target_dependency_output_summary.txt
 		        cd /tmp
-		        wget http://www.estuarydev.org/caliper/stress-ng.zip
-		        sudo unzip stress-ng.zip
+		        wget https://github.com/ColinIanKing/stress-ng/archive/master.zip
+		        sudo unzip master.zip
 		        cd stress-ng-master
 		        sudo make && sudo make install
 		else
