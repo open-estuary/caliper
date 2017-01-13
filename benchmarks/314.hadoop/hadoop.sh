@@ -44,7 +44,7 @@ mkdir -p "${drTmpHadoop}"
 
 ##############################
 #JAVA_HOME
-java_loc=$(find /usr/lib -name 'java-*-openjdk*' |sed -n "1p")
+java_loc=$(find /usr/lib/jvm -name 'java-*-openjdk*' |sed -n "1p")
 printf "%s[%3s]%5s: ${java_loc}\n" "${FUNCNAME[0]}" ${LINENO} "Info"
 
 export JAVA_HOME=$java_loc
