@@ -411,6 +411,7 @@ def get_actual_commands(commands, target):
                         raise e
 
                 server_ip = server_ips[0]
+
         strinfo = re.compile('\$SERVER_IP')
         post_commands = strinfo.sub(server_ip, commands)
     commands = post_commands
@@ -553,26 +554,22 @@ def run_case(cmd_sec_name, server_command, tmp_logfile, kind_bench,
     if command is None or command == '':
         return
 
-    while True:
-        newpid = os.fork()
-        logging.debug("the pid number is %d" % newpid)
-        if newpid == 0:
-            run_server_command(kind_bench, server_command, target)
-        else:
-            time.sleep(10)
-            logging.debug("the pid number of parent is %d" % os.getpid())
-            logging.debug("the pid number of child is %d" % newpid)
-            try:
-                return_code = run_client_command(cmd_sec_name, tmp_logfile,
-                                                  kind_bench, target, command)
-            except Exception, e:
-                logging.info("There is wrong with running the remote host\
-                                command of %s" % command)
-                logging.debug(e.args[0], e.args[1])
-                utils.kill_process_tree(newpid)
-            else:
-                utils.kill_process_tree(newpid)
-                return return_code
+    newpid = os.fork()
+    if newpid == 0:
+        run_server_command(kind_bench, server_command, target)
+    else:
+        time.sleep(10)
+        logging.info("child[%d], pid[%d]" % (newpid, os.getpid()))
+        return_code=-1
+        try:
+            return_code = run_client_command(cmd_sec_name, tmp_logfile,
+                                              kind_bench, target, command)
+        except Exception, e:
+            logging.info("cmd_sec_name[%s] tmp_logfile[%s] kind_bench[%s] target[%s] command[%s]" % (cmd_sec_name, tmp_logfile, kind_bench, target, command))
+            logging.debug(e.args[0], e.args[1])
+        finally:
+            utils.kill_process_tree(newpid)
+            return return_code
     return 0
 
 
