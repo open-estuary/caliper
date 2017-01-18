@@ -313,7 +313,10 @@ if __name__=="__main__":
 
     caliper_path.create_dir()
 
-    remote_host = get_remote_host()
+    remote_host=None
+    if args.webpage != True:
+        remote_host = get_remote_host()
+
     if args.build or args.run:
         sCfgTCTail="_cases_def.cfg"
         flCfgTCSrv=os.path.join(caliper_path.config_files.tests_cfg_dir, "server"+sCfgTCTail)
