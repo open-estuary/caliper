@@ -353,6 +353,10 @@ def run_commands(exec_dir, kind_bench, commands,
     returncode = -1
     output = ''
 
+    if not os.path.exists(exec_dir):
+    	output = exec_dir + ' not exist'
+    	return [output, returncode]
+
     pwd = os.getcwd()
     os.chdir(exec_dir)
     try:
@@ -736,7 +740,7 @@ def caliper_run(target_exec_dir, server,target):
         classify = config_files[i].split("/")[-1].strip().split("_")[0]
         logging.debug(classify)
 
-	if classify == "server":
+	if classify == "server" and server:
             try:
 	    	server_ip = settings.get_value("SERVER","ip",type=str)
 	    	server_port = settings.get_value("SERVER","port",type=int)
