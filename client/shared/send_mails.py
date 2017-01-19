@@ -6,6 +6,7 @@
 #    Desc      :
 
 import os
+import HTMLParser
 import smtplib
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
@@ -56,6 +57,7 @@ class EmailContext(object):
         msg['Subject'] = self.subject
         msg['From'] = self.fro
         msg['To'] = ','.join(self.to)
+        msg['plaintext'] = self.plaintext
         msg.preamble = 'This is a multi-part message in MIME format'
         msgAlternative = MIMEMultipart('alternative')
         msg.attach(msgAlternative)
@@ -90,6 +92,8 @@ class EmailSender(object):
         # set the debug level
         # smtp.set_debuglevel(1)
         smtp.connect(auth.server)
+        smtp.starttls()
+        smtp.ehlo()
         smtp.login(auth.user, auth.password)
         smtp.sendmail(email.fro, email.to, email.getContext())
         smtp.quit()

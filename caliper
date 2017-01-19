@@ -393,11 +393,48 @@ if __name__=="__main__":
         flag = generate_web_tar()
 
     if args.webpage and args.send_email:
-        flag = generate_web_tar()
-        result_path = os.path.join(caliper_path.folder_ope.results_dir,
+         flag = generate_web_tar()
+         result_path = os.path.join(caliper_path.folder_ope.results_dir,
                 'test_results.tar.gz')
-        if os.path.exists(result_path):
+         if os.path.exists(result_path):
             send_mails.send_mails(result_path)
+            print("\n'test_results.tar.gz file has been sent, please check the mail\n")
+            sys.exit()
+         if not os.path.exists(result_path):
+             try:
+                 os.makedirs(caliper_path.folder_ope.workspace)
+             except Exception as e:
+                 print("\nCan't able to send the mail as 'test_results.tar.gz' file is not created\n")
+                 sys.exit()
+
+
+    if args.folder and args.send_email:
+        result_path = os.path.join(caliper_path.folder_ope.workspace, caliper_path.folder_ope.name,
+                                   'results_summary.log')
+        if os.path.exists(result_path):
+             send_mails.send_mails(result_path)
+             print("\n'results_summary.log' file has been sent, please check the mail\n")
+             sys.exit()
+        if not os.path.exists(result_path):
+         try:
+            os.makedirs(caliper_path.folder_ope.workspace)
+         except Exception as e:
+            print("\nCan't able to send the mail as 'results_summary.log' file is not present\n ")
+            sys.exit()
+
+    if not args.folder and args.send_email:
+            result_path = os.path.join(caliper_path.folder_ope.workspace, caliper_path.folder_ope.name,
+                                   'results_summary.log')
+            if os.path.exists(result_path):
+                send_mails.send_mails(result_path)
+                print("\n'results_summary.log' file has been sent , please check the mail\n")
+                sys.exit()
+            if not os.path.exists(result_path):
+             try:
+                os.makedirs(caliper_path.folder_ope.workspace)
+             except Exception as e:
+              print("\n Can't able to send the mail as 'results_summary.log' file is not present\n ")
+             sys.exit()
 
     if not args.webpage and args.send_email:
         current_path = os.getcwd()
