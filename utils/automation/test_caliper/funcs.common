@@ -1,0 +1,781 @@
+
+g_flParent="${BASH_SOURCE[1]}"
+g_fnCur=$(basename "${BASH_SOURCE[0]}")
+g_dpCur=$(dirname  "${BASH_SOURCE[0]}")
+drCur0=${PWD}
+cd "${g_dpCur}" >/dev/null
+g_dpCur=${PWD}
+cd "${drCur0}" >/dev/null
+g_pfnCur=${g_dpCur}/${g_fnCur}
+
+#####################
+#check load from command line
+if [ -z ${g_flParent} ]; then
+    g_defSourceFiles=$(grep -vF "${g_pfnCur}" <<< "${g_defSourceFiles}")
+fi
+
+#check loaded already
+sPF1=$(grep -F "${g_pfnCur}" <<< "${g_defSourceFiles}")
+if [ "${sPF1}" == "${g_pfnCur}" ]; then
+	return 100
+fi
+export g_defSourceFiles=${g_defSourceFiles}${g_pfnCur}$'\n'
+printf "%s[%3d]%5s: Load [${g_pfnCur}] call by [${g_flParent}]\n" "${FUNCNAME[0]}" ${LINENO} "Info"
+
+#####################
+#Load Public functions
+export g_fn_funcs_common_20160930_100624_040247817=${g_fnCur}
+export g_dp_funcs_common_20160930_100624_040247817=${g_dpCur}
+
+#####################
+#Load config
+g_fnCur=${g_fn_funcs_common_20160930_100624_040247817}
+g_dpCur=${g_dp_funcs_common_20160930_100624_040247817}
+
+. ${g_dpCur}/${g_fnCur%%.*}.cfg
+
+#####################
+#init
+export g_IFS0=${IFS}
+export g_IPPro=$(ip a |grep "inet[ \t]\+" |grep eth |sed "s/^[ \t]*inet[ \t]\+\([0-9\.]\+\).\+$/\1/")
+export g_reName='\<[A-Za-z_]\+[0-9A-Za-z_]*\>'
+
+sInfo1=$(lsb_release -i 2>/dev/null)
+if [ $? -eq 0 ]; then
+    export g_Distributor=$(echo "${sInfo1}" |cut -d: -f2 |sed "s@^[ \t]\+@@;s@[ \t]\+\$@@" 2>/dev/null)
+else
+    sInfo1=$(cat /etc/os-release 2>/dev/null)
+    if [ $? -eq 0 ]; then
+        export g_Distributor=$(echo "${sInfo1}" |grep "^ID=" |sed 's#^.*=\(.*\)[ \t]*#\1#' |sed "s#^[ \t\"']\+##;s#[ \t\"']\+\$##")
+    else
+        #cat /etc/issue
+        printf "%s[%3s]%5s: Get Distributor ID failed\n" "${FUNCNAME[0]}" ${LINENO} "Error" 1>&2
+        exit 1
+    fi
+fi
+
+g_sCmdCmdLine='
+    if [ "$(id -u)" -eq 0 ]; then
+        sp1=#
+        sp2=#
+    else
+        sp1=$
+        sp2=\\$
+    fi
+    export PS1="[\u@\H:\w]${sp1} "
+    export PS2=
+    export g_sLikeCmdLine="${USER}@${HOSTNAME}[^:]*:[^:#$]*${sp2}"
+'
+eval "${g_sCmdCmdLine}"
+
+export g_drTmp=~/tmp
+mkdir -p ${g_drTmp}
+
+export g_drLnd=/home/hezhongyan/del/work
+
+#printf "%s[%3s]%5s: g_sLikeCmdLine: ${g_sLikeCmdLine}\n" "${FUNCNAME[0]}" ${LINENO} "Info"
+
+#####################
+#Alone Functions
+LineNos()
+{
+    #find from next line
+    let nFrom=${1}+1
+    sPattern=${2}
+    eval sTxt=\${${3}}
+    bOne=${4:-false}
+
+    sSubCmdq=
+    if ${bOne}; then
+        sSubCmdq=";q"
+    fi
+    nA=$(sed -n "${nFrom},\${/${sPattern}/{=${sSubCmdq}}}" <<< "${sTxt}")
+
+    if [ -z "${nA}" ]; then
+        return 1
+    fi
+
+    echo "${nA}"
+
+    return 0
+}
+export -f LineNos
+
+SectLineNosPairs()
+{
+    nFrom=${1}
+    nPattern=${2}
+    sFVarN=${3}
+    nFormat=${4}
+
+    nLMax=$(eval sed -n '\$=' '<<<' \"\${${sFVarN}}\")
+
+    nA=$(LineNos ${nFrom} "${nPattern}" "${sFVarN}")
+    if [ $? -ne 0 ]; then
+        return 1
+    fi
+
+    nL3=
+    IFS=$'\n'; for n1 in ${nA}; do IFS=${g_IFS0};
+        nL2=$(LineNos ${n1} "${nFormat}" "${sFVarN}" true)
+        if [ $? -eq 0 ]; then
+            let n2=${nL2}-1
+            nL3="${nL3}"$'\n'"${n1},${n2}"
+        else
+            nL3="${nL3}"$'\n'"${n1},${nLMax}"
+        fi
+    IFS=$'\n'; done; IFS=${g_IFS0};
+    nL3=$(echo "${nL3}" |sed "1d")
+    echo "${nL3}"
+
+    return 0
+}
+export -f SectLineNosPairs
+
+Pure2Dir()
+{
+    dr1=$(echo "${1}" |sed 's#^[ \t]\+##;s#[ \t]\+$##')
+    dr2=$(echo "${2}" |sed 's#^[ \t]\+##;s#[ \t]\+$##')
+    
+    echo "${dr2}" |grep -q "^/"
+    if [ $? -ne 0 ]; then
+        dr2="${dr1}/${dr2}"
+    fi
+
+    #/a1/..
+    echo "${dr2}" |grep -q "[^./]\+/\.\."
+    while [ $? -eq 0 ]; do
+        dr2=$(echo "${dr2}" |sed "s#[^./]\+/\.\.##")
+        echo "${dr2}" |grep -q "[^./]\+/\.\."
+    done
+
+    #/..
+    echo "${dr2}" |grep -q "^/\.\."
+    while [ $? -eq 0 ]; do
+        dr2=$(echo "${dr2}" |sed "s#^/\.\.#/#")
+        echo "${dr2}" |grep -q "^/\.\."
+    done
+
+    #a1/.//./
+    echo "${dr2}" |sed "s#/\./#/#g;s#//\+#/#g;s#/\.\$##g;s#/\$##"
+}
+export -f Pure2Dir
+
+LoadSourceFileParent()
+{
+    drCur1=${1}
+    fsrc1=${2}
+    flPub1=${drCur1}/${fsrc1}
+    if [ ! -f "${flPub1}" ]; then
+        s1=$(find ${drCur1}/.. -type f -name "${fsrc1}")
+        if [ -z "${s1}" ]; then
+            printf "%s[%3d]%5s: Not found ${fsrc1}\n" "${FUNCNAME[0]}" ${LINENO} "Info"
+            exit 1
+        fi
+        flPub1=${s1}
+    fi
+    $(sed "s#^#. #" <<< "${flPub1}")
+}
+export -f LoadSourceFileParent
+
+InputPwd()
+{
+    vName=${1}
+    sHU=${2}
+
+    read -s -p "Please input password for ${sHU}:" ${vName}
+}
+export -f InputPwd
+
+ExpectExecCmd()
+{
+    sCmd=${1}
+
+    expect -c '
+        spawn -noecho '"${sCmd}"'
+        expect {
+            -re {continue connect.* \(yes/no\)\?} {
+                send "yes\n"
+                exp_continue
+            }
+        }
+    '
+}
+export -f ExpectExecCmd
+
+ExpectBashExec()
+{
+    #ExpectBashExec "apt-get update"
+    #################
+    sCmd=${1}
+    nCmdLine=${2}
+
+    sPwdPro=${3}
+    nUseTimePwd=${4}
+
+    bExitErr=${5:-false}
+    
+    eval nWhileMaxTimes=\${6:-${g_nWhileMaxTimes}}
+    #################
+
+    sCmd=$(echo "${sCmd}" |sed "/^[ \t]*#/d;/^[ \t]*$/d;")
+    sBlank=$(echo "${sCmd}" |sed -n "1p" |sed "s#^\([ \t]*\).*\$#\1#")
+    if [ -n "${sBlank}" ]; then
+        sCmd=$(echo "${sCmd}" |sed "s#^${sBlank}##")
+    fi
+
+    if [ -z "${nCmdLine}" ]; then
+        nCmdLine=$(echo "${sCmd}" |wc -l)
+    fi
+    if [ -z "${nUseTimePwd}" ]; then
+        nUseTimePwd=$(echo "${sCmd}" |grep -o "\(&&\|;\|^[ \t]*\)sudo[ \t]" |wc -l)
+        if [ ${nUseTimePwd} -eq 0 -a -n "${sPwdPro}" ]; then
+            nUseTimePwd=1
+        fi
+    fi
+
+    #printf "%s[%3s]%5s: [${sCmd}]\n" "${FUNCNAME[0]}" ${LINENO} "Info"
+    expect -c '
+        set timeout -1
+        set sPwd "'"${sPwdPro}"'"
+        set nMaxTimes "'"${nWhileMaxTimes}"'"
+        set n1 0
+        while {${n1}<${nMaxTimes}} {
+            if {${n1}>0} {
+                send_user "\n\n${n1} times, try it again after sleep 60s ...\n"
+                sleep 60
+            }
+
+            set nUTPwd "'"${nUseTimePwd}"'"
+            set iRt1 1
+            set nBash 0
+            spawn -noecho /bin/bash
+            #spawn /bin/bash
+            expect {
+                -re {continue connect.* \(yes/no\)\?} {
+                    send "yes\n"
+                    exp_continue
+                }
+                -re {[Pp]assword(|[ \t].*):} {
+                    #send_tty "${sPwd}\n"
+                    if {${nUTPwd}!=0} {
+                        send "${sPwd}\r"
+                        incr nUTPwd -1
+                        exp_continue
+                    } else {
+                        send_tty "Error: need passwd?\n"
+                        set iRt1 3
+                        send_tty "\n"
+                    }
+                }
+                -re "Sorry, try again\." {
+                    set nUTPwd 0
+                    set iRt1 3
+                    send_tty "\n"
+                }
+                '"${g_sPattanOther}"'
+                -re {'"${g_sLikeCmdLine}"'} {
+                    #send_user \[$expect_out(1,string)]\n
+                    switch -ex "${nBash}" {
+                        0 {
+                            incr nBash +1
+
+                            set nCL1 0
+                            send {'"${sCmd}"'}
+                            send \n
+
+                            exp_continue
+                        }
+                        1 {
+                            incr nCL1 +1
+                            if {${nCL1}<"'"${nCmdLine}"'"} {
+                                exp_continue
+                            }
+                            incr nBash +1
+
+                            send {iStatusCmdExit=$?; echo "['"${g_sLikeKeyCmdRlt}"': \$?=${iStatusCmdExit}]"; exit ${iStatusCmdExit} 2>/dev/null;}
+                            send \n
+                            expect {
+                                -re {'"${g_sLikeKeyCmdRlt}"': \$\?=([0-9-]+)[^0-9-]*$} {
+                                    #send_user \[$expect_out(1,string)]\n
+                                    set iRt2 $expect_out(1,string)
+                                    if {${iRt2}==0} {
+                                        set iRt1 0
+                                    } else {
+                                        set iRt1 5
+                                    }
+                                }
+                            }
+                        }
+                        default {
+                            send_user "not deal\[${nBash}]\n"
+                            set iRt1 126
+                        }
+                    }
+                    #send_tty "\n"
+                }
+            }
+            switch -ex "${iRt1}" {
+                0 {
+                    #send_user "\n"
+                    break
+                }
+                4 - 5 {
+                }
+                default {
+                    break
+                }
+            }
+            incr n1 +1
+        }
+        if {${n1}>0} {
+            send_user "while {${n1}<${nMaxTimes}} times exit ${iRt1}\n"
+        }
+        exit ${iRt1}
+    '
+    iRt1=$?
+    g_sPattanOther=
+    if [ ${iRt1} -ne 0 ]; then
+        #printf "%s[%3s]%5s: test_case_id:${sCmd} units:apps measurement:install result:fail [exit ${iRt1}]\n" "${FUNCNAME[0]}" ${LINENO} "Error"
+        sH1=$(printf "%s[%3s]%5s" "${FUNCNAME[0]}" ${LINENO} "Error");
+        echo "${sH1}: [${sCmd}] fail[${iRt1}] bExitErr[${bExitErr}]" 1>&2
+        if [ "${bExitErr}" == "true" ]; then
+            exit ${iRt1}
+        fi
+    #else
+        #test_case_id:${sCmd} units:MBperSecond measurement:t_read result:pass"
+        #printf "%s[%3s]%5s: test_case_id:${sCmd} units:apps measurement:install result:pass [exit ${iRt1}]\n" "${FUNCNAME[0]}" ${LINENO} "Info"
+    fi
+
+    return ${iRt1}
+}
+export -f ExpectBashExec
+
+ExpectBashC()
+{
+    #################
+    sCmd=${1}
+
+    sPwdPro=${2}
+    nUseTimePwd=${3}
+
+    bExitErr=${4:-false}
+    
+    eval nWhileMaxTimes=\${5:-${g_nWhileMaxTimes}}
+
+    #################
+
+    sCmd1=$(sed '/^[ \t]*$/d;/^[ \t]*#/d' <<< "${sCmd}")
+    if [ -z "${sCmd1}" ]; then
+        return 0
+    fi
+
+    sCmd=${sCmd}'
+        iStatusCmdExit=$?
+        echo "['"${g_sLikeKeyCmdRlt}"': \$?=${iStatusCmdExit}]"
+        echo
+    '
+
+    sBlank=$(sed -n "1p" <<< "${sCmd}" |sed "s#^\([ \t]*\).*\$#\1#")
+    if [ -n "${sBlank}" ]; then
+        sCmd=$(sed "s#^${sBlank}##" <<< "${sCmd}")
+    fi
+
+    if [ -z "${nUseTimePwd}" ]; then
+        nUseTimePwd=$(grep -o "\(&&\|;\|^[ \t]*\)sudo[ \t]" <<< "${sCmd}" |wc -l)
+        if [ ${nUseTimePwd} -eq 0 -a -n "${sPwdPro}" ]; then
+            nUseTimePwd=1
+        fi
+    fi
+
+    #printf "%s[%3s]%5s: [${sCmd}]\n" "${FUNCNAME[0]}" ${LINENO} "Info"
+    expect -c '
+        set timeout -1
+        set sPwd "'"${sPwdPro}"'"
+        set nMaxTimes "'"${nWhileMaxTimes}"'"
+        set n1 0
+        while {${n1}<${nMaxTimes}} {
+            if {${n1}>0} {
+                send_user "\n\n${n1} times, try it again after sleep 60s ...\n"
+                sleep 60
+            }
+
+            set nUTPwd "'"${nUseTimePwd}"'"
+            set iRt1 1
+            set nDone 0
+            spawn /bin/bash -c {'"${sCmd}"'}
+            #spawn /bin/bash
+            expect {
+                -re {continue connect.* \(yes/no\)\?} {
+                    send "yes\n"
+                    exp_continue
+                }
+                -re {[Pp]assword(|[ \t].*):} {
+                    #send_tty "${sPwd}\n"
+                    if {${nUTPwd}!=0} {
+                        send "${sPwd}\r"
+                        incr nUTPwd -1
+                        exp_continue
+                    } else {
+                        send_tty "Error: need passwd?\n"
+                        set iRt1 3
+                        send_tty "\n"
+                    }
+                }
+                -re "Sorry, try again\." {
+                    set nUTPwd 0
+                    set iRt1 3
+                    send_tty "\n"
+                }
+                '"${g_sPattanOther}"'
+                -re {'"${g_sLikeCmdLine}"'} {
+                    if {!${nDone}} {
+                        exp_continue
+                    }
+                }
+                -re {'"${g_sLikeKeyCmdRlt}"': \$\?=([0-9-]+)[^0-9-]*$} {
+                    set nDone 1
+                    #send_user \[$expect_out(1,string)]\n
+                    set iRt2 $expect_out(1,string)
+                    if {${iRt2}==0} {
+                        set iRt1 0
+                    } else {
+                        set iRt1 5
+                    }
+                }
+                eof {
+                    catch wait sResult
+                    set iRt1 [lindex ${sResult} 3]
+                    send_user "eof\[${sResult}]\n"
+                }
+            }
+            switch -ex "${iRt1}" {
+                0 {
+                    #send_user "\n"
+                    break
+                }
+                4 - 5 {
+                }
+                default {
+                    break
+                }
+            }
+            incr n1 +1
+        }
+        if {${n1}>0} {
+            send_user "while {${n1}<${nMaxTimes}} times exit ${iRt1}\n"
+        }
+        exit ${iRt1}
+    '
+    iRt1=$?
+    g_sPattanOther=
+    if [ ${iRt1} -ne 0 ]; then
+        #printf "%s[%3s]%5s: test_case_id:${sCmd} units:apps measurement:install result:fail [exit ${iRt1}]\n" "${FUNCNAME[0]}" ${LINENO} "Error"
+        sH1=$(printf "%s[%3s]%5s" "${FUNCNAME[0]}" ${LINENO} "Error");
+        echo "${sH1}: [${sCmd}] fail[${iRt1}] bExitErr[${bExitErr}]" 1>&2
+        if [ "${bExitErr}" == "true" ]; then
+            exit ${iRt1}
+        fi
+    #else
+        #test_case_id:${sCmd} units:MBperSecond measurement:t_read result:pass"
+        #printf "%s[%3s]%5s: test_case_id:${sCmd} units:apps measurement:install result:pass [exit ${iRt1}]\n" "${FUNCNAME[0]}" ${LINENO} "Info"
+    fi
+
+    return ${iRt1}
+}
+export -f ExpectBashC
+
+#/etc/fuse.conf
+#  #user_allow_other -> user_allow_other
+OpenACmd()
+{
+    sKey1=${1}
+    fl1=${2}
+
+    grep -q "^[ \t#]*${sKey1}\($\|[; \t]\+\)" "${fl1}"
+    if [ $? -eq 0 ]; then
+        grep -q "^[ \t]*${sKey1}\($\|[; \t]\+\)" "${fl1}"
+        if [ $? -ne 0 ]; then
+            sed -i "s/^\([ \t]*\)#\+${sKey1}\($\|[; \t]\+\)/\1${sKey1}\2/" "${fl1}"
+        fi
+    else
+        sed -i "\$a ${sKey1}" "${fl1}"
+    fi
+}
+export -f OpenACmd
+
+PureMarkSign()
+{
+    local sVarN=${1}
+    local bSort=${2:-false}
+
+    eval local s1=\${${sVarN}}
+    s1=$(sed "/^[ \t]*\$/d;s/^[ \t#]*\[\{0,1\}[ \t]*\([A-Za-z_]\+[0-9A-Za-z_]*\)[ \t]*\]\{0,1\}[ \t]*\(\|#.*\)\$/\1/;s/^[ \t]*:\+[ \t]*//;s/[ \t]*:\+[ \t]*\$//;s/^[ \t]\+//;s/[ \t]\+\$//" <<< "${s1}")
+
+    if [ "${bSort}" == "true" ]; then
+        s1=$(sort -u <<< "${s1}")
+    fi
+
+    eval ${sVarN}=\${s1}
+}
+export -f PureMarkSign
+
+AddLineNo()
+{
+    local sVarN=${1}
+    local nStart=${2}
+    local type=${3}
+
+    local sMark=
+    case "${type}" in
+    add)
+        sMark="+"
+        ;;
+    del)
+        sMark="-"
+        ;;
+    mod)
+        sMark="\*"
+        ;;
+    nul)
+        sMark=
+        ;;
+    esac
+
+    eval local s1=\${${sVarN}}
+    s1=$(nl -ba -n rn -w3 -v${nStart} -s": " <<< "${s1}" |sed "s/^/${sMark}/;")
+
+    eval ${sVarN}=\${s1}
+}
+export -f AddLineNo
+
+CountLineFields()
+{
+    local sP=${1}
+    local sLineFields=${2}
+    local varNField=${3}
+
+    local sP1=$(sed "s/#/\\\#/g" <<< "${sP}")
+    local sF1=$(sed "s#${sP1}#\n#g" <<< "${sLineFields}")
+    sF1=$(sed "/^[ \t]*\$/d" <<< "${sF1}")
+    local nField1=$(grep -o "${g_reName}" <<< "${sF1}" |wc -l)
+
+    eval ${varNField}=\${nField1}
+}
+export -f CountLineFields
+
+##########
+#Complex Functions
+SetShellCfg()
+{
+    local sKey=${1}
+    local sVal=${2}
+    local sFVarN=${3}
+    local sVarModifyN=${4}
+    local bAlign=${5:-false}
+
+    #set -x
+    eval local sTxt=\${${sFVarN}}
+    nLVar=$(SectLineNosPairs 0 "^[ \t]*\(eval[ \t]\+\)*\(export[ \t]\+\|\)${sKey}[ \t]*${g_vsp}" "${sFVarN}" "^[ \t]*\(eval[ \t]\+\)*\(export[ \t]\+\|\)[a-zA-Z_]\+[a-zA-Z_0-9]*[ \t]*${g_vsp}")
+    if [ -z "${nLVar}" ]; then
+        printf "%s[%3d]%5s: [${sKey}] not exist\n" "${FUNCNAME[0]}" ${LINENO} "Error"
+        return 1
+    fi
+    nLVar=$(sed -n "\$p" <<< "${nLVar}")
+    s1=$(sed -n "${nLVar}p" <<< "${sTxt}")
+    n2=$(sed -n "\$=" <<< "${s1}")
+    if [ ${n2} -gt 1 ]; then
+        nsFunc=$(grep -n "^[ \t]*[a-zA-Z_]\+[a-zA-Z_0-9]*[ \t]*()[ \t]*\(\|#.*\)$" <<< "${s1}")
+        if [ -n "${nsFunc}" ]; then
+            n2=$(cut -d: -f1 <<< "${nsFunc}")
+            let n2-=1
+        fi
+        sed -n "${n2}p" <<< "${s1}" |grep -q "^[ \t]*\(\|#.*\)\$"
+        while [ $? -eq 0 ]; do
+            let n2-=1
+            sed -n "${n2}p" <<< "${s1}" |grep -q "^[ \t]*\(\|#.*\)\$"
+        done
+    fi
+    s1=$(sed -n "1,${n2}p" <<< "${s1}")
+    sEnv=$(sed "1s#^\([ \t]*\)\(eval[ \t]\+\)*\(export[ \t]\+\|\)\(${sKey}[ \t]*${g_vsp}[ \t]*\)\(.*\)\$#\5#" <<< "${s1}")
+    local sValue1=${sEnv}
+    if [ $? -ne 0 ]; then
+        printf "%s[%3d]%5s: [${sEnv}] not correct\n" "${FUNCNAME[0]}" ${LINENO} "Error"
+        return 1
+    fi
+
+    n3=$(sed -n "\$=" <<< "${sValue1}")
+    if [ ${n3} != ${n2} ]; then
+        printf "%s[%3d]%5s: [${sEnv}] rows [ ${n3} != ${n2} ]\n" "${FUNCNAME[0]}" ${LINENO} "Error"
+        return 1
+    fi
+
+    #key and value
+    sBlank=$(sed -n "1p" <<< "${s1}" |sed "s#^\([ \t]*\)\(eval[ \t]\+\)*\(export[ \t]\+\|\)\(${sKey}[ \t]*${g_vsp}[ \t]*\)\(.*\)\$#\1#")
+    sVar=$(sed -n "1p" <<< "${s1}" |sed "s#^\([ \t]*\)\(eval[ \t]\+\)*\(export[ \t]\+\|\)\(${sKey}[ \t]*${g_vsp}[ \t]*\)\(.*\)\$#\1\2\3\4#")
+    grep -q "\([^ \t]\)\( \{2,\}\|\t\+\)" <<< "${sVar}"
+    if [ $? -eq 0 ]; then
+        #space arrange
+        sVar=$(sed "s#\([^ \t]\)\( \{2,\}\|\t\+\)#\1 #" <<< "${sVar}")
+    fi
+    sVar=${sVar}$(sed -n "1p" <<< "${sVal}")
+    sVal=$(sed "1d" <<< "${sVal}")
+
+    #position of line start and end
+    n1=$(cut -d, -f1 <<< "${nLVar}")
+    let n2=n1+n2-1
+
+    sTxt=$(sed "${n1}{
+        c${sVar}
+    }" <<< "${sTxt}")
+
+    if [ ${n2} -gt ${n1} ]; then
+        let n11=n1+1
+        sTxt=$(sed "${n11},${n2}d" <<< "${sTxt}")
+    fi
+
+    nNew2=${n1}
+    if [ -n "${sVal}" ]; then
+        if [ "${bAlign}" == "true" ]; then
+            sVal=$(sed "s/^[ \t]*/${sBlank}\t/;\$s/^[ \t]*/${sBlank}/;" <<< "${sVal}")
+        fi
+        sVal1=$(sed "s/^[ \t]/\\\\&/;s/^/a/;" <<< "${sVal}")
+        nNew2=$(sed -n "\$=" <<< "${sVal1}")
+        let nNew2+=n1
+        sTxt=$(sed "${n1}{
+            ${sVal1}
+        }" <<< "${sTxt}")
+    fi
+
+    s2=$(sed -n "${n1},${nNew2}p" <<< "${sTxt}")
+    if [ "${s1}" != "${s2}" ]; then
+        AddLineNo "s2" "${n1}" mod
+        s2=$'\n'${s2}$'\n'
+        eval ${sVarModifyN}=\${${sVarModifyN}}\${s2}
+    fi
+
+    eval ${sFVarN}=\${sTxt}
+    return 0
+}
+export -f SetShellCfg
+
+SetShellCfgErrorExit()
+{
+    local sKey=${1}
+    local sVal=${2}
+    local sVarModifyN=${3}
+    local sVarN=${4}
+    local flCfgN=${5}
+    local flLog=${6}
+    local bAlign=${7:-false}
+
+    if [ -z "${flLog}" ]; then
+        flLog=/dev/null
+    fi
+
+    SetShellCfg "${sKey}" "${sVal}" "${sVarN}" "${sVarModifyN}" "${bAlign}"
+    if [ $? -ne 0 ]; then
+        printf "%s[%3d]%s[%3d]%5s: [${sKey}] in [${flCfgN}]\n" "${FUNCNAME[1]}" "${BASH_LINENO[0]}" "${FUNCNAME[0]}" ${LINENO} "Info" |tee -a "${flLog}"
+        exit 1
+    fi
+}
+export -f SetShellCfgErrorExit
+
+if false; then
+    GetShellCfg "targetIP" sIPTarget sSect
+    GetShellCfg "platformName" sPlatformName sSect true
+    GetShellCfg "tools" sTools sSect
+    GetShellCfg "entryProgram" sEntryProgram sSect
+    GetShellCfg "tag" sTag sSect
+    GetShellCfg "IDs" sIDs sSect
+    GetShellCfg "caliperCmd" sCaliperCmd sSect true
+    GetShellCfg "runMode" sRunMode sSect
+fi
+GetShellCfg()
+{
+    local sKey=${1}
+    local sVarVal=${2}
+    local sFVarN=${3}
+    local bInterpret=${4:-false}
+
+    #set -x
+    eval local sTxt=\${${sFVarN}}
+    nLVar=$(SectLineNosPairs 0 "^[ \t]*\(eval[ \t]\+\)*\(export[ \t]\+\|\)${sKey}[ \t]*${g_vsp}" "${sFVarN}" "^[ \t]*\(eval[ \t]\+\)*\(export[ \t]\+\|\)[a-zA-Z_]\+[a-zA-Z_0-9]*[ \t]*${g_vsp}")
+    if [ -z "${nLVar}" ]; then
+        eval ${sVarVal}=
+        return 1
+        printf "%s[%3d]%5s: [${sKey}] not exist\n" "${FUNCNAME[0]}" ${LINENO} "Error"
+    fi
+    nLVar=$(sed -n "\$p" <<< "${nLVar}")
+    s1=$(sed -n "${nLVar}p" <<< "${sTxt}")
+    n2=$(sed -n "\$=" <<< "${s1}")
+    if [ ${n2} -gt 1 ]; then
+        nsFunc=$(grep -n "^[ \t]*[a-zA-Z_]\+[a-zA-Z_0-9]*[ \t]*()[ \t]*\(\|#.*\)$" <<< "${s1}")
+        if [ -n "${nsFunc}" ]; then
+            n2=$(cut -d: -f1 <<< "${nsFunc}")
+            let n2-=1
+        fi
+        sed -n "${n2}p" <<< "${s1}" |grep -q "^[ \t]*\(\|#.*\)\$"
+        while [ $? -eq 0 ]; do
+            let n2-=1
+            sed -n "${n2}p" <<< "${s1}" |grep -q "^[ \t]*\(\|#.*\)\$"
+        done
+    fi
+    s1=$(sed -n "1,${n2}p" <<< "${s1}")
+    sEnv=$(sed "1s#^\([ \t]*\)\(eval[ \t]\+\)*\(export[ \t]\+\|\)\(${sKey}[ \t]*${g_vsp}[ \t]*\)\(.*\)\$#\5#" <<< "${s1}")
+    local sValue1=${sEnv}
+    if [ $? -ne 0 ]; then
+        printf "%s[%3d]%5s: [${sEnv}] not correct\n" "${FUNCNAME[0]}" ${LINENO} "Error"
+        return 1
+    fi
+
+    n3=$(sed -n "\$=" <<< "${sValue1}")
+    if [ ${n3} != ${n2} ]; then
+        printf "%s[%3d]%5s: [${sEnv}] rows [ ${n3} != ${n2} ]\n" "${FUNCNAME[0]}" ${LINENO} "Error"
+        return 1
+    fi
+
+    #sValue1=$(sed "1s#^[ \t]['\"]##;\$s#['\"][ \t]*\(\|;[^'\"]*\)\$##" <<< "${sValue1}")
+    sValue1=$(sed -z "s#;[ \t]*\(\|[^'\"]\+\|[^']*'.*'[^']*\|[^\"]*\".*\"[^\"]*\)##" <<< "${sValue1}")
+    sValue1=$(sed -z "s#^[ \t]*'\(.*\)'[ \t]*#\1#;t;s#^[ \t]*\"\(.*\)\"[ \t]*#\1#;" <<< "${sValue1}")
+    if [ "${bInterpret}" == "true" ]; then
+        eval sValue1="'${sValue1}'"
+    fi
+    eval ${sVarVal}=\${sValue1}
+    return 0
+}
+export -f GetShellCfg
+
+GetFieldOfMenu()
+{
+    sMTitle=${1}
+    sMField=${2}
+    sMFieldValueVar=${3}
+    sFlTxtVar=${4}
+    bOnlyOne=${5:-true}
+
+    sVal0=
+    sVal1=
+    eval sFlTxt1=\${${sFlTxtVar}}
+    PureMarkSign "sMTitle"
+    nL1=$(SectLineNosPairs 0 "^[ \t#]*\[${sMTitle}\][ \t]*\(\|#.*\)\$" ${sFlTxtVar} '^[ \t#]*\[[A-Za-z_]\+[0-9A-Za-z_]*\][ \t]*\(\|#.*\)$')
+    IFS=$'\n'; for nL2 in ${nL1}; do IFS=${g_IFS0};
+        s1=$(sed -n "${nL2}p" <<< "${sFlTxt1}" |grep "^[ \t#]*${sMField}[ \t]*${g_vsp}[ \t]*")
+        sVal0=${sVal0}$(sed "s/^[ \t#]*${sMField}[ \t]*${g_vsp}[ \t]*//" <<< "${s1}")${sVal1}
+        if ${bOnlyOne}; then break; fi
+        sVal1=$'\n'
+    IFS=$'\n'; done; IFS=${g_IFS0};
+
+    eval ${sMFieldValueVar}=\${sVal0}
+}
+export -f GetFieldOfMenu
+
+#####################
+if false; then
+IFS=$'\n'; for f1 in ${g_flList}; do IFS=${g_IFS0};
+    printf "%s[%3s]%5s: ${f1}\n" "${FUNCNAME[0]}" ${LINENO} "Info"
+   #printf "%s[%3s]%5s: ${f1}\n" "${FUNCNAME[0]}" ${LINENO} "Error" 1>&2
+   #sed "s/^[ \t]*#\([ \t#]*[a-zA-Z_]\+[a-zA-Z_0-9]*[ \t]\{0,1\}\)[ \t]*=\([ \t]\{0,1\}\)[ \t]*/\1=\2/" ${f1}
+IFS=$'\n'; done; IFS=${g_IFS0};
+fi
+

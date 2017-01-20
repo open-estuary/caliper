@@ -1,0 +1,592 @@
+
+g_flParent="${BASH_SOURCE[1]}"
+g_fnCur=$(basename "${BASH_SOURCE[0]}")
+g_dpCur=$(dirname  "${BASH_SOURCE[0]}")
+drCur0=${PWD}
+cd "${g_dpCur}" >/dev/null
+g_dpCur=${PWD}
+cd "${drCur0}" >/dev/null
+g_pfnCur=${g_dpCur}/${g_fnCur}
+
+#####################
+#check load from command line
+if [ -z ${g_flParent} ]; then
+    g_defSourceFiles=$(grep -vF "${g_pfnCur}" <<< "${g_defSourceFiles}")
+fi
+
+#check loaded already
+sPF1=$(grep -F "${g_pfnCur}" <<< "${g_defSourceFiles}")
+if [ "${sPF1}" == "${g_pfnCur}" ]; then
+	return 100
+fi
+export g_defSourceFiles=${g_defSourceFiles}${g_pfnCur}$'\n'
+printf "%s[%3d]%5s: Load [${g_pfnCur}] call by [${g_flParent}]\n" "${FUNCNAME[0]}" ${LINENO} "Info"
+
+#####################
+#Load Public functions
+export g_fn_caliper_common=${g_fnCur}
+export g_dp_caliper_common=${g_dpCur}
+
+drCur1=${g_dpCur}
+fsrc1=funcs.common
+flPub1=${drCur1}/${fsrc1}
+if [ ! -f "${flPub1}" ]; then
+    s1=$(find ${drCur1}/.. -type f -name "${fsrc1}")
+    if [ -z "${s1}" ]; then
+        printf "%s[%3d]%5s: Not found ${fsrc1}\n" "${FUNCNAME[0]}" ${LINENO} "Info"
+        exit 1
+    fi
+    flPub1=${s1}
+fi
+$(sed "s#^#. #" <<< "${flPub1}")
+
+#####################
+#Load config
+g_fnCur=${g_fn_caliper_common}
+g_dpCur=${g_dp_caliper_common}
+
+. ${g_dpCur}/${g_fnCur%%.*}.cfg
+
+#####################
+#init
+export g_flLog=${g_drTmp}/${g_fnCur%%.*}.log
+if [ -f "${g_flLog}" ]; then
+    mv ${g_flLog} ${g_flLog}.bak
+fi
+
+export g_flList=$(echo "${g_flList}" |sed "/^[ \t]*#/d")
+
+###########
+
+#####################
+#func
+DirFilter()
+{
+    sPath0=${1}
+    drPre0=${2}
+
+    #output_1 output
+    sN1=$(basename "${drPre0}" |grep -o "_[0-9]\+\$")
+
+    drPre1=$(dirname "${drPre0}")/filter${sN1}
+    mkdir -p "${drPre1}"
+    sPath1=${drPre1}/$(basename "${sPath0}")
+
+    echo "${sPath1}"
+}
+export -f DirFilter
+
+#[symbol]/[title]/[key]
+#many symbols[enable/disable] in one file
+EnableMulti()
+{
+    sList=${1}
+    f1=${2}
+
+    if [ -z "${sList}" ]; then
+        return 0
+    fi
+
+    echo
+    g_sFileTxt=$(cat ${f1})
+    nWhere=0
+    IFS=$'\n'; for s1 in ${sList}; do IFS=${g_IFS0};
+        s2=$(echo "${s1}" |sed 's/^[ \t#[]\+//;s/[] \t]\+.*$//')
+        echo "${s1}" |grep -q "^[ \t]*#"
+        if [ $? -eq 0 ]; then
+            c1fr=
+            c1to=#
+        else
+            c1fr=#
+            c1to=
+        fi
+        nL1=$(SectLineNosPairs 0 '^[ \t#]*'"\[${s2}\]" g_sFileTxt '^[ \t#]*\[[a-zA-Z_]\+[a-zA-Z_0-9]*\]')
+        if [ $? -ne 0 ]; then
+            printf "%s[%3s]%5s: [${s2}] not find in ${f1}\n" "${FUNCNAME[0]}" ${LINENO} "Warn"
+            continue
+        fi
+        nRows=$(echo "${nL1}" |wc -l)
+        if [ ${nRows} -gt 1 ]; then
+            read -p "[${s2}] ${nRows} rows in ${f1}"$'\n'"do? (yes/no):" reply
+            echo "${reply}" |grep -iq "^[ \t]*y\(es\)\{0,1\}[ \t]*$"
+            if [ $? -ne 0 ]; then
+                continue
+            fi
+        fi
+
+        IFS=$'\n'; for l1 in ${nL1}; do IFS=${g_IFS0};
+            n1=$(cut -d, -f1 <<< "${l1}")
+            n2=$(cut -d, -f2 <<< "${l1}")
+            g_sFileTxt=$(sed "${n1}s/^${c1fr}/${c1to}/" <<< "${g_sFileTxt}")
+            let n1+=1
+            if [ ${n1} -le ${n2} ]; then
+                g_sFileTxt=$(sed "${n1},${n2}s/^[ \t]*${c1fr}\(#*[a-zA-Z_]\+[a-zA-Z_0-9]*[ \t]*${g_vsp}.*\)\$/${c1to}\1/" <<< "${g_sFileTxt}")
+            fi
+            nl -w3 -s: -b a <<< "${g_sFileTxt}" |sed -n "${l1}p"
+            let nWhere+=1
+        IFS=$'\n'; done; IFS=${g_IFS0};
+    IFS=$'\n'; done; IFS=${g_IFS0};
+
+    if [ ${nWhere} -gt 0 ]; then
+        echo "${g_sFileTxt}" >${f1}
+        printf "%s[%3s]%5s: ${f1} ${nWhere} places changed\n" "${FUNCNAME[0]}" ${LINENO} "Info"
+    fi
+}
+export -f EnableMulti
+
+RowsAsk()
+{
+    sKey=${1}
+    sRows=$(echo "${2}" |sed 's#^[ \t]\+##;s#[ \t]\+$##')
+
+    if [ -z "${sRows}" ]; then
+        printf "%s[%3s]%5s: ${sKey} not exist\n" "${FUNCNAME[0]}" ${LINENO} "Warn" 1>&2
+        return 2
+    fi
+
+    nL1=$(echo "${sRows}" |sed -n "$=")
+    if [ ${nL1} -gt 1 ]; then
+        printf "%s[%3s]%5s:${sKey}\n${sRows}\n" "${FUNCNAME[0]}" ${LINENO} "Warn" 1>&2
+        read -p "many rows, anyway continue? (y/N):" reply
+        echo "${reply}" |grep -iq "^[ \t]*y"
+        if [ $? -eq 0 ]; then
+            return 1
+        fi
+        exit 1
+    fi
+
+    return 0
+}
+export -f RowsAsk
+
+#many symbols in different file
+EnableMenuInFiles()
+{
+    doType=${1}
+    fields=${2}
+
+    while [ -n "${fields}" ]; do
+        s1=$(sed -n '1p' <<< "${fields}")
+        f1=$(awk -F':' '{print $2}' <<< "${s1}")
+        if [ -z "${f1}" ]; then
+            printf "%s[%3s]%5s:${s1} no correspondence file, ignored\n" "${FUNCNAME[0]}" ${LINENO} "Warn" 1>&2
+            fields=$(sed '1d' <<< "${fields}")
+            continue
+        fi
+        #many symbols in same file
+        symbols=$(echo "${fields}" |grep ":${f1}" |awk -F':' '{print $1}')
+        #fields=$(echo "${fields}" |sed "/:${f1}/d")
+        fields=$(echo "${fields}" |grep -vF ":${f1}")
+
+        case "${doType}" in
+        enable)
+            ;;
+        disable)
+            symbols=$(echo "${symbols}" |sed 's/^/#/')
+            ;;
+        esac
+        EnableMulti "${symbols}" "${f1}"
+    done
+}
+export -f EnableMenuInFiles
+
+FillPathByGrep()
+{
+    drFrom=${1}
+    stList=${2}
+
+    stList1=''
+    sp1=''
+    IFS=$'\n'; for s1 in ${stList}; do IFS=${g_IFS0};
+        dr1=$(echo "${s1}" |awk -F':' '{print $2}')
+        if [ -z "${dr1}" ]; then
+            dr1=${drFrom}
+        fi
+
+        s1=$(echo "${s1}" |awk -F':' '{print $1}')
+        s2=$(echo "${s1}" |sed 's#^[ \t[]\+##;s#[] \t]\+$##')
+        flCfg=$(grep -lR "^[ \t#]*\[${s2}\]" ${dr1})
+        RowsAsk "[${s2}]" "${flCfg}"
+        case $? in
+        0|1)
+            stList1=${stList1}${sp1}$(echo "${flCfg}" |sed "s#^#\[${s2}]:#")
+            sp1=$'\n'
+            ;;
+        2)
+            printf "%s[%3s]%5s: [${s2}] not find in ${dr1}\n" "${FUNCNAME[0]}" ${LINENO} "Warn" 1>&2
+            ;;
+        esac
+    IFS=$'\n'; done; IFS=${g_IFS0};
+
+    echo "${stList1}"
+}
+export -f FillPathByGrep
+
+FillPathByFind()
+{
+    drFrom=${1}
+    stList=${2}
+    bForce=${3:-false}
+
+    stList1=''
+    sp1=''
+    IFS=$'\n'; for f1 in ${stList}; do IFS=${g_IFS0};
+        bDo=true
+        echo "${f1}" |grep -q "/"
+        if [ $? -eq 0 ]; then
+            if ${bForce}; then
+                f1=$(basename "${f1}")
+            else
+                bDo=false
+            fi
+        fi
+        bDo2=true
+        if ${bDo}; then
+            bDo2=false
+            s2=${f1##*/}
+            f1=$(find ${drFrom} -type f -name "${s2}")
+            RowsAsk "${s2}" "${f1}"
+            case $? in
+            0|1)
+                bDo2=true
+                ;;
+            2)
+                printf "%s[%3s]%5s: ${s2} not find from ${drFrom}\n" "${FUNCNAME[0]}" ${LINENO} "Warn" 1>&2
+                ;;
+            esac
+        fi
+        if ${bDo2}; then
+            stList1=${stList1}${sp1}${f1}
+            sp1=$'\n'
+        fi
+    IFS=$'\n'; done; IFS=${g_IFS0};
+
+    echo "${stList1}"
+}
+export -f FillPathByFind
+
+EnableAll()
+{
+    doType=${1}
+    flList=${2}
+
+    case "${doType}" in
+    disMost)
+        IFS=$'\n'; for f1 in ${flList}; do IFS=${g_IFS0};
+            sKeys1=$(grep "^[ \t]*\[[a-zA-Z_]\+[a-zA-Z_0-9]*\]" "${f1}")
+            #sKeys2=$(grep "^[ \t]*#[ \t#]*\[[a-zA-Z_]\+[a-zA-Z_0-9]*\]" "${f1}")
+            field2=$(echo "${g_enablePart}" |grep ":${f1}" |awk -F':' '{print $1}')
+            if [ -n "${field2}" ]; then
+                g_enablePart=$(echo "${g_enablePart}" |grep -v ":${f1}")
+            fi
+            field3=
+            IFS=$'\n'; for s2 in ${field2}; do IFS=${g_IFS0};
+                s3=$(echo "${s2}" |sed 's/^[ \t#\[]*\([a-zA-Z_]\+[a-zA-Z_0-9]*\)\]/\1/')
+                echo "${sKeys1}" |grep -q "^[ \t#]*\[${s3}\]"
+                if [ $? -eq 0 ]; then
+                    sKeys1=$(echo "${sKeys1}" |sed "/^[ \t#]*\[${s3}]/d")
+                else
+                    field3=${field3}$'\n'[${s3}]
+                fi
+
+                #echo "${sKeys2}" |grep -q "^[ \t#]*\[${s3}\]"
+                #if [ $? -eq 0 ]; then
+                #    sKeys2=$(echo "${sKeys2}" |sed "/^[ \t#]*\[${s3}]/d")
+                #fi
+            IFS=$'\n'; done; IFS=${g_IFS0};
+
+            if [ -n "${sKeys1}" ]; then
+                sKeys1=$(echo "${sKeys1}" |sed 's/^/#/')
+                #sKeys1=${sKeys1}$'\n'${sKeys2}
+            fi
+
+            EnableMulti "${sKeys1}${field3}" "${f1}"
+        IFS=$'\n'; done; IFS=${g_IFS0};
+
+        EnableMenuInFiles "enable" "${g_enablePart}"
+        ;;
+    enMost)
+        IFS=$'\n'; for f1 in ${flList}; do IFS=${g_IFS0};
+            sKeys1=$(grep "^[ \t]*#[ \t#]*\[[a-zA-Z_]\+[a-zA-Z_0-9]*\]" "${f1}")
+            field2=$(echo "${g_disablePart}" |grep ":${f1}" |awk -F':' '{print $1}')
+            if [ -n "${field2}" ]; then
+                g_disablePart=$(echo "${g_disablePart}" |grep -v ":${f1}")
+            fi
+            field3=
+            IFS=$'\n'; for s2 in ${field2}; do IFS=${g_IFS0};
+                s3=$(echo "${s2}" |sed 's/^[ \t#\[]*\([a-zA-Z_]\+[a-zA-Z_0-9]*\)\]/\1/')
+                echo "${sKeys1}" |grep -q "^[ \t#]*\[${s3}\]"
+                if [ $? -eq 0 ]; then
+                    sKeys1=$(echo "${sKeys1}" |sed "/^[ \t#]*\[${s3}]/d")
+                else
+                    field3=${field3}$'\n'#[${s3}]
+                fi
+            IFS=$'\n'; done; IFS=${g_IFS0};
+
+            if [ -n "${sKeys1}" ]; then
+                sKeys1=$(echo "${sKeys1}" |sed 's/^[ \t]*#[ \t#]*//')
+            fi
+
+            #if [ -n "${field3}" ]; then
+            #    field3=$'\n'${field2}
+            #fi
+            EnableMulti "${sKeys1}${field3}" "${f1}"
+        IFS=$'\n'; done; IFS=${g_IFS0};
+
+        EnableMenuInFiles "disable" "${g_disablePart}"
+        ;;
+    *)
+        printf "%s[%3d]%5s: [${doType}] not define!\n" "${FUNCNAME[0]}" ${LINENO} "Error" 1>&2
+        ;;
+    esac
+}
+export -f EnableAll
+
+SetFieldOfSubMenu()
+{
+    sFVarN=${1}
+    sKey=${2}
+    n0=${3}
+    nMax=${4}
+    arrayN=${5}
+    arrayV=${6}
+
+    eval sTxt1=\${${sFVarN}}
+    nDo=0
+    bUnExist=true
+    if [ -n "${sKey}" ]; then
+        sKey2=$(echo "${sKey}" |sed 's/^[ \t#[]\+//;s/[] \t]\+$//')
+        nL1=$(SectLineNosPairs 0 '^[ \t#]*'"\[${sKey2}\]" "${sFVarN}" '^[ \t#]*\[[a-zA-Z_]\+[a-zA-Z_0-9]*\]')
+    else
+        nL1="1,\$"
+    fi
+    IFS=$'\n'; for l1 in ${nL1}; do IFS=${g_IFS0};
+        s1=$(echo "${sTxt1}" |sed -n "${l1}p")
+        n1=${n0}
+
+        eval itemN=\${${arrayN}[${n1}]}
+        #printf "%s[%3s]%5s: ${sKey} ${itemN}\n" "${FUNCNAME[0]}" ${LINENO} "Info" 1>&2
+        echo "${s1}" |grep -q "^[ \t]*${itemN}[ \t]*${g_vsp}"
+        if [ $? -eq 0 ]; then
+            bUnExist=false
+            l2=$(cut -d, -f1 <<< "${l1}")
+            if [ -n "${sKey}" ]; then
+                sInfoModify=$(printf "%3d" ${l2}):$(sed -n "${l2}p" <<< "${sTxt1}")$'\n'
+            fi
+            nDo1=0
+
+            while [ ${n1} -lt ${nMax} ]; do
+                eval itemN=\${${arrayN}[${n1}]}
+                eval itemV=\${${arrayV}[${n1}]}
+                itemV1=$(sed 's#\([*./]\)#\\\1#g' <<< "${itemV}")
+                grep -q "^[ \t]*${itemN}[ \t]*${g_vsp}[ \t]*${itemV1}[ \t]*\(;\|\$\)" <<< "${s1}"
+                if [ $? -ne 0 ]; then
+                    #printf "%s[%3s]%5s: (echo \"${sTxt1}\" |sed \"${l1}s/^[ \t]*\(${itemN}[ \t]\{0,1\}\)[ \t]*\(${g_vsp}[ \t]\{0,1\}\)[ \t]*[^;]*[ \t]*\(;\|$\)/\1\2${itemV}/\")\n" "${FUNCNAME[0]}" ${LINENO} "Info" 1>&2
+                    itemV=$(sed 's#/#\\/#g' <<< "${itemV}")
+                    sTxt1=$(sed "${l1}s/^[ \t]*\(${itemN}[ \t]\{0,1\}\)[ \t]*\(${g_vsp}[ \t]\{0,1\}\)[ \t]*[^;]*[ \t]*\(;\|$\)/\1\2${itemV}/" <<< "${sTxt1}")
+                    nL2=$(sed -n "${l1}{/^[ \t]*\(${itemN}[ \t]\{0,1\}\)[ \t]*\(${g_vsp}[ \t]\{0,1\}\)[ \t]*${itemV1}[ \t]\{0,1\}[ \t]*\(;\|\$\)/=}" <<< "${sTxt1}")
+                    if [ -n "${nL2}" ]; then
+                        eval ${sFVarN}=\${sTxt1}
+                        let nDo+=1
+
+                        sInfoModify=${sInfoModify}$(printf "%3d" ${nL2}):$(sed -n "${nL2}p" <<< "${sTxt1}")$'\n'
+                        let nDo1+=1
+                    else
+                        eval sTxt1=\${${sFVarN}}
+                        printf "%s[%3s]%5s: ${sKey} ${itemN} field modify failed!\n" "${FUNCNAME[0]}" ${LINENO} "Error" ${nDo1}
+                    fi
+                fi
+                let n1+=1
+            done
+            if [ ${nDo1} -gt 0 ]; then
+                printf "\n${sInfoModify}"
+                printf "%s[%3s]%5s: ${sKey} %2d fields modified\n" "${FUNCNAME[0]}" ${LINENO} "Info" ${nDo1}
+            fi
+        fi
+    IFS=$'\n'; done; IFS=${g_IFS0};
+    if ${bUnExist}; then
+        printf "%s[%3s]%5s: ${sKey} ${itemN} field not found!\n" "${FUNCNAME[0]}" ${LINENO} "Error" ${nDo1}
+    fi
+
+    return ${nDo}
+}
+export -f SetFieldOfSubMenu
+
+InitFile()
+{
+    f1=${1}
+    aItem=${2}
+    aItemN=${3}
+    aItemV=${4}
+
+    eval nItemMax=\${#${aItem}[@]}
+
+    g_sFileTxt=$(cat "${f1}")
+    nDoIt=0
+    t1=0
+    while [ ${t1} -lt ${nItemMax} ]; do
+        eval item=\${${aItem}[${t1}]}
+        #printf "%s[%3s]%5s: ${item}\n" "${FUNCNAME[0]}" ${LINENO} "Info" 1>&2
+        SetFieldOfSubMenu g_sFileTxt ${item} ${aItemN} ${aItemV}
+        nDo=$?
+        if [ ${nDo} -gt 0 ]; then
+            g_sFileTxt=${sTxt1}
+            let nDoIt+=nDo
+        fi
+        let t1+=1
+    done
+
+    if [ ${nDoIt} -gt 0 ]; then
+        echo "${g_sFileTxt}" >${f1}
+        if [ $? -eq 0 ]; then
+            printf "%s[%3s]%5s: update [${f1}] ${nDoIt} fields\n" "${FUNCNAME[0]}" ${LINENO} "Info"
+        fi
+    fi
+}
+export -f InitFile
+
+GetBoardIP()
+{
+    nBoard=${1}
+    srvIP=${2}
+    srvUsr=${3}
+    srvPwd=${4}
+    likeSrv=${5}
+
+    nPort="22"
+    sLike1='ser2net port \[0-9]+ device'
+    sLike2='\[a-zA-Z_]+\[a-zA-Z_0-9]*@.+\\$\[ \t]*'
+    
+    expect <<EOF
+        set timeout 30
+        set use1 1
+        set use2 1
+        set usePS1 1
+        set iRt1 1
+        spawn ssh -p ${nPort} ${srvUsr}@${srvIP}
+        expect {
+            "yes/no" {
+                send "yes\n"
+                exp_continue
+            }
+            -re "\[Pp]assword:" {
+                if {\${use1}} {
+                    send "${srvPwd}\n"
+                    set use1 0
+                    exp_continue
+                } else {
+                    send_tty "\n"
+                }
+            }
+            -re "${likeSrv}" {
+                if {\${use2}} {
+                    send "board_connect ${nBoard}\n"
+                    set use2 0
+                    set timeout 10
+                    exp_continue
+                } else {
+                    send_tty "\n"
+                }
+            }
+            -re "new session \[Y/N]\?" {
+                send "Y\n"
+                exp_continue
+            }
+            -re "${sLike1}" {
+                send "\n"
+                exp_continue
+            }
+            -re "${sLike2}" {
+                if {\${usePS1}} {
+                    send "ip a\n"
+                    set usePS1 0
+                    exp_continue
+                } else {
+                    set iRt1 0
+                }
+            }
+            -re "Start:" {
+                send "1\n"
+                exp_continue
+            }
+        }
+
+        #expect eof
+        #send_tty "exit \${iRt1}\n"
+        exit \${iRt1}
+EOF
+    if [ $? -eq 0 ]; then
+        #printf "%s[%3s]%5s: ${sTxt1}\n" "${FUNCNAME[0]}" ${LINENO} "Info"
+        echo "${sTxt1}" |grep "inet[ \t]\+" |grep eth |sed 's/^[ \t]*inet[ \t]\+\([0-9\.]\+\).\+$/\1/'
+    fi
+}
+export -f GetBoardIP
+
+SortByList()
+{
+    f1=${1}
+    sMenus=${2}
+    bFlSizeJudge=${3:-false}
+
+    if [ -f "${f1}" ]; then
+        sTxtA=$(cat ${f1})
+        sTxtB=
+        IFS=$'\n'; for s1 in ${sMenus}; do IFS=${g_IFS0};
+            sTxtB=${sTxtB}$'\n'"##[${s1}]"
+            s2=$(echo "${sTxtA}" |grep "\(^\|/\)${s1}_.*:")
+            if [ $? -eq 0 ]; then
+                sTxtB=${sTxtB}$'\n'${s2}
+                sTxtA=$(echo "${sTxtA}" |grep -v "\(^\|/\)${s1}_.*:")
+            elif ${bFlSizeJudge}; then
+                f2="caliper_exec/${s1}_parser.log"
+                if [ -f "${g_drGrep}/${f2}" ]; then
+                    nSize=$(ls -l "${g_drGrep}/${f2}" |awk -F'[ \t]+' '{print $5}')
+                    if [ "${nSize}" -lt "${g_flSizeMin}" ]; then
+                        sTxtB=${sTxtB}$'\n'"${f2}:error: file size < ${g_flSizeMin} byte"
+                    fi
+                else
+                    sTxtB=${sTxtB}$'\n'"${f2}:error: file not exist"
+                fi
+            fi
+        IFS=$'\n'; done; IFS=${g_IFS0};
+        if [ -n "${sTxtA}" ]; then
+            sTxtB=${sTxtB}$'\n'$'\n'${sTxtA}
+        fi
+        if [ -n "${sTxtB}" ]; then
+            echo "${sTxtB}" >${f1}
+        fi
+
+        printf "%s[%3s]%5s: ${f1}\n" "${FUNCNAME[0]}" ${LINENO} "Info"
+    fi
+}
+export -f SortByList
+
+PreEnOrDisAble()
+{
+    case "${g_ableType}" in
+    disMost)
+        g_disablePart=''
+        sKeys1=$(sed "/^[ \t]*\$/d;/^[ \t]*#/d;s/^[ \t]\+//;s/[ \t]\+\$//" <<< "${g_enablePart}")
+        g_enablePart=$(sort -u <<< "${sKeys1}")
+        g_enablePart=$(FillPathByGrep "${g_flListBenToolsCfg}" "${g_enablePart}")
+        ;;
+    enMost)
+        g_enablePart=''
+        sKeys1=${g_disablePart}$'\n'${g_disableFixed}
+        sKeys1=$(sed "/^[ \t]*\$/d;/^[ \t]*#/d;s/^[ \t]\+//;s/[ \t]\+\$//" <<< "${sKeys1}")
+        g_disablePart=$(sort -u <<< "${sKeys1}")
+        g_disablePart=$(FillPathByGrep "${g_flListBenToolsCfg}" "${g_disablePart}")
+        ;;
+    esac
+}
+export -f PreEnOrDisAble
+
+#####################
+#init2
+g_flListBenToolsCfg=$(echo "${g_flListBenToolsCfg}" |sed '/^[ \t]*#/d;s#^[ \t]\+##;s#[ \t]\+$##')
+#export g_flListBenToolsCfg
+
+printf "%s[%3d]%5s: ${g_drBase}\n" "${g_fn_caliper_common}" ${LINENO} "Info"
+
+#####################
+
