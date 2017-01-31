@@ -10,27 +10,28 @@
 Osname_Ubuntu=`cat /etc/*release | grep -c "Ubuntu"`
 Osname_CentOS=`cat /etc/*release | grep -c "CentOS"`
 
-if [[ "$#" -ne 2  ]] 
+if [[ "$#" -ne 3  ]] 
 then
-   echo -e "Usage : The number of command line arguments for hadoop.sh  should be 2 ,mount disk and mount point \n"
+   echo -e "Usage : The number of command line arguments for hadoop.sh  should be 3 ,datasize, mount disk and mount point \n"
    echo -e   " hadoop.sh <disk> <mount_point> \n"
    echo -e  "Add the arguments in configuration/test_cases_cfg/common/hadoop/hadoop_run.cfg in command section as below \n"
-   echo -e  "command = if [ -f hadoop_tar.gz ]; then tar -xvf hadoop_tar.gz; rm hadoop_tar.gz; fi; pushd hadoop; ./hadoop.sh <disk> <mount_point>; popd \n"
+   echo -e  "command = if [ -f hadoop_tar.gz ]; then tar -xvf hadoop_tar.gz; rm hadoop_tar.gz; fi; pushd hadoop; ./hadoop.sh <datasize> <disk> <mount_point>; popd \n"
    echo -e "example: \n"
-   echo -e "command = if [ -f hadoop_tar.gz ]; then tar -xvf hadoop_tar.gz; rm hadoop_tar.gz; fi; pushd hadoop; ./hadoop.sh /dev/sda /mnt/hadoop ; popd \n"
+   echo -e "command = if [ -f hadoop_tar.gz ]; then tar -xvf hadoop_tar.gz; rm hadoop_tar.gz; fi; pushd hadoop; ./hadoop.sh large /dev/sda /mnt/hadoop ; popd \n"
 
    exit 1
 fi
 
+datasize=$1
 
-disk=$( echo $1 | cut -d "/" -f 3 )
+disk=$( echo $2 | cut -d "/" -f 3 )
 
 echo "Disk used for mounting is  $disk"
 
 
 if [ `lsblk | grep -c "$disk"` == 0 ]
 then
-   echo "The disk specified for hadoop testing $1 is not vailable "
+   echo "The disk specified for hadoop testing $2 is not vailable "
    exit 1
 fi
 
@@ -95,13 +96,13 @@ EOF
 
 
 #Creating mount point and mounting disk
-if [ ! -d $2 ]
+if [ ! -d $3 ]
 then
     echo -e "\nCreating Mount Partition for hadoop testing\n"
-        sudo mkdir -p $2
-        sudo chmod -R 775 $2
-        sudo chown -R $USER:$USER $2
-        sudo mount "$1" $2
+        sudo mkdir -p $3
+        sudo chmod -R 775 $3
+        sudo chown -R $USER:$USER $3
+        sudo mount "$1" $3
 
 
         if [ $? -ne 0 ]
@@ -110,19 +111,19 @@ then
            exit 1
     fi
 else
-        if [ `mount -l | grep -c "$1 on $2"` == 0 ]
+        if [ `mount -l | grep -c "$2 on $3"` == 0 ]
         then
-            sudo mount "$1" $2
+            sudo mount "$2" "$3"
                 if [ $? -ne 0 ]
                 then
                 echo -e "\n$ERROR:Creating a Mount Path for hadoop testing Failed\n"
                     exit 1
             fi
         fi
-        echo -e "\nMount Partition for fio testing Already exits\n"
+        echo -e "\nMount Partition for Hadoop testing Already exits\n"
 fi
 
-HADOOP_TMP=$2
+HADOOP_TMP=$3
  
 
  grep HADOOP_TMP /etc/environment >> /dev/null
@@ -135,11 +136,11 @@ if [ $? = 0  ]
         HADOOP_TMP=$(echo "$HADOOP_TMP" | sed 's/\//\\\//g')
         echo $HADOOP_TMP
         sed -i "s/^.*HADOOP_TMP.*/HADOOP_TMP=$HADOOP_TMP/"  /etc/environment
-        echo " Replacing HADOOP_TMP variable value with $2  in /etc/environment "
+        echo " Replacing HADOOP_TMP variable value with $3  in /etc/environment "
 else 
 
          echo "HADOOP_TMP=$HADOOP_TMP" >> /etc/environment 
-         echo " Adding HADOOP_TMP variable $2 in /etc/environment "
+         echo " Adding HADOOP_TMP variable $3 in /etc/environment "
 fi
 
 
@@ -304,6 +305,9 @@ AbleKey "join" true sFlCfgH nModify
 AbleKey "pagerank" true sFlCfgH nModify
 AbleKey "scan" true sFlCfgH nModify
 AbleKey "nutchindexing" false sFlCfgH nModify
+
+
+
 if [ ${nModify} -gt 0 ]; then
     echo "${sFlCfgH}" > "${flCfgH}"
 fi
@@ -320,6 +324,7 @@ SetKeyBlankValue "hibench.spark.home" "${SPARK_DIR}" sFlCfgH nModify
 SetKeyBlankValue "hibench.hdfs.master" "hdfs://localhost:9000" sFlCfgH nModify
 SetKeyBlankValue "hibench.default.map.parallelism" "2" sFlCfgH nModify
 SetKeyBlankValue "hibench.default.shuffle.parallelism" "1" sFlCfgH nModify
+
 #?s/ 4 / 2 /g
 SetKeyBlankValue "hibench.yarn.executor.num" "2" sFlCfgH nModify
 SetKeyBlankValue "hibench.yarn.executor.cores" "2" sFlCfgH nModify
@@ -332,13 +337,16 @@ if [ ${nModify} -gt 0 ]; then
 fi
 fi
 
+
+cp  $datasize/*    $HIBENCH_CONF 
+
+
 ############## start hibench testing ################
 pushd $HIBENCH_DIR
     sed -i 's/^spark/#spark/g'  $HIBENCH_LAN_API
     # benchmarks.lst modify
     sed -i 's/^nutchindexing/#nutchindexing/g' $HIBENCH_BENCH_LIST
-
-
+        
     # modify 99-user_defined_properties.conf        
     pushd $HIBENCH_CONF
         cp 99-user_defined_properties.conf.template 99-user_defined_properties.conf
@@ -358,6 +366,7 @@ echo $hadoop_dir
         sed -i 's/ 4 / 2 /g' $USER_DEFINED_FILE
         sed -i '52,67s/12/2/g' $USER_DEFINED_FILE
         sed -i '52,67s/6/1/g'  $USER_DEFINED_FILE
+        sed -i "s/.*hibench.scale.profile.*/hibench.scale.profile        $datasize/g"                                   $USER_DEFINED_FILE
 	sed -i 's/.*hibench.dfsioe.large.read.number_of_files.*/hibench.dfsioe.large.read.number_of_files        40/'   $HIBENCH_DATA_PROFILE
         sed -i 's/.*hibench.dfsioe.large.read.file_size.*/hibench.dfsioe.large.read.file_size                  2048/'   $HIBENCH_DATA_PROFILE
         sed -i 's/.*hibench.dfsioe.large.write.number_of_files.*/hibench.dfsioe.large.write.number_of_files      40/'   $HIBENCH_DATA_PROFILE
@@ -390,4 +399,16 @@ pushd $HADOOP_DIR
       echo 'stop hdfs service failed'
   fi
 popd
- 
+
+echo "Unmount the Hadoop disk used for testing"
+
+sudo umount  "$2"
+
+if [[  $? -eq 0 ]]; then
+
+   echo "The disk $2 unmounted successfully"
+else
+   echo "The disk $2 is not unmounted properly"
+   exit 0
+
+fi
