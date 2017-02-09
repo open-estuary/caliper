@@ -69,17 +69,8 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
-/* Define to 1 if you have the `devinfo' library (-ldevinfo). */
-#undef HAVE_LIBDEVINFO
-
-/* Define to 1 if you have the `dl' library (-ldl). */
-#undef HAVE_LIBDL
-
 /* Define to 1 if you have the `exs' library (-lexs). */
 #undef HAVE_LIBEXS
-
-/* Define to 1 if you have the `IO' library (-lIO). */
-#undef HAVE_LIBIO
 
 /* Define to 1 if you have the `kstat' library (-lkstat). */
 #undef HAVE_LIBKSTAT
@@ -93,9 +84,6 @@
 /* Define to 1 if you have the `nsl' library (-lnsl). */
 #undef HAVE_LIBNSL
 
-/* Define to 1 if you have the `olrad' library (-lolrad). */
-#undef HAVE_LIBOLRAD
-
 /* Define to 1 if you have the `perfstat' library (-lperfstat). */
 #undef HAVE_LIBPERFSTAT
 
@@ -108,14 +96,14 @@
 /* Define to 1 if you have the `sendfile' library (-lsendfile). */
 #undef HAVE_LIBSENDFILE
 
-/* Define to 1 if you have the `smbios' library (-lsmbios). */
-#undef HAVE_LIBSMBIOS
-
 /* Define to 1 if you have the `socket' library (-lsocket). */
 #undef HAVE_LIBSOCKET
 
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
+
+/* Define to 1 if you have the <linux/socket.h> header file. */
+#undef HAVE_LINUX_SOCKET_H
 
 /* Define to 1 if you have the <linux/tcp.h> header file. */
 #undef HAVE_LINUX_TCP_H
@@ -159,6 +147,9 @@
 /* Define to 1 if you have the `processor_bind' function. */
 #undef HAVE_PROCESSOR_BIND
 
+/* Define to 1 if you have the <sched.h> header file. */
+#undef HAVE_SCHED_H
+
 /* Define to 1 if you have the `sched_setaffinity' function. */
 #undef HAVE_SCHED_SETAFFINITY
 
@@ -177,9 +168,6 @@
 
 /* Define to 1 if you have the <signal.h> header file. */
 #undef HAVE_SIGNAL_H
-
-/* Define to 1 if you have the <smbios/SystemInfo.h> header file. */
-#undef HAVE_SMBIOS_SYSTEMINFO_H
 
 /* Define if struct sockaddr has the sa_len member */
 #undef HAVE_SOCKADDR_SA_LEN
@@ -235,14 +223,8 @@
 /* Define to 1 if you have the <sys/param.h> header file. */
 #undef HAVE_SYS_PARAM_H
 
-/* Define to 1 if you have the <sys/sbmios.h> header file. */
-#undef HAVE_SYS_SBMIOS_H
-
 /* Define to 1 if you have the <sys/select.h> header file. */
 #undef HAVE_SYS_SELECT_H
-
-/* Define to 1 if you have the <sys/smbios.h> header file. */
-#undef HAVE_SYS_SMBIOS_H
 
 /* Define to 1 if you have the <sys/socket.h> header file. */
 #undef HAVE_SYS_SOCKET_H

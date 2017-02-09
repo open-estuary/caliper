@@ -40,6 +40,12 @@ char nettest_omni_id[]="\
 #if HAVE_UNISTD_H
 # include <unistd.h>
 #endif
+#if HAVE_SYS_IOCTL_H
+# include <sys/ioctl.h>
+#endif
+#if HAVE_SCHED_H
+# include <sched.h>
+#endif
 
 #include <fcntl.h>
 #ifndef WIN32
@@ -64,6 +70,8 @@ char nettest_omni_id[]="\
 #include <malloc.h>
 #endif /* NOSTDLIBH */
 
+#include <assert.h>
+
 #ifndef WIN32
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -78,8 +86,22 @@ char nettest_omni_id[]="\
 #include <netinet/tcp.h>
 #endif
 
+/* this is to get us the definition of MSG_FASTOPEN. we may need to
+   cheat just a litle at first */
+#ifdef HAVE_LINUX_SOCKET_H
+# include <linux/socket.h>
+# ifndef MSG_FASTOPEN
+#  warning Using our own value for MSG_FASTOPEN
+#  define MSG_FASTOPEN	0x20000000	/* Send data in TCP SYN */
+# endif
+# ifndef TCP_FASTOPEN
+#  warning Using our own value for TCP_FASTOPEN
+#  define TCP_FASTOPEN 23
+# endif
+#endif
+
 #ifdef HAVE_NETINET_SCTP_H
-#include "netinet/sctp.h"
+#include <netinet/sctp.h>
 #endif
 
 #include <arpa/inet.h>
@@ -304,17 +326,16 @@ int remote_recv_size = -1;
 int remote_send_size_req = -1;
 int remote_recv_size_req = -1;
 int remote_use_sendfile;
-#if 0
-int remote_send_dirty_count;
-int remote_recv_dirty_count;
-int remote_recv_clean_count;
-#endif
+
 extern int loc_dirty_count;
 extern int loc_clean_count;
 extern int rem_dirty_count;
 extern int rem_clean_count;
 int remote_checksum_off;
 int connection_test;
+int dont_give_up = 0;
+int use_fastopen = 0;
+int use_write = 0;
 int need_to_connect;
 int need_connection;
 int bytes_to_send;
@@ -328,6 +349,7 @@ int was_legacy = 0;
 int legacy = 0;
 int implicit_direction = 0;
 int explicit_data_address = 0;
+int want_defer_accept = 0;
 
 uint64_t      trans_completed = 0;
 int64_t       units_remaining;
@@ -356,57 +378,36 @@ double        remote_recv_thruput;
 
 /* kludges for omni output */
 double      elapsed_time_double;
-double      local_cpu_utilization_double;
 double      local_service_demand_double;
-double      remote_cpu_utilization_double;
 double      remote_service_demand_double;
 double      transaction_rate = 1.0;
 double      rtt_latency = -1.0;
 int32_t     transport_mss = -2;
 int32_t     local_transport_retrans = -2;
 int32_t     remote_transport_retrans = -2;
-char        *local_interface_name=NULL;
-char        *remote_interface_name=NULL;
-char        local_driver_name[32]="";
-char        local_driver_version[32]="";
-char        local_driver_firmware[32]="";
-char        local_driver_bus[32]="";
-char        remote_driver_name[32]="";
-char        remote_driver_version[32]="";
-char        remote_driver_firmware[32]="";
-char        remote_driver_bus[32]="";
-char        *local_interface_slot=NULL;
-char        *remote_interface_slot=NULL;
-int         remote_interface_vendor;
-int         remote_interface_device;
-int         remote_interface_subvendor;
-int         remote_interface_subdevice;
-int         local_interface_vendor;
-int         local_interface_device;
-int         local_interface_subvendor;
-int         local_interface_subdevice;
-char        *local_system_model = NULL;
-char        *local_cpu_model = NULL;
-int         local_cpu_frequency;
-char        *remote_system_model = NULL;
-char        *remote_cpu_model = NULL;
-int         remote_cpu_frequency;
+char        *deprecated_str = "Deprecated";
+int         remote_interface_vendor = -2;
+int         remote_interface_device = -2;
+int         remote_interface_subvendor = -2;
+int         remote_interface_subdevice = -2;
+int         local_interface_vendor = -2;
+int         local_interface_device = -2;
+int         local_interface_subvendor = -2;
+int         local_interface_subdevice = -2;
+int         local_cpu_frequency = 0;
+int         remote_cpu_frequency = 0;
 
 int         local_security_type_id;
 int         local_security_enabled_num;
-char        *local_security_type = NULL;
-char        *local_security_enabled = NULL;
-char        *local_security_specific = NULL;
 int         remote_security_type_id;
 int         remote_security_enabled_num;
-char        *remote_security_enabled = NULL;
-char        *remote_security_type = NULL;
-char        *remote_security_specific = NULL;
 
 char        local_cong_control[16] = "";
 char        remote_cong_control[16] = "";
 char        local_cong_control_req[16] = "";
 char        remote_cong_control_req[16] = "";
+
+int         receive_timeout = -1;
 
 /* new statistics based on code diffs from Google, with raj's own
    personal twist added to make them compatible with the omni
@@ -434,6 +435,10 @@ char *protocol_str;
 char *direction_str;
 
 extern int first_burst_size;
+
+int  parallel_connections = 1;
+
+static int socket_debug = 0;
 
 #if defined(HAVE_SENDFILE) && (defined(__linux) || defined(__sun))
 #include <sys/sendfile.h>
@@ -507,9 +512,19 @@ enum netperf_output_name {
   REQUEST_SIZE,
   RESPONSE_SIZE,
   LOCAL_CPU_UTIL,
+  LOCAL_CPU_PERCENT_USER,
+  LOCAL_CPU_PERCENT_SYSTEM,
+  LOCAL_CPU_PERCENT_IOWAIT,
+  LOCAL_CPU_PERCENT_IRQ,
+  LOCAL_CPU_PERCENT_SWINTR,
   LOCAL_CPU_METHOD,
   LOCAL_SD,
   REMOTE_CPU_UTIL,
+  REMOTE_CPU_PERCENT_USER,
+  REMOTE_CPU_PERCENT_SYSTEM,
+  REMOTE_CPU_PERCENT_IOWAIT,
+  REMOTE_CPU_PERCENT_IRQ,
+  REMOTE_CPU_PERCENT_SWINTR,
   REMOTE_CPU_METHOD,
   REMOTE_SD,
   SD_UNITS,
@@ -671,7 +686,6 @@ typedef struct netperf_output_elt {
   int max_line_len; /* length of the longest of the "lines" */
   int tot_line_len; /* total length of all lines, including spaces */
   char *line[4];
-  char *brief;         /* the brief name of the value */
   char *format;        /* format to apply to value */
   void *display_value; /* where to find the value */
   enum netperf_output_type output_type; /* what type is the value? */
@@ -688,6 +702,17 @@ netperf_output_elt_t netperf_output_source[NETPERF_OUTPUT_MAX];
    doing.  this should help simplify matters. raj 20110120 */
 
 enum netperf_output_name output_list[NETPERF_MAX_BLOCKS][NETPERF_OUTPUT_MAX];
+
+/* some things for setting the source IP address on outgoing UDP
+   sends. borrows liberally from
+   http://stackoverflow.com/questions/3062205/setting-the-source-ip-for-a-udp-socket */
+
+int want_use_pktinfo = 0;
+int use_pktinfo = 0;
+int have_pktinfo = 0;
+#ifdef IP_PKTINFO
+struct in_pktinfo in_pktinfo;
+#endif
 
 char *direction_to_str(int direction) {
   if (NETPERF_RECV_ONLY(direction)) return "Receive";
@@ -761,7 +786,11 @@ set_multicast_ttl(SOCKET sock) {
   if (multicast_ttl >= 0) {
     if (setsockopt(sock,
 		   IPPROTO_IP,
+#if defined(IP_MULTICAST_TTL)
+		   IP_MULTICAST_TTL,
+#else
 		   IP_TTL,
+#endif
 		   (const char *)&multicast_ttl,
 		   sizeof(multicast_ttl)) == SOCKET_ERROR) {
       fprintf(where,
@@ -1055,6 +1084,16 @@ netperf_output_enum_to_str(enum netperf_output_name output_name)
     return "LOCAL_RECV_CLEAN_COUNT";
   case   LOCAL_CPU_UTIL:
     return "LOCAL_CPU_UTIL";
+  case   LOCAL_CPU_PERCENT_USER:
+    return "LOCAL_CPU_PERCENT_USER";
+  case   LOCAL_CPU_PERCENT_SYSTEM:
+    return "LOCAL_CPU_PERCENT_SYSTEM";
+  case   LOCAL_CPU_PERCENT_IOWAIT:
+    return "LOCAL_CPU_PERCENT_IOWAIT";
+  case   LOCAL_CPU_PERCENT_IRQ:
+    return "LOCAL_CPU_PERCENT_IRQ";
+  case   LOCAL_CPU_PERCENT_SWINTR:
+    return "LOCAL_CPU_PERCENT_SWINTR";
   case   LOCAL_CPU_BIND:
     return "LOCAL_CPU_BIND";
   case   LOCAL_SD:
@@ -1123,6 +1162,16 @@ netperf_output_enum_to_str(enum netperf_output_name output_name)
     return "REMOTE_RECV_CLEAN_COUNT";
   case   REMOTE_CPU_UTIL:
     return "REMOTE_CPU_UTIL";
+  case   REMOTE_CPU_PERCENT_USER:
+    return "REMOTE_CPU_PERCENT_USER";
+  case   REMOTE_CPU_PERCENT_SYSTEM:
+    return "REMOTE_CPU_PERCENT_SYSTEM";
+  case   REMOTE_CPU_PERCENT_IOWAIT:
+    return "REMOTE_CPU_PERCENT_IOWAIT";
+  case   REMOTE_CPU_PERCENT_IRQ:
+    return "REMOTE_CPU_PERCENT_IRQ";
+  case   REMOTE_CPU_PERCENT_SWINTR:
+    return "REMOTE_CPU_PERCENT_SWINTR";
   case   REMOTE_CPU_BIND:
     return "REMOTE_CPU_BIND";
   case   REMOTE_SD:
@@ -1326,7 +1375,6 @@ dump_netperf_output_source(FILE *where)
 	    "\tline[1]: |%s|\n"
 	    "\tline[2]: |%s|\n"
 	    "\tline[3]: |%s|\n"
-	    "\tbrief: |%s|\n"
 	    "\tformat: |%s|\n",
 	    netperf_output_enum_to_str(netperf_output_source[i].output_name),
 	    netperf_output_source[i].max_line_len,
@@ -1340,8 +1388,6 @@ dump_netperf_output_source(FILE *where)
 	    netperf_output_source[i].line[2],
 	    (netperf_output_source[i].line[3] == NULL) ? "" :
 	    netperf_output_source[i].line[3],
-	    (netperf_output_source[i].brief == NULL) ? "" :
-	    netperf_output_source[i].brief,
 	    (netperf_output_source[i].format == NULL) ? "" :
 	    netperf_output_source[i].format);
   }
@@ -1653,7 +1699,7 @@ parse_output_selection_direct(char *output_selection) {
 #define NETPERF_TPUT "ELAPSED_TIME,THROUGHPUT,THROUGHPUT_UNITS"
 #define NETPERF_OUTPUT_STREAM "LSS_SIZE_END,RSR_SIZE_END,LOCAL_SEND_SIZE"
 #define NETPERF_OUTPUT_MAERTS "RSS_SIZE_END,LSR_SIZE_END,REMOTE_SEND_SIZE"
-#define NETPERF_CPU "LOCAL_CPU_UTIL,LOCAL_CPU_METHOD,REMOTE_CPU_UTIL,REMOTE_CPU_METHOD,LOCAL_SD,REMOTE_SD,SD_UNITS"
+#define NETPERF_CPU "LOCAL_CPU_UTIL,LOCAL_CPU_PERCENT_USER,LOCAL_CPU_PERCENT_SYSTEM,LOCAL_CPU_PERCENT_IOWAIT,LOCAL_CPU_PERCENT_IRQ,LOCAL_CPU_PERCENT_SWINTR,LOCAL_CPU_METHOD,REMOTE_CPU_UTIL,REMOTE_CPU_PERCENT_USER,REMOTE_CPU_PERCENT_SYSTEM,REMOTE_CPU_PERCENT_IOWAIT,REMOTE_CPU_PERCENT_IRQ,REMOTE_CPU_PERCENT_SWINTR,REMOTE_CPU_METHOD,LOCAL_SD,REMOTE_SD,SD_UNITS"
 #define NETPERF_RR "LSS_SIZE_END,LSR_SIZE_END,RSR_SIZE_END,RSS_SIZE_END,REQUEST_SIZE,RESPONSE_SIZE"
 
 void
@@ -1779,7 +1825,6 @@ print_omni_init_list() {
     netperf_output_source[i].line[1] = "";
     netperf_output_source[i].line[2] = "";
     netperf_output_source[i].line[3] = "";
-    netperf_output_source[i].brief = "";
     netperf_output_source[i].format = "";
     netperf_output_source[i].display_value = NULL;
     netperf_output_source[i].output_default = 1;
@@ -1964,13 +2009,33 @@ print_omni_init_list() {
 		 "%d", &loc_clean_count, 1, 0, NETPERF_TYPE_INT32);
 
   set_output_elt(LOCAL_CPU_UTIL, "Local", "CPU", "Util", "%", "%.2f",
-		 &local_cpu_utilization_double, 1, 0, NETPERF_TYPE_DOUBLE);
+		 &local_cpu_utilization, 1, 0, NETPERF_TYPE_FLOAT);
+
+  set_output_elt(LOCAL_CPU_PERCENT_USER, "Local", "CPU", "User", "%", "%.2f",
+		 &lib_local_cpu_stats.cpu_user, 1, 0, NETPERF_TYPE_FLOAT);
+
+  set_output_elt(LOCAL_CPU_PERCENT_SYSTEM,
+                 "Local", "CPU", "System", "%", "%.2f",
+		 &lib_local_cpu_stats.cpu_system, 1, 0, NETPERF_TYPE_FLOAT);
+
+  set_output_elt(LOCAL_CPU_PERCENT_IOWAIT,
+                 "Local", "CPU", "I/O", "%", "%.2f",
+		 &lib_local_cpu_stats.cpu_iowait, 1, 0, NETPERF_TYPE_FLOAT);
+
+  set_output_elt(LOCAL_CPU_PERCENT_IRQ,
+                 "Local", "CPU", "IRQ", "%", "%.2f",
+		 &lib_local_cpu_stats.cpu_irq, 1, 0, NETPERF_TYPE_FLOAT);
+
+  set_output_elt(LOCAL_CPU_PERCENT_SWINTR,
+                 "Local", "CPU", "swintr", "%", "%.2f",
+		 &lib_local_cpu_stats.cpu_swintr, 1, 0, NETPERF_TYPE_FLOAT);
 
   set_output_elt(LOCAL_CPU_PEAK_UTIL, "Local", "Peak", "Per CPU", "Util %",
-		 "%.2f", &lib_local_peak_cpu_util, 1, 0, NETPERF_TYPE_DOUBLE);
+		 "%.2f", &lib_local_cpu_stats.peak_cpu_util, 1, 0,
+                 NETPERF_TYPE_FLOAT);
 
   set_output_elt(LOCAL_CPU_PEAK_ID, "Local", "Peak", "Per CPU", "ID", "%d",
-		 &lib_local_peak_cpu_id, 1, 0, NETPERF_TYPE_INT32);
+		 &lib_local_cpu_stats.peak_cpu_id, 1, 0, NETPERF_TYPE_INT32);
 
   set_output_elt(LOCAL_CPU_BIND, "Local", "CPU", "Bind", "", "%d",
 		 &local_proc_affinity, 1, 0, NETPERF_TYPE_INT32);
@@ -2066,13 +2131,33 @@ print_omni_init_list() {
 		 "%d", &rem_clean_count, 1, 0, NETPERF_TYPE_INT32);
 
   set_output_elt(REMOTE_CPU_UTIL, "Remote", "CPU", "Util", "%", "%.2f",
-		 &remote_cpu_utilization_double, 1, 0, NETPERF_TYPE_DOUBLE);
+		 &remote_cpu_utilization, 1, 0, NETPERF_TYPE_FLOAT);
+
+  set_output_elt(REMOTE_CPU_PERCENT_USER, "Remote", "CPU", "User", "%", "%.2f",
+		 &lib_remote_cpu_stats.cpu_user, 1, 0, NETPERF_TYPE_FLOAT);
+
+  set_output_elt(REMOTE_CPU_PERCENT_SYSTEM,
+                 "Remote", "CPU", "System", "%", "%.2f",
+		 &lib_remote_cpu_stats.cpu_system, 1, 0, NETPERF_TYPE_FLOAT);
+
+  set_output_elt(REMOTE_CPU_PERCENT_IOWAIT,
+                 "Remote", "CPU", "I/O", "%", "%.2f",
+		 &lib_remote_cpu_stats.cpu_iowait, 1, 0, NETPERF_TYPE_FLOAT);
+
+  set_output_elt(REMOTE_CPU_PERCENT_IRQ,
+                 "Remote", "CPU", "IRQ", "%", "%.2f",
+		 &lib_remote_cpu_stats.cpu_irq, 1, 0, NETPERF_TYPE_FLOAT);
+
+  set_output_elt(REMOTE_CPU_PERCENT_SWINTR,
+                 "Remote", "CPU", "swintr", "%", "%.2f",
+		 &lib_remote_cpu_stats.cpu_swintr, 1, 0, NETPERF_TYPE_FLOAT);
 
   set_output_elt(REMOTE_CPU_PEAK_UTIL, "Remote", "Peak", "Per CPU", "Util %",
-		 "%.2f", &lib_remote_peak_cpu_util, 1, 0, NETPERF_TYPE_DOUBLE);
+		 "%.2f", &lib_remote_cpu_stats.peak_cpu_util, 1, 0,
+                 NETPERF_TYPE_FLOAT);
 
   set_output_elt(REMOTE_CPU_PEAK_ID, "Remote", "Peak", "Per CPU", "ID", "%d",
-		 &lib_remote_peak_cpu_id, 1, 0, NETPERF_TYPE_INT32);
+		 &lib_remote_cpu_stats.peak_cpu_id, 1, 0, NETPERF_TYPE_INT32);
 
   set_output_elt(REMOTE_CPU_BIND, "Remote", "CPU", "Bind", "", "%d",
 		 &remote_proc_affinity, 1, 0, NETPERF_TYPE_INT32);
@@ -2093,34 +2178,34 @@ print_omni_init_list() {
 		 &rem_tcpcork, 1, 0, NETPERF_TYPE_INT32);
 
   set_output_elt(LOCAL_DRIVER_NAME, "Local", "Driver", "Name", "", "%s",
-		 local_driver_name, 1, OMNI_WANT_LOC_DRVINFO,
+		 deprecated_str, 1, OMNI_WANT_LOC_DRVINFO,
 		 NETPERF_TYPE_CHAR);
 
   set_output_elt(LOCAL_DRIVER_VERSION, "Local", "Driver", "Version", "", "%s",
-		 local_driver_version, 1, OMNI_WANT_LOC_DRVINFO,
+		 deprecated_str, 1, OMNI_WANT_LOC_DRVINFO,
 		 NETPERF_TYPE_CHAR);
 
   set_output_elt(LOCAL_DRIVER_FIRMWARE, "Local", "Driver", "Firmware", "",
-		 "%s", local_driver_firmware, 1, OMNI_WANT_LOC_DRVINFO,
+		 "%s", deprecated_str, 1, OMNI_WANT_LOC_DRVINFO,
 		 NETPERF_TYPE_CHAR);
 
   set_output_elt(LOCAL_DRIVER_BUS, "Local", "Driver", "Bus", "", "%s",
-		 local_driver_bus, 1, OMNI_WANT_LOC_DRVINFO, NETPERF_TYPE_CHAR);
+		 deprecated_str, 1, OMNI_WANT_LOC_DRVINFO, NETPERF_TYPE_CHAR);
 
   set_output_elt(REMOTE_DRIVER_NAME, "Remote", "Driver", "Name", "", "%s",
-		 remote_driver_name, 1, OMNI_WANT_REM_DRVINFO,
+		 deprecated_str, 1, OMNI_WANT_REM_DRVINFO,
 		 NETPERF_TYPE_CHAR);
 
   set_output_elt(REMOTE_DRIVER_VERSION, "Remote", "Driver", "Version", "",
-		 "%s", remote_driver_version, 1, OMNI_WANT_REM_DRVINFO,
+		 "%s", deprecated_str, 1, OMNI_WANT_REM_DRVINFO,
 		 NETPERF_TYPE_CHAR);
 
   set_output_elt(REMOTE_DRIVER_FIRMWARE, "Remote", "Driver", "Firmware", "",
-		 "%s", remote_driver_firmware, 1, OMNI_WANT_REM_DRVINFO,
+		 "%s", deprecated_str, 1, OMNI_WANT_REM_DRVINFO,
 		 NETPERF_TYPE_CHAR);
 
   set_output_elt(REMOTE_DRIVER_BUS, "Remote", "Driver", "Bus", "", "%s",
-		 remote_driver_bus, 1, OMNI_WANT_REM_DRVINFO,
+		 deprecated_str, 1, OMNI_WANT_REM_DRVINFO,
 		 NETPERF_TYPE_CHAR);
 
   set_output_elt(LOCAL_INTERFACE_SUBDEVICE, "Local", "Interface", "Subdevice",
@@ -2156,44 +2241,44 @@ print_omni_init_list() {
 		 NETPERF_TYPE_UINT32);
 
   set_output_elt(LOCAL_INTERFACE_NAME, "Local", "Interface", "Name", "", "%s",
-		 local_interface_name, 1, OMNI_WANT_LOC_IFNAME,
+		 deprecated_str, 1, OMNI_WANT_LOC_IFNAME,
 		 NETPERF_TYPE_CHAR);
 
   set_output_elt(REMOTE_INTERFACE_NAME, "Remote", "Interface", "Name", "",
-		 "%s", remote_interface_name, 1, OMNI_WANT_REM_IFNAME,
+		 "%s", deprecated_str, 1, OMNI_WANT_REM_IFNAME,
 		 NETPERF_TYPE_CHAR);
 
   set_output_elt(LOCAL_INTERFACE_SLOT, "Local", "Interface", "Slot", "", "%s",
-		 local_interface_slot, 1, OMNI_WANT_LOC_IFSLOT,
+		 deprecated_str, 1, OMNI_WANT_LOC_IFSLOT,
 		 NETPERF_TYPE_CHAR);
 
   set_output_elt(REMOTE_INTERFACE_SLOT,  "Remote",  "Interface",  "Slot",  "",
-		 "%s",  remote_interface_slot, 1, OMNI_WANT_REM_IFSLOT,
+		 "%s",  deprecated_str, 1, OMNI_WANT_REM_IFSLOT,
 		 NETPERF_TYPE_CHAR);
 
   set_output_elt(REMOTE_MACHINE, "Remote", "Machine", "", "", "%s",
-		 remote_machine, 1, 0, NETPERF_TYPE_CHAR);
+		 deprecated_str, 1, 0, NETPERF_TYPE_CHAR);
 
   set_output_elt(REMOTE_VERSION, "Remote", "Version", "", "", "%s",
-		 remote_version, 1, 0, NETPERF_TYPE_CHAR);
+		 deprecated_str, 1, 0, NETPERF_TYPE_CHAR);
 
   set_output_elt(REMOTE_RELEASE, "Remote", "Release", "", "", "%s",
-		 remote_release, 1, 0, NETPERF_TYPE_CHAR);
+		 deprecated_str, 1, 0, NETPERF_TYPE_CHAR);
 
   set_output_elt(REMOTE_SYSNAME, "Remote", "Sysname", "", "", "%s",
-		 remote_sysname, 1, 0, NETPERF_TYPE_CHAR);
+		 deprecated_str, 1, 0, NETPERF_TYPE_CHAR);
 
   set_output_elt(LOCAL_MACHINE, "Local", "Machine", "", "", "%s",
-		 local_machine, 1, 0, NETPERF_TYPE_CHAR);
+		 deprecated_str, 1, 0, NETPERF_TYPE_CHAR);
 
   set_output_elt(LOCAL_VERSION, "Local", "Version", "", "", "%s",
-		 local_version, 1, 0, NETPERF_TYPE_CHAR);
+		 deprecated_str, 1, 0, NETPERF_TYPE_CHAR);
 
   set_output_elt(LOCAL_RELEASE, "Local", "Release", "", "", "%s",
-		 local_release, 1, 0, NETPERF_TYPE_CHAR);
+		 deprecated_str, 1, 0, NETPERF_TYPE_CHAR);
 
   set_output_elt(LOCAL_SYSNAME, "Local", "Sysname", "", "", "%s",
-		 local_sysname, 1, 0, NETPERF_TYPE_CHAR);
+		 deprecated_str, 1, 0, NETPERF_TYPE_CHAR);
 
   set_output_elt(REMOTE_INTERVAL_USECS, "Remote", "Interval", "Usecs", "",
 		 "%d", &remote_interval_usecs, 1, 0, NETPERF_TYPE_INT32);
@@ -2202,13 +2287,13 @@ print_omni_init_list() {
 		 "%d", &remote_interval_burst, 1, 0, NETPERF_TYPE_INT32);
 
   set_output_elt(LOCAL_SECURITY_ENABLED, "Local", "OS", "Security", "Enabled",
-		 "%s", local_security_enabled, 1, 0, NETPERF_TYPE_CHAR);
+		 "%s", deprecated_str, 1, 0, NETPERF_TYPE_CHAR);
 
   set_output_elt(LOCAL_SECURITY_TYPE, "Local", "OS", "Security", "Type", "%s",
-		 local_security_type, 1, 0, NETPERF_TYPE_CHAR);
+		 deprecated_str, 1, 0, NETPERF_TYPE_CHAR);
 
   set_output_elt(LOCAL_SECURITY_SPECIFIC, "Local", "OS", "Security",
-		 "Specific", "%s", local_security_specific, 1, 0,
+		 "Specific", "%s", deprecated_str, 1, 0,
 		 NETPERF_TYPE_CHAR);
 
   set_output_elt(LOCAL_SECURITY_ENABLED_NUM, "Local", "OS", "Security",
@@ -2219,14 +2304,14 @@ print_omni_init_list() {
 		 "%d", &local_security_type_id, 1, 0, NETPERF_TYPE_INT32);
 
   set_output_elt(REMOTE_SECURITY_ENABLED, "Remote", "OS", "Security",
-		 "Enabled", "%s", remote_security_enabled, 1, 0,
+		 "Enabled", "%s", deprecated_str, 1, 0,
 		 NETPERF_TYPE_CHAR);
 
   set_output_elt(REMOTE_SECURITY_TYPE, "Remote", "OS", "Security", "Type",
-		 "%s", remote_security_type, 1, 0, NETPERF_TYPE_CHAR);
+		 "%s", deprecated_str, 1, 0, NETPERF_TYPE_CHAR);
 
   set_output_elt(REMOTE_SECURITY_SPECIFIC, "Remote", "OS", "Security",
-		 "Specific", "%s", remote_security_specific, 1, 0,
+		 "Specific", "%s", deprecated_str, 1, 0,
 		 NETPERF_TYPE_CHAR);
 
   set_output_elt(REMOTE_SECURITY_ENABLED_NUM, "Remote", "OS", "Security",
@@ -2243,19 +2328,19 @@ print_omni_init_list() {
 		 &interval_burst, 1, 0, NETPERF_TYPE_INT32);
 
   set_output_elt(REMOTE_SYSTEM_MODEL, "Remote", "System", "Model", "", "%s",
-		 remote_system_model, 1, 0, NETPERF_TYPE_CHAR);
+		 deprecated_str, 1, 0, NETPERF_TYPE_CHAR);
 
   set_output_elt(REMOTE_CPU_MODEL, "Remote", "CPU", "Model", "", "%s",
-		 remote_cpu_model, 1, 0, NETPERF_TYPE_CHAR);
+		 deprecated_str, 1, 0, NETPERF_TYPE_CHAR);
 
   set_output_elt(REMOTE_CPU_FREQUENCY, "Remote", "CPU", "Frequency", "MHz",
 		 "%d", &remote_cpu_frequency, 1, 0, NETPERF_TYPE_INT32);
 
   set_output_elt(LOCAL_SYSTEM_MODEL, "Local", "System", "Model", "", "%s",
-		 local_system_model, 1, 0, NETPERF_TYPE_CHAR);
+		 deprecated_str, 1, 0, NETPERF_TYPE_CHAR);
 
   set_output_elt(LOCAL_CPU_MODEL, "Local", "CPU", "Model", "", "%s",
-		 local_cpu_model, 1, 0, NETPERF_TYPE_CHAR);
+		 deprecated_str, 1, 0, NETPERF_TYPE_CHAR);
 
   set_output_elt(LOCAL_CPU_FREQUENCY, "Local", "CPU", "Frequency", "MHz", "%d",
 		 &local_cpu_frequency, 1, 0, NETPERF_TYPE_INT32);
@@ -2352,80 +2437,6 @@ print_omni_init() {
 
 }
 
-#ifdef notdef
-/* why? because one cannot simply pass a pointer to snprintf :) for
-   our nefarious porpoises, we only expect to handle single-value
-   format statements, not a full-blown format */
-int
-my_long_long_snprintf(char *buffer, size_t size, const char *format, void *value)
-{
-  const char *fmt = format;
-  while (*fmt)
-    switch (*fmt++) {
-    case 'd':
-    case 'i':
-      return snprintf(buffer, size, format, *(long long *)value);
-    case 'u':
-    case 'o':
-    case 'x':
-    case 'X':
-      return snprintf(buffer, size, format, *(unsigned long long *)value);
-    }
-  return -1;
-}
-
-int
-my_long_snprintf(char *buffer, size_t size, const char *format, void *value)
-{
-  const char *fmt = format;
-  while (*fmt)
-    switch (*fmt++) {
-    case 'd':
-    case 'i':
-      return snprintf(buffer, size, format, *(long *)value);
-    case 'u':
-    case 'o':
-    case 'x':
-    case 'X':
-      return snprintf(buffer, size, format, *(unsigned long *)value);
-    case 'l':
-      return my_long_long_snprintf(buffer, size, format, value);
-    }
-  return -1;
-}
-
-int
-old_my_snprintf(char *buffer, size_t size, const char *format, void *value)
-{
-  const char *fmt = format;
-
-  while (*fmt)
-    switch (*fmt++) {
-    case 'c':
-      return snprintf(buffer, size, format, *(int *)value);
-    case 'f':
-    case 'e':
-    case 'E':
-    case 'g':
-    case 'G':
-      return snprintf(buffer, size, format, *(double *)value);
-    case 's':
-      return snprintf(buffer, size, format, (char *)value);
-    case 'd':
-    case 'i':
-      return snprintf(buffer, size, format, *(int *)value);
-    case 'u':
-    case 'o':
-    case 'x':
-    case 'X':
-      return snprintf(buffer, size, format, *(unsigned int *)value);
-    case 'l':
-      return my_long_snprintf(buffer, size, format, value);
-    }
-  return -1;
-}
-#endif /* notdef */
-
 /* why? because one cannot simply pass a pointer to snprintf - well
    except when it is expecting one... */
 int
@@ -2457,6 +2468,11 @@ my_snprintf(char *buffer, size_t size, netperf_output_elt_t *output_elt)
 		    output_elt->format,
 		    *(unsigned long long *)(output_elt->display_value));
     break;
+  case NETPERF_TYPE_FLOAT:
+    return snprintf(buffer, size,
+		    output_elt->format,
+		    *(float *)(output_elt->display_value));
+    break;
   case NETPERF_TYPE_DOUBLE:
     return snprintf(buffer, size,
 		    output_elt->format,
@@ -2470,6 +2486,7 @@ my_snprintf(char *buffer, size_t size, netperf_output_elt_t *output_elt)
     exit(-1);
   }
 }
+
 void
 print_omni_csv()
 {
@@ -2791,7 +2808,7 @@ print_omni()
    2008-01-09 */
 
 int
-connect_data_socket(SOCKET send_socket, struct addrinfo *remote_res)
+connect_data_socket(SOCKET send_socket, struct addrinfo *remote_res, int dont_give_up)
 {
   int ret;
 
@@ -2804,7 +2821,7 @@ connect_data_socket(SOCKET send_socket, struct addrinfo *remote_res)
 	 over, so return a value of -1 to the caller */
       return -1;
     }
-    if ((SOCKET_EADDRINUSE(ret)) || SOCKET_EADDRNOTAVAIL(ret)) {
+    if ((SOCKET_EADDRINUSE(ret)) || SOCKET_EADDRNOTAVAIL(ret) || dont_give_up) {
       /* likely something our explicit bind() would have caught in
 	 the past, so go get another port, via create_data_socket.
 	 yes, this is a bit more overhead than before, but the
@@ -2821,8 +2838,43 @@ connect_data_socket(SOCKET send_socket, struct addrinfo *remote_res)
   return 0;
 }
 
+static
+int send_pktinfo(SOCKET data_socket, char *buffer, int len, struct sockaddr *destination, int destlen) {
+#ifdef IP_PKTINFO
+  struct msghdr msg;
+  struct iovec iovec[1];
+  char msg_control[512];
+  struct cmsghdr *cmsg;
+  int cmsg_space = 0;
+
+  iovec[0].iov_base = buffer;
+  iovec[0].iov_len = len;
+  msg.msg_name = destination;
+  msg.msg_namelen = destlen;
+  msg.msg_iov = iovec;
+  msg.msg_iovlen = 1;
+  msg.msg_control = msg_control;
+  msg.msg_controllen = sizeof(msg_control);
+  msg.msg_flags = 0;
+
+  cmsg = CMSG_FIRSTHDR(&msg);
+  if (have_pktinfo) {
+    cmsg->cmsg_level = IPPROTO_IP;
+    cmsg->cmsg_type = IP_PKTINFO;
+    cmsg->cmsg_len = CMSG_LEN(sizeof(in_pktinfo));
+    *(struct in_pktinfo*)CMSG_DATA(cmsg) = in_pktinfo;
+    cmsg_space += CMSG_SPACE(sizeof(in_pktinfo));
+  }
+  msg.msg_controllen = cmsg_space;
+  return sendmsg(data_socket, &msg, 0);
+#else
+  return -1;
+#endif /* IP_PKTINFO */
+}
+
+
 int
-send_data(SOCKET data_socket, struct ring_elt *send_ring, uint32_t bytes_to_send, struct sockaddr *destination, int destlen) {
+send_data(SOCKET data_socket, struct ring_elt *send_ring, uint32_t bytes_to_send, struct sockaddr *destination, int destlen, int protocol) {
 
   int len;
 
@@ -2843,18 +2895,44 @@ send_data(SOCKET data_socket, struct ring_elt *send_ring, uint32_t bytes_to_send
   }
 
   if (destination) {
-    len = sendto(data_socket,
-		 send_ring->buffer_ptr,
-		 bytes_to_send,
-		 0,
-		 destination,
-		 destlen);
+    if (have_pktinfo) {
+      len = send_pktinfo(data_socket,
+			 send_ring->buffer_ptr,
+			 bytes_to_send,
+			 destination,
+			 destlen);
+    }
+    else {
+      len = sendto(data_socket,
+		   send_ring->buffer_ptr,
+		   bytes_to_send,
+#if defined(MSG_FASTOPEN)
+		   (use_fastopen && protocol == IPPROTO_TCP) ? MSG_FASTOPEN : 0,
+#else
+		   0,
+#endif
+		   destination,
+		   destlen);
+    }
   }
   else {
-    len = send(data_socket,
-	       send_ring->buffer_ptr,
-	       bytes_to_send,
-	       0);
+    if (!use_write) {
+      len = send(data_socket,
+		 send_ring->buffer_ptr,
+		 bytes_to_send,
+		 0);
+    }
+    else {
+#ifndef WIN32
+      len = write(data_socket,
+		  send_ring->buffer_ptr,
+		  bytes_to_send);
+#else
+      fprintf(where,"I'm sorry Dave I cannot write() under Windows\n");
+      fflush(where);
+      return -3;
+#endif
+    }
   }
   if(len != bytes_to_send) {
     /* don't forget that some platforms may do a partial send upon
@@ -2877,7 +2955,8 @@ send_data(SOCKET data_socket, struct ring_elt *send_ring, uint32_t bytes_to_send
     if (errno == ENOBUFS)
       return -2;
     else {
-      fprintf(where,"%s: data send error: errno %d\n",__FUNCTION__,errno);
+      fprintf(where,"%s: data send error: %s (errno %d)\n",
+	      __FUNCTION__, strerror(errno), errno);
       return -3;
     }
   }
@@ -2888,6 +2967,12 @@ send_data(SOCKET data_socket, struct ring_elt *send_ring, uint32_t bytes_to_send
 static int
 recv_data_no_copy(SOCKET data_socket, struct ring_elt *recv_ring, uint32_t bytes_to_recv, struct sockaddr *source, netperf_socklen_t *sourcelen, uint32_t flags, uint32_t *num_receives) {
 
+#ifndef SPLICE_F_MOVE
+# define SPLICE_F_MOVE 0x01
+#endif
+#ifndef SPLICE_F_NONBLOCK
+# define SPLICE_F_NONBLOCK 0x02
+#endif
 
   static int pfd[2] = {-1, -1};
   static int fdnull = -1;
@@ -2897,7 +2982,9 @@ recv_data_no_copy(SOCKET data_socket, struct ring_elt *recv_ring, uint32_t bytes
   int bytes_left;
   int bytes_recvd;
   int my_recvs;
-  int my_flags = 0; /* will we one day want to set MSG_WAITALL? */
+  int my_flags = SPLICE_F_MOVE | SPLICE_F_NONBLOCK; /* values
+						       suggested by
+						       Eric Dumazet */
   int ret;
 
   if (pfd[0] == -1) {
@@ -2949,14 +3036,11 @@ recv_data_no_copy(SOCKET data_socket, struct ring_elt *recv_ring, uint32_t bytes
     
     
     if (bytes_recvd > 0) {
-      if (splice(pfd[0],
-		 NULL,
-		 fdnull,
-		 NULL,
-		 bytes_recvd,
-		 my_flags) != bytes_recvd) {
-	return -3;
-      }
+      /* per Eric Dumazet, we should just let this second splice call
+	 move as many bytes as it can and not worry about how much.
+	 this should make the call more robust when made on a system
+	 under memory pressure */
+      splice(pfd[0], NULL, fdnull, NULL, 1 << 30, my_flags);
       bytes_left -= bytes_recvd;
     }
     else {
@@ -2992,7 +3076,62 @@ recv_data_no_copy(SOCKET data_socket, struct ring_elt *recv_ring, uint32_t bytes
     return bytes_to_recv;
 
 }
+
 #endif
+
+static
+int recv_pktinfo(SOCKET data_socket, char *message_ptr, int bytes_to_recv,  int my_flags, struct sockaddr *source, netperf_socklen_t *sourcelen) {
+
+#ifdef IP_PKTINFO
+  struct iovec  my_iovec;
+  struct msghdr my_header;
+  struct cmsghdr *cmsg;
+  struct in_pktinfo *pktinfo;
+
+  char control_buf[512];
+  int onoff = 1;
+  int ret;
+
+  my_iovec.iov_base = message_ptr;
+  my_iovec.iov_len = bytes_to_recv;
+
+  my_header.msg_name = source;
+  my_header.msg_namelen = *sourcelen;
+  my_header.msg_iov = &my_iovec;
+  my_header.msg_iovlen = 1;
+  my_header.msg_control = control_buf;
+  my_header.msg_controllen = sizeof(control_buf);
+
+  /* not going to bother checking, if it doesn't work we are no
+     worse-off than we were before. we are going to ignore IPv6 for
+     the time being */
+  setsockopt(data_socket, IPPROTO_IP, IP_PKTINFO, &onoff, sizeof(onoff));
+  
+  ret = recvmsg(data_socket, &my_header, 0);
+
+  if (ret >= 0) {
+    struct sockaddr_in me;
+    struct sockaddr_in clear;
+    netperf_socklen_t melen = sizeof(me);
+    for (cmsg = CMSG_FIRSTHDR(&my_header);
+	 cmsg != NULL;
+	 cmsg = CMSG_NXTHDR(&my_header, cmsg)) {
+      if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_PKTINFO) {
+	in_pktinfo = *(struct in_pktinfo *)CMSG_DATA(cmsg);
+	have_pktinfo = 1;
+      }
+    }
+  }
+
+  onoff = 0;
+  setsockopt(data_socket, IPPROTO_IP, IP_PKTINFO, &onoff, sizeof(onoff));
+
+  return ret;
+#else
+  return -1;
+#endif
+}
+
 
 int
 recv_data(SOCKET data_socket, struct ring_elt *recv_ring, uint32_t bytes_to_recv, struct sockaddr *source, netperf_socklen_t *sourcelen, uint32_t flags, uint32_t *num_receives) {
@@ -3042,12 +3181,23 @@ recv_data(SOCKET data_socket, struct ring_elt *recv_ring, uint32_t bytes_to_recv
 	 us out of the dowhile on the first call anyway.  if it
 	 turns-out not to be the case, then we can hoist the if above
 	 the do and put the dowhile in the else. */
-      bytes_recvd = recvfrom(data_socket,
-			     temp_message_ptr,
-			     bytes_left,
-			     my_flags,
-			     source,
-			     sourcelen);
+      if (use_pktinfo) {
+	bytes_recvd = recv_pktinfo(data_socket,
+				   temp_message_ptr,
+				   bytes_left,
+				   my_flags,
+				   source,
+				   sourcelen);
+	use_pktinfo = 0;
+      }
+      else {
+	bytes_recvd = recvfrom(data_socket,
+			       temp_message_ptr,
+			       bytes_left,
+			       my_flags,
+			       source,
+			       sourcelen);
+      }
     }
     else {
       /* just call recv */
@@ -3076,6 +3226,10 @@ recv_data(SOCKET data_socket, struct ring_elt *recv_ring, uint32_t bytes_to_recv
 	/* We hit the end of a timed test. */
 	return -1;
       }
+    if (SOCKET_EAGAIN(bytes_recvd) ||
+	SOCKET_EWOULDBLOCK(bytes_recvd)) {
+      return -2;
+    }
     /* it was a hard error */
     return -3;
   }
@@ -3239,20 +3393,21 @@ static void
 dump_tcp_info(struct tcp_info *tcp_info)
 {
 
-  printf("tcpi_rto %d tcpi_ato %d tcpi_pmtu %d tcpi_rcv_ssthresh %d\n"
-	 "tcpi_rtt %d tcpi_rttvar %d tcpi_snd_ssthresh %d tpci_snd_cwnd %d\n"
-	 "tcpi_reordering %d tcpi_total_retrans %d\n",
-	 tcp_info->tcpi_rto,
-	 tcp_info->tcpi_ato,
-	 tcp_info->tcpi_pmtu,
-	 tcp_info->tcpi_rcv_ssthresh,
-	 tcp_info->tcpi_rtt,
-	 tcp_info->tcpi_rttvar,
-	 tcp_info->tcpi_snd_ssthresh,
-	 tcp_info->tcpi_snd_cwnd,
-	 tcp_info->tcpi_reordering,
-	 tcp_info->tcpi_total_retrans);
-
+  fprintf(stderr,
+	  "tcpi_rto %d tcpi_ato %d tcpi_pmtu %d tcpi_rcv_ssthresh %d\n"
+	  "tcpi_rtt %d tcpi_rttvar %d tcpi_snd_ssthresh %d tpci_snd_cwnd %d\n"
+	  "tcpi_reordering %d tcpi_total_retrans %d\n",
+	  tcp_info->tcpi_rto,
+	  tcp_info->tcpi_ato,
+	  tcp_info->tcpi_pmtu,
+	  tcp_info->tcpi_rcv_ssthresh,
+	  tcp_info->tcpi_rtt,
+	  tcp_info->tcpi_rttvar,
+	  tcp_info->tcpi_snd_ssthresh,
+	  tcp_info->tcpi_snd_cwnd,
+	  tcp_info->tcpi_reordering,
+	  tcp_info->tcpi_total_retrans);
+  
   return;
 }
 
@@ -3285,7 +3440,8 @@ get_transport_retrans(SOCKET socket, int protocol) {
   }
   else {
 
-    if (debug > 1) {
+    /* we assume that if we have LINUX_TCP_H we also have getenv */
+    if (debug > 1 || getenv("DUMP_TCP_INFO")) {
       dump_tcp_info(&tcp_info);
     }
     return tcp_info.tcpi_total_retrans;
@@ -3338,12 +3494,6 @@ get_transport_info(SOCKET socket, int *mss, int protocol)
 
 }
 
-/*
-   if ( setsockopt(sd, SOL_TCP, TCP_CONGESTION, "ledbat", 6) == -1 ) {
-     perror("setsockopt");
-     exit(EXIT_FAILURE);
-   }
-*/
 static void
 get_transport_cong_control(SOCKET socket, int protocol, char cong_control[], int len)
 {
@@ -3374,6 +3524,28 @@ set_transport_cong_control(SOCKET socket, int protocol, char cong_control[], int
 #endif
 }
 
+static void
+set_receive_timeout(SOCKET sock, int timeout) 
+{
+#ifdef SO_RCVTIMEO
+#ifndef WIN32
+  struct timeval foo;
+
+  foo.tv_sec = timeout;
+  foo.tv_usec = 0;
+
+  if (setsockopt(sock,SOL_SOCKET,SO_RCVTIMEO,&foo,sizeof(foo)) < 0) {
+    if (debug) {
+      fprintf(where,"Note - attempt to set a receive timeout on the data socket failed with errno %d (%s)\n",
+	      errno,
+	      strerror(errno));
+      fflush(where);
+    }
+  }
+#endif
+#endif
+}
+
 static SOCKET
 omni_create_data_socket(struct addrinfo *res)
 {
@@ -3387,6 +3559,20 @@ omni_create_data_socket(struct addrinfo *res)
 				 res->ai_protocol,
 				 local_cong_control_req,
 				 sizeof(local_cong_control_req));
+    }
+
+    if ((res->ai_protocol == IPPROTO_UDP) &&
+	(receive_timeout != -1)) {
+      set_receive_timeout(temp_socket, receive_timeout);
+    }
+      
+    if (socket_debug) {
+      int one = 1;
+      setsockopt(temp_socket, 
+		 SOL_SOCKET,
+		 SO_DEBUG,
+		 &one,
+		 sizeof(one));
     }
   }
   return temp_socket;
@@ -3449,12 +3635,61 @@ enable_enobufs(int s)
     return;
   }
   if (setsockopt(s, pr->p_proto, IP_RECVERR, (char *)&on, sizeof(on)) < 0) {
-    fprintf(where, "%s failed: setsockopt\n",__FUNCTION__);
+    fprintf(where, "%s failed: setsockopt (errno %d)\n",__FUNCTION__,errno);
     fflush(where);
     return;
   }
 }
 #endif
+
+void
+set_omni_request_flags(struct omni_request_struct *omni_request) {
+
+      /* we have no else clauses here because we previously set flags
+	 to zero above raj 20090803 */
+      if (rem_nodelay)
+	omni_request->flags |= OMNI_NO_DELAY;
+
+      if (remote_use_sendfile)
+	omni_request->flags |= OMNI_USE_SENDFILE;
+
+      if (connection_test)
+	omni_request->flags |= OMNI_CONNECT_TEST;
+
+      if (remote_checksum_off)
+	omni_request->flags |= OMNI_CHECKSUM_OFF;
+
+      if (remote_cpu_usage)
+	omni_request->flags |= OMNI_MEASURE_CPU;
+
+      if (routing_allowed)
+	omni_request->flags |= OMNI_ROUTING_ALLOWED;
+
+      if (desired_output_groups & OMNI_WANT_REM_IFNAME)
+	omni_request->flags |= OMNI_WANT_IFNAME;
+
+      if (desired_output_groups & OMNI_WANT_REM_IFSLOT)
+	omni_request->flags |= OMNI_WANT_IFSLOT;
+
+      if (desired_output_groups & OMNI_WANT_REM_IFIDS)
+	omni_request->flags |= OMNI_WANT_IFIDS;
+
+      if (desired_output_groups & OMNI_WANT_REM_DRVINFO)
+	omni_request->flags |= OMNI_WANT_DRVINFO;
+
+      if (desired_output_groups & OMNI_WANT_REM_CONG)
+	omni_request->flags |= OMNI_WANT_REM_CONG;
+
+      if (use_fastopen)
+	omni_request->flags |= OMNI_FASTOPEN;
+
+      if (want_use_pktinfo)
+	omni_request->flags |= OMNI_USE_PKTINFO;
+
+      if (want_defer_accept)
+	omni_request->flags |= OMNI_WANT_DEFER_ACCEPT;
+
+}
 
 
 /* this code is intended to be "the two routines to run them all" for
@@ -3494,42 +3729,7 @@ send_omni_inner(char remote_host[], unsigned int legacy_caller, char header_str[
   struct	omni_results_struct	*omni_result;
 
 #ifdef WANT_FIRST_BURST
-#define REQUEST_CWND_INITIAL 2
-  /* "in the beginning..." the WANT_FIRST_BURST stuff was like both
-     Unix and the state of New Jersey - both were simple an unspoiled.
-     then it was realized that some stacks are quite picky about
-     initial congestion windows and a non-trivial initial burst of
-     requests would not be individual segments even with TCP_NODELAY
-     set. so, we have to start tracking a poor-man's congestion window
-     up here in user space because we want to try to make something
-     happen that frankly, we cannot guarantee with the specification
-     of TCP.  ain't that grand?-) raj 2006-01-30 */
   int requests_outstanding = 0;
-  int requests_this_cwnd = 0;
-  int request_cwnd_initial = REQUEST_CWND_INITIAL;
-  int request_cwnd = REQUEST_CWND_INITIAL;  /* we ass-u-me that having
-					       three requests
-					       outstanding at the
-					       beginning of the test
-					       is ok with TCP stacks
-					       of interest. the first
-					       two will come from our
-					       first_burst loop, and
-					       the third from our
-					       regularly scheduled
-					       send */
-
-  /* if the user has specified a negative value for first_burst_size
-     via the test-specific -b option, we forgo the nicities of ramping
-     up the request_cwnd and go straight to burst size. raj 20110715 */
-  if (first_burst_size < 0) {
-    first_burst_size = first_burst_size * -1;
-    request_cwnd_initial = first_burst_size;
-  }
-  else {
-    request_cwnd_initial = REQUEST_CWND_INITIAL;
-  }
-
 #endif
 
   omni_request =
@@ -3539,15 +3739,6 @@ send_omni_inner(char remote_host[], unsigned int legacy_caller, char header_str[
   omni_result =
     (struct omni_results_struct *)netperf_response.content.test_specific_data;
 
-
-  /* before we start doing things with our own requests and responses
-     lets go ahead and find-out about the remote system. at some point
-     we probably need to put this somewhere else...  however, we do
-     not want to do this if this is a no_control test. raj 20101220 */
-  /* should we also not call this if this is a legacy test? */
-  if (!no_control) {
-    get_remote_system_info();
-  }
 
   if (keep_histogram) {
     if (first_burst_size > 0)
@@ -3611,7 +3802,7 @@ send_omni_inner(char remote_host[], unsigned int legacy_caller, char header_str[
     local_receive_calls = 0;
 
     /* since we are tracking the number of outstanding requests for
-       timestamping purposes, and since the previous iteration if
+       timestamping purposes, and since the previous iteration of
        using confidence intervals may not have completed all of them,
        we now need to forget about them or we will mistakenly fill our
        tracking array. raj 2011-03-14 */
@@ -3624,8 +3815,6 @@ send_omni_inner(char remote_host[], unsigned int legacy_caller, char header_str[
        outstanding and the "congestion window for each new
        iteration. raj 2006-01-31. */
     requests_outstanding = 0;
-    requests_this_cwnd = 0;
-    request_cwnd = request_cwnd_initial;
 #endif
 
     /* if the command-line included requests to randomize the IP
@@ -3643,7 +3832,12 @@ send_omni_inner(char remote_host[], unsigned int legacy_caller, char header_str[
       exit(1);
     }
 #if defined(__linux)
-    enable_enobufs(data_socket);
+    /* we really only need this for a UDP_STREAM test. we particularly
+       do not want it for a CC or CRR test. raj 2012-08-06 */
+    if ((protocol == IPPROTO_UDP) &&
+	NETPERF_XMIT_ONLY(direction)) {
+      enable_enobufs(data_socket);
+    }
 #endif
     need_socket = 0;
 
@@ -3759,40 +3953,7 @@ send_omni_inner(char remote_host[], unsigned int legacy_caller, char header_str[
       omni_request->socket_prio            = remote_socket_prio;
       omni_request->socket_tos             = remote_socket_tos;
 
-      /* we have no else clauses here because we previously set flags
-	 to zero above raj 20090803 */
-      if (rem_nodelay)
-	omni_request->flags |= OMNI_NO_DELAY;
-
-      if (remote_use_sendfile)
-	omni_request->flags |= OMNI_USE_SENDFILE;
-
-      if (connection_test)
-	omni_request->flags |= OMNI_CONNECT_TEST;
-
-      if (remote_checksum_off)
-	omni_request->flags |= OMNI_CHECKSUM_OFF;
-
-      if (remote_cpu_usage)
-	omni_request->flags |= OMNI_MEASURE_CPU;
-
-      if (routing_allowed)
-	omni_request->flags |= OMNI_ROUTING_ALLOWED;
-
-      if (desired_output_groups & OMNI_WANT_REM_IFNAME)
-	omni_request->flags |= OMNI_WANT_IFNAME;
-
-      if (desired_output_groups & OMNI_WANT_REM_IFSLOT)
-	omni_request->flags |= OMNI_WANT_IFSLOT;
-
-      if (desired_output_groups & OMNI_WANT_REM_IFIDS)
-	omni_request->flags |= OMNI_WANT_IFIDS;
-
-      if (desired_output_groups & OMNI_WANT_REM_DRVINFO)
-	omni_request->flags |= OMNI_WANT_DRVINFO;
-
-      if (desired_output_groups & OMNI_WANT_REM_CONG)
-	omni_request->flags |= OMNI_WANT_REM_CONG;
+      set_omni_request_flags(omni_request);
 
       /* perhaps this should be made conditional on
 	 remote_cong_control_req[0] not being NULL? */
@@ -3897,28 +4058,6 @@ send_omni_inner(char remote_host[], unsigned int legacy_caller, char header_str[
 	  fprintf(where,"remote port is %u\n",get_port_number(remote_res));
 	  fflush(where);
 	}
-	/* just in case the remote didn't null terminate */
-	if (NULL == remote_system_model) {
-	  omni_response->system_model[sizeof(omni_response->system_model)-1] =
-	    0;
-	  remote_system_model = strdup(omni_response->system_model);
-	}
-	if (NULL == remote_cpu_model) {
-	  omni_response->cpu_model[sizeof(omni_response->cpu_model) -1 ] = 0;
-	  remote_cpu_model = strdup(omni_response->cpu_model);
-	}
-	remote_cpu_frequency = omni_response->cpu_frequency;
-
-	if (NULL == remote_security_specific) {
-	  omni_response->security_string[sizeof(omni_response->security_string) - 1] = 0;
-	  remote_security_specific = strdup(omni_response->security_string);
-	}
-	/* top bits type, bottom bits enabled */
-	remote_security_type_id = (int) omni_response->security_info >> 16;
-	remote_security_enabled_num = (short)omni_response->security_info;
-	remote_security_type = nsec_type_to_str(remote_security_type_id);
-	remote_security_enabled =
-	  nsec_enabled_to_str(remote_security_enabled_num);
       }
       else {
 	Set_errno(netperf_response.content.serv_errno);
@@ -3931,15 +4070,6 @@ send_omni_inner(char remote_host[], unsigned int legacy_caller, char header_str[
       }
 
     }
-    else {
-      /* we are a no_control test so some things about the remote need
-	 to be set accordingly */
-      if (NULL == remote_system_model)
-	remote_system_model = strdup("Unknown System Model");
-      if (NULL == remote_cpu_model)
-	remote_cpu_model = strdup("Unknown CPU Model");
-      remote_cpu_frequency = -1;
-    }
 
 #ifdef WANT_DEMO
     /* at some point we will have to be more clever about this, but
@@ -3951,7 +4081,7 @@ send_omni_inner(char remote_host[], unsigned int legacy_caller, char header_str[
     /* if we are not a connectionless protocol, we need to connect. at
        some point even if we are a connectionless protocol, we may
        still want to "connect" for convenience raj 2008-01-14 */
-    need_to_connect = (protocol != IPPROTO_UDP);
+    need_to_connect = (protocol != IPPROTO_UDP) || local_connected;
 
     /* possibly wait just a moment before actually starting - used
        mainly when one is doing many many many concurrent netperf
@@ -4031,7 +4161,6 @@ send_omni_inner(char remote_host[], unsigned int legacy_caller, char header_str[
 
       if (need_socket) {
 	if (connection_test)
-
 	  pick_next_port_number(local_res,remote_res);
 
 	data_socket = omni_create_data_socket(local_res);
@@ -4042,15 +4171,18 @@ send_omni_inner(char remote_host[], unsigned int legacy_caller, char header_str[
 	}
 	need_socket = 0;
 #if defined(__linux)
-	enable_enobufs(data_socket);
+	if ((protocol == IPPROTO_UDP) &&
+	    (direction & NETPERF_XMIT)) {
+	  enable_enobufs(data_socket);
+	}
 #endif
       }
 
       /* only connect if and when we need to */
-      if (need_to_connect) {
+      if (need_to_connect && !use_fastopen) {
 	/* assign to data_socket since connect_data_socket returns
 	   SOCKET and not int thanks to Windows. */
-	ret = connect_data_socket(data_socket,remote_res);
+	ret = connect_data_socket(data_socket,remote_res,dont_give_up);
 	if (ret == 0) {
 	  connected = 1;
 	  need_to_connect = 0;
@@ -4089,29 +4221,32 @@ send_omni_inner(char remote_host[], unsigned int legacy_caller, char header_str[
       }
 
 #ifdef WANT_FIRST_BURST
-      /* we can inject no more than request_cwnd, which will grow with
-	 time, and no more than first_burst_size.  we don't use <= to
-	 account for the "regularly scheduled" send call.  of course
-	 that makes it more a "max_outstanding_ than a
-	 "first_burst_size" but for now we won't fix the names. also,
-	 I suspect the extra check against < first_burst_size is
-	 redundant since later I expect to make sure that request_cwnd
-	 can never get larger than first_burst_size, but just at the
-	 moment I'm feeling like a belt and suspenders kind of
-	 programmer. raj 2006-01-30 */
-      /* we only want to inject the burst if this is a full-on
-	 request/response test. otherwise it doesn't make any sense
-	 anyway. raj 2008-01-25 */
+      /* Long ago and far away, on just about any *nix, one could
+	 avoid having multiple requests bundled into the same TCP
+	 segment simply by setting TCP_NODELAY and perhaps not trying
+	 to have more outstanding at one time than our guesstimate as
+	 to the TCP congestion window.  In that way one could use a
+	 burst mode TCP_RR test as part of trying to measure maximum
+	 packets per second (PPS) on a system or through a NIC (well,
+	 assuming there weren't many retransmissions anyway) These
+	 days with Linux the dominant *nix and with it having made it
+	 virtually impossible to do any longer, it is no longer worth
+	 it to try the application-layer backflips.  So, I am removing
+	 them.  At some point we'll simply have to enhance this code
+	 to deal with multiple connections at one time, each with just
+	 the one transaction in flight for our PPS testing.  Multiple
+	 netperfs, each with one connection and one transaction in
+	 flight rapidly becomes a context-switching benchmark rather
+	 than "networking".  raj 2015-04-20 */
+
       while ((first_burst_size > 0) &&
-	     (requests_outstanding < request_cwnd) &&
 	     (requests_outstanding < first_burst_size) &&
 	     (NETPERF_IS_RR(direction)) &&
 	     (!connection_test)) {
 	if (debug > 1) {
 	  fprintf(where,
-		  "injecting, req_outstanding %d req_cwnd %d burst %d\n",
+		  "injecting, req_outstanding %d burst %d\n",
 		  requests_outstanding,
-		  request_cwnd,
 		  first_burst_size);
 	}
 
@@ -4119,14 +4254,23 @@ send_omni_inner(char remote_host[], unsigned int legacy_caller, char header_str[
 			     send_ring,
 			     bytes_to_send,
 			     (connected) ? NULL : remote_res->ai_addr,
-			     remote_res->ai_addrlen)) != bytes_to_send) {
+			     remote_res->ai_addrlen,
+			     protocol)) != bytes_to_send) {
 	  /* in theory, we should never hit the end of the test in the
-	     first burst */
-	  perror("send_omni: initial burst data send error");
-	  exit(-1);
+	     first burst.  however, in practice I have indeed seen
+	     some ENOBUFS happen in some aggregate tests.  so we need
+	     to be a bit more sophisticated in how we handle it. raj
+	     20130516 */
+	  if (ret != -2) {
+	    perror("send_omni: initial burst data send error");
+	    exit(-1);
+	  }
+	  failed_sends++;
 	}
-	local_send_calls += 1;
-	requests_outstanding += 1;
+	else {
+	  local_send_calls += 1;
+	  requests_outstanding += 1;
+	}
 
 	/* yes, it seems a trifle odd having this *after* the send()
 	   just above, but really this is for the next send() or
@@ -4151,7 +4295,8 @@ send_omni_inner(char remote_host[], unsigned int legacy_caller, char header_str[
 			bytes_to_send,
 			(connected) ? NULL : remote_res->ai_addr,
 			/* if the destination above is NULL, this is ignored */
-			remote_res->ai_addrlen);
+			remote_res->ai_addrlen,
+			protocol);
 	/* the order of these if's will seem a triffle strange, but they
 	   are my best guess as to order of probabilty and/or importance
 	   to the overhead raj 2008-01-09*/
@@ -4253,8 +4398,35 @@ send_omni_inner(char remote_host[], unsigned int legacy_caller, char header_str[
 	  timed_out = 1;
 	  break;
 	}
+	else if (rret == -2) {
+	  /* we timed-out on a data receive.  this is only allowed for
+	     a UDP_RR test.  we want to set things up so we start
+	     ramping up again like we were at the beginning. if we
+	     actually timeout it means that all has been lost.  or at
+	     least we assume so */
+	  if (debug) {
+	    fprintf(where,"Timeout receiving resonse from remote\n");
+	    fflush(where);
+	  }
+#ifdef WANT_FIRST_BURST
+	  if (first_burst_size) {
+	    requests_outstanding = 0;
+	  }
+#endif
+	  if (keep_histogram) {
+	    HIST_purge(time_hist);
+	  }
+#ifdef WANT_DEMO
+	  /* "start over" on a demo interval. we will forget about
+	  everything that happened in the demo interval up to the
+	  timeout and begin fresh. */
+	  demo_reset(); 
+#endif /* WANT_DEMO */
+
+	  continue;
+	}
 	else {
-	  /* presently at least, -2 and -3 are equally bad on recv */
+	  /* anything else is bad */
 	  perror("netperf: send_omni: recv_data failed");
 	  exit(1);
 	}
@@ -4266,20 +4438,6 @@ send_omni_inner(char remote_host[], unsigned int legacy_caller, char header_str[
 	   outstanding and we can put one more out there than
 	   before. */
 	requests_outstanding -= 1;
-	if ((request_cwnd < first_burst_size) &&
-	    (NETPERF_IS_RR(direction)) &&
-	    (++requests_this_cwnd == request_cwnd)) {
-	  request_cwnd += 1;
-	  requests_this_cwnd = 0;
-	  if (debug > 1) {
-	    fprintf(where,
-		    "incr req_cwnd to %d first_burst %d reqs_outstanding %d trans %"PRIu64"\n",
-		    request_cwnd,
-		    first_burst_size,
-		    requests_outstanding,
-		    trans_completed + 1);
-	  }
-	}
 #endif
 
       }
@@ -4328,11 +4486,11 @@ send_omni_inner(char remote_host[], unsigned int legacy_caller, char header_str[
 				     0);
 	if (ret == 0) {
 	  /* we will need a new connection to be established next time
-	     around the loop */
+	     around the loop.  However, the next time around the loop
+	     will already be picking the next port number */
 	  need_to_connect = 1;
 	  connected = 0;
 	  need_socket = 1;
-	  pick_next_port_number(local_res,remote_res);
 	}
 	else if (ret == -1) {
 	  times_up = 1;
@@ -4399,12 +4557,6 @@ send_omni_inner(char remote_host[], unsigned int legacy_caller, char header_str[
 						    local_res->ai_protocol);
 
 
-    find_security_info(&local_security_enabled_num,
-		       &local_security_type_id,
-		       &local_security_specific);
-    local_security_enabled = nsec_enabled_to_str(local_security_enabled_num);
-    local_security_type    = nsec_type_to_str(local_security_type_id);
-
     /* so, if we have/had a data connection, we will want to close it
        now, and this will be independent of whether there is a control
        connection. */
@@ -4464,62 +4616,6 @@ send_omni_inner(char remote_host[], unsigned int legacy_caller, char header_str[
 
     cpu_stop(local_cpu_usage,&elapsed_time);
 
-    /* if this is a legacy test, there is not much point to finding
-       all these things since they will not be emitted. */
-    if (!legacy) {
-
-      /* and even if this is not a legacy test, there is still not
-	 much point to finding these things if they will not be
-	 emitted */
-      find_system_info(&local_system_model,
-		       &local_cpu_model,
-		       &local_cpu_frequency);
-
-      if ((desired_output_groups & OMNI_WANT_LOC_IFNAME) ||
-	  (desired_output_groups & OMNI_WANT_LOC_DRVINFO) ||
-	  (desired_output_groups & OMNI_WANT_LOC_IFSLOT) ||
-	  (desired_output_groups & OMNI_WANT_LOC_IFIDS)) {
-	local_interface_name =
-	  find_egress_interface(local_res->ai_addr,remote_res->ai_addr);
-      }
-      else {
-	local_interface_name = strdup("Bug If Seen IFNAME");
-      }
-
-      if (desired_output_groups & OMNI_WANT_LOC_DRVINFO) {
-	find_driver_info(local_interface_name,local_driver_name,
-			 local_driver_version,local_driver_firmware,
-			 local_driver_bus,32);
-      }
-      else {
-	strncpy(local_driver_name,"Bug If Seen DRVINFO",32);
-	strncpy(local_driver_version, "Bug If Seen DRVINFO",32);
-	strncpy(local_driver_firmware,"Bug If Seen DRVINFO",32);
-	strncpy(local_driver_bus,"Bug If Seen DRVINFO",32);
-      }
-
-      if (desired_output_groups & OMNI_WANT_LOC_IFSLOT) {
-	local_interface_slot = find_interface_slot(local_interface_name);
-      }
-      else {
-	local_interface_slot = strdup("Bug If Seen IFSLOT");
-      }
-
-      if (desired_output_groups & OMNI_WANT_LOC_IFIDS) {
-	find_interface_ids(local_interface_name,
-			   &local_interface_vendor,
-			   &local_interface_device,
-			   &local_interface_subvendor,
-			   &local_interface_subdevice);
-      }
-      else {
-	local_interface_vendor = -2;
-	local_interface_device = -2;
-	local_interface_subvendor = -2;
-	local_interface_subdevice = -2;
-      }
-    }
-
     /* if we timed-out, and had padded the timer, we need to subtract
        the pad_time from the elapsed time on the assumption that we
        were essentially idle for pad_time and just waiting for a timer
@@ -4548,8 +4644,14 @@ send_omni_inner(char remote_host[], unsigned int legacy_caller, char header_str[
 	  fprintf(where,"remote results obtained\n");
 	remote_cpu_method = format_cpu_method(omni_result->cpu_method);
 	lib_num_rem_cpus = omni_result->num_cpus;
-	lib_remote_peak_cpu_util = (double)omni_result->peak_cpu_util;
-	lib_remote_peak_cpu_id = omni_result->peak_cpu_id;
+	lib_remote_cpu_stats.cpu_util = omni_result->cpu_util;
+	lib_remote_cpu_stats.cpu_user = omni_result->cpu_percent_user;
+	lib_remote_cpu_stats.cpu_system = omni_result->cpu_percent_system;
+	lib_remote_cpu_stats.cpu_iowait = omni_result->cpu_percent_iowait;
+	lib_remote_cpu_stats.cpu_irq = omni_result->cpu_percent_irq;
+	lib_remote_cpu_stats.cpu_swintr = omni_result->cpu_percent_swintr;
+	lib_remote_cpu_stats.peak_cpu_util = omni_result->peak_cpu_util;
+	lib_remote_cpu_stats.peak_cpu_id = omni_result->peak_cpu_id;
 	/* why?  because some stacks want to be clever and autotune their
 	   socket buffer sizes, which means that if we accept the defaults,
 	   the size we get from getsockopt() at the beginning of a
@@ -4575,21 +4677,7 @@ send_omni_inner(char remote_host[], unsigned int legacy_caller, char header_str[
 	    (double) omni_result->send_calls;
 	else
 	  remote_bytes_per_send = 0.0;
-	omni_result->ifname[15] = 0; /* belt and suspenders */
-	remote_interface_name = strdup(omni_result->ifname);
-	remote_interface_slot = strdup(omni_result->ifslot);
-	strncpy(remote_driver_name,omni_result->driver,32);
-	strncpy(remote_driver_version,omni_result->version,32);
-	strncpy(remote_driver_firmware,omni_result->firmware,32);
-	strncpy(remote_driver_bus,omni_result->bus,32);
-	remote_driver_name[31] = 0;
-	remote_driver_version[31] = 0;
-	remote_driver_firmware[31] = 0;
-	remote_driver_bus[31] = 0;
-	remote_interface_vendor = omni_result->vendor;
-	remote_interface_device = omni_result->device;
-	remote_interface_subvendor = omni_result->subvendor;
-	remote_interface_subdevice = omni_result->subdevice;
+
 	remote_transport_retrans = omni_result->transport_retrans;
 	/* what was the congestion control? */
 	if (desired_output_groups & OMNI_WANT_REM_CONG) {
@@ -4757,9 +4845,7 @@ send_omni_inner(char remote_host[], unsigned int legacy_caller, char header_str[
      use doubles rather than floats. help there would be
      appreciated. raj 2008-01-28 */
   elapsed_time_double = (double) elapsed_time;
-  local_cpu_utilization_double = (double)local_cpu_utilization;
   local_service_demand_double = (double)local_service_demand;
-  remote_cpu_utilization_double = (double)remote_cpu_utilization;
   remote_service_demand_double = (double)remote_service_demand;
 
   if ('x' == libfmt) sd_str = "usec/Tran";
@@ -4849,6 +4935,7 @@ send_omni_inner(char remote_host[], unsigned int legacy_caller, char header_str[
   }
 
 }
+
 
 void
 send_omni(char remote_host[])
@@ -4968,6 +5055,7 @@ recv_omni()
   want_keepalive  = (omni_request->flags) & OMNI_WANT_KEEPALIVE;
   local_socket_prio = omni_request->socket_prio;
   local_socket_tos  = omni_request->socket_tos;
+  want_defer_accept = omni_request->flags & OMNI_WANT_DEFER_ACCEPT;
 
 #ifdef WANT_INTERVALS
   interval_usecs = omni_request->interval_usecs;
@@ -4980,7 +5068,11 @@ recv_omni()
 #endif
 
   connection_test = omni_request->flags & OMNI_CONNECT_TEST;
+#ifdef TCP_FASTOPEN
+  use_fastopen = omni_request->flags & OMNI_FASTOPEN;
+#endif
   direction       = omni_request->direction;
+  use_pktinfo = (omni_request->flags) & OMNI_USE_PKTINFO;
 
   /* let's be quite certain the fill file string is null terminated */
   omni_request->fill_file[sizeof(omni_request->fill_file) - 1] = '\0';
@@ -5142,12 +5234,45 @@ recv_omni()
      accept. the age-old constant of 5 is probably OK for our purposes
      but does not necessarily represent best practice */
   if (need_to_accept) {
-    if (listen(s_listen, 5) == SOCKET_ERROR) {
+    int backlog = 5;
+#ifdef TCP_FASTOPEN
+    /* one of these days I will have to go find-out what the backlog
+       is supposed to be here.  until then, I'll just set it to five
+       like the listen() call does - it is classic, and was what was
+       used in the online example I found */
+    if (use_fastopen &&
+	(setsockopt(s_listen,IPPROTO_TCP, TCP_FASTOPEN, &backlog, sizeof(backlog)) ==
+	 SOCKET_ERROR)) {
       netperf_response.content.serv_errno = errno;
       close(s_listen);
       send_response();
       if (debug) {
-	fprintf(where,"could not listen\n");
+	fprintf(where,"netperfserver: %s could not fastopen\n",__FUNCTION__);
+	fflush(where);
+      }
+      exit(1);
+    }
+#endif /* TCP_FASTOPEN */
+#ifdef TCP_DEFER_ACCEPT
+    if (want_defer_accept &&
+	(setsockopt(s_listen, IPPROTO_TCP, TCP_DEFER_ACCEPT, &backlog, sizeof(backlog)) == SOCKET_ERROR)) {
+      netperf_response.content.serv_errno = errno;
+      close(s_listen);
+      send_response();
+      if (debug) {
+	fprintf(where,
+		"netperfserver: %s could not defer accept\n",__FUNCTION__);
+	fflush(where);
+      }
+      exit(1);
+    }
+#endif /* TCP_DEFER_ACCEPT */
+    if (listen(s_listen, backlog) == SOCKET_ERROR) {
+      netperf_response.content.serv_errno = errno;
+      close(s_listen);
+      send_response();
+      if (debug) {
+	fprintf(where,"netperfserver: %s could not listen\n",__FUNCTION__);
 	fflush(where);
       }
       exit(1);
@@ -5213,24 +5338,6 @@ recv_omni()
   omni_response->so_sndavoid = loc_sndavoid;
   omni_response->interval_usecs = interval_usecs;
   omni_response->interval_burst = interval_burst;
-
-  find_system_info(&local_system_model,&local_cpu_model,&local_cpu_frequency);
-  strncpy(omni_response->system_model,local_system_model,sizeof(omni_response->system_model));
-  omni_response->system_model[sizeof(omni_response->system_model)-1] = 0;
-  strncpy(omni_response->cpu_model,local_cpu_model,sizeof(omni_response->cpu_model));
-  omni_response->cpu_model[sizeof(omni_response->cpu_model)-1] = 0;
-  omni_response->cpu_frequency = local_cpu_frequency;
-
-  find_security_info(&local_security_enabled_num,
-		     &local_security_type_id,
-		     &local_security_specific);
-  /* top bits type, bottom bits enabled */
-  omni_response->security_info = local_security_type_id << 16;
-  omni_response->security_info += local_security_enabled_num & 0xffff;
-  strncpy(omni_response->security_string,
-	  local_security_specific,
-	  sizeof(omni_response->security_string));
-  omni_response->security_string[sizeof(omni_response->security_string)-1] = 0;
 
   send_response_n(OMNI_RESPONSE_CONV_CUTOFF); /* brittle, but functional */
 
@@ -5338,12 +5445,6 @@ recv_omni()
       }
     }
 
-    if (need_to_connect) {
-      /* initially this will only be used for UDP tests as a TCP or
-	 other connection-oriented test will always have us making an
-	 accept() call raj 2008-01-11 */
-    }
-
 #ifdef WIN32
   /* this is used so the timer thread can close the socket out from
      under us, which to date is the easiest/cleanest/least
@@ -5392,8 +5493,6 @@ recv_omni()
       }
       else if (ret == -1) {
 	/* test timed-out */
-	fprintf(where,"YO! TIMESUP!\n");
-	fflush(where);
 	times_up = 1;
 	timed_out = 1;
 	break;
@@ -5413,11 +5512,32 @@ recv_omni()
        try to send something. */
     if ((omni_request->direction & NETPERF_XMIT) &&
 	((!times_up) || (units_remaining > 0))) {
+      
+      /* there used to be some code here looking sched_yield() until
+	 there was no more queued, unsent data on the socket but
+	 frankly, I've no idea what that was all about so I have
+	 removed it. It may have been part of a kludge to try to avoid
+	 coalescing requests and responses */
+
+      if (omni_request->protocol == IPPROTO_UDP && need_to_connect &&
+          !connected) {
+        if (connect(data_socket,
+                    (struct sockaddr*)&peeraddr_in,
+                    addrlen) == INVALID_SOCKET) {
+	  netperf_response.content.serv_errno = errno;
+	  send_response();
+	  close(data_socket);
+	  exit(-1);
+        }
+        connected = 1;
+      }
+      
       ret = send_data(data_socket,
 		      send_ring,
 		      bytes_to_send,
 		      (connected) ? NULL : (struct sockaddr *)&peeraddr_in,
-		      addrlen);
+		      addrlen,
+		      omni_request->protocol);
 
       /* the order of these if's will seem a triffle strange, but they
 	 are my best guess as to order of probabilty and/or importance
@@ -5603,56 +5723,14 @@ recv_omni()
   omni_results->cpu_method      = cpu_method;
   omni_results->num_cpus        = lib_num_loc_cpus;
   if (omni_request->flags & OMNI_MEASURE_CPU) {
-    omni_results->cpu_util = calc_cpu_util(elapsed_time);
-  }
-  omni_results->peak_cpu_util   = (float)lib_local_peak_cpu_util;
-  omni_results->peak_cpu_id     = lib_local_peak_cpu_id;
-  if ((omni_request->flags & OMNI_WANT_IFNAME) ||
-      (omni_request->flags & OMNI_WANT_IFSLOT) ||
-      (omni_request->flags & OMNI_WANT_IFIDS) ||
-      (omni_request->flags & OMNI_WANT_DRVINFO)) {
-    local_interface_name =
-      find_egress_interface(local_res->ai_addr,(struct sockaddr *)&peeraddr_in);
-    strncpy(omni_results->ifname,local_interface_name,16);
-    omni_results->ifname[15] = 0;
-  }
-  else {
-    strncpy(omni_results->ifname,"Bug If Seen IFNAME",16);
-  }
-  if (omni_request->flags & OMNI_WANT_IFSLOT) {
-    local_interface_slot = find_interface_slot(local_interface_name);
-    strncpy(omni_results->ifslot,local_interface_slot,16);
-    omni_results->ifslot[15] = 0;
-  }
-  else {
-    strncpy(omni_results->ifslot,"Bug If Seen IFSLOT",16);
-  }
-  if (omni_request->flags & OMNI_WANT_IFIDS) {
-    find_interface_ids(local_interface_name,
-		       &omni_results->vendor,
-		       &omni_results->device,
-		       &omni_results->subvendor,
-		       &omni_results->subdevice);
-  }
-  else {
-    omni_results->vendor = -2;
-    omni_results->device = -2;
-    omni_results->subvendor = -2;
-    omni_results->subdevice = -2;
-  }
-  if (omni_request->flags & OMNI_WANT_DRVINFO) {
-    find_driver_info(local_interface_name,
-		     omni_results->driver,
-		     omni_results->version,
-		     omni_results->firmware,
-		     omni_results->bus,
-		     32);
-  }
-  else {
-    strncpy(omni_results->driver,"Bug If Seen DRVINFO",32);
-    strncpy(omni_results->version,"Bug If Seen DRVINFO",32);
-    strncpy(omni_results->firmware,"Bug If Seen DRVINFO",32);
-    strncpy(omni_results->bus,"Bug If Seen DRVINFO",32);
+    omni_results->cpu_util            = calc_cpu_util(elapsed_time);
+    omni_results->cpu_percent_user    = lib_local_cpu_stats.cpu_user;
+    omni_results->cpu_percent_system  = lib_local_cpu_stats.cpu_system;
+    omni_results->cpu_percent_iowait  = lib_local_cpu_stats.cpu_iowait;
+    omni_results->cpu_percent_irq     = lib_local_cpu_stats.cpu_irq;
+    omni_results->cpu_percent_swintr  = lib_local_cpu_stats.cpu_swintr;
+    omni_results->peak_cpu_util       = lib_local_cpu_stats.peak_cpu_util;
+    omni_results->peak_cpu_id         = lib_local_cpu_stats.peak_cpu_id;
   }
 
 #if defined(WANT_INTERVALS)
@@ -5951,7 +6029,7 @@ Size (bytes)\n\
 		cpu_fmt_1,		/* the format string */
 		rsr_size,		/* remote recvbuf size */
 		lss_size,		/* local sendbuf size */
-		send_size,		/* how large were the recvs */
+		remote_send_size,	/* how large were the recvs */
 		elapsed_time,		/* how long was the test */
 		thruput, 		/* what was the xfer rate */
 		local_cpu_utilization,	/* local cpu */
@@ -5983,9 +6061,9 @@ Size (bytes)\n\
 		tput_fmt_1,		/* the format string */
 		lsr_size, 		/* local recvbuf size */
 		rss_size, 		/* remot sendbuf size */
-		remote_send_size,		/* how large were the recvs */
+		remote_send_size,	/* how large were the recvs */
 		elapsed_time, 		/* how long did it take */
-		thruput,                  /* how fast did it go */
+		thruput,                /* how fast did it go */
 		((print_headers) ||
 		 (result_brand == NULL)) ? "" : result_brand);
 	break;
@@ -6850,8 +6928,8 @@ OMNI and Migrated BSD Sockets Test Options:\n\
                       be set.\n\
     -L name[/mask],fam  Use name (or IP) and family as source of data connection\n\
                       A mask value will cause randomization of the IP used\n\
-    -m bytes          Set the send size (TCP_STREAM, UDP_STREAM)\n\
-    -M bytes          Set the recv size (TCP_STREAM, UDP_STREAM)\n\
+    -m local,remote   Set the send size for _STREAM/_MAERTS tests\n\
+    -M local,remote   Set the recv size for _STREAM/_MAERTS tests\n\
     -n                Use the connected socket for UDP locally\n\
     -N                Use the connected socket for UDP remotely\n\
     -o [file]         Generate CSV output optionally based on file\n\
@@ -6895,7 +6973,7 @@ scan_omni_args(int argc, char *argv[])
 
 {
 
-#define OMNI_ARGS "b:cCd:DG:hH:kK:l:L:m:M:nNoOp:P:r:R:s:S:t:T:u:Vw:W:46"
+#define OMNI_ARGS "aBb:cCd:De:FgG:hH:i:Ij:kK:l:L:m:M:nNoOp:P:r:R:s:S:t:T:u:UVw:W:46"
 
   extern char	*optarg;	  /* pointer to option string	*/
 
@@ -6916,6 +6994,28 @@ scan_omni_args(int argc, char *argv[])
       printf("%s ",argv[i]);
     }
     printf("\n");
+  }
+
+  /* double-check struct sizes */
+  {
+    const union netperf_request_struct * u = (const union netperf_request_struct *)0;
+    if (debug) {
+      fprintf(where, "sizeof(omni_request_struct)=%d/%d\n",
+              (int)sizeof(struct omni_request_struct),
+              (int)sizeof(u->content.test_specific_data));
+      fprintf(where, "sizeof(omni_response_struct)=%d/%d\n",
+              (int)sizeof(struct omni_response_struct),
+              (int)sizeof(u->content.test_specific_data));
+      fprintf(where, "sizeof(omni_results_struct)=%d/%d\n",
+              (int)sizeof(struct omni_results_struct),
+              (int)sizeof(u->content.test_specific_data));
+    }
+    assert(sizeof(struct omni_request_struct)
+           <= sizeof(u->content.test_specific_data));
+    assert(sizeof(struct omni_response_struct)
+           <= sizeof(u->content.test_specific_data));
+    assert(sizeof(struct omni_results_struct)
+           <= sizeof(u->content.test_specific_data));
   }
 
   strncpy(local_data_port,"0",sizeof(local_data_port));
@@ -6951,6 +7051,12 @@ scan_omni_args(int argc, char *argv[])
     case 'h':
       print_omni_usage();
       exit(1);
+    case 'a':
+      want_defer_accept = 1;
+      break;
+    case 'B':
+      want_use_pktinfo = 1;
+      break;
     case 'b':
 #ifdef WANT_FIRST_BURST
       first_burst_size = atoi(optarg);
@@ -6985,6 +7091,21 @@ scan_omni_args(int argc, char *argv[])
       loc_nodelay = 1;
       rem_nodelay = 1;
       break;
+    case 'F':
+#if defined(MSG_FASTOPEN)
+      use_fastopen = 1;
+#else
+      printf("WARNING: TCP FASTOPEN not available on this platform!\n");
+#endif
+      break;
+    case 'e':
+      /* set the rEceive timeout */
+      receive_timeout = atoi(optarg);
+      break;
+    case 'g':
+      /* enable SO_DEBUG, or at least make the attempt, on the data socket */
+      socket_debug = 1;
+      break;
     case 'G':
       /* set the value for a tcp_maxseG call*/
       transport_mss_req = atoi(optarg);
@@ -7010,6 +7131,16 @@ scan_omni_args(int argc, char *argv[])
       if (arg2[0]) {
 	remote_data_family = parse_address_family(arg2);
       }
+      break;
+    case 'i':
+      fprintf(stderr,"The support for check_interval has been removed because the contributing editor no longer knew what it was for\n");
+      fflush(stderr);
+      break;
+    case 'I':
+      use_write = 1;
+      break;
+    case 'j':
+      parallel_connections = atoi(optarg);
       break;
     case 'k':
       netperf_output_mode = KEYVAL;
@@ -7217,6 +7348,10 @@ scan_omni_args(int argc, char *argv[])
       /* strncpy may leave us with a string without a null at the end */
       test_uuid[sizeof(test_uuid) - 1] = 0;
       have_uuid = 1;
+      break;
+    case 'U':
+      /* we don't want to give-up on the failure of a connect() call */
+      dont_give_up = 1;
       break;
     case 'W':
       /* set the "width" of the user space data */
