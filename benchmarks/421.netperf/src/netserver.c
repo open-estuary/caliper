@@ -521,7 +521,7 @@ create_listens(char hostname[], char port[], int af) {
     if ((bind(temp_socket,
 	      local_res_temp->ai_addr,
 	      local_res_temp->ai_addrlen) != SOCKET_ERROR) &&
-	(listen(temp_socket,128) != SOCKET_ERROR))  {
+	(listen(temp_socket,1024) != SOCKET_ERROR))  {
 
       /* OK, now add to the list */
       temp_elt = (struct listen_elt *)malloc(sizeof(struct listen_elt));
@@ -784,52 +784,24 @@ process_requests()
 
     case DO_SYSINFO:
       {
-	char *delims[4];
-	int i;
-	delims[0] = strdup("|");
-	delims[1] = strdup(",");
-	delims[2] = strdup("_");
-	delims[3] = strdup(";");
-
 	netperf_response.content.response_type = SYSINFO_RESPONSE;
-	for (i = 0; i < 4; i++) {
-	  if ((!strstr(local_sysname,delims[i])) &&
-	      (!strstr(local_release,delims[i])) &&
-	      (!strstr(local_machine,delims[i])) &&
-	      (!strstr(local_version,delims[i]))) {
-	    snprintf((char *)netperf_response.content.test_specific_data,
-		     sizeof(netperf_response.content.test_specific_data),
-		     "%c%s%c%s%c%s%c%s",
-		     delims[i][0],
-		     local_sysname,
-		     delims[i][0],
-		     local_release,
-		     delims[i][0],
-		     local_machine,
-		     delims[i][0],
-		     local_version);
-	    break;
-	  }
-	}
-	if (i == 4) {
-	  /* none of the delimiters were unique, use the last one of
-	     course, the last one is not i but i-1 */
-	  i -= 1;
-	  snprintf((char *)netperf_response.content.test_specific_data,
-		   sizeof(netperf_response.content.test_specific_data),
-		   "%c%s%c%s%c%s%c%s",
-		   delims[i][0],
-		   "NoDelimUnique",
-		   delims[i][0],
-		   "NoDelimUnique",
-		   delims[i][0],
-		   "NoDelimUnique",
-		   delims[i][0],
-		   "NoDelimUnique");
-	}
+
+	snprintf((char *)netperf_response.content.test_specific_data,
+		 sizeof(netperf_response.content.test_specific_data),
+		 "%c%s%c%s%c%s%c%s",
+		 ',',
+		 "Deprecated",
+		 ','
+,		 "Deprecated",
+		 ',',
+		 "Deprecated",
+		 ',',
+		 "Deprecated");
+
 	send_response_n(0);
 	break;
       }
+
     case CPU_CALIBRATE:
       netperf_response.content.response_type = CPU_CALIBRATE;
       temp_rate = calibrate_local_cpu(0.0);

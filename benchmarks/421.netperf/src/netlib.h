@@ -295,6 +295,40 @@ struct ring_elt {
   char *buffer_base;      /* in case we have to free it at somepoint */
   char *buffer_ptr;       /* the aligned and offset pointer */
   void *completion_ptr;   /* a pointer to information for async completion */
+  /* these are for sendfile calls and at some point we should consider
+     using a union but it isn't really all that much extra space */
+  struct iovec *hdtrl;            /* a pointer to a header/trailer
+				     that we do not initially use and
+				     so should be set to NULL when the 
+				     ring is setup. */
+  off_t offset;                   /* the offset from the beginning of
+				     the file for this send */
+  size_t length;                  /* the number of bytes to send -
+				     this is redundant with the
+				     send_size variable but I decided
+				     to include it anyway */
+  int fildes;                     /* the file descriptor of the source
+				     file */ 
+  int flags;                      /* the flags to pass to sendfile() - 
+				     presently unused and should be
+				     set to zero when the ring is
+				     setup. */
+};
+
+/* everything in percent except otherwise stated */
+struct cpu_stats_struct {
+  float cpu_util;  /* mandatory = 100% - %idle */
+
+  /* The following are optional, dependent upon netcpu implementation */
+  float cpu_user;
+  float cpu_system;
+  float cpu_iowait;
+  float cpu_irq;
+  float cpu_swintr;
+
+  /* mandatory */
+  float peak_cpu_util;
+  int   peak_cpu_id;  /* ID of most loaded CPU */
 };
 
 /* +*+ SAF  Sorry about the hacks with errno; NT made me do it :(
@@ -369,8 +403,11 @@ extern void PrintWin32Error(FILE *stream, LPSTR text);
 
 #ifndef WIN32
 #define SOCKET_EINTR(return_value) (errno == EINTR)
+#define SOCKET_ECONNREFUSED(return_value) (errno == ECONNREFUSED)
 #define SOCKET_EADDRINUSE(return_value) (errno == EADDRINUSE)
 #define SOCKET_EADDRNOTAVAIL(return_value) (errno == EADDRNOTAVAIL)
+#define SOCKET_EAGAIN(return_value) (errno == EAGAIN)
+#define SOCKET_EWOULDBLOCK(return_value) (errno == EWOULDBLOCK)
 
 #else
 
@@ -390,29 +427,14 @@ extern void PrintWin32Error(FILE *stream, LPSTR text);
 #define SOCKET_EADDRNOTAVAIL(return_value) \
 		(((return_value) == SOCKET_ERROR) && \
 	     ((errno == WSAEADDRNOTAVAIL) ))
+/* guessing here, and equating for one that doesn't exist */
+#define SOCKET_EAGAIN(return_value) \
+(((return_value) == SOCKET_ERROR) && (errno == WSAEWOULDBLOCK))
+#define SOCKET_EWOULDBLOCK(return_value) \
+  (((return_value) == SOCKET_ERROR) && (errno == WSAEWOULDBLOCK))
 #endif
 
 #ifdef HAVE_SENDFILE
-
-struct sendfile_ring_elt {
-  struct sendfile_ring_elt *next; /* next element in the ring */
-  int fildes;                     /* the file descriptor of the source
-				     file */ 
-  off_t offset;                   /* the offset from the beginning of
-				     the file for this send */
-  size_t length;                  /* the number of bytes to send -
-				     this is redundant with the
-				     send_size variable but I decided
-				     to include it anyway */
-  struct iovec *hdtrl;            /* a pointer to a header/trailer
-				     that we do not initially use and
-				     so should be set to NULL when the 
-				     ring is setup. */
-  int flags;                      /* the flags to pass to sendfile() - 
-				     presently unused and should be
-				     set to zero when the ring is
-				     setup. */
-};
 
 #endif /* HAVE_SENDFILE */
 
@@ -473,13 +495,10 @@ extern int control_family;
 extern  union netperf_request_struct netperf_request;
 extern  union netperf_response_struct netperf_response;
 
-extern  float    lib_local_cpu_util;
-extern  float    lib_elapsed;
-extern  float    lib_local_maxrate;
-extern  double   lib_local_peak_cpu_util;
-extern  int      lib_local_peak_cpu_id;
-extern  double   lib_remote_peak_cpu_util;
-extern  int      lib_remote_peak_cpu_id;
+extern struct cpu_stats_struct lib_local_cpu_stats;
+extern struct cpu_stats_struct lib_remote_cpu_stats;
+extern float                   lib_elapsed;
+extern float                   lib_local_maxrate;
 
 extern  char    libfmt;
 
@@ -593,8 +612,10 @@ extern void     find_driver_info(char *ifname, char *driver, char *version, char
 extern void     find_system_info(char **system_model, char **cpu_model, int *cpu_frequency);
 extern int      HIST_get_percentile();
 extern void     HIST_get_stats();
+extern void     HIST_purge();
 extern void     find_security_info(int *enabled, int *type, char **specific);
 extern void     demo_first_timestamp();
+extern void     demo_reset();
 extern void     demo_stream_setup(uint32_t a, uint32_t b);
 #ifndef WIN32
 
@@ -628,9 +649,12 @@ extern void access_buffer(char *buffer_ptr,
 #ifdef HAVE_ICSC_EXS
 extern  struct ring_elt *allocate_exs_buffer_ring();
 #endif /* HAVE_ICSC_EXS */
+
 #ifdef HAVE_SENDFILE
-extern  struct sendfile_ring_elt *alloc_sendfile_buf_ring();
+extern  struct ring_elt *alloc_sendfile_buf_ring();
+extern  int netperf_sendfile(SOCKET send_socket, struct ring_elt *send_ring);
 #endif /* HAVE_SENDFILE */
+
 #ifdef WANT_DLPI
 /* it seems that AIX in its finite wisdom has some bogus define in an
    include file which defines "rem_addr" which then screws-up this extern

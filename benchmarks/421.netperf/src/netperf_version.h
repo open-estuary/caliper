@@ -1,1 +1,1 @@
-#define NETPERF_VERSION "2.6.0"
+#define NETPERF_VERSION "2.7.0"
