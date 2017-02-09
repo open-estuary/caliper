@@ -18,12 +18,12 @@ netserver \- a network performance benchmark server
 .SH DESCRIPTION
 .B Netserver
 listens for connections from a
-.B netperf
+.C netperf
 benchmark, and responds accordingly.
 It can either be run from
-.B inetd
+.C inetd
 or as a standalone daemon (with the -p flag). If run from
-.B inetd
+.C inetd
 the -p option should not be used.
 
 .SS OPTIONS

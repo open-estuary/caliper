@@ -230,7 +230,7 @@ get_cpu_method(void)
   return KSTAT;
 }
 
-static void
+void
 get_cpu_idle(uint64_t *res)
 {
 
@@ -348,8 +348,7 @@ calc_cpu_util_internal(float elapsed_time)
   float correction_factor;
   float actual_rate;
 
-  memset(&lib_local_cpu_stats, 0, sizeof(lib_local_cpu_stats));
-
+  lib_local_cpu_util = (float)0.0;
   /* It is possible that the library measured a time other than */
   /* the one that the user want for the cpu utilization */
   /* calculations - for example, tests that were ended by */
@@ -392,12 +391,12 @@ calc_cpu_util_internal(float elapsed_time)
     lib_local_per_cpu_util[i] = (lib_local_maxrate - actual_rate) /
       lib_local_maxrate * 100;
     lib_local_per_cpu_util[i] *= correction_factor;
-    lib_local_cpu_stats.cpu_util += lib_local_per_cpu_util[i];
+    lib_local_cpu_util += lib_local_per_cpu_util[i];
   }
   /* we want the average across all n processors */
-  lib_local_cpu_stats.cpu_util /= (float)lib_num_loc_cpus;
+  lib_local_cpu_util /= (float)lib_num_loc_cpus;
 
-  return lib_local_cpu_stats.cpu_util;
+  return lib_local_cpu_util;
 }
 
 void

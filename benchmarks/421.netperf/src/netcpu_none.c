@@ -36,6 +36,12 @@ get_cpu_method(void)
   return CPU_UNKNOWN;
 }
 
+void
+get_cpu_idle(uint64_t *res)
+{
+  return;
+}
+
 float
 calibrate_idle_rate(int iterations, int interval)
 {
