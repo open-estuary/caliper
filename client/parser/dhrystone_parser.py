@@ -13,9 +13,9 @@ def whets_parser(content, outfp):
     return score
 
 
-def dhry1_parser(content, outfp):
+def dhry2_parser(content, outfp):
     score = -1
-    for line in re.findall("VAX\s+MIPS\s+rating(.*)\n", content):
+    for line in re.findall("Dhrystones\s+per\s+Second:\s+(.*)\n", content):
         fields = line.split()
         score = fields[-1]
         outfp.write(str(score) + '\n')
