@@ -12,11 +12,8 @@ then
 elif [ $core -eq 16 ];
 then
 	taskset_core="0-15"
-elif [ $core -eq 32 ];
-then
-	taskset_core="0-31"
 else
-	echo "usage:usage: ./test_cross_bw.sh <number_of_cores>. number of cores should be 1, 4 or 16"
+	echo "usage: ./test_cross_bw.sh <number_of_cores>. number of cores should be 1, 4 or 16"
 	exit 1
 fi
 

@@ -107,37 +107,37 @@ local_mem_lat_label = ['lat_0_5KB', 'lat_1KB', 'lat_2KB', 'lat_3KB', 'lat_4KB',
 			'lat_6MB', 'lat_8MB', 'lat_12MB', 'lat_16MB', 'lat_24MB', 
 			'lat_32MB']
 
-local_mem_lat_dic = {'lat_0_5KB': 'lm_lat_0_5KB', 
-                     'lat_1KB': 'lm_lat_1KB',
-                     'lat_2KB': 'lm_lat_2KB',
-                     'lat_3KB': 'lm_lat_3KB',
-                     'lat_4KB': 'lm_lat_4KB',
-                     'lat_6KB': 'lm_lat_6KB',
-                     'lat_8KB': 'lm_lat_8KB',
-                     'lat_12KB': 'lm_lat_12KB',
-                     'lat_16KB': 'lm_lat_16KB',
-                     'lat_24KB': 'lm_lat_24KB',
-                     'lat_32KB': 'lm_lat_32KB',
-                     'lat_48KB': 'lm_lat_48KB',
-                     'lat_64KB': 'lm_lat_64KB',
-                     'lat_96KB': 'lm_lat_96KB',
-                     'lat_128KB': 'lm_lat_128KB',
-                     'lat_192KB': 'lm_lat_192KB',
-                     'lat_256KB': 'lm_lat_256KB',
-                     'lat_384KB': 'lm_lat_384KB',
-                     'lat_512KB': 'lm_lat_512KB',
-                     'lat_768KB': 'lm_lat_768KB',
-                     'lat_1MB': 'lm_lat_1MB',
-                     'lat_1_5MB': 'lm_lat_1_5_MB',
-                     'lat_2MB': 'lm_lat_2MB',
-                     'lat_3MB': 'lm_lat_3MB',
-                     'lat_4MB': 'lm_lat_4MB',
-                     'lat_6MB': 'lm_lat_6MB',
-                     'lat_8MB': 'lm_lat_8MB',
-                     'lat_12MB': 'lm_lat_12MB',
-                     'lat_16MB': 'lm_lat_16MB',
-                     'lat_24MB': 'lm_lat_24MB',
-                     'lat_32MB': 'lm_lat_32MB'}
+local_mem_lat_dic = {'lat_0_5KB': 'lb_lat_00_0.5KB',
+                     'lat_1KB': 'lb_lat_01_01KB',
+                     'lat_2KB': 'lb_lat_02_2KB',
+                     'lat_3KB': 'lb_lat_03_3KB',
+                     'lat_4KB': 'lb_lat_04_4KB',
+                     'lat_6KB': 'lb_lat_05_6KB',
+                     'lat_8KB': 'lb_lat_06_8KB',
+                     'lat_12KB': 'lb_lat_07_12KB',
+                     'lat_16KB': 'lb_lat_08_16KB',
+                     'lat_24KB': 'lb_lat_09_24KB',
+                     'lat_32KB': 'lb_lat_10_32KB',
+                     'lat_48KB': 'lb_lat_11_48KB',
+                     'lat_64KB': 'lb_lat_12_64KB',
+                     'lat_96KB': 'lb_lat_13_96KB',
+                     'lat_128KB': 'lb_lat_14_128KB',
+                     'lat_192KB': 'lb_lat_15_192KB',
+                     'lat_256KB': 'lb_lat_16_256KB',
+                     'lat_384KB': 'lb_lat_17_384KB',
+                     'lat_512KB': 'lb_lat_18_512KB',
+                     'lat_768KB': 'lb_lat_19_768KB',
+                     'lat_1MB': 'lb_lat_20_1MB',
+                     'lat_1_5MB': 'lb_lat_21_1_5_MB',
+                     'lat_2MB': 'lb_lat_22_2MB',
+                     'lat_3MB': 'lb_lat_23_3MB',
+                     'lat_4MB': 'lb_lat_24_4MB',
+                     'lat_6MB': 'lb_lat_25_6MB',
+                     'lat_8MB': 'lb_lat_26_8MB',
+                     'lat_12MB': 'lb_lat_27_12MB',
+                     'lat_16MB': 'lb_lat_28_16MB',
+                     'lat_24MB': 'lb_lat_29_24MB',
+                     'lat_32MB': 'lb_lat_30_32MB'}
 
 mb = 1000000
 kb = 1000
@@ -366,18 +366,17 @@ def lmbench_lat_parser(content, outfp):
                     except Exception:
                         continue
 
-                    if re.search('0.00098', subline):
-                        if (lat_mem_rd_type == 1):
-                            dic_mem_lat[mem_lat_dic['lat_l1']] = save
-                    else:
-                        if re.search('0.12500', subline):
-                            if (lat_mem_rd_type == 1):
-                                dic_mem_lat[mem_lat_dic['lat_l2']] = save
-                if (size < 0.8):
-                    logging.info('$file: No 8MB memory latency,using $size\n')
-
-                if (lat_mem_rd_type == 1):
-                    dic_mem_lat[mem_lat_dic['lat_mem']] = save
+             #       if re.search('0.00098', subline):
+             #           if (lat_mem_rd_type == 1):
+             #               dic_mem_lat[mem_lat_dic['lat_l1']] = save
+             #       else:
+             #           if re.search('0.12500', subline):
+             #               if (lat_mem_rd_type == 1):
+             #                   dic_mem_lat[mem_lat_dic['lat_l2']] = save
+             #   if (size < 0.8):
+             #      logging.info('$file: No 8MB memory latency,using $size\n')
+             #   if (lat_mem_rd_type == 1):
+             #       dic_mem_lat[mem_lat_dic['lat_mem']] = save
 
             # if re.search('^"stride=16', line):
             #    size = 0
@@ -660,67 +659,67 @@ def lmbench_latency_local_mem(content, outfp):
                     except Exception:
                         continue
 
-                    if re.search('0.00049', subline):
+                    if re.match('0.00049', subline):
                         dic[local_mem_lat_dic['lat_0_5KB']] = save
-                    elif re.search('0.00098', subline):
+                    elif re.match('0.00098', subline):
                         dic[local_mem_lat_dic['lat_1KB']] = save
-                    elif re.search('0.00195', subline):
+                    elif re.match('0.00195', subline):
                         dic[local_mem_lat_dic['lat_2KB']] = save
-                    elif re.search('0.00293', subline):
+                    elif re.match('0.00293', subline):
                         dic[local_mem_lat_dic['lat_3KB']] = save
-                    elif re.search('0.00391', subline):
+                    elif re.match('0.00391', subline):
                         dic[local_mem_lat_dic['lat_4KB']] = save
-                    elif re.search('0.00586', subline):
+                    elif re.match('0.00586', subline):
                         dic[local_mem_lat_dic['lat_6KB']] = save
-                    elif re.search('0.00781', subline):
+                    elif re.match('0.00781', subline):
                         dic[local_mem_lat_dic['lat_8KB']] = save
-                    elif re.search('0.01172', subline):
+                    elif re.match('0.01172', subline):
                         dic[local_mem_lat_dic['lat_12KB']] = save
-                    elif re.search('0.01562', subline):
+                    elif re.match('0.01562', subline):
                         dic[local_mem_lat_dic['lat_16KB']] = save
-                    elif re.search('0.02344', subline):
+                    elif re.match('0.02344', subline):
                         dic[local_mem_lat_dic['lat_24KB']] = save
-                    elif re.search('0.03125', subline):
+                    elif re.match('0.03125', subline):
                         dic[local_mem_lat_dic['lat_32KB']] = save
-                    elif re.search('0.04688', subline):
+                    elif re.match('0.04688', subline):
                         dic[local_mem_lat_dic['lat_48KB']] = save
-                    elif re.search('0.06250', subline):
+                    elif re.match('0.06250', subline):
                         dic[local_mem_lat_dic['lat_64KB']] = save
-                    elif re.search('0.09375', subline):
+                    elif re.match('0.09375', subline):
                         dic[local_mem_lat_dic['lat_96KB']] = save
-                    elif re.search('0.12500', subline):
+                    elif re.match('0.12500', subline):
                         dic[local_mem_lat_dic['lat_128KB']] = save
-                    elif re.search('0.18750', subline):
+                    elif re.match('0.18750', subline):
                         dic[local_mem_lat_dic['lat_192KB']] = save
-                    elif re.search('0.25000', subline):
+                    elif re.match('0.25000', subline):
                         dic[local_mem_lat_dic['lat_256KB']] = save
-                    elif re.search('0.37500', subline):
+                    elif re.match('0.37500', subline):
                         dic[local_mem_lat_dic['lat_384KB']] = save
-                    elif re.search('0.50000', subline):
+                    elif re.match('0.50000', subline):
                         dic[local_mem_lat_dic['lat_512KB']] = save
-                    elif re.search('0.75000', subline):
+                    elif re.match('0.75000', subline):
                         dic[local_mem_lat_dic['lat_768KB']] = save
-                    elif re.search('1.00000', subline):
+                    elif re.match('1.00000', subline):
                         dic[local_mem_lat_dic['lat_1MB']] = save
-                    elif re.search('1.50000', subline):
+                    elif re.match('1.50000', subline):
                         dic[local_mem_lat_dic['lat_1_5MB']] = save
-                    elif re.search('2.00000', subline):
+                    elif re.match('2.00000', subline):
                         dic[local_mem_lat_dic['lat_2MB']] = save
-                    elif re.search('3.00000', subline):
+                    elif re.match('3.00000', subline):
                         dic[local_mem_lat_dic['lat_3MB']] = save
-                    elif re.search('4.00000', subline):
+                    elif re.match('4.00000', subline):
                         dic[local_mem_lat_dic['lat_4MB']] = save
-                    elif re.search('6.00000', subline):
+                    elif re.match('6.00000', subline):
                         dic[local_mem_lat_dic['lat_6MB']] = save
-                    elif re.search('8.00000', subline):
+                    elif re.match('8.00000', subline):
                         dic[local_mem_lat_dic['lat_8MB']] = save
-                    elif re.search('12.00000', subline):
+                    elif re.match('12.00000', subline):
                         dic[local_mem_lat_dic['lat_12MB']] = save
-                    elif re.search('16.00000', subline):
+                    elif re.match('16.00000', subline):
                         dic[local_mem_lat_dic['lat_16MB']] = save
-                    elif re.search('24.00000', subline):
+                    elif re.match('24.00000', subline):
                         dic[local_mem_lat_dic['lat_24MB']] = save
-                    elif re.search('32.00000', subline):
+                    elif re.match('32.00000', subline):
                        dic[local_mem_lat_dic['lat_32MB']] = save
     
     outfp.write(yaml.dump(dic, default_flow_style=False))

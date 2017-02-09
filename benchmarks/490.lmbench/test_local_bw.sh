@@ -19,7 +19,7 @@ elif [ $core -eq 64 ];
 then
 	taskset_core="0-31,32-63"
 else
-	echo "usage:usage: ./test_local_bw.sh <number_of_cores>. number of cores should be 1, 4, 16, 32 or 64"
+	echo "usage: ./test_local_bw.sh <number_of_cores>. number of cores should be 1, 4, 16, 32 or 64"
 	exit 1
 fi
 
