@@ -1,7 +1,7 @@
 build_OpenBLAS() {
 	set -e
 
-	SrcPath="${BENCH_PATH}505.OpenBLAS"
+	SrcPath="${BENCH_PATH}506.OpenBLAS"
         myOBJPATH="${INSTALL_DIR}/bin"
         
 	pushd $SrcPath
