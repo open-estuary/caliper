@@ -24,37 +24,46 @@ else
 fi
 
 echo "\"read===="
+echo "Command : taskset -c $taskset_core ./bw_mem -P $core -N 5 32M rd"
 taskset -c $taskset_core ./bw_mem -P $core -N 5 32M rd
 wait
 
 echo "\"fread===="
+echo "Command : taskset -c $taskset_core ./bw_mem -P $core -N 5 32M frd"
 taskset -c $taskset_core ./bw_mem -P $core -N 5 32M frd
 wait
 
 echo "\"write===="
+echo "Command : taskset -c $taskset_core ./bw_mem -P $core -N 5 32M wr"
 taskset -c $taskset_core ./bw_mem -P $core -N 5 32M wr
 wait
 
 echo "\"fwrite===="
+echo "Command : taskset -c $taskset_core ./bw_mem -P $core -N 5 32M fwr"
 taskset -c $taskset_core ./bw_mem -P $core -N 5 32M fwr
 wait
 
 echo "\"bzero===="
+echo "Command : taskset -c $taskset_core ./bw_mem -P $core -N 5 32M bzero"
 taskset -c $taskset_core ./bw_mem -P $core -N 5 32M bzero
 wait
 
 echo "\"readwrite===="
+echo "Command : taskset -c $taskset_core ./bw_mem -P $core -N 5 32M rdwr"
 taskset -c $taskset_core ./bw_mem -P $core -N 5 32M rdwr
 wait
 
 echo "\"copy===="
+echo "Command : taskset -c $taskset_core ./bw_mem -P $core -N 5 32M cp"
 taskset -c $taskset_core ./bw_mem -P $core -N 5 32M cp
 wait
 
 echo "\"fcopy===="
+echo "Command : taskset -c $taskset_core ./bw_mem -P $core -N 5 32M fcp"
 taskset -c $taskset_core ./bw_mem -P $core -N 5 32M fcp
 wait
 
 echo "\"bcopy===="
+echo "Command : taskset -c $taskset_core ./bw_mem -P $core -N 5 32M bcopy"
 taskset -c $taskset_core ./bw_mem -P $core -N 5 32M bcopy
 wait
