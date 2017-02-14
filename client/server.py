@@ -9,40 +9,42 @@ import logging
 import signal
 import fcntl
 
+output_log = "/root/caliper_server/output_log"
+
 try:
     subprocess.Popen(["iperf3","-s"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     subprocess.Popen(["netserver"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 except Exception as e:
-    print "Error in starting Network sevices"
+    fp = open(output_log,'w')
+    fp.write("Error in starting Network sevices")
+    fp.close()
     print e
     sys.exit()
 
 signal_ingored = [signal.SIGINT,signal.SIGTERM,signal.SIGALRM,signal.SIGHUP]
 original_sigint = [None]*len(signal_ingored)
-lock_yaml = "lock.yaml"
+process_status = "/root/caliper_server/process_status"
 
 def exit_gracefully(signum, frame):
     # restore the original signal handler as otherwise evil things will happen
     # in raw_input when CTRL+C is pressed, and our signal handler is not re-entrant
     global original_sigint
     global signal_ingored
-    global lock_yaml
+    global process_status
     for i in range(len(signal_ingored)):
         signal.signal(signal_ingored[i], original_sigint[i])
     try:
-        with SimpleFlock(lock_yaml,60):                             
-            fp = open(lock_yaml,'w')                                
-            dic = {"status":"0"}                                    
-            fp.write(yaml.dump(dic,default_flow_style=False))       
-            fp.close()                                              
-        
+        with SimpleFlock(process_status,60):                            
+            fp = open(process_status, 'w')
+            fp.write('0')
+            fp.close()
+
     except Exception as e:
         logging.error(e)
     sys.exit(1)
 
     # restore the exit gracefully handler here
     # signal.signal(signal.SIGINT, exit_gracefully)
-
 
 def set_signals():
     global original_sigint
@@ -56,8 +58,6 @@ def reset_signals():
     global signal_ingored                                
     for i in range(len(signal_ingored)):                 
         signal.signal(signal_ingored[i], signal.SIG_DFL) 
-
-
 
 class SimpleFlock:
    def __init__(self, path, timeout = None):
@@ -88,45 +88,42 @@ class SimpleFlock:
       os.close(self._fd)
       self._fd = None
 
-
 if __name__ == "__main__":
-    lock_yaml = 'lock.yaml'
+    process_status = "/root/caliper_server/process_status"
+    output_log = "/root/caliper_server/output_log"
+    server_run = "/root/caliper_server/server_run"
     set_signals()
-    if not os.path.exists(lock_yaml):
-        with SimpleFlock(lock_yaml,60):
-            fp = open(lock_yaml,'w')
-            dic = {"status":0}
-            fp.write(yaml.dump(dic,default_flow_style=False))
-            fp.close()
-    with SimpleFlock(lock_yaml,60):
-        fp = open(lock_yaml,"r")
-        dic = yaml.load(fp)
-        if dic["status"] == 1 :
-            print("server.py is already running")            
-            p1 = subprocess.Popen(['ps','-ef'], stdout=subprocess.PIPE)
-            p2 = subprocess.Popen(['grep','server.py'], stdin=p1.stdout, stdout=subprocess.PIPE)
-            p3 = subprocess.Popen(['awk','-F', ' ','{print $2}'], stdin=p2.stdout, stdout=subprocess.PIPE)
-            data = p3.communicate()
-            data = str(data[0]).split("\n")
-            count = 0
-            
-            for i in data:
-                count = count + 1
 
-            if count != 3:
-                 sys.exit(0)
-            else:
-                 fp = open(lock_yaml,'w')
-                 dic = {"status":0}
-                 fp.write(yaml.dump(dic,default_flow_style=False))
-                 fp.close()
-        else:
-	    fp.close()
-            fp = open(lock_yaml,'w')
-            dic["status"] = 1
-            fp.write(yaml.dump(dic,default_flow_style=False))
-        fp.close()
+    if not os.path.exists(output_log):
+        with SimpleFlock(output_log,60):
+            f = open(output_log,'w')
+            f.close()
+
+    if not os.path.exists(server_run):
+        with SimpleFlock(server_run,60):
+            f = open(server_run,'w')
+            f.close()
+    
+    p1 = subprocess.Popen(['ps','-ef'], stdout=subprocess.PIPE)
+    p2 = subprocess.Popen(['grep', '-c','server.py'], stdin=p1.stdout, stdout=subprocess.PIPE)
+    p1.stdout.close()
+    data,err = p2.communicate()
+    data = data.strip()
+    print(data)
+            
+    if data != "2":
+        with SimpleFlock(server_run,60):
+            f = open(server_run,'w')
+            f.write("server.py")
+            f.close()
+            sys.exit(0)
     try:
+        if not os.path.exists(process_status):
+            with SimpleFlock(process_status,60):
+                fp = open(process_status,'w')
+                fp.write('0')
+                fp.close()
+
         # create a socket object
         serversocket = socket.socket(
                         socket.AF_INET, socket.SOCK_STREAM) 
@@ -139,25 +136,35 @@ if __name__ == "__main__":
         serversocket.bind((host, port))                                  
         
         # queue up to 5 requests
-        serversocket.listen(5)                                           
-    
+        serversocket.listen(5)
+
+        with SimpleFlock(process_status,60):
+            fp = open(process_status, 'w')
+            fp.write('1')
+            fp.close()
+
         while True:
             # establish a connection
             clientsocket,addr = serversocket.accept()      
-            print("Got a connection from %s" % str(addr))
+            f = open(output_log,'a')
+            f.write("Got a connection from %s\n" % str(addr))
+            f.close()
             currentTime = time.ctime(time.time()) + "\r\n"
             clientsocket.send("ACCESS GRANTED @ "+currentTime.encode('ascii'))
-            print("Waiting for %s to finish its task" % str(addr))
+            f = open(output_log,'a')
+            f.write("Waiting for %s to finish its task\n" % str(addr))
+            f.close()
             clientsocket.recv(1024)
-            print("%s Completed its task"  % str(addr))
+            f = open(output_log,'a')
+            f.write("%s Completed its task\n"  % str(addr))
+            f.close()
             clientsocket.close()
     except Exception as e:
 	print e
         pass
 
-    with SimpleFlock(lock_yaml,60):                        
-        fp = open(lock_yaml,'w')                           
-        dic = {"status":"0"}                               
-        fp.write(yaml.dump(dic,default_flow_style=False))  
+    with SimpleFlock(process_status,60):                        
+        fp = open(process_status,'w')                           
+        fp.write('0')  
         fp.close()                                         
     reset_signals()

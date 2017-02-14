@@ -14,7 +14,7 @@ then
     sudo rm host_dependency_output_summary.txt
 fi
 
-host_packages=('libc6' 'libncurses5' 'libstdc++6' 'lib32z1' 'python-dev' 'nfs-common' 'build-essential' 'python-pip' 'automake' 'autoconf' 'make' 'openssh-server' 'libnuma-dev' 'texinfo' 'python-matplotlib' 'python-numpy' 'nfs-kernel-server' 'openjdk-7-jre' 'openjdk-7-jdk' 'lib32stdc++6' 'bzr')
+host_packages=('libc6' 'libncurses5' 'libstdc++6' 'lib32z1' 'python-dev' 'nfs-common' 'build-essential' 'python-pip' 'automake' 'autoconf' 'make' 'openssh-server' 'libnuma-dev' 'texinfo' 'python-matplotlib' 'python-numpy' 'nfs-kernel-server' 'openjdk-7-jre' 'openjdk-7-jdk' 'lib32stdc++6' 'bzr' 'gfortran')
 
 NFS_mount="/mnt/caliper_nfs/ltp_log"
 ERROR="ERROR-IN-AUTOMATION"

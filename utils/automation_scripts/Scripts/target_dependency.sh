@@ -29,7 +29,7 @@ echo -e "\n\t\t Target dependency"
 
 if [ ! $Osname_Ubuntu -eq 0 ]
 then
-    target_packages=('stress' 'make' 'build-essential' 'linux-tools-generic' 'linux-tools-common' 'gcc g++' 'nfs-common' 'automake' 'autoconf' 'autogen' 'libtool' 'openjdk-7-jre' 'openjdk-7-jdk' 'mysql-server*' 'libmysqlclient-dev' 'stress-ng' 'expect' 'bzr' 'libmysqld-dev' 'lshw' 'bridge-utils' 'dmidecode' 'lsdev')
+    target_packages=('stress' 'make' 'build-essential' 'linux-tools-generic' 'linux-tools-common' 'gcc g++' 'nfs-common' 'automake' 'autoconf' 'autogen' 'libtool' 'openjdk-7-jre' 'openjdk-7-jdk' 'mysql-server*' 'libmysqlclient-dev' 'stress-ng' 'expect' 'bzr' 'libmysqld-dev' 'lshw' 'bridge-utils' 'dmidecode' 'lsdev' 'gfortran' 'numactl')
 
     for i in `seq 0 $((${#target_packages[@]}-1)) `
     do
@@ -79,9 +79,9 @@ then
 else
     if [ ! $architecture_x86_64 -eq 0 ]
     then
-        target_packages=('make' 'wget' 'gcc' 'automake' 'autoconf' 'cmake' 'net-tools' 'lshw' 'bridge-utils' 'java-1.8.0-openjdk.x86_64' 'java-1.8.0-openjdk-devel.x86_64' 'perl' 'lksctp-tools' 'expect' 'gcc-aarch64-linux-gnu' 'ncurses-devel' 'yum-utils' 'dmidecode' 'words')
+        target_packages=('make' 'wget' 'gcc' 'automake' 'autoconf' 'cmake' 'net-tools' 'lshw' 'bridge-utils' 'java-1.8.0-openjdk.x86_64' 'java-1.8.0-openjdk-devel.x86_64' 'perl' 'lksctp-tools' 'expect' 'gcc-aarch64-linux-gnu' 'ncurses-devel' 'yum-utils' 'dmidecode' 'words' 'gfortran' 'numactl')
     else
-        target_packages=('make' 'wget' 'gcc' 'automake' 'autoconf' 'cmake' 'net-tools' 'lshw' 'bridge-utils' 'java-1.8.0-openjdk.aarch64' 'java-1.8.0-openjdk-devel.aarch64' 'perl'  'lksctp-tools' 'expect' 'gcc-aarch64-linux-gnu' 'ncurses-devel' 'yum-utils' 'dmidecode' 'words')
+        target_packages=('make' 'wget' 'gcc' 'automake' 'autoconf' 'cmake' 'net-tools' 'lshw' 'bridge-utils' 'java-1.8.0-openjdk.aarch64' 'java-1.8.0-openjdk-devel.aarch64' 'perl'  'lksctp-tools' 'expect' 'gcc-aarch64-linux-gnu' 'ncurses-devel' 'yum-utils' 'dmidecode' 'words' 'gfortran' 'numactl')
     fi
 
     for i in `seq 0 $((${#target_packages[@]}-1)) `
