@@ -749,13 +749,41 @@ def caliper_run(target_exec_dir, server,target):
                 server_pwd = server.run("pwd").stdout
                 server_pwd = server_pwd.split("\n")[0]
                 server_caliper_dir = os.path.join(server_pwd, "caliper_server")
+                read_file = os.path.join(server_caliper_dir,"process_status")
+                read_server_run = os.path.join(server_caliper_dir,"server_run")
                 server_caliper_dir = os.path.join(server_caliper_dir,"server.py")
                 server_user = server_user + '@' + server_ip
                 script = server_caliper_dir + ' ' + str(server_port)
                 subprocess.Popen(['ssh', '%s' % server_user, 'python %s' % script])
 
 
-	    except Exception as e:
+                for i in range (0,20):
+                    try:
+                        p1 = subprocess.Popen(['ssh', '%s' % server_user, 'cat %s' % read_file], stdout=subprocess.PIPE)
+                        p2 = subprocess.Popen(['grep','1'], stdin=p1.stdout, stdout=subprocess.PIPE)
+                        p1.stdout.close()
+                        server_process,err = p2.communicate()
+                        server_process = server_process.strip()
+                        if server_process == "1":
+                            logging.info("server socket created")
+                            break
+                        else:
+                            time.sleep(1)
+                    except Exception as e:
+                        pass
+
+                not_run_network_cases = 0
+                if server_process == "1":
+                    p1 = subprocess.Popen(['ssh', '%s' % server_user, 'cat %s' % read_server_run], stdout=subprocess.PIPE)
+                    p2 = subprocess.Popen(['grep','server.py'], stdin=p1.stdout, stdout=subprocess.PIPE)
+                    p1.stdout.close()
+                    server_process_run,err = p2.communicate()
+                    server_process_run = server_process_run.strip()
+                    if server_process_run == "server.py":
+                        logging.info("server.py is already running with different port number. Please use same port.")
+                        not_run_network_cases = 1
+
+            except Exception as e:
 		logging.info(e)
 		raise AttributeError("Error in establising connection with server")
 
@@ -785,11 +813,14 @@ def caliper_run(target_exec_dir, server,target):
             bench = os.path.join(classify, sections[i])
             try:
                 system_initialise(target)
-		if classify == "server":
-                    logging.info("Waiting for server to grant access")
-                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-  		    sock.connect((server_ip,server_port))
-		    logging.info("%s" % str(sock.recv(1024)))
+                if server_process == "1" and not not_run_network_cases:
+		    if classify == "server":
+                        logging.info("Waiting for server to grant access")
+                        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+  		        sock.connect((server_ip,server_port))
+		        logging.info("%s" % str(sock.recv(1024)))
+                else:
+                    continue
 
                 result = run_all_cases(target_exec_dir, target, bench,
                                         sections[i], run_file)
