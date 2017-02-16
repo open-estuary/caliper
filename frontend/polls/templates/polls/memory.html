@@ -268,6 +268,33 @@ So decided to remove the summary section from HTML report -->
     <div id="memory_lb_bw_local_64_core" class="sensei-grid"></div>
     {% endif %}
 
+    {% if lb_bw_cross_01_core %}
+    <h2><small>Memory Score Details: lmbench cross bandwidth - 1 core</small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/memory_lb_bw_cross_01_core.png' %}" height="450" width="800" /> </p>
+	</div>
+
+    <div id="memory_lb_bw_cross_01_core" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if lb_bw_cross_04_core %}
+    <h2><small>Memory Score Details: lmbench cross bandwidth - 4 core</small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/memory_lb_bw_cross_04_core.png' %}" height="450" width="800" /> </p>
+	</div>
+
+    <div id="memory_lb_bw_cross_04_core" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if lb_bw_cross_16_core %}
+    <h2><small>Memory Score Details: lmbench cross bandwidth - 16 core</small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/memory_lb_bw_cross_16_core.png' %}" height="450" width="800" /> </p>
+	</div>
+
+    <div id="memory_lb_bw_cross_16_core" class="sensei-grid"></div>
+    {% endif %}
+
     {% if lb_lat_local_01_core %}
     <h2><small>Memory Score Details: lmbench local latency - 1 core</small></h2>
 	<div style="text-align: center;">

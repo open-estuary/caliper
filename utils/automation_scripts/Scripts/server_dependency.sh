@@ -26,8 +26,8 @@ echo "SERVER"
 echo -e "\n\t\tServer Dependency"
 for i in `seq 0 $((${#dependency[@]}-1)) `
 do
-	check=`sudo find /usr -name ${dependency[$i]}`
-        if [ ! -z $check ];then
+	check=`sudo find /usr -name ${dependency[$i]} | grep -c ${dependency[$i]}`
+        if [ $check -ne 0 ];then
             if [ ${dependency[$i]} == 'netperf' ];then 
 		check_version=`netperf -V | grep -c "2.7.0"`
 		if [ $check_version -eq 0 ];then
