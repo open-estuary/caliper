@@ -33,7 +33,7 @@ CURRENT_PATH = os.path.dirname(sys.modules[__name__].__file__)
 CALIPER_DIR = os.path.abspath(os.path.join(CURRENT_PATH, '..', '..'))
 PARSER_DIR = os.path.abspath(os.path.join(CALIPER_DIR, 'client', 'parser'))
 FRONT_TMP_DIR = os.path.join(CALIPER_DIR, 'frontend')
-
+SERVER_SYNC_FILE_SRC=os.path.join(CALIPER_DIR,'client','server.py')
 
 
 caliper_output = os.path.join(os.environ['HOME'], 'caliper_output', 'configuration')
@@ -57,9 +57,10 @@ client_user = ConfigValue(path=os.path.join(caliper_output,'config','client_conf
 platForm_name = ConfigValue(path=os.path.join(caliper_output,'config','client_config.cfg'), section='CLIENT', key='Platform_name',action='get')
 
 if not platForm_name:
+    # Redirecting the ssh warning to the standard "stderr" File
     try:
         hostName = subprocess.Popen('ssh '+str(client_user)+"@"+str(client_ip)+" 'hostname'", shell=True,
-                              stdout=subprocess.PIPE)
+                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         hostName = hostName.communicate()
     except Exception as e:
         logging.error(e)
@@ -94,9 +95,12 @@ def create_dir():
         create_folder(OPENSSL_DATA_DIR_INPUT)
     if not os.path.exists(COV_DATA_DIR_INPUT):
         create_folder(COV_DATA_DIR_INPUT)
-    for i in range(1,6):
+
+    # Reverte the code as before
+    for i in range(1,6):                                              
         if not os.path.exists(os.path.join(COV_DATA_DIR_INPUT,str(i))):
-            create_folder(os.path.join(COV_DATA_DIR_INPUT,str(i)))
+            create_folder(os.path.join(COV_DATA_DIR_INPUT,str(i)))   
+
     if not os.path.exists(CONSOLIDATED_DATA_DIR_INPUT):
         create_folder(CONSOLIDATED_DATA_DIR_INPUT)
     if not os.path.exists(HW_DATA_DIR_INPUT):
@@ -109,12 +113,6 @@ def create_dir():
         create_folder(EXCEL_DATA_DIR_OUTPUT)
     if not os.path.exists(TEMPLATE_DATA_DIR):
         create_folder(TEMPLATE_DATA_DIR)
-
-
-
-
-
-
 
 
 if not judge_caliper_installed():

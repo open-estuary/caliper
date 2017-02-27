@@ -18,6 +18,7 @@ import datetime
 import commands
 import subprocess
 import glob
+import ConfigParser
 
 from argparse import ArgumentParser
 
@@ -65,10 +66,14 @@ def populate_excels():
     output_path = caliper_path.EXCEL_DATA_DIR_OUTPUT
     file_list = []
 
+    Iteration_len = 0
 
     col = performance_functional.col_start
 
     cov_files_list = performance_functional.get_cov_file_list(input_cov)
+
+    if cov_files_list:
+        Iteration_len = len(cov_files_list[0])
 
     for item in cov_files_list:
         file_name = ".".join(item[0].split("/")[-1].split(".")[0:-1])
@@ -78,7 +83,7 @@ def populate_excels():
         try:
             col_end = performance_functional.populate_excel(item, output_excel_path, template_dir,1)
             performance_functional.mean_cov_populate( output_excel_path, col_end,file_name)#for each platforms in the Input_Cov folder generate the Iteration excel
-            performance_functional.get_COV_excel(output_excel_path,file_name,output_cov,col,template_dir)#copy the COV values to final COV excel
+            performance_functional.get_COV_excel(output_excel_path,file_name,output_cov,col,template_dir,Iteration_len)#copy the COV values to final COV excel
         except Exception as e:
             logging.info(e)
         col += 1
@@ -98,10 +103,10 @@ def populate_excels():
 
 
 
-def run_caliper(remote_host,f_option):
+def run_caliper(remote_host,server_host,f_option):
     try:
         logging.debug("begining to run Caliper")
-        result = test_run.run_caliper_tests(remote_host,f_option)
+        result = test_run.run_caliper_tests(remote_host,server_host,f_option)
     except Exception, e:
         print e
         logging.info("There is wrong when running Caliper")
@@ -143,6 +148,25 @@ def get_remote_host():
         user = os.getlogin()
     try:
         password = settings.get_value('CLIENT', 'password', type=str)
+    except Exception, e:
+        raise error.ServRunError(e.args[0], e.args[1])
+
+    remote_host = host_factory.create_host(client_ip, user, password, port)
+    return remote_host
+
+def get_server_host():
+    try:
+        client_ip = settings.get_value('SERVER', 'ip', type=str)
+    except Exception, e:
+        client_ip = '127.0.0.1'
+
+    port = 22
+    try:
+        user = settings.get_value('SERVER', 'user', type=str)
+    except Exception, e:
+        user = os.getlogin()
+    try:
+        password = settings.get_value('SERVER', 'password', type=str)
     except Exception, e:
         raise error.ServRunError(e.args[0], e.args[1])
 
@@ -286,38 +310,57 @@ if __name__=="__main__":
             caliper_path.config_files.config_dir,
             'client_config.cfg'
         ))
-    remote_host = get_remote_host()
+
     caliper_path.create_dir()
-    if args.build:
-        try:
-	    clear = 0
-            if args.cleanbuild:
-                clear = 1
-            result1 = build_all_tests(remote_host,f_option,clear)
-            if result1:
+
+    if args.webpage != True:
+        remote_host = get_remote_host()
+
+    if args.build or args.run:
+        sCfgTCTail="_cases_def.cfg"
+        flCfgTCSrv=os.path.join(caliper_path.config_files.tests_cfg_dir, "server"+sCfgTCTail)
+
+        config=ConfigParser.ConfigParser()
+        config.read(flCfgTCSrv)
+        sections=config.sections()
+        nTitleSect=len(sections)
+
+        server_host=None
+        if nTitleSect>0:
+            server_host = get_server_host()
+            try:
+                build.copy_gen_to_server(server_host,caliper_path.SERVER_SYNC_FILE_SRC)
+            except Exception as e:
+                logging.warn("put %s %s" % (caliper_path.SERVER_SYNC_FILE_SRC,e))
+
+        if args.build:
+            try:
+                clear = 0
+                if args.cleanbuild:
+                    clear = 1
+                result1 = build_all_tests(remote_host,f_option,clear)
+                if result1:
+                    sys.exit()
+            except Exception, e:
+                raise
                 sys.exit()
-        except Exception, e:
-            raise
-            sys.exit()
 
-    if args.run: 
-        try:
-            result2 = run_caliper(remote_host, f_option)
-            if result2:
+        if args.run: 
+            try:
+                result2 = run_caliper(remote_host,server_host, f_option)
+                if result2:
+                    sys.exit()
+
+            except Exception:
+                raise
                 sys.exit()
 
-        except Exception:
-            raise
-            sys.exit()
-
-    end_time = datetime.datetime.now()
-    interval = end_time - start_time
-
-    if args.run:
-        try:
-            summary.output_summary_info(remote_host, interval.seconds)
-        except Exception, e:
-            raise e
+            end_time = datetime.datetime.now()
+            interval = end_time - start_time
+            try:
+                summary.output_summary_info(remote_host, interval.seconds)
+            except Exception, e:
+                raise e
 
     if args.parse:
         try:
@@ -350,11 +393,48 @@ if __name__=="__main__":
         flag = generate_web_tar()
 
     if args.webpage and args.send_email:
-        flag = generate_web_tar()
-        result_path = os.path.join(caliper_path.folder_ope.results_dir,
+         flag = generate_web_tar()
+         result_path = os.path.join(caliper_path.folder_ope.results_dir,
                 'test_results.tar.gz')
-        if os.path.exists(result_path):
+         if os.path.exists(result_path):
             send_mails.send_mails(result_path)
+            print("\n'test_results.tar.gz file has been sent, please check the mail\n")
+            sys.exit()
+         if not os.path.exists(result_path):
+             try:
+                 os.makedirs(caliper_path.folder_ope.workspace)
+             except Exception as e:
+                 print("\nCan't able to send the mail as 'test_results.tar.gz' file is not created\n")
+                 sys.exit()
+
+
+    if args.folder and args.send_email:
+        result_path = os.path.join(caliper_path.folder_ope.workspace, caliper_path.folder_ope.name,
+                                   'results_summary.log')
+        if os.path.exists(result_path):
+             send_mails.send_mails(result_path)
+             print("\n'results_summary.log' file has been sent, please check the mail\n")
+             sys.exit()
+        if not os.path.exists(result_path):
+         try:
+            os.makedirs(caliper_path.folder_ope.workspace)
+         except Exception as e:
+            print("\nCan't able to send the mail as 'results_summary.log' file is not present\n ")
+            sys.exit()
+
+    if not args.folder and args.send_email:
+            result_path = os.path.join(caliper_path.folder_ope.workspace, caliper_path.folder_ope.name,
+                                   'results_summary.log')
+            if os.path.exists(result_path):
+                send_mails.send_mails(result_path)
+                print("\n'results_summary.log' file has been sent , please check the mail\n")
+                sys.exit()
+            if not os.path.exists(result_path):
+             try:
+                os.makedirs(caliper_path.folder_ope.workspace)
+             except Exception as e:
+              print("\n Can't able to send the mail as 'results_summary.log' file is not present\n ")
+             sys.exit()
 
     if not args.webpage and args.send_email:
         current_path = os.getcwd()

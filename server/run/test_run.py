@@ -113,7 +113,7 @@ def parse_all_cases(target_exec_dir, target, kind_bench, bench_name,
             if bench_name == bench_test:
                 outfp = open(tmp_parser_file, "w")
                 outfp.write("%s" %(subsection))
-                outfp.close()		
+                outfp.close()
                 parser_result = parser_case(kind_bench, bench_name, parser_file,
                                         parser, subsection_file,
                                         tmp_parser_file)
@@ -325,7 +325,7 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
             if flag != 1:
                 logging.info("There is wrong when running the command \"%s\""
                                 % command)
-                if os.path.exists(tmp_log_file):	
+                if os.path.exists(tmp_log_file):
                     os.remove(tmp_log_file)
                 crash_handle.main()
 
@@ -352,6 +352,10 @@ def run_commands(exec_dir, kind_bench, commands,
                     stdout_tee=None, stderr_tee=None, target=None):
     returncode = -1
     output = ''
+
+    if not os.path.exists(exec_dir):
+    	output = exec_dir + ' not exist'
+    	return [output, returncode]
 
     pwd = os.getcwd()
     os.chdir(exec_dir)
@@ -720,7 +724,7 @@ def system_initialise(target):
     target.run(" sync; echo 3 > /proc/sys/vm/drop_caches; swapoff -a && swapon -a ")
 
 
-def caliper_run(target_exec_dir, target):
+def caliper_run(target_exec_dir, server,target):
     # get the test cases defined files
     config_files = server_utils.get_cases_def_files(target_exec_dir)
     logging.debug("the selected configuration are %s" % config_files)
@@ -735,6 +739,25 @@ def caliper_run(target_exec_dir, target):
         # get if it is the 'common' or 'arm' or 'android'
         classify = config_files[i].split("/")[-1].strip().split("_")[0]
         logging.debug(classify)
+
+	if classify == "server" and server:
+            try:
+	    	server_ip = settings.get_value("SERVER","ip",type=str)
+	    	server_port = settings.get_value("SERVER","port",type=int)
+                server_user = settings.get_value("SERVER","user",type=str)
+                logging.info("Please wait while caliper triggers the server.py script in the server")
+                server_pwd = server.run("pwd").stdout
+                server_pwd = server_pwd.split("\n")[0]
+                server_caliper_dir = os.path.join(server_pwd, "caliper_server")
+                server_caliper_dir = os.path.join(server_caliper_dir,"server.py")
+                server_user = server_user + '@' + server_ip
+                script = server_caliper_dir + ' ' + str(server_port)
+                subprocess.Popen(['ssh', '%s' % server_user, 'python %s' % script])
+
+
+	    except Exception as e:
+		logging.info(e)
+		raise AttributeError("Error in establising connection with server")
 
         for i in range(0, len(sections)):
             # run for each benchmark
@@ -757,12 +780,22 @@ def caliper_run(target_exec_dir, target):
                 raise AttributeError("The is no option value of parser")
 
             print_format()
+
             logging.info("Running %s" % sections[i])
             bench = os.path.join(classify, sections[i])
             try:
                 system_initialise(target)
+		if classify == "server":
+                    logging.info("Waiting for server to grant access")
+                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+  		    sock.connect((server_ip,server_port))
+		    logging.info("%s" % str(sock.recv(1024)))
+
                 result = run_all_cases(target_exec_dir, target, bench,
                                         sections[i], run_file)
+		if classify == "server":
+		    sock.send("1")
+		    sock.close()
             except Exception:
                 logging.info("Running %s Exception" % sections[i])
                 crash_handle.main()
@@ -848,7 +881,7 @@ def print_format():
     logging.info("="*55)
 
 
-def run_caliper_tests(target,f_option):
+def run_caliper_tests(target,server,f_option):
     #f_option =1 if -f is used
     if f_option == 1:
         if not os.path.exists(Folder.exec_dir):
@@ -870,7 +903,7 @@ def run_caliper_tests(target,f_option):
         flag = 1
     try:
         logging.debug("beginnig to run the test cases")
-        test_result = caliper_run(target_execution_dir, target)
+        test_result = caliper_run(target_execution_dir,server, target)
         if intermediate == 1:
             target_name = server_utils.get_host_name(target)
             yaml_dir = os.path.join(Folder.results_dir, 'yaml')

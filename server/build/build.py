@@ -784,6 +784,27 @@ def copy_gen_to_target(target, target_arch):
         logging.info("finished the scp caliper to the remote host")
         return 0
 
+def copy_gen_to_server(target, path):
+    try:
+        result = target.run("test -d caliper_server", ignore_status=True)
+    except error.ServRunError, e:
+        raise
+    else:
+        if result.exit_status:
+            target.run("mkdir -p caliper_server")
+
+        remote_pwd = target.run("pwd").stdout
+        remote_pwd = remote_pwd.split("\n")[0]
+        remote_caliper_dir = os.path.join(remote_pwd, "caliper_server")
+        try:
+            target.send_file(path, remote_caliper_dir)
+        except Exception, e:
+            logging.info("There is error when coping files to remote %s"
+                                % target.ip)
+            logging.info(e)
+            raise
+        logging.info("finished the scp server script to the remote host")
+        return 0
 
 def build_for_local():
     arch = server_utils.get_local_machine_arch()

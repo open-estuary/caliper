@@ -20,7 +20,10 @@ del_list = ["peripheral"]
 
 
 def populate_excel_to_yaml(row,c,dic,scenario_col,testcase_col,key,wb,file_name):
-    for i in range(0,len(dic['results'][key].keys())):
+    # adding exception block to handill the exception during the web report generation
+    # when any one of Functional or Performance is missing in .yaml files
+    try:
+      for i in range(0,len(dic['results'][key].keys())):
         sheet_name = dic['results'][key].keys()[i]
 
         if sheet_name in del_list:
@@ -40,6 +43,8 @@ def populate_excel_to_yaml(row,c,dic,scenario_col,testcase_col,key,wb,file_name)
             except:
                 sheet.cell(row = r,column = c).value = "Missing"
             r += 1
+    except Exception as e:
+        pass
 
 def get_cov_file_list(input_cov):
     file_dir_list = []
@@ -50,14 +55,31 @@ def get_cov_file_list(input_cov):
         file_dir_list.append(x[0])
         file_name_list.append(x[2])
     del file_dir_list[0]
-    for files in file_name_list[1]:
+
+
+    # save the count of number directories inside Input_Cov
+    len_file_name_list = len(file_name_list)
+    # Take the yaml file list from Input_Cov/1 directory, as this directory contains
+    # yaml files. Because at least one iteration should have execute to generate report.
+
+    min_file_count = 255
+    index = 0
+
+    for i in range(0, len_file_name_list):
+        if len(file_name_list[i]):
+            if min_file_count > len(file_name_list[i]):
+                min_file_count = len(file_name_list[i])
+                index = i
+
+    for files in file_name_list[index]:
         files_temp_list = []
+        i = 1
         for dir in file_dir_list:
-
-            file_name = os.path.join(dir, files)
-            files_temp_list.append(file_name)
+            if len(file_name_list[i]):
+                file_name = os.path.join(dir, files)
+                files_temp_list.append(file_name)
+            i += 1
         files_list.append(files_temp_list)
-
 
     return files_list
 
@@ -173,7 +195,7 @@ def populate_excel(ip_file_list,output_path,template_dir,cov_flag):
         col = col_start
         wb.save(output_excel)
     return col_end-1
-def get_COV_excel(input_excel_path,file_name,output_excel_path,col,template_dir):
+def get_COV_excel(input_excel_path,file_name,output_excel_path,col,template_dir,Iteration_len):
 
     for key in keys:
         input_excel_name =  key + "_" + file_name + "-Tests.xlsx"
@@ -196,8 +218,8 @@ def get_COV_excel(input_excel_path,file_name,output_excel_path,col,template_dir)
             ip_sheet = wb.get_sheet_by_name(sheets)
             op_sheet = rb.get_sheet_by_name(sheets)
             op_sheet.cell(row=row_start-1, column=col).value = file_name
-            while ip_sheet.cell(row= rows,column = 12).value != None:
-                op_sheet.cell(row = rows, column = col ).value = ip_sheet.cell(row= rows,column = 12).value
+            while ip_sheet.cell(row= rows,column = 7 + Iteration_len).value != None:
+                op_sheet.cell(row = rows, column = col ).value = ip_sheet.cell(row= rows,column = 7 + Iteration_len).value
                 rows += 1
             rows = row_start
         rb.save(output_excel_name)

@@ -8,8 +8,6 @@
 import pdb
 import re
 
-sysbench_dic = {}
-response_times = {}
 
 SYSBENCH_RESULT_NAME_LATENCY = 'sysbench latency'
 NA_UNIT = 'NA'
@@ -20,6 +18,9 @@ RESPONSE_TIME_TOKENS = ['min', 'avg', 'max', 'percentile']
 
 
 def sysbench_oltp_parser(content, outfp):
+
+    sysbench_dic = {}
+    response_times = {}
 
     seen_general_statistics = False
     seen_response_time = False
@@ -74,7 +75,7 @@ def sysbench_cpu_parser(content,outfp):
     return dic
 
 def sysbench_parser(content,outfp):
-    if re.search("sysbench_cpu",content):
+    if re.search("\[test: sysbench_cpu\]",content):
        result = sysbench_cpu_parser(content,outfp)
     else:
        result = sysbench_oltp_parser(content, outfp)
@@ -82,9 +83,10 @@ def sysbench_parser(content,outfp):
 if __name__ == "__main__":
     infp = open("sysbench_output.log", "r")
     content = infp.read()
+    content = re.findall(r'<<<BEGIN TEST>>>(.*?)<<<END>>>',content,re.DOTALL)
     outfp = open("2.txt", "a+")
-    pdb.set_trace()
-    a = sysbench_parser(content, outfp)
-    print a
+    for data in content:
+    	a = sysbench_parser(data, outfp)
+    	print a
     outfp.close()
     infp.close()

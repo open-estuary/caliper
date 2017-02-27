@@ -35,13 +35,15 @@ while true {
         	}
 		timeout {
 			send_user "U have not selected any choice:"
-			send_user "I will be exiting"
+			send_user "I will be exiting\n"
 			exit 1
 		}
 		eof {
+			send_user "target dependency satisfied.\n"
 			spawn ssh $client_user@$client_ip "rm target_dependency.sh"
 			break
 		}
+                "Is this ok" { send "y\r"; exp_continue }
 	}
 }
 

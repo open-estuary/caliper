@@ -80,7 +80,7 @@ def get_exec_tools():
     if os.path.exists(despath):
         for file_name in os.listdir(despath):
             num += 1
-            tool_name = file_name.split("_")[0]
+            tool_name = '_'.join(file_name.split('_')[0:-1])
             file_path = os.path.join(despath, file_name)
             fp = open(file_path, 'r')
             contents = fp.read()
