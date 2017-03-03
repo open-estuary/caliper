@@ -1,0 +1,6 @@
+[nginx Requests 100]
+category = Performance application nginx_static nginx_100_requests
+scores_way = exp_score_compute 4 -0.5
+command = "if [ ! -d /usr/local/nginx ]; then mkdir -p /usr/local/nginx ; cp -r bin/nginx_config_files/* /usr/local/nginx/ ; fi; sed -ie 's/ip_port/$CLIENT_IP:8000/g' /usr/local/nginx/conf/nginx.conf; sed -ie 's/ip_port/$CLIENT_IP:8000/g' /usr/local/nginx/conf/nginx.conf.81; bin/nginx -s stop; nohup taskset -c 0-3 bin/nginx -c /usr/local/nginx/conf/nginx.conf </dev/null 2>&1 & sleep 3"
+parser = nginx_parser
+

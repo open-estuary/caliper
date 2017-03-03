@@ -317,13 +317,23 @@ if __name__=="__main__":
         remote_host = get_remote_host()
 
     if args.build or args.run:
-        sCfgTCTail="_cases_def.cfg"
-        flCfgTCSrv=os.path.join(caliper_path.config_files.tests_cfg_dir, "server"+sCfgTCTail)
+    	cfg_files = []
+    	cases_tail = "_cases_def.cfg"
 
-        config=ConfigParser.ConfigParser()
-        config.read(flCfgTCSrv)
-        sections=config.sections()
-        nTitleSect=len(sections)
+    	application_cfg = "application" + cases_tail
+    	application_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir,
+                                        application_cfg)
+    	cfg_files.append(application_cfg_path)
+    	
+        server_cfg = "server" + cases_tail
+    	server_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir,
+                                        server_cfg)
+    	cfg_files.append(server_cfg_path)
+
+        config = ConfigParser.ConfigParser()
+        config.read(cfg_files)
+        sections = config.sections()
+        nTitleSect = len(sections)
 
         server_host=None
         if nTitleSect>0:
