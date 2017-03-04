@@ -13,7 +13,7 @@ build_nginx() {
                 ./configure
                 make
                 cp objs/nginx $myOBJPATH
-                cp -r nginx_config_files $myOBJPATH
+                cp -r nginx_config_files $INSTALL_DIR
                 popd
 
         fi
@@ -29,7 +29,7 @@ build_nginx() {
                 cp ngx_auto_config.h objs/
                 make
                 cp objs/nginx $myOBJPATH
-                cp -r nginx_config_files $myOBJPATH
+                cp -r nginx_config_files $INSTALL_DIR
                 popd
         fi
 }

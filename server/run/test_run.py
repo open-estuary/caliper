@@ -384,12 +384,20 @@ def get_actual_commands(commands, target):
     commands = post_commands
 
     try:
-        if re.findall('\$CLIENT_IP', commands):
+        if re.findall('\$CLIENT_IP_1G', commands):
             try:
                 client_ip = settings.get_value('CLIENT', 'ip', type=str)
             except Exception, e:
                 client_ip = '127.0.0.1'
-            strinfo = re.compile('\$CLIENT_IP')
+            strinfo = re.compile('\$CLIENT_IP_1G')
+            post_commands = strinfo.sub(client_ip, commands)
+        commands = post_commands
+        if re.findall('\$CLIENT_IP_10G', commands):
+            try:
+                client_ip = settings.get_value('CLIENT', 'ip_10g_port', type=str)
+            except Exception, e:
+                client_ip = '127.0.0.1'
+            strinfo = re.compile('\$CLIENT_IP_10G')
             post_commands = strinfo.sub(client_ip, commands)
     except Exception:
         pass
@@ -858,9 +866,9 @@ def caliper_run(target_exec_dir, server, target):
             logging.info("Running %s" % sections[i])
             bench = os.path.join(classify, sections[i])
             try:
-                system_initialise(target)
+                #system_initialise(target)
                 if classify == "server":
-                    system_initialise(server)
+                    #system_initialise(server)
                     logging.info("Waiting for server to grant access")
                     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
   		    sock.connect((server_ip,server_port))

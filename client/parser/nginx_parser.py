@@ -5,16 +5,18 @@ import string
 #requests: 25000 total, 25000 started, 25000 done, 25000 succeeded, 0 failed, 0 errored
 
 def nginx_parser(content, outfp):
-    result = -1
-    for requests in re.findall("requests:\s+\d+\s+total[,]\s+\d+\s+started[,]\s+\d+\s+done[,]\s+(.*?)\s+succeeded.*?", content):
-        requests_final = string.atof(requests.strip())
-        if requests_final != 0.0:
-            for wrps in re.findall("finished\s+in\s+.*?(\d+)\s+req[/]s.*?", content):
-                wrps_final = string.atof(wrps.strip())
-                wrps_final = float(wrps_final / 10000)
-                outfp.write("wrps is %s \n" % wrps_final)
-                result = wrps_final
-    return result
+    result = 0
+    flag = 0
+    for wrps in re.findall("finished\s+in\s+.*?(\d+)\s+req[/]s.*?", content):
+        wrps_final = string.atoi(wrps.strip())
+        outfp.write("wrps is %s \n" % wrps_final)
+        wrps_final = (wrps_final / 1000)
+        result += wrps_final
+        flag = 1
+    if flag == 1:
+        return result
+    if flag == 0:
+        return -1
 
 if __name__ == "__main__":
     infp = open("nginx_output.log", "r")
