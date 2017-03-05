@@ -79,9 +79,9 @@ then
 else
     if [ ! $architecture_x86_64 -eq 0 ]
     then
-        target_packages=('make' 'wget' 'gcc' 'automake' 'autoconf' 'cmake' 'net-tools' 'lshw' 'bridge-utils' 'java-1.8.0-openjdk.x86_64' 'java-1.8.0-openjdk-devel.x86_64' 'perl' 'lksctp-tools' 'expect' 'ncurses-devel' 'yum-utils' 'dmidecode' 'words' 'gfortran' 'numactl' 'unzip' 'bc' 'libtool')
+        target_packages=('make' 'wget' 'gcc' 'automake' 'autoconf' 'cmake' 'net-tools' 'lshw' 'bridge-utils' 'java-1.8.0-openjdk.x86_64' 'java-1.8.0-openjdk-devel.x86_64' 'perl' 'lksctp-tools' 'expect' 'ncurses-devel' 'yum-utils' 'dmidecode' 'words' 'gfortran' 'numactl' 'unzip' 'bc' 'libtool' 'psmisc')
     else
-        target_packages=('make' 'wget' 'gcc' 'automake' 'autoconf' 'cmake' 'net-tools' 'lshw' 'bridge-utils' 'java-1.8.0-openjdk.aarch64' 'java-1.8.0-openjdk-devel.aarch64' 'perl'  'lksctp-tools' 'expect' 'ncurses-devel' 'yum-utils' 'dmidecode' 'words' 'gfortran' 'numactl' 'unzip' 'bc' 'libtool')
+        target_packages=('make' 'wget' 'gcc' 'automake' 'autoconf' 'cmake' 'net-tools' 'lshw' 'bridge-utils' 'java-1.8.0-openjdk.aarch64' 'java-1.8.0-openjdk-devel.aarch64' 'perl'  'lksctp-tools' 'expect' 'ncurses-devel' 'yum-utils' 'dmidecode' 'words' 'gfortran' 'numactl' 'unzip' 'bc' 'libtool' 'psmisc')
     fi
 
     for i in `seq 0 $((${#target_packages[@]}-1)) `
