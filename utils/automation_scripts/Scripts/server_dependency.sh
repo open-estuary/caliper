@@ -5,6 +5,9 @@ server_dependency="server_dependency_dir"
 architecture_x86_64=`uname -a | grep -c "x86_64"`
 architecture_arm64=`uname -a | grep -c "arm64"`
 
+Osname_Ubuntu=`cat /etc/*release | grep -c "Ubuntu"`
+Osname_Centos=`cat /etc/*release | grep -c "CentOS"`
+
 if [ ! -d $server_dependency ]
 then
         sudo mkdir -p $server_dependency
@@ -88,6 +91,31 @@ do
             fi
 	fi
 done
+
+if [ $Osname_Ubuntu -gt 0 ]; then
+	weightp=`which weighttp | grep -c weighttp`
+	if [ $weightp -eq 0 ]; then
+		sudo apt-get install libev4 libev-dev
+		git clone https://github.com/lighttpd/weighttp.git
+		cd weighttp
+		./autogen.sh
+		./configure && make && make install
+	fi
+fi
+
+if [ $Osname_Centos -gt 0 ];then
+	weightp=`which weighttp | grep -c weighttp`
+	if [ $weightp -eq 0 ]; then
+		yum install -y epel-release
+		yum install libev libev-devel -y
+		cd /usr/local/src
+		git clone https://github.com/lighttpd/weighttp.git
+		cd weighttp
+		./waf configure
+		./waf build
+		./waf install
+	fi
+fi
 
 for i in `seq 0 $((${#flag[@]}-1)) ` 
 do    
