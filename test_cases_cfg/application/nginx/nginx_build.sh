@@ -16,6 +16,7 @@ build_nginx() {
                 cp -r nginx_config_files $INSTALL_DIR
 		mv $INSTALL_DIR/nginx_config_files/conf/nginx_x86_64.conf $INSTALL_DIR/nginx_config_files/conf/nginx.conf
 		mv $INSTALL_DIR/nginx_config_files/conf/nginx_x86_64.conf.81 $INSTALL_DIR/nginx_config_files/conf/nginx.conf.81
+		cp -r nginx_config_files/php-conf $INSTALL_DIR
                 popd
 
         fi
@@ -34,6 +35,7 @@ build_nginx() {
                 cp -r nginx_config_files $INSTALL_DIR
 		mv $INSTALL_DIR/nginx_config_files/conf/nginx_arm64.conf $INSTALL_DIR/nginx_config_files/conf/nginx.conf
 		mv $INSTALL_DIR/nginx_config_files/conf/nginx_arm64.conf.81 $INSTALL_DIR/nginx_config_files/conf/nginx.conf.81
+		cp -r nginx_config_files/php-conf $INSTALL_DIR
                 popd
         fi
 }
