@@ -51,6 +51,21 @@ def get_server_command(kind_bench, section_name):
     else:
         return None
 
+def get_server2_command(kind_bench, section_name):
+    server_config_file = ''
+
+    server_config_file = server_utils.get_server_cfg_path(kind_bench)
+    if server_config_file != '':
+        server_config, server_sections = \
+                server_utils.read_config_file(server_config_file)
+        if section_name in server_sections:
+            command = server_config.get(section_name, 'command_client2')
+            logging.debug("command is %s" % command)
+            return command
+        else:
+            return None
+    else:
+        return None
 
 def parse_all_cases(target_exec_dir, target, kind_bench, bench_name,
                      run_file,parser_file,dic):
@@ -208,7 +223,7 @@ def compute_caliper_logs(target_exec_dir,flag = 1):
         os.makedirs(caliper_path.HTML_DATA_DIR_OUTPUT)
 
 def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
-                    run_file, server):
+                    run_file, server, server2):
     """
     function: run one benchmark which was selected in the configuration files
     """
@@ -294,12 +309,14 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
             os.remove(tmp_log_file)
 
         server_run_command = get_server_command(kind_bench, sections_run[i])
+        if re.search('application', kind_bench):
+	    server2_run_command = get_server2_command(kind_bench, sections_run[i])
         logging.debug("Get the server command is: %s" % server_run_command)
         # run the command of the benchmarks
         try:
-            flag = run_kinds_commands(sections_run[i], server_run_command,
+            flag = run_kinds_commands(sections_run[i], server_run_command, server2_run_command,
                                       tmp_log_file, kind_bench,
-                                      target, command,server)
+                                      target, command,server, server2)
         except Exception, e:
             logging.info(e)
             crash_handle.main()
@@ -384,20 +401,20 @@ def get_actual_commands(commands, target):
     commands = post_commands
 
     try:
-        if re.findall('\$CLIENT_IP_1G', commands):
+        if re.findall('\$CLIENT_IP_1_10G', commands):
             try:
-                client_ip = settings.get_value('CLIENT', 'ip', type=str)
+                client_ip = settings.get_value('CLIENT', 'ip_1_10g', type=str)
             except Exception, e:
                 client_ip = '127.0.0.1'
-            strinfo = re.compile('\$CLIENT_IP_1G')
+            strinfo = re.compile('\$CLIENT_IP_1_10G')
             post_commands = strinfo.sub(client_ip, commands)
         commands = post_commands
-        if re.findall('\$CLIENT_IP_10G', commands):
+        if re.findall('\$CLIENT_IP_2_10G', commands):
             try:
-                client_ip = settings.get_value('CLIENT', 'ip_10g_port', type=str)
+                client_ip = settings.get_value('CLIENT', 'ip_2_10g', type=str)
             except Exception, e:
                 client_ip = '127.0.0.1'
-            strinfo = re.compile('\$CLIENT_IP_10G')
+            strinfo = re.compile('\$CLIENT_IP_2_10G')
             post_commands = strinfo.sub(client_ip, commands)
     except Exception:
         pass
@@ -441,12 +458,12 @@ def run_remote_server_commands(commands, server,
             output = result.stderr
     return [output, returncode]
 
-def run_commands(cmd_sec_name, exec_dir, kind_bench, commands, server, tmp_logfile,
-                    stdout_tee=None, stderr_tee=None, target=None):
+def run_commands(cmd_sec_name, exec_dir, kind_bench, commands, server, tmp_logfile, 
+                    new_test_case, stdout_tee=None, stderr_tee=None, target=None):
 
     fp = open(tmp_logfile, "a+")
     # tmp_logfile
-    if not re.search('server', kind_bench):
+    if not re.search('server', kind_bench) and new_test_case:
         start_log = "%%%%%%         %s test start       %%%%%% \n" % cmd_sec_name
         fp.write(start_log)
         fp.write("<<<BEGIN TEST>>>\n")
@@ -470,20 +487,20 @@ def run_commands(cmd_sec_name, exec_dir, kind_bench, commands, server, tmp_logfi
         else:
             return ['Not command specified', -1]
     except error.ServRunError, e:
-        if not re.search('server', kind_bench):
+        if not re.search('server', kind_bench) and new_test_case:
             fp.write("[status]: FAIL\n")
         sys.stdout.write(e)
         flag = -1
     else:
         if not returncode:
-            if not re.search('server', kind_bench):
+            if not re.search('server', kind_bench) and new_test_case:
                 fp.write("[status]: PASS\n")
             flag = 1
         else:
-            if not re.search('server', kind_bench):
+            if not re.search('server', kind_bench) and new_test_case:
                 fp.write("[status]: FAIL\n")
             flag = 0
-    if not re.search('server', kind_bench):
+    if not re.search('server', kind_bench) and new_test_case:
         end = time.time()
         interval = end - start
         fp.write("Time in Seconds: %.3fs\n" % interval)
@@ -587,7 +604,7 @@ def run_client_command(cmd_sec_name, tmp_logfile, kind_bench,
     return flag
 
 
-def run_server_command(cmd_sec_name, kind_bench, server_command, target, server, tmp_logfile):
+def run_server_command(cmd_sec_name, kind_bench, server_command, target, server, tmp_logfile, new_test_case):
     return_code = -1
     try:
         logging.debug("the server running command is %s" % server_command)
@@ -595,7 +612,7 @@ def run_server_command(cmd_sec_name, kind_bench, server_command, target, server,
         server_current_pwd = server.run("pwd").stdout.split("\n")[0]
         arch = server_utils.get_host_arch(server)
         server_exec_dir = os.path.join(server_current_pwd, 'caliper',"binary", arch)
-        return_code = run_commands(cmd_sec_name, server_exec_dir, kind_bench, server_command, server, tmp_logfile)
+        return_code = run_commands(cmd_sec_name, server_exec_dir, kind_bench, server_command, server, tmp_logfile, new_test_case)
     except Exception, e:
         logging.debug("There is wrong with running the server command: %s" % e)
         return return_code
@@ -604,24 +621,24 @@ def run_server_command(cmd_sec_name, kind_bench, server_command, target, server,
 
 
 def run_case(cmd_sec_name, server_command, tmp_logfile, kind_bench,
-                target, command, server):
+                target, command, server, new_test_case):
     if server_command is None or server_command == '':
         return -1 
     if command is None or command == '':
         return -1
 
-    flag = run_server_command(cmd_sec_name,kind_bench, server_command, target,server,tmp_logfile)
+    flag = run_server_command(cmd_sec_name,kind_bench, server_command, target,server,tmp_logfile,new_test_case)
     return flag
 
 
-def run_kinds_commands(cmd_sec_name, server_run_command, tmp_logfile,
-                        kind_bench, target, command,server):
+def run_kinds_commands(cmd_sec_name, server_run_command, server2_run_command, tmp_logfile,
+                        kind_bench, target, command,server, server2):
     if re.search('server', kind_bench):
         logging.debug("Running the server_command: %s, "
                         "and the client command: %s" %
                         (server_run_command, command))
         flag = run_case(cmd_sec_name, server_run_command, tmp_logfile,
-                       kind_bench, target, command,server)
+                       kind_bench, target, command,server,1)
         logging.debug("only running the command %s in the remote host"
                         % command)
         flag = run_client_command(cmd_sec_name, tmp_logfile, kind_bench,
@@ -635,7 +652,9 @@ def run_kinds_commands(cmd_sec_name, server_run_command, tmp_logfile,
                       "and the client command: %s" %
                       (server_run_command, command))
         flag = run_case(cmd_sec_name, server_run_command, tmp_logfile,
-                        kind_bench, target, command,server)
+                        kind_bench, target, command,server,1)
+        flag = run_case(cmd_sec_name, server2_run_command, tmp_logfile,
+                        kind_bench, target, command,server2,0)
     else:
         logging.debug("only running the command %s in the remote host"
                       % command)
@@ -776,7 +795,7 @@ def system_initialise(target):
     target.run(" sync; echo 3 > /proc/sys/vm/drop_caches; swapoff -a && swapon -a ")
 
 
-def caliper_run(target_exec_dir, server, target):
+def caliper_run(target_exec_dir, server, server2, target):
     # get the test cases defined files
     config_files = server_utils.get_cases_def_files(target_exec_dir)
     logging.debug("the selected configuration are %s" % config_files)
@@ -875,7 +894,7 @@ def caliper_run(target_exec_dir, server, target):
 		    logging.info("%s" % str(sock.recv(1024)))
 
                 result = run_all_cases(target_exec_dir, target, bench,
-                                        sections[i], run_file, server)
+                                        sections[i], run_file, server, server2)
 	        if classify == "server":
                     sock.send("1")
 		    sock.close()
@@ -963,7 +982,7 @@ def print_format():
     logging.info("="*55)
 
 
-def run_caliper_tests(target,server,f_option):
+def run_caliper_tests(target, server, server2, f_option):
     #f_option =1 if -f is used
     if f_option == 1:
         if not os.path.exists(Folder.exec_dir):
@@ -985,7 +1004,7 @@ def run_caliper_tests(target,server,f_option):
         flag = 1
     try:
         logging.debug("beginnig to run the test cases")
-        test_result = caliper_run(target_execution_dir, server, target)
+        test_result = caliper_run(target_execution_dir, server, server2, target)
         if intermediate == 1:
             target_name = server_utils.get_host_name(target)
             yaml_dir = os.path.join(Folder.results_dir, 'yaml')
