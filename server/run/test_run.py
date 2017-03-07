@@ -471,8 +471,8 @@ def run_commands(cmd_sec_name, exec_dir, kind_bench, commands, server, tmp_logfi
         fp.write(tags)
         logs = "log: " + get_actual_commands(commands, server) + "\n"
         fp.write(logs)
-        start = time.time()
     flag = 0
+    start = time.time()
 
     returncode = -1
     output = ''
@@ -502,10 +502,12 @@ def run_commands(cmd_sec_name, exec_dir, kind_bench, commands, server, tmp_logfi
             if not re.search('server', kind_bench) and new_test_case:
                 fp.write("[status]: FAIL\n")
             flag = 0
+
+    end = time.time()
+    interval = end - start
+    fp.write("Time in Seconds: %.3fs\n" % interval)
+
     if not re.search('server', kind_bench) and not new_test_case:
-        end = time.time()
-        interval = end - start
-        fp.write("Time in Seconds: %.3fs\n" % interval)
         fp.write("<<<END>>>\n")
         fp.write("%%%%%% test_end %%%%%%\n\n")
         fp.close()
@@ -653,10 +655,10 @@ def run_kinds_commands(cmd_sec_name, server_run_command, server2_run_command, tm
         logging.debug("Running the server_command: %s, "
                       "and the client command: %s" %
                       (server_run_command, command))
-#        flag = run_case(cmd_sec_name, server_run_command, tmp_logfile,
- #                       kind_bench, target, command,server,1)
-  #      flag = run_case(cmd_sec_name, server2_run_command, tmp_logfile,
-   #                     kind_bench, target, command,server2,0)
+        flag = run_case(cmd_sec_name, server_run_command, tmp_logfile,
+                        kind_bench, target, command,server,1)
+        flag = run_case(cmd_sec_name, server2_run_command, tmp_logfile,
+                        kind_bench, target, command,server2,0)
     else:
         logging.debug("only running the command %s in the remote host"
                       % command)
