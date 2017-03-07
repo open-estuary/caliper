@@ -479,7 +479,9 @@ def run_commands(cmd_sec_name, exec_dir, kind_bench, commands, server, tmp_logfi
 
     try:
         # the commands is multiple lines, and was included by Quotation
-        final_commands = remote_commands_deal(commands, exec_dir, server)
+        #final_commands = remote_commands_deal(commands, exec_dir, server)
+        #if final_commands is not None and final_commands != '':
+	final_commands = get_actual_commands(commands, server)
         if final_commands is not None and final_commands != '':
             logging.debug("the actual commands running on the remote host "
                             "is: %s" % final_commands)
@@ -500,7 +502,7 @@ def run_commands(cmd_sec_name, exec_dir, kind_bench, commands, server, tmp_logfi
             if not re.search('server', kind_bench) and new_test_case:
                 fp.write("[status]: FAIL\n")
             flag = 0
-    if not re.search('server', kind_bench) and new_test_case:
+    if not re.search('server', kind_bench) and not new_test_case:
         end = time.time()
         interval = end - start
         fp.write("Time in Seconds: %.3fs\n" % interval)
@@ -514,7 +516,7 @@ def run_remote_commands(exec_dir, kind_bench, commands, target,
     returncode = -1
     output = ''
     try:
-        # the commands is multiple lines, and was included by Quotation
+        #the commands is multiple lines, and was included by Quotation
         final_commands = remote_commands_deal(commands, exec_dir, target)
         if final_commands is not None and final_commands != '':
             logging.debug("the actual commands running on the remote host "
@@ -622,10 +624,10 @@ def run_server_command(cmd_sec_name, kind_bench, server_command, target, server,
 
 def run_case(cmd_sec_name, server_command, tmp_logfile, kind_bench,
                 target, command, server, new_test_case):
-    if server_command is None or server_command == '':
-        return -1 
-    if command is None or command == '':
-        return -1
+#    if server_command is None or server_command == '':
+#        return -1 
+#    if command is None or command == '':
+#        return -1
 
     flag = run_server_command(cmd_sec_name,kind_bench, server_command, target,server,tmp_logfile,new_test_case)
     return flag
@@ -651,10 +653,10 @@ def run_kinds_commands(cmd_sec_name, server_run_command, server2_run_command, tm
         logging.debug("Running the server_command: %s, "
                       "and the client command: %s" %
                       (server_run_command, command))
-        flag = run_case(cmd_sec_name, server_run_command, tmp_logfile,
-                        kind_bench, target, command,server,1)
-        flag = run_case(cmd_sec_name, server2_run_command, tmp_logfile,
-                        kind_bench, target, command,server2,0)
+#        flag = run_case(cmd_sec_name, server_run_command, tmp_logfile,
+ #                       kind_bench, target, command,server,1)
+  #      flag = run_case(cmd_sec_name, server2_run_command, tmp_logfile,
+   #                     kind_bench, target, command,server2,0)
     else:
         logging.debug("only running the command %s in the remote host"
                       % command)
