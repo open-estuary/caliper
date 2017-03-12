@@ -2,10 +2,8 @@ build_nginx() {
 
         set -e
         SrcPath=${BENCH_PATH}"509.nginx"
-        BuildPATH="$CALIPER_TMP/build.nginx"
-        TOP_SRCDIR="$CURRENT_PATH/$SrcPath"
-        myOBJPATH=${INSTALL_DIR}/bin
-        mkdir -p $BuildPATH
+        myOBJPATH=${INSTALL_DIR}/nginx
+        mkdir -p $myOBJPATH
 
         if [ $ARCH = "x86_64" ]
         then
@@ -13,30 +11,29 @@ build_nginx() {
                 ./configure
                 make
                 cp objs/nginx $myOBJPATH
-                cp -r nginx_config_files $INSTALL_DIR
-		mv $INSTALL_DIR/nginx_config_files/conf/nginx_x86_64.conf $INSTALL_DIR/nginx_config_files/conf/nginx.conf
-		mv $INSTALL_DIR/nginx_config_files/conf/nginx_x86_64.conf.81 $INSTALL_DIR/nginx_config_files/conf/nginx.conf.81
+                cp -r nginx_config_files $myOBJPATH
+                cp -r nginx_scripts $myOBJPATH
+		mv $myOBJPATH/nginx_config_files/conf/nginx_x86_64.conf $myOBJPATH/nginx_config_files/conf/my_nginx.conf
                 popd
-
         fi
 
         if [ $ARCH = "arm_64" ]
         then
                 pushd $SrcPath
-                echo "executing cconfigure on arrm 64"
                 ./configure --with-cc=aarch64-linux-gnu-gcc --with-pcre=$SrcPath/nginx-dep/pcre-8.39 --with-zlib=$SrcPath/nginx-dep/zlib-1.2.8 --with-openssl=$SrcPath/nginx-dep/openssl --with-cpp=aarch64-linux-gnu-g++
-                echo "executing cconfigure on arrm 64"
                 cp Makefile_arm64 objs/Makefile
-                echo "c-source"
                 cp ngx_auto_config.h objs/
                 make
                 cp objs/nginx $myOBJPATH
-                cp -r nginx_config_files $INSTALL_DIR
-		mv $INSTALL_DIR/nginx_config_files/conf/nginx_arm64.conf $INSTALL_DIR/nginx_config_files/conf/nginx.conf
-		mv $INSTALL_DIR/nginx_config_files/conf/nginx_arm64.conf.81 $INSTALL_DIR/nginx_config_files/conf/nginx.conf.81
+                cp -r nginx_config_files $myOBJPATH
+                cp -r nginx_scripts $myOBJPATH
+		mv $myOBJPATH/nginx_config_files/conf/nginx_arm64.conf $myOBJPATH/nginx_config_files/conf/my_nginx.conf
                 popd
         fi
+	
+	cd $INSTALL_DIR
+	tar -cvf nginx_tar.gz nginx
+	rm -fr nginx
 }
 
 build_nginx
-

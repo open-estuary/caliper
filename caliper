@@ -46,6 +46,8 @@ from caliper.server.parser_process import hardware
 from caliper.server.parser_process import performance_functional
 from caliper.client.shared.caliper_path import intermediate
 
+settings_filename = 'client_config.cfg'  
+settings_path_root = os.path.join(caliper_path.config_files.config_dir,settings_filename)                                                
 
 logging.basicConfig(level=logging.INFO)
 def build_all_tests(remote_host,f_option,clear):
@@ -103,10 +105,10 @@ def populate_excels():
 
 
 
-def run_caliper(remote_host, server_host, server2_host, f_option):
+def run_caliper(remote_host, server_host, f_option, nginx_clients=None):
     try:
         logging.debug("begining to run Caliper")
-        result = test_run.run_caliper_tests(remote_host, server_host, server2_host, f_option)
+        result = test_run.run_caliper_tests(remote_host, server_host, f_option, nginx_clients)
     except Exception, e:
         print e
         logging.info("There is wrong when running Caliper")
@@ -173,24 +175,68 @@ def get_server_host():
     remote_host = host_factory.create_host(client_ip, user, password, port)
     return remote_host
 
-def get_server2_host():
-    try:
-        client_ip = settings.get_value('SERVER2', 'ip', type=str)
-    except Exception, e:
-        client_ip = '127.0.0.1'
 
-    port = 22
-    try:
-        user = settings.get_value('SERVER2', 'user', type=str)
-    except Exception, e:
-        user = os.getlogin()
-    try:
-        password = settings.get_value('SERVER2', 'password', type=str)
-    except Exception, e:
-        raise error.ServRunError(e.args[0], e.args[1])
+def get_nginx_clinets():
+    dic = {}
 
-    remote_host = host_factory.create_host(client_ip, user, password, port)
-    return remote_host
+    try:
+        no_of_clients = settings.get_value('nginx', 'no_of_clients', type=str)
+    except Exception, e:
+        logging.info("give clients in nginx")
+
+    filename = caliper_path.folder_ope.workspace + "/config" + "/client_config.cfg"
+
+    fp = open(filename,"r")
+    content = fp.read()
+
+    for i in range(1, int(no_of_clients)+1):
+        try:
+            temp_ip = re.findall("(client\_%d\_ip):.*?" % i, content)
+        except Exception, e:
+            logging.info("Please give client %d ip field in client_config.cfg file" %i)
+            sys.exit(1)
+
+        ip = temp_ip[0]
+
+        try:
+            client_ip = settings.get_value('nginx', ip , type=str)
+            logging.debug("client %d ip = %s" % (i, client_ip))
+        except Exception, e:
+            client_ip = '127.0.0.1'
+
+        port = 22
+    
+        try:
+            temp_user = re.findall("(client\_%d\_user):.*?" % i, content)
+        except Exception, e:
+            logging.info("Please give client %d user field in client_config.cfg file" %i)
+            sys.exit(1)
+
+	user = temp_user[0]
+
+        try:
+            client_user = settings.get_value('nginx', user, type=str)
+        except Exception, e:
+            client_user = os.getlogin()
+
+        try:
+            temp_password = re.findall("(client\_%d\_password):.*?" % i, content)
+        except Exception, e:
+            logging.info("Please give client %d password field in client_config.cfg file" %i)
+            sys.exit(1)
+
+	password = temp_password[0]
+
+        try:
+            client_password = settings.get_value('nginx', password, type=str)
+        except Exception, e:
+            raise error.ServRunError(e.args[0], e.args[1])
+
+        dic[str(i)] = host_factory.create_host(client_ip, client_user, client_password, port)
+
+    fp.close()
+
+    return dic
 
 def kill_django(pid):
     children = commands.getoutput("ps --ppid=%d -o pid=" % pid).split()
@@ -253,6 +299,25 @@ def normalize_scores():
     write_results.yaml_filter(caliper_path.HTML_DATA_DIR_INPUT)
     return
 
+def check_nginx_tool():
+    flag = -1
+    cfg_files = []
+    cases_tail = "_cases_def.cfg"
+
+    application_cfg = "application" + cases_tail
+    application_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir,
+                                    application_cfg)
+    cfg_files.append(application_cfg_path)
+    config = ConfigParser.ConfigParser()
+    config.read(cfg_files)
+    sections = config.sections()
+
+    for i in range(0, len(sections)):
+        if sections[i] == 'nginx':
+            flag = 1
+            return flag
+                                                                                        
+    return flag
 
 if __name__=="__main__":
     parser = ArgumentParser()
@@ -336,14 +401,15 @@ if __name__=="__main__":
         remote_host = get_remote_host()
 
     if args.build or args.run:
+
+        nginx_clients = None
+        flag = check_nginx_tool()
+        if flag == 1:
+            nginx_clients = get_nginx_clinets()
+
     	cfg_files = []
     	cases_tail = "_cases_def.cfg"
 
-    	application_cfg = "application" + cases_tail
-    	application_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir,
-                                        application_cfg)
-    	cfg_files.append(application_cfg_path)
-    	
         server_cfg = "server" + cases_tail
     	server_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir,
                                         server_cfg)
@@ -355,10 +421,8 @@ if __name__=="__main__":
         nTitleSect = len(sections)
 
         server_host=None
-        server2_host=None
         if nTitleSect>0:
             server_host = get_server_host()
-            server2_host = get_server2_host()
             try:
                 build.copy_gen_to_server(server_host,caliper_path.SERVER_SYNC_FILE_SRC)
             except Exception as e:
@@ -378,7 +442,7 @@ if __name__=="__main__":
 
         if args.run: 
             try:
-                result2 = run_caliper(remote_host,server_host, server2_host, f_option)
+                result2 = run_caliper(remote_host, server_host, f_option, nginx_clients)
                 if result2:
                     sys.exit()
 

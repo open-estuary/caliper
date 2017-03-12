@@ -176,11 +176,18 @@ def get_server_cfg_path(bench_name):
             if re.search('server', files[i]):
                 server_config_file = os.path.join(root, files[i])
                 break
-            if re.search('application', files[i]):
-                server_config_file = os.path.join(root, files[i])
-                break
     return server_config_file
 
+def get_application_cfg_path(bench_name):
+    bench_cfg_location = os.path.join(caliper_path.config_files.tests_cfg_dir,
+                                        bench_name)
+    application_config_file = ''
+    for root, dirs, files in os.walk(os.path.abspath(bench_cfg_location)):
+        for i in range(0, len(files)):
+            if re.search('application', files[i]):
+                application_config_file = os.path.join(root, files[i])
+                break
+    return application_config_file
 
 def get_stream_tee_file(stream, level, prefix=''):
     if stream is None:
