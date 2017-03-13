@@ -18,18 +18,20 @@ def nginx_parser(content, outfp):
         outfp.write("wrps is %s \n" % wrps_final)
         wrps_final = float(wrps_final / 10000.0)
         dic['wrps'] = dic['wrps'] + wrps_final
-	print dic
         flag = 1
     for dstat_data in re.findall("\s+\d+\s+(\d+)\s+\d+\s+\d+\s+\d+\s+\d+\|.*?" , content):
 	outfp.write("dstat data is %s \n" % dstat_data)
 	key = "cpu_load" + str(i)
-	cpu_load_dic[key] = dstat_data
+	cpu_load_dic[key] = string.atoi(dstat_data.strip())
 	i = i + 1
 	flag = 2
     if flag == 2:
-	max_cpu_load = max(cpu_load_dic.iteritems(), key=operator.itemgetter(1))[0]
-	dic['max_cpu_load'] = cpu_load_dic[max_cpu_load]
-	print dic
+	max_cpu_load = max(cpu_load_dic.iteritems(), key=operator.itemgetter(1))[1]
+	dic['max_cpu_load'] = max_cpu_load
+    if dic['wrps'] == 0 and dic['max_cpu_load'] == 0:
+        dic['wrps'] = -1
+        dic['max_cpu_load'] = -1
+
     return dic
 
 if __name__ == "__main__":

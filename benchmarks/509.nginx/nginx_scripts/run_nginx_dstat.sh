@@ -1,10 +1,16 @@
 #!/bin/bash
 
-set -x
+#set -x
 
 if [ "$#" -lt 5 ]; then
 	echo "Usage: <script_name> <number of clients> <ip address for 1st client> <no_of_cpus> <start_cpu>"
 	exit 1
+fi
+
+valid_arg_count=$(( (( (( (($1 - 1 )) )) * 4 )) + 5 ))
+if [ "$#" -ne $valid_arg_count ]; then
+        echo "Usage: <script_name> <number of clients> <ip address for 1st client> <no_of_cpus> <start_cpu>"
+        exit 1
 fi
 
 killall nginx
@@ -49,7 +55,7 @@ do
 done
 
 COUNTER=0
-while [ $COUNTER -lt 5000 ]; 
+while [ $COUNTER -lt 2000 ]; 
 do
 	for (( i=0; i<$NO_OF_CLIENTS; i++ ))
 	do
@@ -83,7 +89,7 @@ do
 	let COUNTER=COUNTER+1
 done
 
-if [ $COUNTER -eq 5000 ]; then
+if [ $COUNTER -eq 2000 ]; then
 	echo "one or more clients has not able to establish the connection to nginx server"
 	killall nginx
 	exit 1
@@ -115,6 +121,8 @@ do
 
 	if [ $i -eq $NO_OF_CLIENTS ]; then
 		echo "all clients has completed weighttp process"
+		killall dstat
+		killall nginx
 		break		
 	fi 
 
@@ -123,11 +131,9 @@ done
 
 if [ $COUNTER -eq 4000 ]; then
 	echo "one or more clients has not been completed the weighttp process"
-	killall nginx
 	killall dstat
+	killall nginx
 	exit 1
 fi
 
-killall nginx
-killall dstat
 
