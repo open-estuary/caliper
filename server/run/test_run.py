@@ -164,8 +164,9 @@ def parse_all_cases(target_exec_dir, target, kind_bench, bench_name,
                     
                     infp.close()
                     outfp.close()
-                    parser_result = parser_case(kind_bench, bench_name, parser_file,
-                                        parser,tmp_log_file,
+		    parser_result = -1
+		    if file_present == True:
+                    	parser_result = parser_case(kind_bench, bench_name, parser_file, parser,tmp_log_file,
                                         tmp_parser_file)
 		else:
                     outfp = open(logfile, 'r')
