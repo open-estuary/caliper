@@ -13,6 +13,7 @@ import re
 import logging
 import datetime
 import subprocess
+
 import socket
 import yaml
 import threading
@@ -75,9 +76,12 @@ def get_nginx_client_command(kind_bench, section_name, command_field):
         server_config, server_sections = \
                 server_utils.read_config_file(application_config_file)
         if section_name in server_sections:
-            command = server_config.get(section_name, command_field)
-            logging.debug("command is %s" % command)
-            return command
+	    try:
+            	command = server_config.get(section_name, command_field)
+            	logging.debug("command is %s" % command)
+            	return command
+	    except:
+            	return None
         else:
             return None
     else:
@@ -164,9 +168,7 @@ def parse_all_cases(target_exec_dir, target, kind_bench, bench_name,
                     
                     infp.close()
                     outfp.close()
-		    parser_result = -1
-		    if file_present == True:
-                    	parser_result = parser_case(kind_bench, bench_name, parser_file, parser,tmp_log_file,
+                    parser_result = parser_case(kind_bench, bench_name, parser_file, parser,tmp_log_file,
                                         tmp_parser_file)
 		else:
                     outfp = open(logfile, 'r')
@@ -402,9 +404,11 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
 	    if re.search('application', kind_bench) and bench_name == "nginx":
 	    	no_of_clients = configRun.get(sections_run[i], 'no_of_clients')
             	for j in range(1, int(no_of_clients) + 1):
-            	    server_utils.file_copy(nginx_log_file[str(j)], nginx_tmp_log_file[str(j)], 'a+')
-            	    if os.path.exists(nginx_tmp_log_file[str(j)]):
-                        os.remove(nginx_tmp_log_file[str(j)])
+                    file_present = os.path.isfile(nginx_tmp_log_file[str(j)])
+                    if file_present == True:
+            	        server_utils.file_copy(nginx_log_file[str(j)], nginx_tmp_log_file[str(j)], 'a+')
+            	        if os.path.exists(nginx_tmp_log_file[str(j)]):
+                            os.remove(nginx_tmp_log_file[str(j)])
 
             run_flag = server_utils.get_fault_tolerance_config(
                                 'fault_tolerance', 'run_error_continue')
@@ -423,7 +427,9 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
 	    if re.search('application', kind_bench) and bench_name == "nginx":
 	    	no_of_clients = configRun.get(sections_run[i], 'no_of_clients')
             	for j in range(1, int(no_of_clients) + 1):
-            	    server_utils.file_copy(nginx_log_file[str(j)], nginx_tmp_log_file[str(j)], 'a+')
+		    file_present = os.path.isfile(nginx_tmp_log_file[str(j)])
+	            if file_present == True:
+            	    	server_utils.file_copy(nginx_log_file[str(j)], nginx_tmp_log_file[str(j)], 'a+')
 
             if flag != 1:
                 logging.info("There is wrong when running the command \"%s\""
@@ -715,11 +721,16 @@ def client_thread_func(cmd_sec_name, server_run_command, tmp_logfile,
     flag = run_server_command(cmd_sec_name, server_run_command, tmp_logfile,
                     kind_bench, server, 5000)
 
-def get_count(host_login):
+def get_weighttp_process_count(host_login):
     p1 = subprocess.Popen(['ssh','%s' % host_login, 'ps','-ef'], stdout=subprocess.PIPE)
     p2 = subprocess.Popen(['grep', '-c', 'run_weighttp_script.sh'], stdin=p1.stdout, stdout=subprocess.PIPE)
     data = p2.communicate()
     data = str(data[0]).split("\n")
+    return data[0]
+
+def get_nginx_process_count(host_login):
+    p1 = subprocess.call("ssh %s ps -ef | grep -c 'nginx: worker process'" % (host_login), shell=True)
+    data = str(p1).split("\n")
     return data[0]
 
 def stop_weighttp_client(nginx_clients_count):
@@ -736,7 +747,7 @@ def stop_weighttp_client(nginx_clients_count):
        	client_user = settings.get_value('nginx', user , type=str)
 	host_login = client_user + "@" + client_ip
 
-        process_count = get_count(host_login)
+        process_count = get_weighttp_process_count(host_login)
         if process_count > 0:
             for j in range(0, int(process_count)):
                 p1 = subprocess.Popen(['ssh', '%s' % host_login, 'ps','-ef'], stdout=subprocess.PIPE)
@@ -747,8 +758,17 @@ def stop_weighttp_client(nginx_clients_count):
                 data = p4.communicate()
                 bash_data = str(data[0]).split("\n")[0]
                 bash_pid = str(data[0]).split("\n")[1]
-                p1 = subprocess.Popen(['ssh', '%s' % host_login, 'kill','-9', bash_pid], stdout=subprocess.PIPE)
+                p1 = subprocess.Popen(['ssh', '%s' % host_login, 'kill','-9', bash_pid])
     fp.close()
+
+def stop_nginx_server():
+    client_ip = settings.get_value('CLIENT', 'ip' , type=str)
+    client_user = settings.get_value('CLIENT', 'user' , type=str)
+    host_login = client_user + "@" + client_ip
+
+    process_count = get_nginx_process_count(host_login)
+    if process_count == 0:
+        subprocess.call(['ssh', '%s' % host_login, 'killall','nginx'])
 
 def run_kinds_commands(cmd_sec_name, server_run_command, tmp_logfile,
                         kind_bench, bench_name, target, command, server, nginx_clients=None, 
@@ -765,15 +785,18 @@ def run_kinds_commands(cmd_sec_name, server_run_command, tmp_logfile,
                                     target, command)
     elif re.search('application', kind_bench):
 	if bench_name == "nginx":
-            for i in range(1, nginx_clients_count+1):
-                threadname = "thread" + str(i)
-	        threadname = myThread(i, cmd_sec_name, client_command_dic[str(i)], nginx_tmp_log_file[str(i)],
+            stop_nginx_server()
+            for i in range(1, nginx_clients_count + 1):
+                weighttp_thread = "thread" + str(i)
+		if client_command_dic[str(i)] != None:
+	            weighttp_thread = myThread(i, cmd_sec_name, client_command_dic[str(i)], nginx_tmp_log_file[str(i)],
                            kind_bench, nginx_clients[str(i)])
-        	threadname.start()
+        	    weighttp_thread.start()
 
 	    flag = run_client_command(cmd_sec_name, tmp_logfile, kind_bench,
                                     target, command)
 
+	    # if any weighttp client threads are active, then kill it
             stop_weighttp_client(nginx_clients_count)
 
 	else:

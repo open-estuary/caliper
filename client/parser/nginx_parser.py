@@ -13,12 +13,19 @@ def nginx_parser(content, outfp):
     cpu_load_dic = {}
     i = 0
     flag = 0
-    for wrps in re.findall("finished\s+in\s+.*?(\d+)\s+req[/]s.*?", content):
-        wrps_final = string.atof(wrps.strip())
-        outfp.write("wrps is %s \n" % wrps_final)
-        wrps_final = float(wrps_final / 10000.0)
-        dic['wrps'] = dic['wrps'] + wrps_final
-        flag = 1
+
+    for contents in re.findall("finished in(.*?)\s+errored", content, re.DOTALL):
+	fail_count = re.search(r'.*?(\d+)\s+failed.*?', contents)
+
+	counts = fail_count.group(1)
+	if counts == "0":
+    	    for wrps in re.findall("\s+.*?(\d+)\s+req[/]s.*?", contents):
+                wrps_final = string.atof(wrps.strip())
+                outfp.write("wrps is %s \n" % wrps_final)
+                wrps_final = float(wrps_final / 10000.0)
+                dic['wrps'] = dic['wrps'] + wrps_final
+                flag = 1
+
     for dstat_data in re.findall("\s+\d+\s+(\d+)\s+\d+\s+\d+\s+\d+\s+\d+\|.*?" , content):
 	outfp.write("dstat data is %s \n" % dstat_data)
 	key = "cpu_load" + str(i)
@@ -28,14 +35,14 @@ def nginx_parser(content, outfp):
     if flag == 2:
 	max_cpu_load = max(cpu_load_dic.iteritems(), key=operator.itemgetter(1))[1]
 	dic['max_cpu_load'] = max_cpu_load
-    if dic['wrps'] == 0 and dic['max_cpu_load'] == 0:
+    if dic['wrps'] == 0 or dic['max_cpu_load'] == 0:
         dic['wrps'] = -1
         dic['max_cpu_load'] = -1
 
     return dic
 
 if __name__ == "__main__":
-    infp = open("nginx_output.log", "r")
+    infp = open("weighttp_client_1_output.log", "r")
     content = infp.read()
     content = re.findall(r'<<<BEGIN TEST>>>(.*?)<<<END>>>',content,re.DOTALL)
     outfp = open("2.txt", "a+")

@@ -17,7 +17,7 @@ cpu_range="$cpu_start_no-$e"
 
 while [ 1 ];
 do
-	process=`ssh root@$ip_address ps -ef | grep nginx | wc -l`
+	process=`ssh root@$ip_address ps -ef | grep -c "nginx: worker process"`
 	if [ $process -gt 1 ]; then 
 		taskset -c $cpu_range weighttp -n $no_requests -c 512 -k -t 24 http://$ip_address:$port_number/$html_filename
 		break
