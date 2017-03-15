@@ -15,7 +15,6 @@ html_filename=$6
 e=$(( $cpu_start_no + (( $cpu_count - 1 )) ))
 cpu_range="$cpu_start_no-$e"
 
-COUNTER=0
 while [ 1 ];
 do
 	process=`ssh root@$ip_address ps -ef | grep nginx | wc -l`
@@ -24,5 +23,4 @@ do
 		break
 	fi 
 	sleep 1
-	let COUNTER=COUNTER+1
 done

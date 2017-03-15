@@ -92,31 +92,6 @@ do
 	fi
 done
 
-if [ $Osname_Ubuntu -gt 0 ]; then
-	weightp=`which weighttp | grep -c weighttp`
-	if [ $weightp -eq 0 ]; then
-		sudo apt-get install libev4 libev-dev
-		git clone https://github.com/lighttpd/weighttp.git
-		cd weighttp
-		./autogen.sh
-		./configure && make && make install
-	fi
-fi
-
-if [ $Osname_Centos -gt 0 ];then
-	weightp=`which weighttp | grep -c weighttp`
-	if [ $weightp -eq 0 ]; then
-		yum install -y epel-release
-		yum install libev libev-devel -y
-		cd /usr/local/src
-		git clone https://github.com/lighttpd/weighttp.git
-		cd weighttp
-		./waf configure
-		./waf build
-		./waf install
-	fi
-fi
-
 for i in `seq 0 $((${#flag[@]}-1)) ` 
 do    
     j=${flag[$i]}
