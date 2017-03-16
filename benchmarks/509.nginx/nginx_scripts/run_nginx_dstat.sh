@@ -13,9 +13,6 @@ if [ "$#" -ne $valid_arg_count ]; then
         exit 1
 fi
 
-killall nginx
-sleep 1 
-
 NO_OF_CLIENTS=$1
 
 flag=0
