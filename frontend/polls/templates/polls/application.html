@@ -56,8 +56,14 @@
     {% if jdk %}
     <script src="{% static 'polls/js/example/application/application_jdk.js' %}"></script>
     {% endif %}
-    {% if nginx %}
-    <script src="{% static 'polls/js/example/application/application_nginx.js' %}"></script>
+    {% if nginx_32_core_local_wrps %}
+    <script src="{% static 'polls/js/example/application/application_nginx_32_core_local_wrps.js' %}"></script>
+    {% endif %}
+    {% if nginx_32_core_cross_wrps %}
+    <script src="{% static 'polls/js/example/application/application_nginx_32_core_cross_wrps.js' %}"></script>
+    {% endif %}
+    {% if nginx_64_core_wrps %}
+    <script src="{% static 'polls/js/example/application/application_nginx_64_core_wrps.js' %}"></script>
     {% endif %}
 
 <!-- link the caliper report css here -->
@@ -198,14 +204,34 @@ Hadoop performance is based on single node. Soon Caliper to expand the scope of 
     <div id="application_sysbench" class="sensei-grid"></div>
     {% endif %}
 
-    {% if nginx %}
-    <h2 id="nginx"><small>Application Score Details: Nginx</small></h2>
+    {% if nginx_32_core_local_wrps %}
+    <h2 id="nginx_32_core_local_wrps"><small>Application Score Details: nginx_32_core_local_wrps</small></h2>
     <div style="text-align: center;">
-    <p> <img src="{% static 'polls/pictures/application_nginx.png' %}" height="500"
+    <p> <img src="{% static 'polls/pictures/application_nginx_32_core_local_wrps.png' %}" height="500"
     width="700" /> </p>
     </div>
 
-    <div id="application_nginx" class="sensei-grid"></div>
+    <div id="application_nginx_32_core_local_wrps" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if nginx_32_core_cross_wrps %}
+    <h2 id="nginx_32_core_cross_wrps"><small>Application Score Details: nginx_32_core_cross_wrps</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/application_nginx_32_core_cross_wrps.png' %}" height="500"
+    width="700" /> </p>
+    </div>
+
+    <div id="application_nginx_32_core_cross_wrps" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if nginx_64_core_wrps %}
+    <h2 id="nginx_64_core_wrps"><small>Application Score Details: nginx_64_core_wrps</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/application_nginx_64_core_wrps.png' %}" height="500"
+    width="700" /> </p>
+    </div>
+
+    <div id="application_nginx_64_core_wrps" class="sensei-grid"></div>
     {% endif %}
 
     </div>
