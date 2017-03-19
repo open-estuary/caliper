@@ -176,6 +176,10 @@ def get_server_cfg_path(bench_name):
             if re.search('server', files[i]):
                 server_config_file = os.path.join(root, files[i])
                 break
+            if re.search('application', files[i]):
+                server_config_file = os.path.join(root, files[i])
+                break
+
     return server_config_file
 
 def get_application_cfg_path(bench_name):

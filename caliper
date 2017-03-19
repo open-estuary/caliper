@@ -475,13 +475,13 @@ if __name__=="__main__":
         try:
             populate_excels()
 
-	    # filter all the test cases to get only the common test cases passed in all the plaforms. Take only thos testcases which have value is >= 0.
+	    # filter all the test cases to get only the common test cases passed in all the plaforms. other test cases marked as INVALID.
             flag = normalize_scores()
 
-	    # Reads one value from all the plaforms and then compares this values with each other to rank them. This is done for all the values in the yaml files. These new values are writed to _score_post.yaml and _score_post.json. 
+	    # Reads one value from all the plaforms and then compares this values with each other to rank them. This is done for all the values in the yaml files. These new values are writed to _score_post.yaml. 
             write_results.normalize_caliper()
 
-	    # computes the score i.e TOTAL_SCORE for each section in the newly generated _post.yaml and _post.json files. _post.yaml file is to be used for image creation and _post.json file is to be used for table creation in HTML report.
+	    # computes the score i.e TOTAL_SCORE in the form of 100% for each section in the newly generated _post.yaml and _post.json files. _post.yaml file is to be used for image creation and _post.json file is to be used for table creation in HTML report.
             normalize.normalise()
         except Exception as e:
             print e

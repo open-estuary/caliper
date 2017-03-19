@@ -359,7 +359,7 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
 	    subsection = sections_run[i].split(" ")[1]
 	    subsection_file = log_bench + "_" + subsection + "_output.log"
 
-        if os.path.exists(tmp_log_file):
+        iif os.path.exists(tmp_log_file):
             os.remove(tmp_log_file)
 
 	if re.search('application', kind_bench) and bench_name == "nginx":
@@ -379,6 +379,9 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
 	        for j in range(1, int(no_of_clients)+1):
 		    client_command = "command" + str(j)
 		    client_command_dic[str(j)] = get_nginx_client_command(kind_bench, sections_run[i], client_command)
+		    if client_command_dic[str(j)] == None:
+	        	logging.info("Please specify \"command\" field in the nginx_application_run.cfg file")
+			continue
 	        nginx_clients_count = int(no_of_clients)
 	    else:
 	        logging.info("Please specify client in the client config file")
@@ -510,25 +513,25 @@ def get_actual_commands(commands, target):
 
     	for i in range (1, int(no_of_clients)+1):
             try:
-	        if re.findall('\$TARGET_IP_%d_10G' % i, commands):
-		    ip = "ip_" + str(i) + "_10g"
+	        if re.findall('\$target_ip_%d_10g' % i, commands):
+		    ip = "target_ip_" + str(i) + "_10g"
 		    try:
 		        client_ip = settings.get_value('nginx', ip, type=str)
 		    except:
 		        client_ip = '127.0.0.1'
-		    strinfo = re.compile('\$TARGET_IP_%d_10G' % i)
+		    strinfo = re.compile('\$target_ip_%d_10g' % i)
 		    post_commands = strinfo.sub(client_ip, commands)
                     commands = post_commands
 	    except:
 	        pass
             try:
-	        if re.findall('\$TARGET_PORT_%d' % i, commands):
-		    port = "port_" + str(i)
+	        if re.findall('\$target_port_%d' % i, commands):
+		    port = "target_port_" + str(i)
 		    try:
 		        client_port = settings.get_value('nginx', port, type=str)
 		    except:
 		        client_port = '7000' + str(i)
-		    strinfo = re.compile('\$TARGET_PORT_%d' % i)
+		    strinfo = re.compile('\$target_port_%d' % i)
 		    post_commands = strinfo.sub(client_port, commands)
                     commands = post_commands
 	    except:
