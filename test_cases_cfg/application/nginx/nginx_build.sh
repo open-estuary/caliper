@@ -11,8 +11,9 @@ build_nginx() {
         if [ $ARCH = "x86_64" ]
         then
                 pushd $SrcPath
-                ./configure --with-pcre=$SrcPath/nginx-dep/pcre-8.39 --with-zlib=$SrcPath/nginx-dep/zlib-1.2.8 --with-openssl=$SrcPath/nginx-dep/openssl
-                make
+                #./configure --with-pcre=$SrcPath/nginx-dep/pcre-8.39 --with-zlib=$SrcPath/nginx-dep/zlib-1.2.8 --with-openssl=$SrcPath/nginx-dep/openssl
+                ./configure
+		make
                 cp objs/nginx $myOBJPATH
                 cp -r nginx_config_files $myOBJPATH
                 cp -r nginx_scripts $myOBJPATH

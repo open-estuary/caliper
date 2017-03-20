@@ -60,9 +60,12 @@ def get_server_command(kind_bench, section_name):
         server_config, server_sections = \
                 server_utils.read_config_file(server_config_file)
         if section_name in server_sections:
-            command = server_config.get(section_name, 'command')
-            logging.debug("command is %s" % command)
-            return command
+	    try:
+            	command = server_config.get(section_name, 'command')
+            	logging.debug("command is %s" % command)
+            	return command
+	    except:
+		return None
         else:
             return None
     else:
@@ -156,14 +159,16 @@ def parse_all_cases(target_exec_dir, target, kind_bench, bench_name,
 		if bench_name == "nginx":
                     infp = open(tmp_log_file, 'a+')
                     outfp = open(logfile, 'r')
-                    infp.write(re.findall("test start\s+%+(.*?)%+\s+test_end", outfp.read(), re.DOTALL)[i])
+		    print str(sections_run[i])
+                    #infp.write(re.findall("test start\s+%+(.*?)%+\s+test_end", outfp.read(), re.DOTALL)[i])
+                    infp.write(re.findall("\[test:\s%s(.*?)%+\s+test_end" % sections_run[i], outfp.read(), re.DOTALL)[0])
 		    no_of_clients = configRun.get(sections_run[i], 'no_of_clients')
 		    for j in range(1, int(no_of_clients) + 1):
 			weighttp_log_file = Folder.exec_dir + "/" + "weighttp_client_" + str(j) + "_output.log"
 			file_present = os.path.isfile(weighttp_log_file)
 			if file_present == True:
                     	    outfp_weighttp = open(weighttp_log_file, 'r')
-                            content = re.findall("test start\s+%+(.*?)%+\s+test_end", outfp_weighttp.read(), re.DOTALL)[i]
+                            content = re.findall("\[test:\s%s(.*?)%+\s+test_end" % sections_run[i], outfp_weighttp.read(), re.DOTALL)[0]
 			    infp.write(content)
                     
                     infp.close()
@@ -359,7 +364,7 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
 	    subsection = sections_run[i].split(" ")[1]
 	    subsection_file = log_bench + "_" + subsection + "_output.log"
 
-        iif os.path.exists(tmp_log_file):
+        if os.path.exists(tmp_log_file):
             os.remove(tmp_log_file)
 
 	if re.search('application', kind_bench) and bench_name == "nginx":
@@ -480,9 +485,9 @@ def get_actual_commands(commands, target):
     post_commands = commands
 
     try:
-    	if re.findall('\$SERVER_IP', commands):
+    	if re.findall('\$target_ip_10g', commands):
             try:
-            	server_ip = settings.get_value('SERVER', 'ip', type=str)
+            	server_ip = settings.get_value('SERVER', 'target_ip_10g', type=str)
             except Exception, e:
                 server_ips = server_utils.get_local_ip()
                 server_ip = ""
@@ -501,7 +506,7 @@ def get_actual_commands(commands, target):
                             raise e
 
                     server_ip = server_ips[0]
-            strinfo = re.compile('\$SERVER_IP')
+            strinfo = re.compile('\$target_ip_10g')
             post_commands = strinfo.sub(server_ip, commands)
     	    commands = post_commands
     except:
@@ -969,7 +974,6 @@ def caliper_run(target_exec_dir, server, target, nginx_clients=None):
         classify = config_files[i].split("/")[-1].strip().split("_")[0]
         logging.debug(classify)
 
-        """
 	if classify == "server" and server:
             try:
 	    	server_ip = settings.get_value("SERVER","ip",type=str)
@@ -984,7 +988,15 @@ def caliper_run(target_exec_dir, server, target, nginx_clients=None):
                 server_caliper_dir = os.path.join(server_caliper_dir,"server.py")
                 server_user = server_user + '@' + server_ip
                 script = server_caliper_dir + ' ' + str(server_port)
-                subprocess.Popen(['ssh', '%s' % server_user, 'python %s' % script])
+
+                p1 = subprocess.Popen(['ssh', '%s' % server_user,'ps','-ef'], stdout=subprocess.PIPE)
+                p2 = subprocess.Popen(['grep', '-c','server.py'], stdin=p1.stdout, stdout=subprocess.PIPE)
+                p1.stdout.close()
+                data,err = p2.communicate()
+                data = data.strip()
+
+                if data == "0":
+                    subprocess.Popen(['ssh', '%s' % server_user, 'python %s' % script])
 
 
                 for i in range (0,20):
@@ -995,7 +1007,6 @@ def caliper_run(target_exec_dir, server, target, nginx_clients=None):
                         server_process,err = p2.communicate()
                         server_process = server_process.strip()
                         if server_process == "1":
-                            logging.info("server socket created")
                             break
                         else:
                             time.sleep(1)
@@ -1004,8 +1015,7 @@ def caliper_run(target_exec_dir, server, target, nginx_clients=None):
 
             except Exception as e:
 		logging.info(e)
-		raise AttributeError("Error in establising connection with server") 
-        """
+		raise AttributeError("Error in establising connection with server")
 
 	if classify == "server" and server:
 	   server_ip = settings.get_value("SERVER","ip",type=str)
@@ -1037,19 +1047,24 @@ def caliper_run(target_exec_dir, server, target, nginx_clients=None):
             logging.info("Running %s" % sections[i])
             bench = os.path.join(classify, sections[i])
             try:
-                #system_initialise(target)
+                system_initialise(target)
                 if classify == "server":
-                    #system_initialise(server)
-                    logging.info("Waiting for server to grant access")
-                    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-  		    sock.connect((server_ip,server_port))
-		    logging.info("%s" % str(sock.recv(1024)))
+                    if server_process == "1":
+                    	logging.info("Waiting for server to grant access")
+                    	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+  		    	sock.connect((server_ip,server_port))
+		    	logging.info("%s" % str(sock.recv(1024)))
+		    else:
+                        logging.info("server is not running properly")
+                        continue
 
                 result = run_all_cases(target_exec_dir, target, bench,
                                         sections[i], run_file, server, nginx_clients)
+
 	        if classify == "server":
                     sock.send("1")
 		    sock.close()
+
             except Exception:
                 logging.info("Running %s Exception" % sections[i])
                 crash_handle.main()
