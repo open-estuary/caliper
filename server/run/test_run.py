@@ -160,15 +160,15 @@ def parse_all_cases(target_exec_dir, target, kind_bench, bench_name,
                     infp = open(tmp_log_file, 'a+')
                     outfp = open(logfile, 'r')
 		    print str(sections_run[i])
-                    #infp.write(re.findall("test start\s+%+(.*?)%+\s+test_end", outfp.read(), re.DOTALL)[i])
-                    infp.write(re.findall("\[test:\s%s(.*?)%+\s+test_end" % sections_run[i], outfp.read(), re.DOTALL)[0])
+		    test_case = "\[test:\s" + sections_run[i] + "(.*?)%+\s+test_end"
+                    infp.write(re.findall(test_case, outfp.read(), re.DOTALL)[0])
 		    no_of_clients = configRun.get(sections_run[i], 'no_of_clients')
 		    for j in range(1, int(no_of_clients) + 1):
 			weighttp_log_file = Folder.exec_dir + "/" + "weighttp_client_" + str(j) + "_output.log"
 			file_present = os.path.isfile(weighttp_log_file)
 			if file_present == True:
                     	    outfp_weighttp = open(weighttp_log_file, 'r')
-                            content = re.findall("\[test:\s%s(.*?)%+\s+test_end" % sections_run[i], outfp_weighttp.read(), re.DOTALL)[0]
+                            content = re.findall(test_case, outfp_weighttp.read(), re.DOTALL)[0]
 			    infp.write(content)
                     
                     infp.close()
@@ -377,6 +377,7 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
 
         nginx_clients_count = None
 	client_command_dic = None
+	stop_nginx = 0
         if re.search('application', kind_bench) and bench_name == "nginx":
 	    no_of_clients = configRun.get(sections_run[i], 'no_of_clients')
 	    if len(nginx_clients) >= int(no_of_clients):
@@ -386,7 +387,10 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
 		    client_command_dic[str(j)] = get_nginx_client_command(kind_bench, sections_run[i], client_command)
 		    if client_command_dic[str(j)] == None:
 	        	logging.info("Please specify \"command\" field in the nginx_application_run.cfg file")
-			continue
+			stop_nginx = 1
+			break
+		if stop_nginx == 1:
+		    continue
 	        nginx_clients_count = int(no_of_clients)
 	    else:
 	        logging.info("Please specify client in the client config file")

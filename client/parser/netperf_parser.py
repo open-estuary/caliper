@@ -29,9 +29,9 @@ def common_parser(content, outfp, unit):
                         score = lines[j].split()[-1]
                         flag = 1
                         break
+    	outfp.write(test_case + ' ' + str(score) + '\n')
     else:
         score = 0
-    outfp.write(test_case + ' ' + str(score) + '\n')
     return score
 
 

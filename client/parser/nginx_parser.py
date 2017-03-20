@@ -26,15 +26,15 @@ def nginx_parser(content, outfp):
                 dic['wrps'] = dic['wrps'] + wrps_final
                 flag = 1
 
-    for dstat_data in re.findall("\s+\d+\s+(\d+)\s+\d+\s+\d+\s+\d+\s+\d+\|.*?" , content):
+    for dstat_data in re.findall("\s+\d+\s+\d+\s+(\d+)\s+\d+\s+\d+\s+\d+\|.*?" , content):
 	outfp.write("dstat data is %s \n" % dstat_data)
 	key = "cpu_load" + str(i)
 	cpu_load_dic[key] = string.atoi(dstat_data.strip())
 	i = i + 1
 	flag = 2
     if flag == 2:
-	max_cpu_load = max(cpu_load_dic.iteritems(), key=operator.itemgetter(1))[1]
-	dic['max_cpu_load'] = max_cpu_load
+	max_cpu_load = min(cpu_load_dic.iteritems(), key=operator.itemgetter(1))[1]
+	dic['max_cpu_load'] = 100 - max_cpu_load
     if dic['wrps'] == 0 or dic['max_cpu_load'] == 0:
         dic['wrps'] = -1
         dic['max_cpu_load'] = -1
@@ -44,10 +44,10 @@ def nginx_parser(content, outfp):
 if __name__ == "__main__":
     infp = open("weighttp_client_1_output.log", "r")
     content = infp.read()
-    content = re.findall(r'<<<BEGIN TEST>>>(.*?)<<<END>>>',content,re.DOTALL)
     outfp = open("2.txt", "a+")
     for data in content:
         a = nginx_parser(data, outfp)
         #print a
+    
     outfp.close()
     infp.close()

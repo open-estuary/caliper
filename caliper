@@ -251,7 +251,7 @@ def generate_web_tar():
     if newpid == 0:
         return_code = 0
         try:
-            subprocess.call( "cd %s; python manage.py migrate; cd -" %
+            subprocess.call( "cd %s; python manage.py migrate --fake; cd -" %
                     caliper_path.FRONT_END_DIR, shell=True )
             return_code = subprocess.call("cd %s; python\
                     manage.py runserver --noreload 1>/dev/null 2>&1 & " %
