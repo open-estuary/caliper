@@ -9,11 +9,10 @@ import logging
 import signal
 import fcntl
 
-output_log = "/root/caliper_server/output_log"
-
 try:
     subprocess.Popen(["iperf3","-s"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     subprocess.Popen(["netserver"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    subprocess.Popen(["qperf"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 except Exception as e:
     fp = open(output_log,'w')
     fp.write("Error in starting Network sevices")
@@ -23,7 +22,6 @@ except Exception as e:
 
 signal_ingored = [signal.SIGINT,signal.SIGTERM,signal.SIGALRM,signal.SIGHUP]
 original_sigint = [None]*len(signal_ingored)
-process_status = "/root/caliper_server/process_status"
 
 def exit_gracefully(signum, frame):
     # restore the original signal handler as otherwise evil things will happen
@@ -89,41 +87,9 @@ class SimpleFlock:
       self._fd = None
 
 if __name__ == "__main__":
-    process_status = "/root/caliper_server/process_status"
-    output_log = "/root/caliper_server/output_log"
-    server_run = "/root/caliper_server/server_run"
     set_signals()
 
-    if not os.path.exists(output_log):
-        with SimpleFlock(output_log,60):
-            f = open(output_log,'w')
-            f.close()
-
-    if not os.path.exists(server_run):
-        with SimpleFlock(server_run,60):
-            f = open(server_run,'w')
-            f.close()
-    
-    p1 = subprocess.Popen(['ps','-ef'], stdout=subprocess.PIPE)
-    p2 = subprocess.Popen(['grep', '-c','server.py'], stdin=p1.stdout, stdout=subprocess.PIPE)
-    p1.stdout.close()
-    data,err = p2.communicate()
-    data = data.strip()
-    print(data)
-            
-    if data != "2":
-        with SimpleFlock(server_run,60):
-            f = open(server_run,'w')
-            f.write("server.py")
-            f.close()
-            sys.exit(0)
     try:
-        if not os.path.exists(process_status):
-            with SimpleFlock(process_status,60):
-                fp = open(process_status,'w')
-                fp.write('0')
-                fp.close()
-
         # create a socket object
         serversocket = socket.socket(
                         socket.AF_INET, socket.SOCK_STREAM) 
@@ -138,33 +104,18 @@ if __name__ == "__main__":
         # queue up to 5 requests
         serversocket.listen(5)
 
-        with SimpleFlock(process_status,60):
-            fp = open(process_status, 'w')
-            fp.write('1')
-            fp.close()
-
         while True:
             # establish a connection
-            clientsocket,addr = serversocket.accept()      
-            f = open(output_log,'a')
-            f.write("Got a connection from %s\n" % str(addr))
-            f.close()
+            clientsocket,addr = serversocket.accept()
+            print("Got a connection from %s" % str(addr))
             currentTime = time.ctime(time.time()) + "\r\n"
             clientsocket.send("ACCESS GRANTED @ "+currentTime.encode('ascii'))
-            f = open(output_log,'a')
-            f.write("Waiting for %s to finish its task\n" % str(addr))
-            f.close()
+	    print("Waiting for %s to finish its task" % str(addr))
             clientsocket.recv(1024)
-            f = open(output_log,'a')
-            f.write("%s Completed its task\n"  % str(addr))
-            f.close()
+	    print("%s Completed its task" % str(addr))
             clientsocket.close()
     except Exception as e:
 	print e
         pass
 
-    with SimpleFlock(process_status,60):                        
-        fp = open(process_status,'w')                           
-        fp.write('0')  
-        fp.close()                                         
     reset_signals()
