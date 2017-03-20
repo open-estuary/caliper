@@ -22,6 +22,7 @@ except Exception as e:
 
 signal_ingored = [signal.SIGINT,signal.SIGTERM,signal.SIGALRM,signal.SIGHUP]
 original_sigint = [None]*len(signal_ingored)
+process_status = "/root/caliper_server/process_status"
 
 def exit_gracefully(signum, frame):
     # restore the original signal handler as otherwise evil things will happen
@@ -87,9 +88,17 @@ class SimpleFlock:
       self._fd = None
 
 if __name__ == "__main__":
+    process_status = "/root/caliper_server/process_status"
+
     set_signals()
 
     try:
+        if not os.path.exists(process_status):
+            with SimpleFlock(process_status,60):
+                fp = open(process_status,'w')
+                fp.write('0')
+                fp.close()
+
         # create a socket object
         serversocket = socket.socket(
                         socket.AF_INET, socket.SOCK_STREAM) 
@@ -104,6 +113,11 @@ if __name__ == "__main__":
         # queue up to 5 requests
         serversocket.listen(5)
 
+        with SimpleFlock(process_status,60):
+            fp = open(process_status, 'w')
+            fp.write('1')
+            fp.close()
+
         while True:
             # establish a connection
             clientsocket,addr = serversocket.accept()
@@ -114,8 +128,13 @@ if __name__ == "__main__":
             clientsocket.recv(1024)
 	    print("%s Completed its task" % str(addr))
             clientsocket.close()
+
     except Exception as e:
 	print e
         pass
 
+    with SimpleFlock(process_status,60):
+        fp = open(process_status,'w')
+        fp.write('0')
+        fp.close()
     reset_signals()
