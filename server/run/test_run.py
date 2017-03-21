@@ -489,9 +489,9 @@ def get_actual_commands(commands, target):
     post_commands = commands
 
     try:
-    	if re.findall('\$target_ip_10g', commands):
+        if re.findall('\$server_ip_10g', commands):
             try:
-            	server_ip = settings.get_value('SERVER', 'target_ip_10g', type=str)
+                server_ip = settings.get_value('SERVER', 'server_ip_10g', type=str)
             except Exception, e:
                 server_ips = server_utils.get_local_ip()
                 server_ip = ""
@@ -510,20 +510,19 @@ def get_actual_commands(commands, target):
                             raise e
 
                     server_ip = server_ips[0]
-            strinfo = re.compile('\$target_ip_10g')
+            strinfo = re.compile('\$server_ip_10g')
             post_commands = strinfo.sub(server_ip, commands)
     	    commands = post_commands
     except:
         pass
 
-
     try:
     	no_of_clients = settings.get_value('nginx', 'no_of_clients', type=str)
 
-    	for i in range (1, int(no_of_clients)+1):
+        for i in range (1, int(no_of_clients)+1):
             try:
 	        if re.findall('\$target_ip_%d_10g' % i, commands):
-		    ip = "target_ip_" + str(i) + "_10g"
+	            ip = "target_ip_" + str(i) + "_10g"
 		    try:
 		        client_ip = settings.get_value('nginx', ip, type=str)
 		    except:
