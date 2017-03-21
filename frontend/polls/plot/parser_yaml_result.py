@@ -101,7 +101,7 @@ def _get_labels(files):
         label_total.append(label)
     return label_total
 
-
+#individual test cases
 class DrawPicture:
     @staticmethod
     def draw_testpoint_picture(file_names, test_sub_items, folder,
@@ -181,7 +181,7 @@ class DrawPicture:
                 ax.set_xticklabels(tuple(label))
                 label_fig = ax.get_xticklabels()
                 for label_tmp in label_fig:
-                    label_tmp.set_rotation(30)
+                    label_tmp.set_rotation(90)
                     label_tmp.set_size('small')
                 ax.set_title(title_name)
                 plt.axis([0, len(label)*1.2, 0, y_max*1.05])
@@ -274,7 +274,7 @@ class DrawPicture:
             ax.set_xticklabels(tuple(key_points))
             label_fig = ax.get_xticklabels()
             for label_tmp in label_fig:
-                label_tmp.set_rotation(30)
+                label_tmp.set_rotation(90)
                 label_tmp.set_size('small') 
 
             #skd++ commented & added to move the legend outside the plot  ax.legend(tuple(rects), tuple(label_total), loc="upper right")
