@@ -1050,7 +1050,9 @@ def caliper_run(target_exec_dir, server, target, nginx_clients=None):
             logging.info("Running %s" % sections[i])
             bench = os.path.join(classify, sections[i])
             try:
-                system_initialise(target)
+		# On some platforms, swapoff and swapon command is not able to execute. 
+		# So this function has been commented
+                #system_initialise(target)
                 if classify == "server":
                     if server_process == "1":
                     	logging.info("Waiting for server to grant access")
