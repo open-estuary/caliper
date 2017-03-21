@@ -76,7 +76,7 @@ class RemoteBMCer(object):
 def judge_target_crash():
     result = -1
     try:
-        client = settings.get_value('CLIENT', 'ip', type=str)
+        client = settings.get_value('TARGET', 'ip', type=str)
         commands = 'ping -c 10 %s' % client
         result = utils.run(commands)
     except error.CmdError:

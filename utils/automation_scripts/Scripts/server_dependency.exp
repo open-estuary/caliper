@@ -1,24 +1,24 @@
 #!/usr/bin/expect
 set timeout -1 
 if {[llength $argv] == 0} {
-     send_user "\nUsage: scriptname option client_name client_ip server_name server_ip \'password\' \n"
+     send_user "\nUsage: scriptname option target_name target_ip TestNode_name TestNode_ip \'password\' \n"
      exit 1
 }
 set option [lindex $argv 0]
-set server_user [lindex $argv 1]
-set server_ip [lindex $argv 2]
+set TestNode_user [lindex $argv 1]
+set TestNode_ip [lindex $argv 2]
 set passwd [lindex $argv 3]
 
 #set i 0
-spawn scp server_dependency.sh $server_user@$server_ip:./
+spawn scp TestNode_dependency.sh $TestNode_user@$TestNode_ip:./
 expect {
     "Are you sure you want to continue connecting" { send "yes\r"; exp_continue}
     "assword: " { send "[lindex $passwd]\r"; exp_continue }
-    "100% " { send_user "\n\t\tSent server_dependency.sh successfully" }  
+    "100% " { send_user "\n\t\tSent TestNode_dependency.sh successfully" }  
 }
 
 set i 0
-spawn ssh -t $server_user@$server_ip "sudo ./server_dependency.sh $option"
+spawn ssh -t $TestNode_user@$TestNode_ip "sudo ./TestNode_dependency.sh $option"
 while true {
 	expect {
 		"Are you sure you want to continue connecting" { send "yes\r"; exp_continue}
@@ -34,12 +34,12 @@ while true {
 			exit 1
 		}
 		"ERROR-IN-AUTOMATION" {
-			send_user "FAILED IN SERVER DEPENDENCY\n"
+			send_user "FAILED IN TestNode DEPENDENCY\n"
 			exit 1
 		}
 		eof {
-			send_user "server dependency satisfied.\n"
-			spawn ssh $server_user@$server_ip "rm server_dependency.sh"
+			send_user "TestNode dependency satisfied.\n"
+			spawn ssh $TestNode_user@$TestNode_ip "rm TestNode_dependency.sh"
 			break
 		}
 	}

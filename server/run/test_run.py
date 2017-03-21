@@ -324,7 +324,7 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
                             shell=True)
     bench_test = "ltp"
     if  bench_name == bench_test:
-        tar_ip = settings.get_value('CLIENT', 'ip', type=str)
+        tar_ip = settings.get_value('TARGET', 'ip', type=str)
         target.run("if [[ ! -e /mnt/caliper_nfs ]]; then mkdir -p /mnt/caliper_nfs; fi")
 # fix me , now that we create the folder, why not we mount it directly here
         try:
@@ -489,9 +489,9 @@ def get_actual_commands(commands, target):
     post_commands = commands
 
     try:
-        if re.findall('\$server_ip_10g', commands):
+        if re.findall('\$TestNode_ip_10g', commands):
             try:
-                server_ip = settings.get_value('SERVER', 'server_ip_10g', type=str)
+                server_ip = settings.get_value('TestNode', 'TestNode_ip_10g', type=str)
             except Exception, e:
                 server_ips = server_utils.get_local_ip()
                 server_ip = ""
@@ -510,7 +510,7 @@ def get_actual_commands(commands, target):
                             raise e
 
                     server_ip = server_ips[0]
-            strinfo = re.compile('\$server_ip_10g')
+            strinfo = re.compile('\$TestNode_ip_10g')
             post_commands = strinfo.sub(server_ip, commands)
     	    commands = post_commands
     except:
@@ -773,8 +773,8 @@ def stop_weighttp_client(nginx_clients_count):
     fp.close()
 
 def stop_nginx_server():
-    client_ip = settings.get_value('CLIENT', 'ip' , type=str)
-    client_user = settings.get_value('CLIENT', 'user' , type=str)
+    client_ip = settings.get_value('TARGET', 'ip' , type=str)
+    client_user = settings.get_value('TARGET', 'user' , type=str)
     host_login = client_user + "@" + client_ip
 
     process_count = get_nginx_process_count(host_login)
@@ -979,9 +979,9 @@ def caliper_run(target_exec_dir, server, target, nginx_clients=None):
 
 	if classify == "server" and server:
             try:
-	    	server_ip = settings.get_value("SERVER","ip",type=str)
-	    	server_port = settings.get_value("SERVER","port",type=int)
-                server_user = settings.get_value("SERVER","user",type=str)
+	    	server_ip = settings.get_value("TestNode","ip",type=str)
+	    	server_port = settings.get_value("TestNode","port",type=int)
+                server_user = settings.get_value("TestNode","user",type=str)
                 logging.info("Please wait while caliper triggers the server.py script in the server")
                 server_pwd = server.run("pwd").stdout
                 server_pwd = server_pwd.split("\n")[0]
@@ -1021,8 +1021,8 @@ def caliper_run(target_exec_dir, server, target, nginx_clients=None):
 		raise AttributeError("Error in establising connection with server")
 
 	if classify == "server" and server:
-	   server_ip = settings.get_value("SERVER","ip",type=str)
-	   server_port = settings.get_value("SERVER","port",type=int)
+	   server_ip = settings.get_value("TestNode","ip",type=str)
+	   server_port = settings.get_value("TestNode","port",type=int)
 
         for i in range(0, len(sections)):
             # run for each benchmark

@@ -63,7 +63,7 @@ def get_host_name(host):
         if returncode == 0:
             output = arch_result.stdout
             try:
-                machine_name = settings.get_value('CLIENT', 'Platform_name', type=str)
+                machine_name = settings.get_value('TARGET', 'Platform_name', type=str)
             except:
                 machine_name = output.split(" ")[1]
             return machine_name
@@ -151,7 +151,7 @@ def get_local_machine_arch():
 
 def get_target_ip(target):
     try:
-        client_ip = settings.get_value('CLIENT', 'ip', type=str)
+        client_ip = settings.get_value('TARGET', 'ip', type=str)
     except Exception:
         raise
     else:
