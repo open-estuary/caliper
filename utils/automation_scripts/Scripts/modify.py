@@ -23,20 +23,20 @@ def modify_client(path, autocheck, dpe_option, Platform_name, client_user, clien
          if hostpwd.find("$") !=-1 :
      	     hostpwd = insertChar(hostpwd,hostpwd.index('$'), '\\')
          # change a value in the config
-         config.set("CLIENT", "ip", client_ip)
-         config.set("SERVER", "ip", server_ip)
-         config.set("SERVER", "password", serverpwd)
-         config.set("CLIENT", "password", clientpwd)
-         config.set("SERVER", "user", server_user)
-         config.set("CLIENT", "user", client_user)
-         config.set("CLIENT", "caliper_option",caliper_options)
-         config.set("CLIENT", "checkDependency", dpe_option)
-         config.set("CLIENT", "autoSetupSystem", autocheck)
-         config.set("CLIENT", "Platform_name", Platform_name)
+         config.set("TARGET", "ip", client_ip)
+         config.set("TestNode", "ip", server_ip)
+         config.set("TestNode", "password", serverpwd)
+         config.set("TARGET", "password", clientpwd)
+         config.set("TestNode", "user", server_user)
+         config.set("TARGET", "user", client_user)
+         config.set("TARGET", "caliper_option",caliper_options)
+         config.set("TARGET", "checkDependency", dpe_option)
+         config.set("TARGET", "autoSetupSystem", autocheck)
+         config.set("TARGET", "Platform_name", Platform_name)
          config.set("HOST", "ip", host_ip)
          config.set("HOST", "user", host_user)
          config.set("HOST", "password", hostpwd)
-         config.set("CLIENT","mount_point",mount_point)
+         config.set("TARGET","mount_point",mount_point)
         
          # write changes back to the config file
          with open(path, "wb") as config_file:
@@ -62,13 +62,13 @@ def modify(path, client_ip, server_ip, Platform_name):
          config.read(path)
      
          # change a value in the config
-         config.set("CLIENT", "ip", client_ip)
-         config.set("SERVER", "ip", server_ip)
-         config.set("CLIENT", "port", "22")
-         config.set("SERVER", "port", "22")
-         config.set("CLIENT", "user", "root")
-         config.set("CLIENT", "password", "None")
-         config.set("CLIENT", "Platform_name", Platform_name)
+         config.set("TARGET", "ip", client_ip)
+         config.set("TestNode", "ip", server_ip)
+         config.set("TARGET", "port", "22")
+         config.set("TestNode", "port", "22")
+         config.set("TARGET", "user", "root")
+         config.set("TARGET", "password", "None")
+         config.set("TARGET", "Platform_name", Platform_name)
          # write changes back to the config file
          with open(path, "wb") as config_file:
              config.write(config_file)

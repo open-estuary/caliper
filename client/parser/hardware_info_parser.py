@@ -20,19 +20,19 @@ lsb_release_list = ['Distributor ID','Description','Release','Codename']
 lspci_list = ['Ethernet controller [0200]']
 def get_remote_host():
     try:
-        client_ip = settings.get_value('CLIENT', 'ip', type=str)
+        client_ip = settings.get_value('TARGET', 'ip', type=str)
     except Exception, e:
         client_ip = '127.0.0.1'
     try:
-        port = settings.get_value('CLIENT', 'port', type=int)
+        port = settings.get_value('TARGET', 'port', type=int)
     except Exception, e:
         port = 22
     try:
-        user = settings.get_value('CLIENT', 'user', type=str)
+        user = settings.get_value('TARGET', 'user', type=str)
     except Exception, e:
         user = os.getlogin()
     try:
-        password = settings.get_value('CLIENT', 'password', type=str)
+        password = settings.get_value('TARGET', 'password', type=str)
     except Exception, e:
         raise error.ServRunError(e.args[0], e.args[1])
 

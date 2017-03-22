@@ -663,7 +663,7 @@ def get_pid_from_file(program_name, pid_files_dir=None):
 
 def get_pid_path(program_name, pid_files_dir=None):
     if pid_files_dir is None:
-        pid_files_dir = settings.get_value("SERVER", "pid_files_dir",
+        pid_files_dir = settings.get_value("TestNode", "pid_files_dir",
                                             default="")
 
     if not pid_files_dir:

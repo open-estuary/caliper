@@ -130,19 +130,19 @@ def parser_caliper(remote_host):
 
 def get_remote_host():
     try:
-        client_ip = settings.get_value('CLIENT', 'ip', type=str)
+        client_ip = settings.get_value('TARGET', 'ip', type=str)
     except Exception, e:
         client_ip = '127.0.0.1'
     try:
-        port = settings.get_value('CLIENT', 'port', type=int)
+        port = settings.get_value('TARGET', 'port', type=int)
     except Exception, e:
         port = 22
     try:
-        user = settings.get_value('CLIENT', 'user', type=str)
+        user = settings.get_value('TARGET', 'user', type=str)
     except Exception, e:
         user = os.getlogin()
     try:
-        password = settings.get_value('CLIENT', 'password', type=str)
+        password = settings.get_value('TARGET', 'password', type=str)
     except Exception, e:
         raise error.ServRunError(e.args[0], e.args[1])
 
@@ -151,17 +151,17 @@ def get_remote_host():
 
 def get_server_host():
     try:
-        client_ip = settings.get_value('SERVER', 'ip', type=str)
+        client_ip = settings.get_value('TestNode', 'ip', type=str)
     except Exception, e:
         client_ip = '127.0.0.1'
 
     port = 22
     try:
-        user = settings.get_value('SERVER', 'user', type=str)
+        user = settings.get_value('TestNode', 'user', type=str)
     except Exception, e:
         user = os.getlogin()
     try:
-        password = settings.get_value('SERVER', 'password', type=str)
+        password = settings.get_value('TestNode', 'password', type=str)
     except Exception, e:
         raise error.ServRunError(e.args[0], e.args[1])
 
