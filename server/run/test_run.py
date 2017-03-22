@@ -159,7 +159,6 @@ def parse_all_cases(target_exec_dir, target, kind_bench, bench_name,
 		if bench_name == "nginx":
                     infp = open(tmp_log_file, 'a+')
                     outfp = open(logfile, 'r')
-		    print str(sections_run[i])
 		    test_case = "\[test:\s" + sections_run[i] + "(.*?)%+\s+test_end"
                     infp.write(re.findall(test_case, outfp.read(), re.DOTALL)[0])
 		    no_of_clients = configRun.get(sections_run[i], 'no_of_clients')
@@ -793,6 +792,33 @@ def stop_nginx_server():
     if process_count == 0:
         subprocess.call(['ssh', '%s' % host_login, 'killall','nginx'])
 
+def check_ping_response(nginx_clients_count):
+    filename = caliper_path.folder_ope.workspace + "/config" + "/client_config.cfg"
+    fp = open(filename,"r")
+    content = fp.read()
+
+    result = -1
+    for i in range(1, nginx_clients_count + 1):
+      	temp_ip = re.findall("(client\_%d\_ip):.*?" % i, content)
+      	temp_user = re.findall("(client\_%d\_user):.*?" % i, content)
+      	ip = temp_ip[0]
+      	user = temp_user[0]
+       	client_ip = settings.get_value('nginx', ip , type=str)
+       	client_user = settings.get_value('nginx', user , type=str)
+	host_login = client_user + "@" + client_ip
+      	
+	temp_ip = re.findall("(target\_ip\_%d\_10g):.*?" % i, content)
+      	ip = temp_ip[0]
+       	target_ip = settings.get_value('nginx', ip , type=str)
+	
+        result = subprocess.call(['ssh', '%s' % host_login, 'ping', '-c', '3', '%s' % target_ip])
+	if result != 0:
+    	    fp.close()
+	    return -1
+    
+    fp.close()
+    return result
+
 def run_kinds_commands(cmd_sec_name, server_run_command, tmp_logfile,
                         kind_bench, bench_name, target, command, server, nginx_clients=None, 
 			client_command_dic=None, nginx_clients_count=None, nginx_tmp_log_file=None):
@@ -808,6 +834,11 @@ def run_kinds_commands(cmd_sec_name, server_run_command, tmp_logfile,
                                     target, command)
     elif re.search('application', kind_bench):
 	if bench_name == "nginx":
+            result = check_ping_response(nginx_clients_count)
+	    if result != 0:
+		logging.info("PING response is not success for one of clients")
+		return -1
+
             stop_nginx_server()
             for i in range(1, nginx_clients_count + 1):
                 weighttp_thread = "thread" + str(i)
