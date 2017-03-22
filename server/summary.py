@@ -66,7 +66,7 @@ def get_builded_tools():
     return [suc_tools, fail_tools]
 
 
-def get_exec_tools():
+def get_exec_tools(selected_tools):
     despath = caliper_path.folder_ope.exec_dir
     pass_tools = []
     partial_tools = []
@@ -81,6 +81,13 @@ def get_exec_tools():
         for file_name in os.listdir(despath):
             num += 1
             tool_name = '_'.join(file_name.split('_')[0:-1])
+	    flag = 0
+	    for tool in selected_tools:
+		if tool_name == tool:
+		    flag = 1
+		    break
+	    if flag == 0:
+		continue
             file_path = os.path.join(despath, file_name)
             fp = open(file_path, 'r')
             contents = fp.read()
@@ -117,7 +124,7 @@ def write_summary_tools(summary_file, target):
         build_failed_num = "Num of tools build failed: %s" % len(fail_tools)
         write_file(summary_file, build_failed_num)
 
-    (suc_tools, partial_tools, failed_tools) = get_exec_tools()
+    (suc_tools, partial_tools, failed_tools) = get_exec_tools(selected_tools)
     if len(suc_tools):
         exec_suc_num = "Num of tools run successfully: %s" % len(suc_tools)
         write_file(summary_file, exec_suc_num)
@@ -142,7 +149,7 @@ def write_info_for_tools(filename, target):
     if not len(selected_tools):
         return
     [build_suc_tools, build_fail_tools] = get_builded_tools()
-    (exec_suc_tools, exec_par_tools, exec_fail_tools) = get_exec_tools()
+    (exec_suc_tools, exec_par_tools, exec_fail_tools) = get_exec_tools(selected_tools)
 
     for tool in selected_tools:
         if tool in build_suc_tools:
