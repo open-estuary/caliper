@@ -9,11 +9,10 @@ import logging
 import signal
 import fcntl
 
-output_log = "/root/caliper_server/output_log"
-
 try:
     subprocess.Popen(["iperf3","-s"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     subprocess.Popen(["netserver"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    subprocess.Popen(["qperf"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 except Exception as e:
     fp = open(output_log,'w')
     fp.write("Error in starting Network sevices")
