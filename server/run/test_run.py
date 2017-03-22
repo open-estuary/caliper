@@ -517,6 +517,18 @@ def get_actual_commands(commands, target):
         pass
 
     try:
+        if re.findall('\$target_user_name', commands):
+            try:
+                client_user = settings.get_value('TARGET', user, type=str)
+            except:
+                client_user = 'root'
+            strinfo = re.compile('\$target_user_name')
+            post_commands = strinfo.sub(client_user, commands)
+            commands = post_commands
+    except:
+        pass
+
+    try:
     	no_of_clients = settings.get_value('nginx', 'no_of_clients', type=str)
 
         for i in range (1, int(no_of_clients)+1):
