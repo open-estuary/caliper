@@ -1,7 +1,4 @@
 #!/usr/bin/python
-# wuyanjun w00291783
-# wu.wu@hisilicon.com
-# Copyright
 
 import os
 import subprocess

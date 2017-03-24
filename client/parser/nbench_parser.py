@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-# wuyanjun  00291783  wu.wu@hisilicon.com
+
 import re
 import yaml
-
 
 def parser(content, option, outfp):
     score = 0

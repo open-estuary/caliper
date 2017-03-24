@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-#    E-mail    :    wu.wu@hisilicon.com
-#    Data      :    2015-05-03 16:44:39
-#    Desc      :
+
 import os
 import yaml
 import json

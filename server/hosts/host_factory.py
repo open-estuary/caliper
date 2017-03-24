@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
-#
-#   E-mail  :   wu.wu@hisilicon.com
-#   Date    :   15/01/06 10:16:05
-#   Desc    :
-#
+
 from caliper.client.shared import error, settings
 from caliper.server import utils
 from caliper.server.hosts import ssh_host

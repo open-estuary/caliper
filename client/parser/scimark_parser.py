@@ -1,10 +1,7 @@
 #!/usr/bin/python
-# wuyanjun 00291783
-# wu.wu@hisilicon.com
 
 import re
 import string
-
 
 def scimark_parser(content, outfp):
     score = -1

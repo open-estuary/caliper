@@ -1,21 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-#    E-mail    :    wu.wu@hisilicon.com
-#    Data      :    2015-10-31 14:27:40
-#    Desc      :
 
 import pdb
 import re
-
 
 SYSBENCH_RESULT_NAME_LATENCY = 'sysbench latency'
 NA_UNIT = 'NA'
 SECONDS_UNIT = 'seconds'
 MS_UNIT = 'milliseconds'
-
 RESPONSE_TIME_TOKENS = ['min', 'avg', 'max', 'percentile']
-
 
 def sysbench_oltp_parser(content, outfp):
 

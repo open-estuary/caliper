@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-#    E-mail    :    wu.wu@hisilicon.com
-#    Data      :    2015-07-28 14:19:23
-#    Desc      :
 
 import os
 import HTMLParser

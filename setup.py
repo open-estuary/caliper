@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-#    E-mail    :    wu.wu@hisilicon.com
-#    Data      :    2015-08-04 11:34:40
-#    Desc      :
 
 import os
 import stat
@@ -154,8 +150,8 @@ def run():
             packages=get_packages(),
             data_files=server.setup.get_data_files(),
             scripts=server.setup.get_scripts(),
-            url='http://github.com/hisilicon/caliper-dev',
-            maintainer="hisilicon HTSAT",
+            url='http://github.com/open-estuary/caliper',
+            maintainer="open-estuary",
             install_requires=[
                 'pyYAML',
                 'django >= 1.6.1', ]
