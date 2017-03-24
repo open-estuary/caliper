@@ -27,20 +27,20 @@ source helper_functions.sh
 # read the options
 if [ -f "$automationFile" ]
 then
-	autoSetupSystem=$( ini_get $automationFile CLIENT autoSetupSystem  )
-	checkDependency=$( ini_get $automationFile CLIENT checkDependency  )
-	Platform_name=$( ini_get $automationFile CLIENT Platform_name )
-	client_ip=$( ini_get $automationFile CLIENT ip )
-	server_ip=$( ini_get $automationFile SERVER ip )
+	autoSetupSystem=$( ini_get $automationFile TARGET autoSetupSystem  )
+	checkDependency=$( ini_get $automationFile TARGET checkDependency  )
+	Platform_name=$( ini_get $automationFile TARGET Platform_name )
+	client_ip=$( ini_get $automationFile TARGET ip )
+	server_ip=$( ini_get $automationFile TestNode ip )
 	host_ip=$( ini_get $automationFile HOST ip )
-	client_passwd=$( ini_get $automationFile CLIENT password )
-	server_passwd=$( ini_get $automationFile SERVER password )
+	client_passwd=$( ini_get $automationFile TARGET password )
+	server_passwd=$( ini_get $automationFile TestNode password )
 	host_passwd=$( ini_get $automationFile HOST password )
-	client_user=$( ini_get $automationFile CLIENT user )
-	server_user=$( ini_get $automationFile SERVER user )
+	client_user=$( ini_get $automationFile TARGET user )
+	server_user=$( ini_get $automationFile TestNode user )
 	host_user=$( ini_get $automationFile HOST user ) 
-	caliper_option=$( ini_get $automationFile CLIENT caliper_option )
-	mount_point=$( ini_get $automationFile CLIENT mount_point )
+	caliper_option=$( ini_get $automationFile TARGET caliper_option )
+	mount_point=$( ini_get $automationFile TARGET mount_point )
 else
 	echo "$automationFile Does Not Exist"	
 	exit 1

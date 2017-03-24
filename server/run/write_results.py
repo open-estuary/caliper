@@ -252,8 +252,8 @@ def populate_dic(dic_ideal, sub_dic):
     # adding exception block to handile the exception during the web report generation
     #  when any one of Functional or Performance is missing in .yaml files
     try:
-     populate_dic_values(dic_ideal, sub_dic)
-     populate_dic_values(dic_ideal, sub_dic, 1)
+        populate_dic_values(dic_ideal, sub_dic)
+        populate_dic_values(dic_ideal, sub_dic, 1)
     except Exception as e:
         pass
     return
@@ -305,23 +305,23 @@ def populate_dic_values(dic_ideal, sub_dic, reverse=0):
 def delete_dic(dic_ideal, scoreFile_dic):
     # adding exception block to handile the exception during the html report generation
     #  when any one of Functional or Performance is missing in .yaml files
-     for i in range(len(scoreFile_dic)):
-         try:
-             delete_dic_values(dic_ideal['results']['Functional'], (scoreFile_dic[i])['results']['Functional'])
-             if (scoreFile_dic[i])['results']['Functional'] == {}:
+    for i in range(len(scoreFile_dic)):
+        try:
+            delete_dic_values(dic_ideal['results']['Functional'], (scoreFile_dic[i])['results']['Functional'])
+            if (scoreFile_dic[i])['results']['Functional'] == {}:
                 del (scoreFile_dic[i])['results']['Functional']
-         except Exception as e:
-             pass
-         try:
-             delete_dic_values(dic_ideal['results']['Performance'], (scoreFile_dic[i])['results']['Performance'])
-             if (scoreFile_dic[i])['results']['Performance'] == {}:
+        except Exception as e:
+            pass
+        try:
+            delete_dic_values(dic_ideal['results']['Performance'], (scoreFile_dic[i])['results']['Performance'])
+            if (scoreFile_dic[i])['results']['Performance'] == {}:
                 del (scoreFile_dic[i])['results']['Performance']
-         except Exception as e:
-             pass
+        except Exception as e:
+            pass
 
-         if (scoreFile_dic[i])['results'] == {}:
+        if (scoreFile_dic[i])['results'] == {}:
             del (scoreFile_dic[i])['results']
-     return dic_ideal
+    return dic_ideal
 
 def delete_dic_values(dic_ideal, sub_dic):
     if dic_ideal == 'INVALID' or dic_ideal == None :
@@ -472,7 +472,6 @@ def normalize_results(yaml_file):
     if func_str in dic_[results_str].keys():
         func_results = dic_[results_str][func_str]
         dic_[results_str][func_str] = normalize_score(func_results)
-
 
     with open(yaml_file_post_output, 'w') as outfile:
         outfile.write(yaml.dump(dic_, default_flow_style=False))

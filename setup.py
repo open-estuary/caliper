@@ -9,8 +9,9 @@ import os
 import stat
 import shutil
 import glob
+import sys
 from pwd import getpwnam  
-
+import logging
 try:
     import caliper.common as common
 except ImportError:
@@ -24,6 +25,71 @@ except ImportError:
 import client.setup
 import server.setup
 
+CURRENT_PATH = os.path.dirname(sys.modules[__name__].__file__)
+CALIPER_TMP_DIR = os.path.join(os.environ['HOME'], 'caliper_output')
+CALIPER_REPORT_HOME = CALIPER_TMP_DIR
+CALIPER_DIR = CURRENT_PATH
+
+FRONT_END_DIR = os.path.join(CALIPER_REPORT_HOME,'frontend')
+FRONT_TMP_DIR = os.path.join(CALIPER_DIR, 'frontend')
+HTML_DATA_DIR = os.path.join(FRONT_END_DIR, 'frontend', 'data_files')
+
+DATA_DIR_INPUT = os.path.join(HTML_DATA_DIR, 'Input_Logs')
+HTML_DATA_DIR_INPUT = os.path.join(DATA_DIR_INPUT, 'Input_Report')
+OPENSSL_DATA_DIR_INPUT = os.path.join(DATA_DIR_INPUT,'Input_Openssl')
+COV_DATA_DIR_INPUT = os.path.join(DATA_DIR_INPUT,'Input_Cov')
+CONSOLIDATED_DATA_DIR_INPUT = os.path.join(DATA_DIR_INPUT,'Input_Consolidated')
+HW_DATA_DIR_INPUT = os.path.join(DATA_DIR_INPUT,'Input_Hardware')
+HW_DATA_DIR_OUTPUT = os.path.join(FRONT_END_DIR, 'polls', 'static', 'TargetInfo')
+HTML_DATA_DIR_OUTPUT = os.path.join(HTML_DATA_DIR, 'Normalised_Logs')
+COV_DATA_DIR_OUTPUT = os.path.join(FRONT_END_DIR, 'polls', 'static', 'TestInfo','Iterations')
+EXCEL_DATA_DIR_OUTPUT = os.path.join(FRONT_END_DIR, 'polls', 'static', 'TestInfo','Report-Data')
+TEMPLATE_DATA_DIR = os.path.join(FRONT_END_DIR,'polls','templates','polls')
+
+HTML_PICTURE_DIR = os.path.join(FRONT_END_DIR, 'polls', 'static', 'polls',
+                                'pictures')
+
+def create_folder(folder, mode=0755):
+    if os.path.exists(folder):
+        shutil.rmtree(folder)
+    try:
+        os.mkdir(folder, mode)
+    except OSError:
+        os.makedirs(folder, mode)
+
+def create_dir():
+    if not os.path.exists(FRONT_END_DIR):
+        shutil.copytree(FRONT_TMP_DIR,
+                        FRONT_END_DIR)
+    if not os.path.exists(HTML_DATA_DIR_INPUT):
+        create_folder(HTML_DATA_DIR_INPUT)
+    if not os.path.exists(HTML_DATA_DIR_OUTPUT):
+        create_folder(HTML_DATA_DIR_OUTPUT)
+
+    if not os.path.exists(DATA_DIR_INPUT):
+        create_folder(DATA_DIR_INPUT)
+    if not os.path.exists(OPENSSL_DATA_DIR_INPUT):
+        create_folder(OPENSSL_DATA_DIR_INPUT)
+    if not os.path.exists(COV_DATA_DIR_INPUT):
+        create_folder(COV_DATA_DIR_INPUT)
+
+    # Reverte the code as before
+    for i in range(1,6):
+        if not os.path.exists(os.path.join(COV_DATA_DIR_INPUT,str(i))):
+            create_folder(os.path.join(COV_DATA_DIR_INPUT,str(i)))
+
+    if not os.path.exists(CONSOLIDATED_DATA_DIR_INPUT):
+        create_folder(CONSOLIDATED_DATA_DIR_INPUT)
+    if not os.path.exists(HW_DATA_DIR_INPUT):
+        create_folder(HW_DATA_DIR_INPUT)
+    if not os.path.exists(HTML_DATA_DIR):
+        create_folder(HTML_DATA_DIR)
+    if not os.path.exists(COV_DATA_DIR_OUTPUT):
+        create_folder(COV_DATA_DIR_OUTPUT)
+    if not os.path.exists(EXCEL_DATA_DIR_OUTPUT):
+        create_folder(EXCEL_DATA_DIR_OUTPUT)
+    if not os.path.exists(TEMPLATE_DATA_DIR):
+        create_folder(TEMPLATE_DATA_DIR)
 
 def _combine_dicts(list_dicts):
     result_dict = {}
@@ -94,6 +160,7 @@ def run():
                 'pyYAML',
                 'django >= 1.6.1', ]
             )
+    create_dir()
     os.chown(caliper_output,getpwnam(os.environ['HOME'].split('/')[-1]).pw_uid,-1)
     recursive_file_permissions(path=caliper_output,mode=0775,uid=getpwnam(os.environ['HOME'].split('/')[-1]).pw_uid,gid=-1)
 
@@ -103,6 +170,8 @@ def run():
         shutil.rmtree('dist')
     if os.path.exists('build'):
         shutil.rmtree('build')
+
+    get_packages()
 
 if __name__ == "__main__":
     run()
