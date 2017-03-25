@@ -398,6 +398,7 @@ if __name__=="__main__":
     	cfg_files = []
     	cases_tail = "_cases_def.cfg"
 
+	# check for "server" category tools
         server_cfg = "server" + cases_tail
     	server_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir,
                                         server_cfg)
@@ -408,7 +409,20 @@ if __name__=="__main__":
         sections = config.sections()
         nTitleSect = len(sections)
 
+	# check for "application" category tools
+        cfg_files = []
+        application_cfg = "application" + cases_tail
+        application_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir,
+                                        application_cfg)
+        cfg_files.append(application_cfg_path)
+
+        config = ConfigParser.ConfigParser()
+        config.read(cfg_files)
+        sections = config.sections()
+
         server_host=None
+
+	# copy server.py script only for server category tools and redis tool
         if nTitleSect>0:
             server_host = get_server_host()
             try:
