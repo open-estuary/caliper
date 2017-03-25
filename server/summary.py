@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-#    E-mail    :    wu.wu@hisilicon.com
-#    Data      :    2015-04-25 14:48:03
-#    Desc      :
 
 import os
 import re

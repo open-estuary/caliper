@@ -1,11 +1,5 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
-#
-#   Author  :   wuyanjun 00291783
-#   E-mail  :   wu.wu@hisilicon.com
-#   Date    :   14/12/31 14:58:40
-#   Desc    :
-#
 
 import os
 import logging

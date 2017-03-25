@@ -1,6 +1,4 @@
-# wuyanjun 00291783
-# wu.wu@hisilicon.com
-# Copyright
+#!/usr/bin/env python
 
 import os
 import sys

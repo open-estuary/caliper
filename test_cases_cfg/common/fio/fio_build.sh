@@ -1,6 +1,3 @@
-##chenxiang c00284940
-##chenxiang66@hisilicon.com
-
 build_fio()
 {
     set -e

@@ -1,11 +1,5 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
-#
-#   Author  :   wuyanjun 00291783
-#   E-mail  :   wu.wu@hisilicon.com
-#   Date    :   14/12/30 16:49:08
-#   Desc    :
-#
 
 import sys
 import os
@@ -15,7 +9,6 @@ from caliper.client.shared.utils import *
 from caliper.client.shared import error
 from caliper.client.shared import caliper_path
 from caliper.client.shared.settings import settings
-
 
 def get_target_exec_dir(target):
     try:
@@ -27,7 +20,6 @@ def get_target_exec_dir(target):
     target_execution_dir = os.path.abspath(
             os.path.join(caliper_path.GEN_DIR, target_arch))
     return target_execution_dir
-
 
 def get_host_arch(host):
     try:

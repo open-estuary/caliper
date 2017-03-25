@@ -1,5 +1,4 @@
-# henxiang c00284940
-# chenxiang66@hisilicon.com
+#!/usr/bin/env python
 
 import re
 import pdb

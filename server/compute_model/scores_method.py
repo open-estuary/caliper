@@ -1,6 +1,4 @@
-# wuyanjun 00291783
-# wu.wu@hisilicon.com
-# copyright
+#!/usr/bin/env python
 
 import math
 

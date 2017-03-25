@@ -1,18 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-#    E-mail    :    wu.wu@hisilicon.com
-#    Data      :    2015-08-17 16:01:34
-#    Desc      :
 
 import re
 import string
 
-
 def trans_float(minutes, seconds):
     total = string.atoi(minutes) * 60 + string.atof(seconds)
     return total
-
 
 def time_parser(content, outfp):
     score = -1

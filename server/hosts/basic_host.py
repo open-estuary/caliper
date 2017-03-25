@@ -1,15 +1,9 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
-#
-#   E-mail  :   wu.wu@hisilicon.com
-#   Date    :   14/12/30 17:02:04
-#   Desc    :
-#
 
 # need to specify the location
 from caliper.client.shared import hosts
 from caliper.server import utils
-
 
 class Host(hosts.Host):
     """
