@@ -2,13 +2,13 @@
 $(function () {
     var test = document.getElementById("application_tst").value;
 
-    var compile_dic = getJson(test, 'redis_Instance_3')
+    var compile_dic = getJson(test, 'redis_Instance_03')
     var columns = getHoriColumn(compile_dic);
     var data = getHoriData(compile_dic, columns);
 
     // initialize grid
     var options = {emptyRow: true, sortable: false};
-    var grid = $(document.getElementById("application_redis_Instance_3")).grid(data, columns, options);
+    var grid = $(document.getElementById("application_redis_Instance_03")).grid(data, columns, options);
 
     draw_grid(grid);
 
