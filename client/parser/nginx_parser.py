@@ -37,8 +37,7 @@ def nginx_parser(content, outfp):
 	max_cpu_load = min(cpu_load_dic.iteritems(), key=operator.itemgetter(1))[1]
 	dic['max_cpu_load'] = 100 - max_cpu_load
     if dic['wrps'] == 0 or dic['max_cpu_load'] == 0:
-        dic['wrps'] = -1
-        dic['max_cpu_load'] = -1
+        dic = {}
 
     return dic
 
