@@ -92,6 +92,15 @@ do
 	fi
 done
 
+if [ ! -f ~/caliper_redis/redis_benchmark ];then
+    wget http://www.estuarydev.org/caliper/redis-3.2.4.tar.gz
+    tar xvf redis-3.2.4.tar.gz
+    cd redis-3.2.4/src
+    make all
+    mkdir ~/caliper_redis
+    cp redis-benchmark redis-cli ~/caliper_redis/
+fi
+
 for i in `seq 0 $((${#flag[@]}-1)) ` 
 do    
     j=${flag[$i]}

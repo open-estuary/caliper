@@ -4,7 +4,6 @@ import time
 import subprocess
 import sys
 import os
-import yaml
 import logging
 import signal
 import fcntl

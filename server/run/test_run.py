@@ -242,11 +242,29 @@ def compute_caliper_logs(target_exec_dir,flag = 1):
                     logging.debug("no value for the %s" % sections_run[k])
                     logging.info(e)
                     continue
+                scores_way1 = None
+
+                try:
+                    scores_way1 = configRun.get(sections_run[k], 'scores_way1')
+                except Exception, e:
+                    logging.debug(e)
+                    pass
+
                 try:
                     logging.debug("Computing the score of the result of command: %s"
                                 % command)
-                    flag_compute = compute_case_score(dic[sections[j]][sections_run[k]]["value"], category,
+                    if scores_way1 == None:
+                        flag_compute = compute_case_score(dic[sections[j]][sections_run[k]]["value"], category,
                                           scores_way, target_exec_dir, flag)
+                    else:
+                        # if scores_way1 is defined, it menas the test case contains both types of test results:
+                        # higher the better and lower the better
+                        dic_name = sections_run[k] + "_latency"
+                        flag_compute = compute_case_score(dic[sections[j]][sections_run[k]]["value"][dic_name], category,
+                                          scores_way, target_exec_dir, flag)
+                        dic_name = sections_run[k] + "_bandwidth"
+                        flag_compute = compute_case_score(dic[sections[j]][sections_run[k]]["value"][dic_name], category,
+                                          scores_way1, target_exec_dir, flag)
                 except Exception, e:
                     logging.info("Error while computing the result of \"%s\""  % sections_run[k])
                     logging.info(e)
@@ -514,6 +532,19 @@ def get_actual_commands(commands, target):
         pass
 
     try:
+        if re.findall('\$target_ip_10g', commands):
+            try:
+                client_ip = settings.get_value('TARGET', 'target_ip_10g', type=str)
+            except Exception, e:
+                client_ip = '127.0.0.1'
+            strinfo = re.compile('\$target_ip_10g')
+            post_commands = strinfo.sub(client_ip, commands)
+            commands = post_commands
+    except Exception, e:
+	logging.debug(e)
+        pass
+
+    try:
         if re.findall('\$target_user_name', commands):
             try:
                 client_user = settings.get_value('TARGET', user, type=str)
@@ -642,7 +673,7 @@ def run_server_command(cmd_sec_name, commands, tmp_logfile, kind_bench, server, 
     if not re.search('server', kind_bench):
         fp.write("<<<END>>>\n")
         fp.write("%%%%%% test_end %%%%%%\n\n")
-        fp.close()
+    fp.close()
     return flag
     
 def run_remote_client_commands(exec_dir, kind_bench, commands, target,
@@ -679,13 +710,14 @@ def run_client_command(cmd_sec_name, tmp_logfile, kind_bench,
                         target, command):
 
     fp = open(tmp_logfile, "a+")
-    start_log = "%%%%%%         %s test start       %%%%%% \n" % cmd_sec_name
-    fp.write(start_log)
-    fp.write("<<<BEGIN TEST>>>\n")
-    tags = "[test: " + cmd_sec_name + "]\n"
-    fp.write(tags)
-    logs = "log: " + get_actual_commands(command, target) + "\n"
-    fp.write(logs)
+    if not re.search('application', kind_bench):
+        start_log = "%%%%%%         %s test start       %%%%%% \n" % cmd_sec_name
+        fp.write(start_log)
+        fp.write("<<<BEGIN TEST>>>\n")
+        tags = "[test: " + cmd_sec_name + "]\n"
+        fp.write(tags)
+        logs = "log: " + get_actual_commands(command, target) + "\n"
+        fp.write(logs)
     start = time.time()
     flag = 0
     logging.debug("the client running command is %s" % command)
@@ -716,25 +748,28 @@ def run_client_command(cmd_sec_name, tmp_logfile, kind_bench,
             [out, returncode] = run_remote_client_commands(host_exec_dir, kind_bench,
                                                     command, target, fp, fp)
     except error.ServRunError, e:
-        fp.write("[status]: FAIL\n")
+	if not re.search('application', kind_bench):
+            fp.write("[status]: FAIL\n")
         sys.stdout.write(e)
         flag = -1
     else:
         if not returncode:
-            fp.write("[status]: PASS\n")
+	    if not re.search('application', kind_bench):
+                fp.write("[status]: PASS\n")
             flag = 1
         else:
-            fp.write("[status]: FAIL\n")
+	    if not re.search('application', kind_bench):
+                fp.write("[status]: FAIL\n")
             flag = 0
 
     end = time.time()
     interval = end - start
     fp.write("Time in Seconds: %.3fs\n" % interval)
-    fp.write("<<<END>>>\n")
-    fp.write("%%%%%% test_end %%%%%%\n\n")
+    if not re.search('application', kind_bench):
+        fp.write("<<<END>>>\n")
+        fp.write("%%%%%% test_end %%%%%%\n\n")
     fp.close()
     return flag
-
 
 def client_thread_func(cmd_sec_name, server_run_command, tmp_logfile,
                     kind_bench, server):
@@ -1018,7 +1053,7 @@ def caliper_run(target_exec_dir, server, target, nginx_clients=None):
         classify = config_files[i].split("/")[-1].strip().split("_")[0]
         logging.debug(classify)
 
-	if classify == "server" and server:
+	if classify != "common" and server and len(sections) > 0:
             try:
 	    	server_ip = settings.get_value("TestNode","ip",type=str)
 	    	server_port = settings.get_value("TestNode","port",type=int)
@@ -1061,9 +1096,8 @@ def caliper_run(target_exec_dir, server, target, nginx_clients=None):
 		logging.info(e)
 		raise AttributeError("Error in establising connection with server")
 
-	if classify == "server" and server:
-	   server_ip = settings.get_value("TestNode","ip",type=str)
-	   server_port = settings.get_value("TestNode","port",type=int)
+	    server_ip = settings.get_value("TestNode","ip",type=str)
+	    server_port = settings.get_value("TestNode","port",type=int)
 
         for i in range(0, len(sections)):
             # run for each benchmark
@@ -1094,7 +1128,7 @@ def caliper_run(target_exec_dir, server, target, nginx_clients=None):
 		# On some platforms, swapoff and swapon command is not able to execute. 
 		# So this function has been commented
                 #system_initialise(target)
-                if classify == "server":
+                if classify != "common" and server:
                     if server_process == "1":
                     	logging.info("Waiting for server to grant access")
                     	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -1107,7 +1141,7 @@ def caliper_run(target_exec_dir, server, target, nginx_clients=None):
                 result = run_all_cases(target_exec_dir, target, bench,
                                         sections[i], run_file, server, nginx_clients)
 
-	        if classify == "server":
+	        if classify != "common" and server:
                     sock.send("1")
 		    sock.close()
 
