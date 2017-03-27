@@ -404,13 +404,7 @@ if __name__=="__main__":
                                         server_cfg)
     	cfg_files.append(server_cfg_path)
 
-        config = ConfigParser.ConfigParser()
-        config.read(cfg_files)
-        sections = config.sections()
-        nTitleSect = len(sections)
-
 	# check for "application" category tools
-        cfg_files = []
         application_cfg = "application" + cases_tail
         application_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir,
                                         application_cfg)
@@ -419,6 +413,7 @@ if __name__=="__main__":
         config = ConfigParser.ConfigParser()
         config.read(cfg_files)
         sections = config.sections()
+        nTitleSect = len(sections)
 
         server_host=None
 

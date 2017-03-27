@@ -33,11 +33,6 @@ while (( ${start_cpu_num} <= ${end_cpu_num} ))
 do
     portid=`expr 7000 + ${start_cpu_num}`
     echo "Try to start redis-server associated with cpu${start_cpu_num} and port-${portid}"
-    redis_data="redis_data_$portid"
-    if [ ! -d ~/$redis_data ]; then
-        mkdir ~/$redis_data
-        chmod +rw ~/$redis_data
-    fi
 
     taskset -c ${start_cpu_num} bin/redis-server /usr/local/redis-config/redis_cpu${start_cpu_num}_port${portid}.conf &
     let "start_cpu_num++"
