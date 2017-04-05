@@ -1,11 +1,4 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*-
-#
-#   Author  :   wuyanjun 00291783
-#   E-mail  :   wu.wu@hisilicon.com
-#   Date    :   15/01/19 16:20:17
-#   Desc    :
-#
 
 import re
 import pdb
@@ -29,9 +22,9 @@ def common_parser(content, outfp, unit):
                         score = lines[j].split()[-1]
                         flag = 1
                         break
+    	outfp.write(test_case + ' ' + str(score) + '\n')
     else:
         score = 0
-    outfp.write(test_case + ' ' + str(score) + '\n')
     return score
 
 

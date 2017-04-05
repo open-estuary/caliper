@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
-#
-#   Author  :   wuyanjun 00291783
-#   E-mail  :   wu.wu@hisilicon.com
-#   Date    :   15/01/13 13:53:59
-#   Desc    :
-#
+
 import pdb
 import os
 import re
@@ -88,25 +83,20 @@ def populate_excels():
             logging.info(e)
         col += 1
 
-
     for files in glob.glob(os.path.join(input_path, "*yaml")):
         file_list.append(files)
     col_end = performance_functional.populate_excel(file_list,output_path,template_dir,0)
 
-
     try:
        openssl.populate_excel()
-
        hardware.populate_excel()
     except Exception as e:
        logging.info(e)
 
-
-
-def run_caliper(remote_host,server_host,f_option):
+def run_caliper(remote_host, server_host, f_option, nginx_clients=None):
     try:
         logging.debug("begining to run Caliper")
-        result = test_run.run_caliper_tests(remote_host,server_host,f_option)
+        result = test_run.run_caliper_tests(remote_host, server_host, f_option, nginx_clients)
     except Exception, e:
         print e
         logging.info("There is wrong when running Caliper")
@@ -135,19 +125,19 @@ def parser_caliper(remote_host):
 
 def get_remote_host():
     try:
-        client_ip = settings.get_value('CLIENT', 'ip', type=str)
+        client_ip = settings.get_value('TARGET', 'ip', type=str)
     except Exception, e:
         client_ip = '127.0.0.1'
     try:
-        port = settings.get_value('CLIENT', 'port', type=int)
+        port = settings.get_value('TARGET', 'port', type=int)
     except Exception, e:
         port = 22
     try:
-        user = settings.get_value('CLIENT', 'user', type=str)
+        user = settings.get_value('TARGET', 'user', type=str)
     except Exception, e:
         user = os.getlogin()
     try:
-        password = settings.get_value('CLIENT', 'password', type=str)
+        password = settings.get_value('TARGET', 'password', type=str)
     except Exception, e:
         raise error.ServRunError(e.args[0], e.args[1])
 
@@ -156,22 +146,85 @@ def get_remote_host():
 
 def get_server_host():
     try:
-        client_ip = settings.get_value('SERVER', 'ip', type=str)
+        client_ip = settings.get_value('TestNode', 'ip', type=str)
     except Exception, e:
         client_ip = '127.0.0.1'
 
     port = 22
     try:
-        user = settings.get_value('SERVER', 'user', type=str)
+        user = settings.get_value('TestNode', 'user', type=str)
     except Exception, e:
         user = os.getlogin()
     try:
-        password = settings.get_value('SERVER', 'password', type=str)
+        password = settings.get_value('TestNode', 'password', type=str)
     except Exception, e:
         raise error.ServRunError(e.args[0], e.args[1])
 
     remote_host = host_factory.create_host(client_ip, user, password, port)
     return remote_host
+
+
+def get_nginx_clients():
+    dic = {}
+
+    try:
+        no_of_clients = settings.get_value('nginx', 'no_of_clients', type=str)
+    except Exception, e:
+        logging.info("give clients in nginx")
+
+    filename = caliper_path.folder_ope.workspace + "/config" + "/client_config.cfg"
+
+    fp = open(filename,"r")
+    content = fp.read()
+
+    for i in range(1, int(no_of_clients)+1):
+        try:
+            temp_ip = re.findall("(client\_%d\_ip):.*?" % i, content)
+        except Exception, e:
+            logging.info("Please give client %d ip field in client_config.cfg file" %i)
+            sys.exit(1)
+
+        ip = temp_ip[0]
+
+        try:
+            client_ip = settings.get_value('nginx', ip , type=str)
+            logging.debug("client %d ip = %s" % (i, client_ip))
+        except Exception, e:
+            client_ip = '127.0.0.1'
+
+        port = 22
+    
+        try:
+            temp_user = re.findall("(client\_%d\_user):.*?" % i, content)
+        except Exception, e:
+            logging.info("Please give client %d user field in client_config.cfg file" %i)
+            sys.exit(1)
+
+	user = temp_user[0]
+
+        try:
+            client_user = settings.get_value('nginx', user, type=str)
+        except Exception, e:
+            client_user = os.getlogin()
+
+        try:
+            temp_password = re.findall("(client\_%d\_password):.*?" % i, content)
+        except Exception, e:
+            logging.info("Please give client %d password field in client_config.cfg file" %i)
+            sys.exit(1)
+
+	password = temp_password[0]
+
+        try:
+            client_password = settings.get_value('nginx', password, type=str)
+        except Exception, e:
+            raise error.ServRunError(e.args[0], e.args[1])
+
+        dic[str(i)] = host_factory.create_host(client_ip, client_user, client_password, port)
+
+    fp.close()
+
+    return dic
 
 def kill_django(pid):
     children = commands.getoutput("ps --ppid=%d -o pid=" % pid).split()
@@ -191,7 +244,7 @@ def generate_web_tar():
     if newpid == 0:
         return_code = 0
         try:
-            subprocess.call( "cd %s; python manage.py migrate; cd -" %
+            subprocess.call( "cd %s; python manage.py migrate --fake; cd -" %
                     caliper_path.FRONT_END_DIR, shell=True )
             return_code = subprocess.call("cd %s; python\
                     manage.py runserver --noreload 1>/dev/null 2>&1 & " %
@@ -234,6 +287,25 @@ def normalize_scores():
     write_results.yaml_filter(caliper_path.HTML_DATA_DIR_INPUT)
     return
 
+def check_nginx_tool():
+    flag = -1
+    cfg_files = []
+    cases_tail = "_cases_def.cfg"
+
+    application_cfg = "application" + cases_tail
+    application_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir,
+                                    application_cfg)
+    cfg_files.append(application_cfg_path)
+    config = ConfigParser.ConfigParser()
+    config.read(cfg_files)
+    sections = config.sections()
+
+    for i in range(0, len(sections)):
+        if sections[i] == 'nginx':
+            flag = 1
+            return flag
+                                                                                        
+    return flag
 
 if __name__=="__main__":
     parser = ArgumentParser()
@@ -317,15 +389,35 @@ if __name__=="__main__":
         remote_host = get_remote_host()
 
     if args.build or args.run:
-        sCfgTCTail="_cases_def.cfg"
-        flCfgTCSrv=os.path.join(caliper_path.config_files.tests_cfg_dir, "server"+sCfgTCTail)
 
-        config=ConfigParser.ConfigParser()
-        config.read(flCfgTCSrv)
-        sections=config.sections()
-        nTitleSect=len(sections)
+        nginx_clients = None
+        flag = check_nginx_tool()
+        if flag == 1:
+            nginx_clients = get_nginx_clients()
+
+    	cfg_files = []
+    	cases_tail = "_cases_def.cfg"
+
+	# check for "server" category tools
+        server_cfg = "server" + cases_tail
+    	server_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir,
+                                        server_cfg)
+    	cfg_files.append(server_cfg_path)
+
+	# check for "application" category tools
+        application_cfg = "application" + cases_tail
+        application_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir,
+                                        application_cfg)
+        cfg_files.append(application_cfg_path)
+
+        config = ConfigParser.ConfigParser()
+        config.read(cfg_files)
+        sections = config.sections()
+        nTitleSect = len(sections)
 
         server_host=None
+
+	# copy server.py script only for server category tools and redis tool
         if nTitleSect>0:
             server_host = get_server_host()
             try:
@@ -347,7 +439,7 @@ if __name__=="__main__":
 
         if args.run: 
             try:
-                result2 = run_caliper(remote_host,server_host, f_option)
+                result2 = run_caliper(remote_host, server_host, f_option, nginx_clients)
                 if result2:
                     sys.exit()
 
@@ -384,8 +476,14 @@ if __name__=="__main__":
     if args.webpage and not args.send_email:
         try:
             populate_excels()
+
+	    # filter all the test cases to get only the common test cases passed in all the plaforms. other test cases marked as INVALID.
             flag = normalize_scores()
+
+	    # Reads one value from all the plaforms and then compares this values with each other to rank them. This is done for all the values in the yaml files. These new values are writed to _score_post.yaml. 
             write_results.normalize_caliper()
+
+	    # computes the score i.e TOTAL_SCORE in the form of 100% for each section in the newly generated _post.yaml and _post.json files. _post.yaml file is to be used for image creation and _post.json file is to be used for table creation in HTML report.
             normalize.normalise()
         except Exception as e:
             print e
@@ -393,20 +491,19 @@ if __name__=="__main__":
         flag = generate_web_tar()
 
     if args.webpage and args.send_email:
-         flag = generate_web_tar()
-         result_path = os.path.join(caliper_path.folder_ope.results_dir,
+        flag = generate_web_tar()
+        result_path = os.path.join(caliper_path.folder_ope.results_dir,
                 'test_results.tar.gz')
-         if os.path.exists(result_path):
+        if os.path.exists(result_path):
             send_mails.send_mails(result_path)
             print("\n'test_results.tar.gz file has been sent, please check the mail\n")
             sys.exit()
-         if not os.path.exists(result_path):
-             try:
-                 os.makedirs(caliper_path.folder_ope.workspace)
-             except Exception as e:
-                 print("\nCan't able to send the mail as 'test_results.tar.gz' file is not created\n")
-                 sys.exit()
-
+        if not os.path.exists(result_path):
+            try:
+                os.makedirs(caliper_path.folder_ope.workspace)
+            except Exception as e:
+                print("\nCan't able to send the mail as 'test_results.tar.gz' file is not created\n")
+                sys.exit()
 
     if args.folder and args.send_email:
         result_path = os.path.join(caliper_path.folder_ope.workspace, caliper_path.folder_ope.name,
@@ -416,25 +513,25 @@ if __name__=="__main__":
              print("\n'results_summary.log' file has been sent, please check the mail\n")
              sys.exit()
         if not os.path.exists(result_path):
-         try:
-            os.makedirs(caliper_path.folder_ope.workspace)
-         except Exception as e:
-            print("\nCan't able to send the mail as 'results_summary.log' file is not present\n ")
-            sys.exit()
+            try:
+                os.makedirs(caliper_path.folder_ope.workspace)
+            except Exception as e:
+                print("\nCan't able to send the mail as 'results_summary.log' file is not present\n ")
+                sys.exit()
 
     if not args.folder and args.send_email:
-            result_path = os.path.join(caliper_path.folder_ope.workspace, caliper_path.folder_ope.name,
+        result_path = os.path.join(caliper_path.folder_ope.workspace, caliper_path.folder_ope.name,
                                    'results_summary.log')
-            if os.path.exists(result_path):
-                send_mails.send_mails(result_path)
-                print("\n'results_summary.log' file has been sent , please check the mail\n")
-                sys.exit()
-            if not os.path.exists(result_path):
-             try:
+        if os.path.exists(result_path):
+            send_mails.send_mails(result_path)
+            print("\n'results_summary.log' file has been sent , please check the mail\n")
+            sys.exit()
+        if not os.path.exists(result_path):
+            try:
                 os.makedirs(caliper_path.folder_ope.workspace)
-             except Exception as e:
-              print("\n Can't able to send the mail as 'results_summary.log' file is not present\n ")
-             sys.exit()
+            except Exception as e:
+                print("\n Can't able to send the mail as 'results_summary.log' file is not present\n ")
+                sys.exit()
 
     if not args.webpage and args.send_email:
         current_path = os.getcwd()

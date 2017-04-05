@@ -1,7 +1,4 @@
 #!/usr/bin/python
-#
-# wuyanjun 00291783
-# wu.wu@hisilicon.com
 
 import re
 import pdb

@@ -108,10 +108,17 @@ For 'x86', read the 'common_case_def.cfg' and 'server_cases_def.cfg'.
 def get_cases_def_files(option):
     cfg_files = []
     cases_tail = "_cases_def.cfg"
+
     common_cfg = "common" + cases_tail
     common_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir,
                                     common_cfg)
     cfg_files.append(common_cfg_path)
+
+    application_cfg = "application" + cases_tail
+    application_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir,
+                                        application_cfg)
+    cfg_files.append(application_cfg_path)
+
     if (option == 'arm_32'):
         other_cfg = "arm" + cases_tail
     elif (option == 'android'):
@@ -169,8 +176,22 @@ def get_server_cfg_path(bench_name):
             if re.search('server', files[i]):
                 server_config_file = os.path.join(root, files[i])
                 break
+            if re.search('application', files[i]):
+                server_config_file = os.path.join(root, files[i])
+                break
+
     return server_config_file
 
+def get_application_cfg_path(bench_name):
+    bench_cfg_location = os.path.join(caliper_path.config_files.tests_cfg_dir,
+                                        bench_name)
+    application_config_file = ''
+    for root, dirs, files in os.walk(os.path.abspath(bench_cfg_location)):
+        for i in range(0, len(files)):
+            if re.search('application', files[i]):
+                application_config_file = os.path.join(root, files[i])
+                break
+    return application_config_file
 
 def get_stream_tee_file(stream, level, prefix=''):
     if stream is None:
@@ -642,7 +663,7 @@ def get_pid_from_file(program_name, pid_files_dir=None):
 
 def get_pid_path(program_name, pid_files_dir=None):
     if pid_files_dir is None:
-        pid_files_dir = settings.get_value("SERVER", "pid_files_dir",
+        pid_files_dir = settings.get_value("TestNode", "pid_files_dir",
                                             default="")
 
     if not pid_files_dir:

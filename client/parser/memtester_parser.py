@@ -1,8 +1,5 @@
 #!/usr/bin/env python
-#
 # -*- coding: utf-8 -*-
-# wu.wu@hisilicon.com
-# 2015-03-20 14:28:18
 
 import re
 

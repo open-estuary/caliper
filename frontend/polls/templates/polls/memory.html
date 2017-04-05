@@ -157,7 +157,6 @@ The <b>score summary</b> is the percentage of performance of each platform for i
 <!-- Summary of the memory category is clumsy as different set of tests are getting summarised and the test points are too many. 	
 So decided to remove the summary section from HTML report -->
 
-<!--
     {% if sum %}
     <h1 id="tiny_bandwidth" ><small>Memory Score Summary</small></h1>
     <div style="text-align: center;">
@@ -168,7 +167,6 @@ So decided to remove the summary section from HTML report -->
  
     <div id="memory-summary" class="sensei-grid"></div>
     {% endif %}
--->
 	
     {% if bandwidth %}
     <h2><small>Memory Score Details: Bandwidth (cachebench) </small></h2>
@@ -266,6 +264,33 @@ So decided to remove the summary section from HTML report -->
 	</div>
 
     <div id="memory_lb_bw_local_64_core" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if lb_bw_cross_01_core %}
+    <h2><small>Memory Score Details: lmbench cross bandwidth - 1 core</small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/memory_lb_bw_cross_01_core.png' %}" height="450" width="800" /> </p>
+	</div>
+
+    <div id="memory_lb_bw_cross_01_core" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if lb_bw_cross_04_core %}
+    <h2><small>Memory Score Details: lmbench cross bandwidth - 4 core</small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/memory_lb_bw_cross_04_core.png' %}" height="450" width="800" /> </p>
+	</div>
+
+    <div id="memory_lb_bw_cross_04_core" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if lb_bw_cross_16_core %}
+    <h2><small>Memory Score Details: lmbench cross bandwidth - 16 core</small></h2>
+	<div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/memory_lb_bw_cross_16_core.png' %}" height="450" width="800" /> </p>
+	</div>
+
+    <div id="memory_lb_bw_cross_16_core" class="sensei-grid"></div>
     {% endif %}
 
     {% if lb_lat_local_01_core %}

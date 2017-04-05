@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
-#
-#   Author  :   wuyanjun 00291783
-#   E-mail  :   wu.wu@hisilicon.com
-#   Date    :   15/01/07 17:20:26
-#   Desc    :
 
 import os
 import sys

@@ -1,12 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-#    E-mail    :    wu.wu@hisilicon.com
-#    Data      :    2015-03-20 16:17:05
-#    Desc      :
 
 import re
-
 
 def busybox_parser(content, outfp):
     flag = -1

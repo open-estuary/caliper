@@ -1,0 +1,49 @@
+#!/usr/bin/expect
+set timeout -1 
+if {[llength $argv] == 0} {
+     send_user "\nUsage: scriptname option target_name target_ip TestNode_name TestNode_ip \'password\' \n"
+     exit 1
+}
+set option [lindex $argv 0]
+set TestNode_user [lindex $argv 1]
+set TestNode_ip [lindex $argv 2]
+set passwd [lindex $argv 3]
+
+#set i 0
+spawn scp TestNode_dependency.sh $TestNode_user@$TestNode_ip:./
+expect {
+    "Are you sure you want to continue connecting" { send "yes\r"; exp_continue}
+    "assword: " { send "[lindex $passwd]\r"; exp_continue }
+    "100% " { send_user "\n\t\tSent TestNode_dependency.sh successfully" }  
+}
+
+set i 0
+spawn ssh -t $TestNode_user@$TestNode_ip "sudo ./TestNode_dependency.sh $option"
+while true {
+	expect {
+		"Are you sure you want to continue connecting" { send "yes\r"; exp_continue}
+		"assword" { send "[lindex $passwd]\r"; exp_continue }
+		"do u want to install(y/n)" {
+			send_user "INSIDE"
+			interact "\r" return
+			send "\r"
+		 }
+		timeout {
+			send_user "U have not selected any choice:"
+			send_user "I will be exiting"
+			exit 1
+		}
+		"ERROR-IN-AUTOMATION" {
+			send_user "FAILED IN TestNode DEPENDENCY\n"
+			exit 1
+		}
+		eof {
+			send_user "TestNode dependency satisfied.\n"
+			spawn ssh $TestNode_user@$TestNode_ip "rm TestNode_dependency.sh"
+			break
+		}
+	}
+}
+
+
+

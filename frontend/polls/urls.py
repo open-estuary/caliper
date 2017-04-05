@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-#    E-mail    :    wu.wu@hisilicon.com
-#    Data      :    2015-06-02 17:22:02
-#    Desc      :
+
 from django.conf.urls import url
 from django.conf import settings
 

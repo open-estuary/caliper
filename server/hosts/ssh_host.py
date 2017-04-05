@@ -1,11 +1,5 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
-#
-#   Author  :   wuyanjun 00291783
-#   E-mail  :   wu.wu@hisilicon.com
-#   Date    :   14/12/31 14:58:40
-#   Desc    :
-#
 
 import os
 import logging
@@ -87,7 +81,7 @@ class SSHHost(abstract_ssh.AbstractSSHHost):
             raise error.ServRunError("command execution error", result)
 
         return result
-#fixme what should be the ideal timeout value ?
+    #FIXME what should be the ideal timeout value ?
     def run(self, command, timeout=14400, ignore_status=False,
             stdout_tee=utils.TEE_TO_LOGS,
             stderr_tee=utils.TEE_TO_LOGS, connect_timeout=30, options='',

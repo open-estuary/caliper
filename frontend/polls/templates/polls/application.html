@@ -56,6 +56,46 @@
     {% if jdk %}
     <script src="{% static 'polls/js/example/application/application_jdk.js' %}"></script>
     {% endif %}
+    {% if redis_Instance_01 %}
+    <script src="{% static 'polls/js/example/application/application_redis_Instance_01.js' %}"></script>
+    {% endif %}
+    {% if redis_Instance_02 %}
+    <script src="{% static 'polls/js/example/application/application_redis_Instance_02.js' %}"></script>
+    {% endif %}
+    {% if redis_Instance_03 %}
+    <script src="{% static 'polls/js/example/application/application_redis_Instance_03.js' %}"></script>
+    {% endif %}
+    {% if redis_Instance_04 %}
+    <script src="{% static 'polls/js/example/application/application_redis_Instance_04.js' %}"></script>
+    {% endif %}
+    {% if redis_Instance_05 %}
+    <script src="{% static 'polls/js/example/application/application_redis_Instance_05.js' %}"></script>
+    {% endif %}
+    {% if redis_Instance_06 %}
+    <script src="{% static 'polls/js/example/application/application_redis_Instance_06.js' %}"></script>
+    {% endif %}
+    {% if redis_Instance_07 %}
+    <script src="{% static 'polls/js/example/application/application_redis_Instance_07.js' %}"></script>
+    {% endif %}
+    {% if redis_Instance_08 %}
+    <script src="{% static 'polls/js/example/application/application_redis_Instance_08.js' %}"></script>
+    {% endif %}
+    {% if redis_Instance_09 %}
+    <script src="{% static 'polls/js/example/application/application_redis_Instance_09.js' %}"></script>
+    {% endif %}
+    {% if redis_Instance_10 %}
+    <script src="{% static 'polls/js/example/application/application_redis_Instance_10.js' %}"></script>
+    {% endif %}
+
+    {% if nginx_32_core_local_wrps %}
+    <script src="{% static 'polls/js/example/application/application_nginx_32_core_local_wrps.js' %}"></script>
+    {% endif %}
+    {% if nginx_32_core_cross_wrps %}
+    <script src="{% static 'polls/js/example/application/application_nginx_32_core_cross_wrps.js' %}"></script>
+    {% endif %}
+    {% if nginx_64_core_wrps %}
+    <script src="{% static 'polls/js/example/application/application_nginx_64_core_wrps.js' %}"></script>
+    {% endif %}
 
 <!-- link the caliper report css here -->
  <link rel="stylesheet" type="text/css" href="../static/css/caliper_report.css"/>
@@ -193,6 +233,143 @@ Hadoop performance is based on single node. Soon Caliper to expand the scope of 
     </div>
 
     <div id="application_sysbench" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if redis_Instance_01 %}
+    <h2 id="redis"><small>Application Score Details: redis_Instance_1</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/application_redis_Instance_01.png' %}" height="500"
+    width="700" /> </p>
+    </div>
+
+    <div id="application_redis_Instance_01" class="sensei-grid"></div>
+    {% endif %}
+
+
+    {% if redis_Instance_02 %}
+    <h2 id="redis"><small>Application Score Details: redis_Instance_2</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/application_redis_Instance_02.png' %}" height="500"
+    width="700" /> </p>
+    </div>
+
+    <div id="application_redis_Instance_02" class="sensei-grid"></div>
+    {% endif %}
+
+
+    {% if redis_Instance_03 %}
+    <h2 id="redis"><small>Application Score Details: redis_Instance_3</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/application_redis_Instance_03.png' %}" height="500"
+    width="700" /> </p>
+    </div>
+
+    <div id="application_redis_Instance_03" class="sensei-grid"></div>
+    {% endif %}
+
+
+    {% if redis_Instance_04 %}
+    <h2 id="redis"><small>Application Score Details: redis_Instance_4</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/application_redis_Instance_04.png' %}" height="500"
+    width="700" /> </p>
+    </div>
+
+    <div id="application_redis_Instance_04" class="sensei-grid"></div>
+    {% endif %}
+
+
+    {% if redis_Instance_05 %}
+    <h2 id="redis"><small>Application Score Details: redis_Instance_5</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/application_redis_Instance_05.png' %}" height="500"
+    width="700" /> </p>
+    </div>
+
+    <div id="application_redis_Instance_05" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if redis_Instance_06 %}
+    <h2 id="redis"><small>Application Score Details: redis_Instance_6</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/application_redis_Instance_06.png' %}" height="500"
+    width="700" /> </p>
+    </div>
+
+    <div id="application_redis_Instance_06" class="sensei-grid"></div>
+    {% endif %}
+
+
+    {% if redis_Instance_07 %}
+    <h2 id="redis"><small>Application Score Details: redis_Instance_7</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/application_redis_Instance_07.png' %}" height="500"
+    width="700" /> </p>
+    </div>
+
+    <div id="application_redis_Instance_07" class="sensei-grid"></div>
+    {% endif %}
+
+
+    {% if redis_Instance_08 %}
+    <h2 id="redis"><small>Application Score Details: redis_Instance_8</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/application_redis_Instance_08.png' %}" height="500"
+    width="700" /> </p>
+    </div>
+
+    <div id="application_redis_Instance_08" class="sensei-grid"></div>
+    {% endif %}
+
+
+    {% if redis_Instance_09 %}
+    <h2 id="redis"><small>Application Score Details: redis_Instance_9</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/application_redis_Instance_09.png' %}" height="500"
+    width="700" /> </p>
+    </div>
+
+    <div id="application_redis_Instance_09" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if redis_Instance_10 %}
+    <h2 id="redis"><small>Application Score Details: redis_Instance_10</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/application_redis_Instance_10.png' %}" height="500"
+    width="700" /> </p>
+    </div>
+
+    <div id="application_redis_Instance_10" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if nginx_32_core_local_wrps %}
+    <h2 id="nginx_32_core_local_wrps"><small>Application Score Details: nginx_32_core_local_wrps</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/application_nginx_32_core_local_wrps.png' %}" height="500"
+    width="700" /> </p>
+    </div>
+
+    <div id="application_nginx_32_core_local_wrps" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if nginx_32_core_cross_wrps %}
+    <h2 id="nginx_32_core_cross_wrps"><small>Application Score Details: nginx_32_core_cross_wrps</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/application_nginx_32_core_cross_wrps.png' %}" height="500"
+    width="700" /> </p>
+    </div>
+
+    <div id="application_nginx_32_core_cross_wrps" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if nginx_64_core_wrps %}
+    <h2 id="nginx_64_core_wrps"><small>Application Score Details: nginx_64_core_wrps</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/application_nginx_64_core_wrps.png' %}" height="500"
+    width="700" /> </p>
+    </div>
+
+    <div id="application_nginx_64_core_wrps" class="sensei-grid"></div>
     {% endif %}
 
     </div>

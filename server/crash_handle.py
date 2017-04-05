@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-#    E-mail    :    wu.wu@hisilicon.com
-#    Data      :    2015-08-27 15:39:09
-#    Desc      :
 
 import re
 import time
@@ -76,7 +72,7 @@ class RemoteBMCer(object):
 def judge_target_crash():
     result = -1
     try:
-        client = settings.get_value('CLIENT', 'ip', type=str)
+        client = settings.get_value('TARGET', 'ip', type=str)
         commands = 'ping -c 10 %s' % client
         result = utils.run(commands)
     except error.CmdError:

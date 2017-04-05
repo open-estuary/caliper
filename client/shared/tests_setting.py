@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-#    E-mail    :    wu.wu@hisilicon.com
-#    Data      :    2015-04-18 14:15:35
-#    Desc      :
 
 import os
 import ConfigParser
@@ -12,13 +8,11 @@ import logging
 from caliper.client.shared import error
 import caliper_path
 
-
 class ConfigError(error.AutoError):
     pass
 
 # class ConfigValueError(ConfigError):
 #    pass
-
 
 class CfgsSelector(object):
 
@@ -52,7 +46,6 @@ class CfgsSelector(object):
                                         other_cfg)
         cfg_files.append(other_cfg_path)
         return cfg_files
-
 
 class BaseCfg(object):
     def __init__(self, config_file):

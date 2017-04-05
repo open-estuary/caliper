@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-#    E-mail    :    wu.wu@hisilicon.com
-#    Data      :    2015-08-06 11:42:02
-#    Desc      :
 
 import os
 
@@ -22,16 +18,13 @@ if os.path.isdir('client'):
 else:
     client_dir = '.'
 
-
 def get_packages():
     return ['caliper.client.shared',
             'caliper.client.parser',
             'caliper.client']
 
-
 def get_package_dirs():
     return {'caliper.client': client_dir}
-
 
 params = dict(
         name='caliper',
@@ -42,7 +35,6 @@ params = dict(
         url='http://github.com/open-estuary',
         maintainer="open-estuary/caliper",
 )
-
 
 def run():
     setup(**params)
