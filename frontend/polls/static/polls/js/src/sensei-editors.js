@@ -42,7 +42,10 @@
         this.grid.activeEditor = null;
     };
     Editor.prototype.setDimensions = function ($td) {
-        this.getElement().css({width: $td.outerWidth() + 1, height: $td.outerHeight() + 1});
+        this.getElement().css({
+            width: $td.outerWidth() + 1,
+            height: $td.outerHeight() + 1
+        });
     };
     Editor.prototype.getValue = function () {
         throw Error("Editor.getValue not implemented");
@@ -88,7 +91,10 @@
             }
         },
         setDimensions: function ($td) {
-            this.getElement().find("textarea").css({width: $td.outerWidth() + 50, height: $td.outerHeight() + 50});
+            this.getElement().find("textarea").css({
+                width: $td.outerWidth() + 50,
+                height: $td.outerHeight() + 50
+            });
         },
         getValue: function () {
             return $("textarea", this.editor).val();
@@ -113,8 +119,8 @@
         },
         setDimensions: function ($td) {
             var css = {
-                width: $td.outerWidth() - 3, 
-                height: $td.outerHeight() - 3, 
+                width: $td.outerWidth() - 3,
+                height: $td.outerHeight() - 3,
                 background: "white"
             };
             this.getElement().find(".sensei-grid-checkbox-wrapper").css(css);
@@ -136,8 +142,6 @@
         types: [],
         name: "SelectEditor",
         render: function () {
-            console.log("CustomEditor.render");
-
             if (!this.editor) {
                 this.editor = document.createElement("div");
                 this.editor.className = "sensei-grid-editor sensei-grid-custom-editor";
@@ -148,7 +152,7 @@
         },
         renderValues: function () {
             if (_.has(this.props, "values")) {
-                
+
                 var $select = this.getElement().find("select");
                 $select.html(null);
 
@@ -157,7 +161,7 @@
                     option.value = val;
                     option.innerHTML = val;
                     $select.append(option);
-                });   
+                });
             }
         },
         show: function () {
@@ -168,7 +172,6 @@
             return $("select", this.editor).val();
         },
         setValue: function (val) {
-            console.log("Set selectbox value", val, $("select>option"));
             $("select>option", this.editor).filter(function () {
                 return $(this).val() === val;
             }).attr("selected", "selected");
@@ -176,9 +179,89 @@
         }
     });
 
+    /**
+     * Substring matcher for typeahead plugin
+     * @param strs
+     * @return
+     */
+    var substringMatcher = function (strs) {
+        return function findMatches(q, cb) {
+            var matches, substrRegex;
+
+            // an array that will be populated with substring matches
+            matches = [];
+
+            // regex used to determine if a string contains the substring `q`
+            substrRegex = new RegExp(q, 'i');
+
+            // iterate through the pool of strings and for any string that
+            // contains the substring `q`, add it to the `matches` array
+            $.each(strs, function (i, str) {
+                if (substrRegex.test(str)) {
+                    matches.push(str);
+                }
+            });
+
+            cb(matches);
+        };
+    };
+    root.AutocompleteEditor = Editor.extend({
+        types: [],
+        name: "AutocompleteEditor",
+        render: function () {
+            if (!this.editor) {
+                this.editor = document.createElement("div");
+                this.editor.className = "sensei-grid-editor sensei-grid-ac-editor";
+                var input = document.createElement("input");
+                input.setAttribute("type", "text");
+                this.editor.appendChild(input);
+                this.grid.$el.append(this.editor);
+            }
+        },
+        show: function () {
+            this.getElement().show();
+
+            $("input", this.getElement()).typeahead(
+                {
+                    hint: false,
+                    highlight: false,
+                    minLength: 0
+                },
+                {
+                    name: 'values',
+                    source: substringMatcher(this.props.values),
+                    limit: 100
+                }
+            );
+        },
+        hide: function () {
+
+            // destroy typeahead
+            $("input", this.getElement()).typeahead("close");
+            $("input", this.getElement()).typeahead("destroy");
+
+            this.getElement().hide();
+            this.grid.activeEditor.activeCell = null;
+            this.grid.activeEditor = null;
+        },
+        setDimensions: function ($td) {
+            this.getElement().css({
+                width: $td.outerWidth() + 1,
+                height: $td.outerHeight() + 1
+            });
+        },
+        getValue: function () {
+            return $("input", this.editor).typeahead('val');
+        },
+        setValue: function (val) {
+            $("input", this.editor).typeahead('val', val).focus();
+        }
+    });
+
     root.DateEditor = Editor.extend({
         types: [],
         name: "DateEditor",
+        datepicker: null,
         render: function () {
             if (!this.editor) {
 
@@ -186,27 +269,31 @@
                 this.editor = document.createElement("div");
                 this.editor.className = "sensei-grid-editor sensei-grid-date-editor";
                 var $wrapper = $("<div>", {class: "sensei-grid-date-wrapper"});
-                $wrapper.append($("<input>", {type: "text", class: "datepicker"}));
+                $wrapper.append($("<input>", {
+                    type: "text",
+                    class: "datepicker"
+                }));
                 $(this.editor).append($wrapper);
                 this.grid.$el.append(this.editor);
 
-                // needed for datepicker
-                var grid = this.grid;
-
                 // load the datepicker
                 $('.datepicker').pickadate({
-                    format : 'ddd mmm dd yyyy', 
+                    format: 'ddd mmm dd yyyy',
                     editable: true,
                     today: false,
                     clear: false,
-                    close: false,
-                    onClose: function() {
-                        grid.preventEnter = false;
-                    },
-                    onOpen: function() {
-                        grid.preventEnter = true;
-                    }
+                    close: false
                 });
+
+                // store datepicker instance
+                this.datepicker = $(".datepicker").pickadate('picker');
+            }
+        },
+        show: function () {
+            this.getElement().show();
+            // force open datepicker
+            if (this.datepicker) {
+                this.datepicker.open();
             }
         },
         getValue: function () {
@@ -226,7 +313,10 @@
                 // create editor elements
                 this.editor = document.createElement("div");
                 this.editor.className = "sensei-grid-editor sensei-grid-disabled-editor";
-                var $input = $("<input>", {type: "text", readOnly: true});
+                var $input = $("<input>", {
+                    type: "text",
+                    readOnly: true
+                });
                 $(this.editor).append($input);
                 this.grid.$el.append(this.editor);
             }
@@ -254,35 +344,46 @@
             this.getElement().css({width: $td.outerWidth() + 50});
         },
         getValue: function () {
-            return $(".summertime-wrapper", this.editor).code();
+            var htmlVal = $(".summertime-wrapper", this.editor).summernote("code");
+            return ("" + htmlVal).trim();
         },
         setValue: function (val) {
-            $(".summertime-wrapper", this.editor).destroy();
-            $(".summertime-wrapper", this.editor).html(val);
-
-            var grid = this.grid;
 
             $(".summertime-wrapper", this.editor).summernote({
                 focus: true,
+                height: 100,
+                disableResizeEditor: true,
                 toolbar: [
                     ['style', ['bold', 'italic', 'underline', 'clear']],
                     ['font', ['strikethrough']],
+                    ['color', ['color']],
                     ['fontsize', ['fontsize']]
                 ],
-                onfocus: function() {
-                    grid.preventEnter = true;
-                },
-                onblur: function() {
-                    grid.preventEnter = false;
-                },
-                onkeydown: function(e) {
-                    if (e.keyCode === 9) {
-                        e.stopImmediatePropagation();
+                callbacks: {
+                    onKeydown: function (e) {
+
+                        // prevent enter + modifier keys in summernote
+                        if (e.keyCode === 13 && (e.shiftKey || e.altKey || e.metaKey || e.ctrlKey)) {
+                            e.preventDefault();
+                            return true;
+                        }
+
+                        // allow only enter itself in summernote, prevent event to be triggered in grid
+                        if (e.keyCode === 13) {
+                            e.stopImmediatePropagation();
+                        }
+
+                        // prevent tab in summernote
+                        if (e.keyCode === 9) {
+                            e.preventDefault();
+                            return false;
+                        }
+
                     }
                 }
             });
 
-            $(".summertime-wrapper", this.editor).code(val);
+            $(".summertime-wrapper", this.editor).summernote("code", val);
         }
     });
 
