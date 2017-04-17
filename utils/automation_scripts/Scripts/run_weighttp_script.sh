@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ "$#" -ne 6 ]; then
+if [ "$#" -ne 7 ]; then
         echo "Usage: <script_name> <user name of target platform> <ip address of target platform eth interface> <port number> <no_of_cpus> <start_cpu> <number of requests> <html filename>"
         exit 1
 fi

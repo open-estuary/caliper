@@ -22,7 +22,7 @@ Osname_Ubuntu=`cat /etc/*release | grep -c "Ubuntu"`
 Osname_CentOS=`cat /etc/*release | grep -c "CentOS"`
 
 architecture_x86_64=`uname -a | grep -c "x86_64"`
-architecture_arm64=`uname -a | grep -c "arm64"`
+architecture_arm64=`uname -a | grep -c "aarch64"`
 
 echo "TARGET"
 echo -e "\n\t\t Target dependency"
