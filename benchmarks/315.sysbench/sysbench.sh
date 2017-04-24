@@ -1,38 +1,91 @@
 #!/bin/bash
-sysbench_dir=sysbench-0.5
+
+#####################
+#args set mysql
+mysql_user=${1:-root}
+mysql_password=${2:-root}
+mysql_table_engine=${3:-innodb}
+mysql_host=${7:-localhost}
+mysql_port=${8:-33306}
+db_name=${9:-sbtest}
+
+#####################
+#args set oltp
+oltp_table_size=${4:-100000}
+oltp_tables_count=${5:-8}
+
+#num_threads=$6
+#max_requests=$10
+
+#####################
+#args modify
 cpu_num=$(grep 'processor' /proc/cpuinfo |sort |uniq |wc -l)
+let num_threads=cpu_num*2
 
-db_driver=mysql
-: ${mysql_user:=$1}
-: ${mysql_user:=root}
-: ${mysql_password:=$2}
-: ${mysql_password:=123456}
-: ${mysql_table_engine:=$3}
-: ${mysql_table_engine:=innodb}
-: ${oltp_table_size:=$4}
-: ${oltp_table_size:=100000}
-: ${oltp_tables_count:=$5}
-: ${oltp_tables_count:=8}
-#: ${num_threads:=$6}
-: ${num_threads:=$((cpu_num*2))}
-: ${mysql_host:=$7}
-: ${mysql_host:=localhost}
-: ${mysql_port:=$8}
-: ${mysql_port:=33306}
-: ${db_name:=$9}
-: ${db_name:=sbtest}
-#: ${max_requests:=$10}
-: ${max_requests:=100000}
-test_name="$PWD/sysbench-0.5/sysbench/tests/db/oltp.lua"
-echo "max_requests are $max_requests"
+max_requests=100000
 
-export PATH=$PATH:/usr/local/mysql/bin
+#print args info
+printf "%s[%3d]%5s: num_threads[${num_threads}] max_requests[${max_requests}]\n" "${FUNCNAME[0]}" ${LINENO} "Info"
 
-if ! hash mysqld; then
-    echo 'The mysql server has not been installed'
+#####################
+#mysqld server check
+ps -e |grep "mysqld" |awk -F'[ \t]+' '{print $NF}' |grep -q "^mysqld$"
+if [ $? -ne 0 ]; then
+    printf "%s[%3d]%5s: mysqld not run\n" "${FUNCNAME[0]}" ${LINENO} "Error"
     exit 1
 fi
 
+#mysql env ready
+sMysqlInfo=$(whereis mysql |cut -d: -f2-)
+if [ -z "${sMysqlInfo}" ]; then
+    printf "%s[%3d]%5s: mysql not found\n" "${FUNCNAME[0]}" ${LINENO} "Error"
+    exit 1
+fi
+
+#mysql lib
+s1=$(find ${sMysqlInfo} -name "libmysqlclient.so" 2>/dev/null)
+if [ -n "${s1}" ]; then
+    s2=$(sed -n "1p" <<< "${s1}")
+    drLibMysql=$(dirname "${s2}")
+fi
+if [ ! -d "${drLibMysql}" ]; then
+    printf "%s[%3d]%5s: mysql lib not found\n" "${FUNCNAME[0]}" ${LINENO} "Error"
+    exit 1
+fi
+dr1=$(sed "s/\./\\\./g" <<< "${drLibMysql}")
+grep -q "\(^\|:\)${dr1}\(:\|$\)" <<< "${LD_LIBRARY_PATH}"
+if [ $? -ne 0 ]; then
+    export LD_LIBRARY_PATH=${drLibMysql}:${LD_LIBRARY_PATH}
+fi
+#printf "%s[%3d]%5s: LD_LIBRARY_PATH[${LD_LIBRARY_PATH}]\n" "${FUNCNAME[0]}" ${LINENO} "Info"
+
+#mysql include
+s1=$(find ${sMysqlInfo} -name "mysql.h" 2>/dev/null)
+if [ -n "${s1}" ]; then
+    s2=$(sed -n "1p" <<< "${s1}")
+    drIncMysql=$(dirname "${s2}")
+fi
+if [ ! -d "${drIncMysql}" ]; then
+    printf "%s[%3d]%5s: mysql include not found\n" "${FUNCNAME[0]}" ${LINENO} "Error"
+    exit 1
+fi
+
+#mysql client
+s1=$(find ${sMysqlInfo} -name "mysql" 2>/dev/null |grep "/bin/mysql\$")
+if [ -n "${s1}" ]; then
+    s2=$(sed -n "1p" <<< "${s1}")
+    drMysqlClient=$(dirname "${s2}")
+fi
+if [ ! -d "${drMysqlClient}" ]; then
+    printf "%s[%3d]%5s: mysql client not found\n" "${FUNCNAME[0]}" ${LINENO} "Error"
+    exit 1
+fi
+
+printf "%s[%3d]%5s: drLibMysql[${drLibMysql}] drIncMysql[${drIncMysql}] drMysqlClient[${drMysqlClient}]\n" "${FUNCNAME[0]}" ${LINENO} "Info"
+
+#####################
+#sysbench down
+sysbench_dir=sysbench-0.5
 if [ ! -d $sysbench_dir ]; then
     n1=0
     iRt1=1
@@ -53,103 +106,62 @@ if [ ! -d $sysbench_dir ]; then
     fi
 fi
 
-mysql_loc=($(whereis mysql))
-
-OSname_Ubuntu=`cat /etc/*release | grep -c "Ubuntu"`
-OSname_CentOS=`cat /etc/*release | grep -c "CentOS"`
-if [ ! $OSname_Ubuntu -eq 0 ]; then
-    for i in ${mysql_loc[@]}; do
-        tmp=$(echo $i | grep '/lib/mysql')
-        if [ $? -eq 0 ]; then
-            mysql_lib=$tmp
-        else
-            tmp1=$(echo $i | grep '/include/mysql')
-            if [ $? -eq 0 ]; then
-                mysql_include=$tmp1
-            fi
-        fi
-    done
-elif [ ! $OSname_CentOS -eq 0 ]; then
-    for i in ${mysql_loc[@]}; do
-        grep -q '/lib[0-9]*/mysql' <<< "${i}"
-        if [ $? -eq 0 ]; then
-             mysql_lib=${i}
-        else
-            grep -q '/include/mysql' <<< "${i}"
-            if [ $? -eq 0 ]; then
-                mysql_include=${i}
-            fi
-        fi
-    done
-else
-    echo "selected OS in not Ubuntu or centos"
-    exit 1
-fi
-
-if [ "$mysql_lib" == "" -o "$mysql_include" == "" ]; then
-    echo 'mysql has not been installed right'
-    exit 1
-fi
-
-if [ ! -d $sysbench_dir ]; then
-    echo 'sysbench has not been download completely'
-    exit 1
-fi
-
-export PATH=$PATH:/usr/local
-
+#sysbench compile
 pushd $sysbench_dir
   prefix=/usr/local/sysbench
   ./autogen.sh
-  ./configure --prefix=$prefix --with-mysql-includes=$mysql_include --with-mysql-libs=$mysql_lib
+  ./configure --prefix=$prefix --with-mysql-includes=$drIncMysql --with-mysql-libs=$drLibMysql
   make -s 
   make install
 popd
 
-/usr/bin/expect <<EOF
-set timeout 40
-
-spawn mysql -u$mysql_user -p
-expect "*password:"
-send "$mysql_password\r"
-expect "mysql>"
-send "show databases;\r"
-
-expect {
- "$db_name"
- {
-     send "drop database $db_name;\r"
-     expect "mysql>"
-     send "create database $db_name;\r"
-     expect "mysql>"
- }
- "mysql>"
- {
-     send "create database $db_name;\r"
- }
-}
-expect "mysql>"
-send "quit;\r"
-expect eof
-EOF
-
-if [ $max_requests -eq 0 ]; then 
-    max_requests=100000
+#####################
+#msql test data ready
+dr1=$(sed "s/\./\\\./g" <<< "${drMysqlClient}")
+grep -q "\(^\|:\)${dr1}\(:\|$\)" <<< "${PATH}"
+if [ $? -ne 0 ]; then
+    export PATH=${drMysqlClient}:${PATH}
 fi
 
-if [ ! $OSname_CentOS -eq 0 ]; then
-    sR1=$(netstat -lnp |grep "[ \t]\+[0-9]\+/mysqld\([ \t]\+\|\$\)" |grep "[ \t]\+[^ \t0-9]\+[ \t]*\$")
-    sockMS=$(sed "s#^.*[ \t]\+\([^ \t0-9]\+\)[ \t]*\$#\1#" <<< "${sR1}")
-    sockSysb="/var/lib/mysql/mysql.sock"
-    if [ "${sockMS}" != "${sockSysb}" ]; then
-        if [ ! -L "${sockSysb}" ]; then
-            ln -s "${sockMS}" "${sockSysb}"
-        fi
+/usr/bin/expect > /dev/null 2>&1 <<EOF
+    set timeout 40
+    spawn mysql -u$mysql_user -p
+    expect "*password:"
+    send "$mysql_password\r"
+    expect "mysql>"
+    send "show databases;\r"
+    expect {
+        "$db_name" {
+            send "drop database $db_name;\r"
+            expect "mysql>"
+            send "create database $db_name;\r"
+            expect "mysql>"
+        }
+        "mysql>" {
+            send "create database $db_name;\r"
+        }
+    }
+    expect "mysql>"
+    send "quit;\r"
+    expect eof
+EOF
+
+#####################
+#mysql env for sysbench
+sR1=$(netstat -lnp |grep "[ \t]\+[0-9]\+/mysqld\([ \t]\+\|\$\)" |grep "[ \t]\+[^ \t0-9]\+[ \t]*\$")
+sockMS=$(sed "s#^.*[ \t]\+\([^ \t0-9]\+\)[ \t]*\$#\1#" <<< "${sR1}")
+sockSy="/var/lib/mysql/mysql.sock"
+if [ "${sockMS}" != "${sockSy}" ]; then
+    if [ ! -L "${sockSy}" ]; then
+        drSockSy=$(dirname "${sockSy}")
+        mkdir -p "${drSockSy}"
+        ln -s "${sockMS}" "${sockSy}"
     fi
 fi
 
-set -x
-# prepare the test data
+#####################
+#sysbench prepare the test data
+test_name="$PWD/sysbench-0.5/sysbench/tests/db/oltp.lua"
 $sysbench_dir/sysbench/sysbench \
   --db-driver=mysql \
   --mysql-table-engine=innodb \
@@ -168,8 +180,9 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+#####################
 # do the oltp test
- $sysbench_dir/sysbench/sysbench \
+$sysbench_dir/sysbench/sysbench \
   --db-driver=mysql \
   --mysql-table-engine=innodb \
   --oltp-table-size=$oltp_table_size \
@@ -187,6 +200,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+#####################
 # cleanup the test data
  $sysbench_dir/sysbench/sysbench \
   --db-driver=mysql \
@@ -205,3 +219,5 @@ if [ $? -ne 0 ]; then
     echo 'cleanup the test data failed'
     exit 1
 fi
+
+#####################

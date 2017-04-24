@@ -1,53 +1,70 @@
 #!/bin/bash
-sysbench_dir=sysbench-0.5
-num_threads1="1"
+
+#####################
+#args modify
 max_requests="30000"
 test_name="cpu"
 cpu_max_prime="100000"
 num_threads=$(grep 'processor' /proc/cpuinfo |sort |uniq |wc -l)
-#test_name="$PWD/sysbench-0.5/sysbench/tests/cpu"
-if [ ! -d $sysbench_dir ]; then
-  bzr branch lp:~sysbench-developers/sysbench/0.5 $sysbench_dir
-  if [ $? -ne 0 ]; then
-    echo 'Download the sysbench failed'
-    exit 1
-  fi
-fi
 
-if [ ! -d $sysbench_dir ]; then
-    echo 'sysbench has not been download completely'
-    exit 1
-fi
-
-export PATH=$PATH:/usr/local
-
-pushd $sysbench_dir
-  ./autogen.sh
-  ./configure 
-  make -s 
-  make install
-popd
 if [ $max_requests -eq 0 ]; then 
     max_requests=100000
 fi
-set -x
 
- $sysbench_dir/sysbench/sysbench \
-  --num-threads=$num_threads \
-  --max-requests=$max_requests \
-  --test=$test_name \
-  --cpu-max-prime=$cpu_max_prime \
-  run
-
- $sysbench_dir/sysbench/sysbench \
-  --num-threads=1 \
-  --max-requests=$max_requests \
-  --test=$test_name \
-  --cpu-max-prime=$cpu_max_prime \
-  run
-if [ $? -ne 0 ]; then
-    echo 'Run the cpu test failed'
+sysbench_dir=sysbench-0.5
+if [ ! -d $sysbench_dir ]; then
+    printf "%s[%3d]%5s: sysbench not ready, need run sysbench.sh first\n" "${FUNCNAME[0]}" ${LINENO} "Error"
     exit 1
 fi
 
+#####################
+#mysql env ready
+sMysqlInfo=$(whereis mysql |cut -d: -f2-)
+if [ -z "${sMysqlInfo}" ]; then
+    printf "%s[%3d]%5s: mysql not found\n" "${FUNCNAME[0]}" ${LINENO} "Error"
+    exit 1
+fi
+
+#mysql lib
+s1=$(find ${sMysqlInfo} -name "libmysqlclient.so" 2>/dev/null)
+if [ -n "${s1}" ]; then
+    s2=$(sed -n "1p" <<< "${s1}")
+    drLibMysql=$(dirname "${s2}")
+fi
+if [ ! -d "${drLibMysql}" ]; then
+    printf "%s[%3d]%5s: mysql lib not found\n" "${FUNCNAME[0]}" ${LINENO} "Error"
+    exit 1
+fi
+dr1=$(sed "s/\./\\\./g" <<< "${drLibMysql}")
+grep -q "\(^\|:\)${dr1}\(:\|$\)" <<< "${LD_LIBRARY_PATH}"
+if [ $? -ne 0 ]; then
+    export LD_LIBRARY_PATH=${drLibMysql}:${LD_LIBRARY_PATH}
+fi
+
+#####################
+#sysbench run
+$sysbench_dir/sysbench/sysbench \
+    --num-threads=$num_threads \
+    --max-requests=$max_requests \
+    --test=$test_name \
+    --cpu-max-prime=$cpu_max_prime \
+    run
+
+if [ $? -ne 0 ]; then
+    printf "%s[%3d]%5s: test cpu num_threads[${num_threads}] failed\n" "${FUNCNAME[0]}" ${LINENO} "Error"
+    exit 1
+fi
+
+num_threads=1
+$sysbench_dir/sysbench/sysbench \
+    --num-threads=$num_threads \
+    --max-requests=$max_requests \
+    --test=$test_name \
+    --cpu-max-prime=$cpu_max_prime \
+    run
+
+if [ $? -ne 0 ]; then
+    printf "%s[%3d]%5s: test cpu num_threads[${num_threads}] failed\n" "${FUNCNAME[0]}" ${LINENO} "Error"
+    exit 1
+fi
 
