@@ -14,7 +14,7 @@ then
     sudo rm host_dependency_output_summary.txt
 fi
 
-host_packages=('libc6' 'libncurses5' 'libstdc++6' 'lib32z1' 'python-dev' 'nfs-common' 'build-essential' 'python-pip' 'automake' 'autoconf' 'make' 'openssh-server' 'libnuma-dev' 'texinfo' 'python-matplotlib' 'python-numpy' 'nfs-kernel-server' 'openjdk-7-jre' 'openjdk-7-jdk' 'lib32stdc++6' 'bzr')
+host_packages=('libc6' 'libncurses5' 'libstdc++6' 'lib32z1' 'python-dev' 'nfs-common' 'build-essential' 'python-pip' 'automake' 'autoconf' 'make' 'openssh-server' 'libnuma-dev' 'texinfo' 'python-numpy' 'python-matplotlib' 'nfs-kernel-server' 'openjdk-7-jre' 'openjdk-7-jdk' 'lib32stdc++6' 'bzr')
 
 NFS_mount="/mnt/caliper_nfs/ltp_log"
 ERROR="ERROR-IN-AUTOMATION"
@@ -64,7 +64,7 @@ do
     fi
 done
 
-host_pip_packages=('Django' 'matplotlib' 'numpy' 'openpyxl')
+host_pip_packages=('Django' 'numpy' 'matplotlib' 'openpyxl')
 
 for i in `seq 0 $((${#host_pip_packages[@]}-1)) `
 do
@@ -85,15 +85,16 @@ do
        then
             if [ ${host_pip_packages[$i]} == "Django" ]
             then
-                sudo pip install Django=1.8.4 &
-            elif [ ${host_pip_packages[$i]} == "matplotlib" ]
-            then
-                sudo pip install matplotlib==1.3.1 &
+                sudo pip install Django==1.8.4 &
             elif [ ${host_pip_packages[$i]} == "numpy" ]
             then
                 sudo pip install numpy==1.8.2 &
-            else
-                sudo pip install ${host_pip_packages[$i]} &
+            elif [ ${host_pip_packages[$i]} == "matplotlib" ]
+            then
+                sudo pip install matplotlib==1.3.1 &
+            elif [ ${host_pip_packages[$i]} == "openpyxl" ]
+            then
+		sudo pip install openpyxl==2.3.0 &	
             fi 
 
             wait
