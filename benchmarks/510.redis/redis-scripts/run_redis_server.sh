@@ -5,6 +5,13 @@ if [ $# -lt 2 ]; then
     exit 0
 fi
 
+iptables -F
+iptables -X
+iptables -t nat -F
+iptables -t nat -X
+iptables -t mangle -F
+iptables -t mangle -X
+
 start_cpu_num=${1}
 end_cpu_num=${2}
 

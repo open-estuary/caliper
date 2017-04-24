@@ -150,6 +150,18 @@ def delete(dic, option):
                 del dic['results']['Performance']['latency']['rttest']['Point_Scores']['pi-stress']
         except KeyError:
                 pass
+        try:
+                del dic['results']['Performance']['application']['nginx_32_core_cross_wrps']['Point_Scores']['max_cpu_load']
+        except KeyError:
+                pass
+        try:
+                del dic['results']['Performance']['application']['nginx_32_core_local_wrps']['Point_Scores']['max_cpu_load']
+        except KeyError:
+                pass
+        try:
+                del dic['results']['Performance']['application']['nginx_64_core_wrps']['Point_Scores']['max_cpu_load']
+        except KeyError:
+                pass
 
     elif option == "report":
         try:

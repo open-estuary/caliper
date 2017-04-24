@@ -3,7 +3,7 @@
 TestNode_dependency="TestNode_dependency_dir"
 
 architecture_x86_64=`uname -a | grep -c "x86_64"`
-architecture_arm64=`uname -a | grep -c "arm64"`
+architecture_arm64=`uname -a | grep -c "aarch64"`
 
 Osname_Ubuntu=`cat /etc/*release | grep -c "Ubuntu"`
 Osname_Centos=`cat /etc/*release | grep -c "CentOS"`

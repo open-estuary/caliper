@@ -22,7 +22,7 @@ Osname_Ubuntu=`cat /etc/*release | grep -c "Ubuntu"`
 Osname_CentOS=`cat /etc/*release | grep -c "CentOS"`
 
 architecture_x86_64=`uname -a | grep -c "x86_64"`
-architecture_arm64=`uname -a | grep -c "arm64"`
+architecture_arm64=`uname -a | grep -c "aarch64"`
 
 echo "TARGET"
 echo -e "\n\t\t Target dependency"
@@ -79,9 +79,9 @@ then
 else
     if [ ! $architecture_x86_64 -eq 0 ]
     then
-        target_packages=('make' 'wget' 'gcc' 'automake' 'autoconf' 'cmake' 'net-tools' 'lshw' 'bridge-utils' 'java-1.8.0-openjdk.x86_64' 'java-1.8.0-openjdk-devel.x86_64' 'perl' 'lksctp-tools' 'expect' 'ncurses-devel' 'yum-utils' 'dmidecode' 'words' 'gfortran' 'numactl' 'unzip' 'bc' 'libtool' 'psmisc' 'dstat')
+        target_packages=('make' 'wget' 'gcc' 'automake' 'autoconf' 'cmake' 'net-tools' 'lshw' 'bridge-utils' 'java-1.8.0-openjdk.x86_64' 'java-1.8.0-openjdk-devel.x86_64' 'perl' 'lksctp-tools' 'expect' 'ncurses-devel' 'yum-utils' 'dmidecode' 'words' 'gfortran' 'numactl' 'unzip' 'bc' 'libtool' 'psmisc' 'dstat' 'gcc-c++' 'libaio' 'zlib.i686')
     else
-        target_packages=('make' 'wget' 'gcc' 'automake' 'autoconf' 'cmake' 'net-tools' 'lshw' 'bridge-utils' 'java-1.8.0-openjdk.aarch64' 'java-1.8.0-openjdk-devel.aarch64' 'perl'  'lksctp-tools' 'expect' 'ncurses-devel' 'yum-utils' 'dmidecode' 'words' 'gfortran' 'numactl' 'unzip' 'bc' 'libtool' 'psmisc' 'dstat')
+        target_packages=('make' 'wget' 'gcc' 'automake' 'autoconf' 'cmake' 'net-tools' 'lshw' 'bridge-utils' 'java-1.8.0-openjdk.aarch64' 'java-1.8.0-openjdk-devel.aarch64' 'perl'  'lksctp-tools' 'expect' 'ncurses-devel' 'yum-utils' 'dmidecode' 'words' 'gfortran' 'numactl' 'unzip' 'bc' 'libtool' 'psmisc' 'dstat' 'gcc-c++' 'libaio')
     fi
 
     for i in `seq 0 $((${#target_packages[@]}-1)) `
