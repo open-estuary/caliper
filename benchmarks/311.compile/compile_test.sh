@@ -14,6 +14,7 @@ if [ $? -eq 0 ]; then
     info=$(pwd)
     arch_x86_64=$(echo $info | grep 'x86_64')
     arch_arm64=$(echo $info | grep 'arm_64')
+    GCC=0
     if [ "$arch_x86_64"x != ""x ]; then
         GCC=aarch64-linux-gnu-gcc
     fi
