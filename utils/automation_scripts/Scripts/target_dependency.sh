@@ -29,8 +29,12 @@ echo -e "\n\t\t Target dependency"
 
 if [ ! $Osname_Ubuntu -eq 0 ]
 then
-    target_packages=('stress' 'make' 'build-essential' 'linux-tools-generic' 'linux-tools-common' 'gcc g++' 'nfs-common' 'automake' 'autoconf' 'autogen' 'libtool' 'openjdk-7-jre' 'openjdk-7-jdk' 'mysql-server*' 'libmysqlclient-dev' 'stress-ng' 'expect' 'bzr' 'libmysqld-dev' 'lshw' 'bridge-utils' 'dmidecode' 'lsdev' 'gfortran' 'numactl' 'unzip' 'bc' 'lksctp-tools' 'dstat')
-
+    if [ ! $architecture_x86_64 -eq 0 ]
+    then
+    	target_packages=('stress' 'make' 'build-essential' 'linux-tools-generic' 'linux-tools-common' 'gcc g++' 'nfs-common' 'automake' 'autoconf' 'autogen' 'libtool' 'openjdk-7-jre' 'openjdk-7-jdk' 'mysql-server*' 'libmysqlclient-dev' 'stress-ng' 'expect' 'bzr' 'libmysqld-dev' 'lshw' 'bridge-utils' 'dmidecode' 'lsdev' 'gfortran' 'numactl' 'unzip' 'bc' 'lksctp-tools' 'dstat' 'gcc-aarch64-linux-gnu')
+    else
+    	target_packages=('stress' 'make' 'build-essential' 'linux-tools-generic' 'linux-tools-common' 'gcc g++' 'nfs-common' 'automake' 'autoconf' 'autogen' 'libtool' 'openjdk-7-jre' 'openjdk-7-jdk' 'mysql-server*' 'libmysqlclient-dev' 'stress-ng' 'expect' 'bzr' 'libmysqld-dev' 'lshw' 'bridge-utils' 'dmidecode' 'lsdev' 'gfortran' 'numactl' 'unzip' 'bc' 'lksctp-tools' 'dstat')
+    fi
     for i in `seq 0 $((${#target_packages[@]}-1)) `
     do
     #checking to see if all the target dependent packages are installed
