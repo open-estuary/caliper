@@ -123,20 +123,17 @@ then
 	if [ $? -ne 0 ]
 	then
 		echo "$ERROR:NFS MOUNTING FAILED" >> host_dependency_output_summary.txt
-		continue
 	fi
 fi
 sudo chmod -R 775 /mnt/caliper_nfs/ltp_log
 if [ $? -ne 0 ]
 then
 	echo "$ERROR:NFS PERMISSION SETTING FAILED" >> host_dependency_output_summary.txt
-	continue
 fi
 sudo chown -R $USER:$USER /mnt/caliper_nfs/ltp_log
 if [ $? -ne 0 ]
 then
 	echo "$ERROR:NFS OWNER SETTING FAILED" >> host_dependency_output_summary.txt
-	continue
 fi
 
 #exporting the path for NFS mounting
@@ -159,14 +156,19 @@ then
 else
     echo "NFS mount path is not Exported"
     echo "Would u like me to do it (y/n)"
-    read choice
+    if [ $1 = "y" ]
+    then
+         choice="y"
+    else
+        echo "${host_pip_packages[$i]} is not installed, would you like to install(y/n)"
+        read choice
+    fi
     if [ $choice == 'y'  ]
     then
         `sudo echo "$command" >> /etc/exports`
         if [ $? -ne 0 ]
         then
             echo -e "\n\t\t$ERROR:EXPORTING THE PATH FAILED" >> host_dependency_output_summary.txt
-            continue
         fi
     else
        echo -e "\n\t\tPlease export the path in /etc/export and try again" >> host_dependency_output_summary.txt
@@ -179,6 +181,5 @@ sudo service nfs-kernel-server restart
 if [ $? -ne 0 ]
 then
 	echo -e "\n\t\t$ERROR:RESTARTING THE NFS_KERNEL Failed" >> host_dependency_output_summary.txt
-	continue
 fi
 
