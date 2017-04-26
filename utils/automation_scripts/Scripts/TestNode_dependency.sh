@@ -35,19 +35,24 @@ do
 		check_version=`netperf -V | grep -c "2.7.0"`
 		if [ $check_version -eq 0 ];then
 			echo "please install netperf 2.7.0 version" >> TestNode_dependency_output_summary.txt
+            	else
+            	    echo -e "\n ${dependency[$i]} is already installed" >> TestNode_dependency_output_summary.txt
 		fi
             elif [ ${dependency[$i]} == 'iperf3' ];then 
 		check_version=`iperf3 --version | grep -c "3.1.4"`
 		if [ $check_version -eq 0 ];then
 			echo "please install iperf3 3.1.4 version" >> TestNode_dependency_output_summary.txt
+            	else
+            	    echo -e "\n ${dependency[$i]} is already installed" >> TestNode_dependency_output_summary.txt
 		fi
             elif [ ${dependency[$i]} == 'qperf' ];then 
 		check_version=`qperf -V | grep -c "0.4.9"`
 		if [ $check_version -eq 0 ];then
 			echo "please install qperf 0.4.9 version" >> TestNode_dependency_output_summary.txt
+            	else
+            	    echo -e "\n ${dependency[$i]} is already installed" >> TestNode_dependency_output_summary.txt
 		fi
-            fi
-            echo -e "\n ${dependency[$i]} is already installed" >> TestNode_dependency_output_summary.txt
+	    fi
     	else
 	    # if force option is passed thn forcefully run the scripts
             if [ $1 = "y" ];then

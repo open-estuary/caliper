@@ -18,7 +18,8 @@ expect {
 }
 
 set i 0
-spawn ssh -t $TestNode_user@$TestNode_ip "sudo ./TestNode_dependency.sh $option"
+spawn ssh -t $TestNode_user@$TestNode_ip "sudo rm ~/installation_log.txt"
+spawn ssh -t $TestNode_user@$TestNode_ip "sudo ./TestNode_dependency.sh $option | tee ~/installation_log.txt"
 while true {
 	expect {
 		"Are you sure you want to continue connecting" { send "yes\r"; exp_continue}

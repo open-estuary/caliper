@@ -29,8 +29,12 @@ echo -e "\n\t\t Target dependency"
 
 if [ ! $Osname_Ubuntu -eq 0 ]
 then
-    target_packages=('stress' 'make' 'build-essential' 'linux-tools-generic' 'linux-tools-common' 'gcc g++' 'nfs-common' 'automake' 'autoconf' 'autogen' 'libtool' 'openjdk-7-jre' 'openjdk-7-jdk' 'mysql-server*' 'libmysqlclient-dev' 'stress-ng' 'expect' 'bzr' 'libmysqld-dev' 'lshw' 'bridge-utils' 'dmidecode' 'lsdev' 'gfortran' 'numactl' 'unzip' 'bc' 'lksctp-tools' 'dstat')
-
+    if [ ! $architecture_x86_64 -eq 0 ]
+    then
+    	target_packages=('stress' 'make' 'build-essential' 'linux-tools-generic' 'linux-tools-common' 'gcc g++' 'nfs-common' 'automake' 'autoconf' 'autogen' 'libtool' 'openjdk-7-jre' 'openjdk-7-jdk' 'mysql-server*' 'libmysqlclient-dev' 'stress-ng' 'expect' 'bzr' 'libmysqld-dev' 'lshw' 'bridge-utils' 'dmidecode' 'lsdev' 'gfortran' 'numactl' 'unzip' 'bc' 'lksctp-tools' 'dstat' 'gcc-aarch64-linux-gnu')
+    else
+    	target_packages=('stress' 'make' 'build-essential' 'linux-tools-generic' 'linux-tools-common' 'gcc g++' 'nfs-common' 'automake' 'autoconf' 'autogen' 'libtool' 'openjdk-7-jre' 'openjdk-7-jdk' 'mysql-server*' 'libmysqlclient-dev' 'stress-ng' 'expect' 'bzr' 'libmysqld-dev' 'lshw' 'bridge-utils' 'dmidecode' 'lsdev' 'gfortran' 'numactl' 'unzip' 'bc' 'lksctp-tools' 'dstat')
+    fi
     for i in `seq 0 $((${#target_packages[@]}-1)) `
     do
     #checking to see if all the target dependent packages are installed
@@ -50,23 +54,22 @@ then
                 if [ ${target_packages[$i]} == 'mysql-server*' -o ${target_packages[$i]} == 'libmysqlclient-dev' ]
                 then
                     echo -e "$ERROR:The ${target_packages[$i]} package is not present. Please install it manually" >> target_dependency_output_summary.txt
-                    exit 1
+                    continue
                 else
                     sudo dpkg --configure -a
                     if [ $UPDATE=0 ]
                     then
                         UPDATE=1
-                        sudo apt-get update &
-                        wait
+                        sudo apt-get update
                     fi
-                    sudo apt-get build-dep ${target_packages[$i]} -y &
-                    wait
-                    sudo apt-get install ${target_packages[$i]} -y &
-                    wait
+                    sudo apt-get build-dep ${target_packages[$i]} -y
+                    sudo apt-get install ${target_packages[$i]} -y
                     if [ $? -ne 0 ]
                     then
                         echo -e "\n\t\t$ERROR:${target_packages[$i]} is not installed properly" >> target_dependency_output_summary.txt
-                        exit 1
+                        continue
+		    else
+			echo "${target_packages[$i]} is installed" >>  target_dependency_output_summary.txt
                     fi
                 fi
             else
@@ -113,7 +116,7 @@ else
                 if [ $? -ne 0 ]
                 then
                         echo -e "\n\t\t$ERROR:${target_packages[$i]} is not installed properly" >>  target_dependency_output_summary.txt
-                        exit 1
+                        continue
                 fi
            else
                echo "Please install ${target_packages[$i]} and try again" >> target_dependency_output_summary.txt
@@ -167,7 +170,6 @@ then
         if [ $? -ne 0 ]
         then
        echo -e "\n$ERROR:Creating a Mount Path for Fio testing Failed\n" >> target_dependency_output_summary.txt
-           exit 1
     fi
 else
         if [ `mount -l | grep -c "$2 on /mnt/sdb"` == 0 ]
@@ -176,7 +178,6 @@ else
                 if [ $? -ne 0 ]
                 then
                 echo -e "\n$ERROR:Creating a Mount Path for Fio testing Failed\n" >> target_dependency_output_summary.txt
-                    exit 1
             fi
         fi
         echo -e "\nMount Partition for storage testing Already exits\n" >> target_dependency_output_summary.txt
@@ -191,7 +192,6 @@ then
     if [ $? -ne 0 ]
     then
         echo -e "\n\t\t$ERROR:Failed to cp the perf path" >> target_dependency_output_summary.txt
-        exit 1
     fi
 fi
 

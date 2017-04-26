@@ -3,7 +3,8 @@ set timeout  -1
 set option [ lindex $argv 0 ]
 set passwd [ lindex $argv 1 ]
 set i 0
-spawn sudo ./host_dependency.sh $option
+spawn sudo rm ~/installation_log.txt
+spawn sudo ./host_dependency.sh $option | tee ~/installation_log.txt
 while true {
 	expect {
 		"assword" { send "[lindex $passwd]\r"; exp_continue }
