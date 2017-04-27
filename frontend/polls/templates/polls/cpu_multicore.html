@@ -101,12 +101,27 @@ changeSize(1000,700);
    <div  style="text-align: left;">
      <h1><small>Test description </small></h1>
      <p>
-	The test under this section evaluate single core performance of the CPU Subsystem. These tests would impact mainly CPU and the memory subsystem. Relatively low or nil stress on IO</p>
-	<li>Stress-ng : Measure sthe CPU performance by running some CPU intensive routines.</li>
-	<li>unixbench : A system benchmark which test the performance of CPU and memory. </li>
-	<li>sysbench-CPU : Measure the CPU performance by finding the given number of prime numbers and measuring the time for the same.</li>
-	
-    </p>
+	The test under this section evaluate single core performance of the CPU Subsystem. These tests would impact mainly CPU and the memory subsystem. Relatively low or nil stress on IO<br>
+	1. <b>Stress-ng</b>: Measure sthe CPU performance by running some CPU intensive routines.<br><br>
+
+	2. <b>Unixbench</b>: A system benchmark which test the performance of CPU and memory.<br>
+	Test cases executed by this tool:<br>
+	<li>
+	multicore_unixbench<br><br>
+	</li>
+		
+	3. <b>Sysbench-CPU</b>: Measure the CPU performance by finding the given number of prime numbers and measuring the time for the same.<br>
+	Test cases executed by this tool:<br>
+	<li>
+	multicore_misc: sysbench_prime<br><br>
+	</li>
+
+	4. <b>Openblas</b>: This tool is a set of low-level routines for performing common linear algebra operations such as vector addition, scalar multiplication, dot products, linear combinations, and matrix multiplication<br>
+	Test cases executed by this tool:<br>
+	<li>
+	openblas_value_#_cores and openblas_efficiency_#_cores 
+	</li>
+   </p>
 
 	
    </div>

@@ -80,13 +80,12 @@ changeSize(1000,700);
 The <b>score summary</b> is the percentage of performance of each platform for individual test scenarios. The detailed sections shows the individual test case score(rank) in the same fashion. <br> 
  
      <h1><small>Test description </small></h1>
-     <p> The test under this section evaluate various algorithm performance. These tests would impact mainly CPU and the memory subsystem, in some cases disk also would be impacted.</p>
+     <p> The test under this section evaluate various algorithm performance. These tests would impact mainly CPU and the memory subsystem, in some cases disk also would be impacted. The tools used are <br>
+	1. <b>Openssl</b>: OpenSSL is a cryptography toolkit implementing the Secure Sockets Layer ( SSL v2/v3) and Transport Layer Security ( TLS v1) network protocols and related cryptography standards required by them.<br>
+	All the test cases described here has been executed by openssl tool (except unzip test case). <br><br>
 
-     <p> <li><b>Openssl Benchmark Suite</b> :  This tool tests all the openssl ciphers and measures the performance. The test suite is executed in single thread hence it measures the single core performance. </p></li>
-<mark><p> <b>Notes: </b> In D02/D03 platform, the hardware accelerators for algorithms are not utilized. Hence the D02 results may be lower and is expected. We can expect better results once the drivers enable the hardware accelerators </p></mark>
+	2. <b>Unzip</b>: This tool is to measure the time required to extract the tar.gz file.
 
-
-	<p> We have preserved block-wise performance details of each cipher across platforms, please refer to <a href="{%static '../static/TestInfo/Report-Data/openssl_TestCases.xlsx' %}" target ="_blank"> <b>Openssl_TestCases.xlsx </b> </a></p>
     </div>
 	
     {% if sum %}

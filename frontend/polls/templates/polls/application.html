@@ -128,19 +128,28 @@ changeSize(1200,900);
 The <b>score summary</b> is the percentage of performance of each platform for individual test scenarios. The detailed sections shows the individual test case score(rank) in the same fashion. <br> 
  
   <h1><small>Test description </small></h1>
-    
-     <p> Tests under this section captures the performace of certain application scenarios such as </li>
-         <li><b>Kernel compilation </b>: Compiling a kernel in multiple threads can evaluate the multi core/multi threading capability of the system.This can be used to measure how well the platform is scaling with respect to the number of cores (equivalent to the number threads of compilation)</li>
-	 <li><b>Database</b> : Sysbench oltp benchmark evaluate the database performance.</li>
-	 <li><b>Hadoop</b> : Hibench measures the common hadoop performance parameters like <b>HadoopTerasort, HadoopWordcount, HadoopBayes, HadoopKmeans, HadoopSort, HadoopDfsioe</b> etc. <br>
-	 <li><b>Ebizzy</b> : Web application sever load. </li>
-         <li><b>JDK</b>  : Uses SciMark2 to evaluates the Java performance for scientific and numerical computing.It consists of five computational kernels: <b>FFT, Gauss-Seidel relaxation, Sparse matrix-multiply, Monte Carlo integration, and dense LU factorization</b>.Reports a composite score in approximate <b>Mflops (Millions of floating point operations per second)</b>.</li> 
+    <div style="text-align: left;">
+     <p> Tests under this section captures the performace of certain application scenarios. The tools used are <br>
+         1. <b>Compile</b>: Compiling a kernel in multiple threads can evaluate the multi core/multi threading capability of the system.This can be used to measure how well the platform is scaling with respect to the number of cores (equivalent to the number threads of compilation) <br>
+         Test cases executed by this tool: kernel-dev_# <br><br>
+	
+	 2. <b>Sysbench</b>: sysbench oltp benchmark evaluate the database performance.<br>
+         Test cases executed by this tool: max, avg, min and percentile<br><br>
+
+
+	 3. <b>Hadoop</b>: Hibench measures the common hadoop performance parameters like <b>HadoopTerasort, HadoopWordcount, HadoopBayes, HadoopKmeans, HadoopSort, HadoopDfsioe</b> etc. <br><br>
+         
+	 4. <b>JDK</b>: Uses SciMark2 to evaluates the Java performance for scientific and numerical computing.It consists of five computational kernels: <b>FFT, Gauss-Seidel relaxation, Sparse matrix-multiply, Monte Carlo integration, and dense LU factorization</b>.Reports a composite score in approximate <b>Mflops (Millions of floating point operations per second)</b>.
      </p>
    
-<mark><p> <b>Notes: </b> <br>
-Hadoop performance is based on single node. Soon Caliper to expand the scope of testing multi node performance as well</p></mark>
+	 5. <b>Nginx</b>: Nginx tool is mainly used to measure the web server performance. <br>
+         Test cases executed by this tool: nginx_32_core_local_wrps, nginx_32_core_cross_wrps and nginx_64_core_wrps<br><br>
 
-	
+	 6. <b>Redis</b>: Redis tool evaluate the performance of database. Redis works with an in-memory dataset.<br>
+         Test cases executed by this tool: redis_Instance_#<br><br>
+
+         <i><b>Note</b>: '#' symbol represent the numeric number.</i><br>
+
     </div>
 	
     {% if sum %}
@@ -372,6 +381,8 @@ Hadoop performance is based on single node. Soon Caliper to expand the scope of 
     <div id="application_nginx_64_core_wrps" class="sensei-grid"></div>
     {% endif %}
 
+    <br>
+    <i><b>Note</b>: wrps indicates 10000 requests per second.</i><br>
     </div>
 
 </body>

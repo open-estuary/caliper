@@ -70,16 +70,33 @@
  <p>
        The test under this section is mainly targetted towards the performance evaluation of Network subsystem through various benchmarking tests which exercises the same such as <br>
          1. <b>Netperf</b> : Netperf is a benchmark that can be used to measure various aspects of networking performance. <br>
+	 Test cases executed by this tool: <br>
+	 <li>
+	   TCP_RR, TCP_stream_r, TCP_CRR, TCP_stream and UDP_RR
+	 </li><br>
+
          2. <b>Iperf </b>:   Iperf is a commonly-used network testing tool that can create Transmission Control Protocol (TCP) and User Datagram Protocol (UDP). <br> 
-         3. <b>Lmbench</b> : lmbench is a series of micro benchmarks intended to measure basic operating system and hardware system metrics. <br>
+	 Test cases executed by this tool: <br><br>
+	 <li>
+	   TCP_s#_RX and TCP_s#_TX
+	 </li><br>
+
+	 3. <b>Qperf</b>: qperf measures bandwidth and latency between two nodes. It can work over TCP/IP as well as the RDMA transports.<br>
+	 Test cases executed by this tool: <br><br>
+	 <li>
+	   TCP_bw_#B and TCP_lat_#B
+	 </li><br>
+
+         4. <b>Lmbench</b> : lmbench is a series of micro benchmarks intended to measure basic operating system and hardware system metrics. <br>
+	 Test cases executed by this tool: <br><br>
+	 <li>
+	   Pipe, AF_Unix, UDP, TCP_con and TCP<br><br>
+	 </li>
+
+	<i><b>Note</b>: '#' symbol represents the numeric number.</i><br>
      </p>
    </div>
-	<div> 
-	<mark><p> <b>Notes: </b> <br>
-	The caliper testbed network infrastucture is not very good(only 100mbps) hence it does not put any stress on the XGE modules. 
-	We have tested network subsystem using normal lan cable connected network. On the other side you can see that moonshots at HP Lab are having higher bandwith (10G) hence the performance figures 	 will be higher for Moonshot targets.
-	</p></mark>
-   </div>
+	 
 	 {% if sum %}
     <h1><small>Network Score Summary</small></h1> 
   	    <div style="text-align: center;">
