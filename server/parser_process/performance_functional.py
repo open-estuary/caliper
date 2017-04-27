@@ -125,7 +125,8 @@ def mean_cov_populate(input_excel_path,col_end,file_name):
                     mean_val = numpy.mean(data_list)
                     rb_sheet.cell(row = row_s,column = col_end+1).value = mean_val
                     stdev_val = numpy.std(data_list)
-                    cov= stdev_val / mean_val
+		    # Update the covariance equation to express values in percentage
+                    cov= (stdev_val / mean_val) * 100
                     rb_sheet.cell(row = row_s, column = col_end+ 2).value = cov
 
                     data_list = []
