@@ -469,7 +469,7 @@ def copy_build_caliper(target_arch, flag=0):
     source_build_file = caliper_path.SOURCE_BUILD_FILE
     des_build_file = os.path.join(TMP_DIR, caliper_path.BUILD_FILE)
     logging.info("=" * 55)
-    logging.info("Please Wait while check and copy the files of the tools which was built by other process")
+    logging.info("Please Wait, collecting tool binaries and copying to remote target")
     # Fetch details of previous builds
     for i in range(0, len(files_list)):
         # get the directory, such as 'common','server' and so on

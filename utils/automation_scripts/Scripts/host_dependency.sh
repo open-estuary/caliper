@@ -109,12 +109,15 @@ do
      fi
 done
 
-wget http://www.estuarydev.org/caliper/pcre-8.39.tar.gz
-tar -zxvf pcre-8.39.tar.gz
-cd pcre-8.39
-./configure
-make -j32
-sudo make install
+check=`sudo find /usr/local/lib -name libpcre.so | grep -c libpcre.so`
+if [ $check -ne 1 ];then
+    wget http://www.estuarydev.org/caliper/pcre-8.39.tar.gz
+    tar -zxvf pcre-8.39.tar.gz
+    cd pcre-8.39
+    ./configure
+    make -j32
+    sudo make install
+fi
 
 #NFS mount requirements
 if [ ! -d $NFS_mount ]

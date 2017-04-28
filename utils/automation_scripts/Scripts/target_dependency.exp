@@ -19,8 +19,7 @@ expect {
 }
 
 set i 0
-spawn ssh -t $client_user@$client_ip "sudo rm ~/installation_log.txt"
-spawn ssh -t $client_user@$client_ip "sudo ./target_dependency.sh $option $mount_point | tee ~/installation_log.txt"
+spawn ssh -t $client_user@$client_ip "sudo ./target_dependency.sh $option $mount_point"
 while true {
 	expect {
 		"Are you sure you want to continue connecting" { send "yes\r"; exp_continue}
