@@ -57,7 +57,7 @@
     {% endif %}
 
 <!-- link the caliper report css here -->
- <link rel="stylesheet" type="text/css" href="../static/css/caliper_report.css"/>
+ <link rel="stylesheet" type="text/css" href="{% static 'polls/pictures/caliper_report.css' %}"/>
  
 
 <!-- To resize the windows while opening int he new window -->
@@ -102,8 +102,7 @@ changeSize(1000,700);
 	7. <b>unixbench</b>: A system benchmark which test the performance of CPU and memory.<br>
 	8. <b>sysbench-CPU</b>: Measure the CPU performance by finding the given number of prime numbers and measuring the time for the same.<br><br>
 
-    <p> Refer <a href="../static/TestInfo/CPU_sincore_test_cases.xlsx" target ="_blank"> <b>CPU_sincore_test_cases.xlsx</b> </a> file to identify test cases executed by which tool.</p>
-    </p>
+     </p>
 	<p> To have a very quick reference of the hardware configurations of platforms evaluated, please refer to <a href="{%static '../static/TargetInfo/Platform_Configuration.xlsx' %}" target ="_blank"> 		<b>Platform_Configuration.xlsx </b> </a></p>
    </div>
     {% if sum %}

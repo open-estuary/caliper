@@ -22,7 +22,7 @@ polls_location = os.path.join(web_yamls_dir,"..", "..", "..", "polls", "static",
 static_path = os.path.join(web_yamls_dir,"..", "..", "..", "polls","templates","polls")
 
 static_files = ["Caliper-iteration.png","Caliper_report_clasification.JPG","Caliper_report_classification.JPG","Classification.png","percentile_calculation.PNG","flowchart.PNG"\
-                    ,"iterative_execution.html","score_Calculation.html"]
+                    ,"iterative_execution.html","score_Calculation.html","Caliper_Test_Cases.html","caliper_report.css","Caliper_Test_cases.PNG"]
 def get_targets_data(path):
     yaml_files = []
     for root, dirs, files in os.walk(path):
