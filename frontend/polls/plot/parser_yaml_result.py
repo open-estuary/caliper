@@ -103,6 +103,7 @@ def _get_labels(files):
 
 
 class DrawPicture:
+    # this function is to draw graph of individual test cases of each tool
     @staticmethod
     def draw_testpoint_picture(file_names, test_sub_items, folder,
                                 category=1):
@@ -181,7 +182,7 @@ class DrawPicture:
                 ax.set_xticklabels(tuple(label))
                 label_fig = ax.get_xticklabels()
                 for label_tmp in label_fig:
-                    label_tmp.set_rotation(30)
+                    label_tmp.set_rotation(90)
                     label_tmp.set_size('small')
                 ax.set_title(title_name)
                 plt.axis([0, len(label)*1.2, 0, y_max*1.05])
@@ -193,7 +194,7 @@ class DrawPicture:
                 #skd++ commented and updated to handle the legend outside the plot without cropped
                 #plt.savefig(png_name)
                 plt.savefig(png_name, bbox_extra_artists=(ll,), bbox_inches='tight')
-
+    # this function is to draw summary graph of each category of tools
     @staticmethod
     def draw_testCase_picture(file_names, test_subItems, folder, category=1):
         classify = utils.get_category(category)
@@ -274,7 +275,7 @@ class DrawPicture:
             ax.set_xticklabels(tuple(key_points))
             label_fig = ax.get_xticklabels()
             for label_tmp in label_fig:
-                label_tmp.set_rotation(30)
+                label_tmp.set_rotation(90)
                 label_tmp.set_size('small') 
 
             #skd++ commented & added to move the legend outside the plot  ax.legend(tuple(rects), tuple(label_total), loc="upper right")

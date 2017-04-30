@@ -36,12 +36,37 @@
     {% if multicore_unixbench %}
 	<script src="{% static 'polls/js/example/cpu_multicore/cpu_multi_unixbench.js' %}"></script>
     {% endif %}
+
     {% if multicore_misc %}
 	<script src="{% static 'polls/js/example/cpu_multicore/cpu_multi_misc.js' %}"></script>
     {% endif %}
 
+    {% if openblas_efficiency_10_cores %}
+        <script src="{% static 'polls/js/example/cpu_multicore/openblas_efficiency_10_cores.js' %}"></script>
+    {% endif %}
+
+    {% if openblas_value_10_cores %}
+        <script src="{% static 'polls/js/example/cpu_multicore/openblas_value_10_cores.js' %}"></script>
+    {% endif %}
+
+    {% if openblas_efficiency_32_cores %}
+        <script src="{% static 'polls/js/example/cpu_multicore/openblas_efficiency_32_cores.js' %}"></script>
+    {% endif %}
+
+    {% if openblas_value_32_cores %}
+        <script src="{% static 'polls/js/example/cpu_multicore/openblas_value_32_cores.js' %}"></script>
+    {% endif %}
+
+    {% if openblas_efficiency_64_cores %}
+        <script src="{% static 'polls/js/example/cpu_multicore/openblas_efficiency_64_cores.js' %}"></script>
+    {% endif %}
+
+    {% if openblas_value_64_cores %}
+        <script src="{% static 'polls/js/example/cpu_multicore/openblas_value_64_cores.js' %}"></script>
+    {% endif %}
+
 <!-- link the caliper report css here -->
- <link rel="stylesheet" type="text/css" href="../static/css/caliper_report.css"/>
+ <link rel="stylesheet" type="text/css" href="{% static 'polls/pictures/caliper_report.css' %}"/>
 
 <!-- To resize the windows while opening int he new window -->
 <script type="text/javascript">
@@ -76,12 +101,27 @@ changeSize(1000,700);
    <div  style="text-align: left;">
      <h1><small>Test description </small></h1>
      <p>
-	The test under this section evaluate single core performance of the CPU Subsystem. These tests would impact mainly CPU and the memory subsystem. Relatively low or nil stress on IO</p>
-	<li>Stress-ng : Measure sthe CPU performance by running some CPU intensive routines.</li>
-	<li>unixbench : A system benchmark which test the performance of CPU and memory. </li>
-	<li>sysbench-CPU : Measure the CPU performance by finding the given number of prime numbers and measuring the time for the same.</li>
-	
-    </p>
+	The test under this section evaluate single core performance of the CPU Subsystem. These tests would impact mainly CPU and the memory subsystem. Relatively low or nil stress on IO<br>
+	1. <b>Stress-ng</b>: Measure sthe CPU performance by running some CPU intensive routines.<br><br>
+
+	2. <b>Unixbench</b>: A system benchmark which test the performance of CPU and memory.<br>
+	Test cases executed by this tool:<br>
+	<li>
+	multicore_unixbench<br><br>
+	</li>
+		
+	3. <b>Sysbench-CPU</b>: Measure the CPU performance by finding the given number of prime numbers and measuring the time for the same.<br>
+	Test cases executed by this tool:<br>
+	<li>
+	multicore_misc: sysbench_prime<br><br>
+	</li>
+
+	4. <b>Openblas</b>: This tool is a set of low-level routines for performing common linear algebra operations such as vector addition, scalar multiplication, dot products, linear combinations, and matrix multiplication<br>
+	Test cases executed by this tool:<br>
+	<li>
+	openblas_value_#_cores and openblas_efficiency_#_cores 
+	</li>
+   </p>
 
 	
    </div>
@@ -111,7 +151,54 @@ changeSize(1000,700);
     <div id="multi-unixbench" class="sensei-grid"></div>
     {% endif %}
 
+    {% if openblas_efficiency_10_cores %}
+    <h2><small>Openblas-efficiency-10-cores Score Details: Efficiency</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/cpu_multicore_openblas_efficiency_10_cores.png' %}" height="400" width="850" /> </p>
+        </div>
+    <div id="cpu_multicore_openblas_efficiency_10_cores" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if openblas_value_10_cores %}
+    <h2><small>Openblas-value-10-cores Score Details: Value</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/cpu_multicore_openblas_value_10_cores.png' %}" height="400" width="850" /> </p>
+        </div>
+    <div id="cpu_multicore_openblas_value_10_cores" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if openblas_efficiency_32_cores %}
+    <h2><small>Openblas-efficiency-32-cores Score Details: Efficiency</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/cpu_multicore_openblas_efficiency_32_cores.png' %}" height="400" width="850" /> </p>
+        </div>
+    <div id="cpu_multicore_openblas_efficiency_32_cores" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if openblas_value_32_cores %}
+    <h2><small>Openblas-value-32-cores Score Details: Value</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/cpu_multicore_openblas_value_32_cores.png' %}" height="400" width="850" /> </p>
+        </div>
+    <div id="cpu_multicore_openblas_value_32_cores" class="sensei-grid"></div>
+    {% endif %}
+
+    {% if openblas_efficiency_64_cores %}
+    <h2><small>Openblas-efficiency-64-cores Score Details: Efficiency</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/cpu_multicore_openblas_efficiency_64_cores.png' %}" height="400" width="850" /> </p>
+        </div>
+    <div id="cpu_multicore_openblas_efficiency_64_cores" class="sensei-grid"></div>
+    {% endif %}
     
+    {% if openblas_value_64_cores %}
+    <h2><small>Openblas-value-64-cores Score Details: Value</small></h2>
+    <div style="text-align: center;">
+    <p> <img src="{% static 'polls/pictures/cpu_multicore_openblas_value_64_cores.png' %}" height="400" width="850" /> </p>
+        </div>
+    <div id="cpu_multicore_openblas_value_64_cores" class="sensei-grid"></div>
+    {% endif %}
+
 </div>
 </body>
 </html>

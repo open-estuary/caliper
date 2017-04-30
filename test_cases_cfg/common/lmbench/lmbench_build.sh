@@ -10,7 +10,7 @@ build_lmbench() {
         mkdir -p $myOBJPATH/results
         cp -r -f scripts  $myOBJPATH
         cp src/webpage-lm.tar $myOBJPATH/src
-        cp -f CONFIG lmbench_latency lmbench_bandwidth test.sh $myOBJPATH
+        cp -f CONFIG lmbench_latency lmbench_bandwidth test.sh test_local_bw.sh test_cross_bw.sh test_lat.sh $myOBJPATH
     make clean
    if [ $ARCH = "x86_64" -o $ARCH = "x86_32" ]; then
       make OS=lmbench  CC="$GCC -O2 -msse4" -s

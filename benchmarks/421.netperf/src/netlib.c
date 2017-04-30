@@ -195,12 +195,9 @@ int
   lib_num_loc_cpus,    /* the number of cpus in the system */
   lib_num_rem_cpus;    /* how many we think are in the remote */
 
-int
-  lib_local_peak_cpu_id, /* the CPU number of the most utilized CPU */
-  lib_remote_peak_cpu_id;
-double
-  lib_local_peak_cpu_util, /* its utilization */
-  lib_remote_peak_cpu_util;
+struct cpu_stats_struct
+  lib_local_cpu_stats,
+  lib_remote_cpu_stats;
 
 #define PAGES_PER_CHILD 2
 
@@ -211,9 +208,7 @@ struct  timeval         time1, time2;
 struct  timezone        tz;
 float   lib_elapsed,
         lib_local_maxrate,
-        lib_remote_maxrate,
-        lib_local_cpu_util,
-        lib_remote_cpu_util;
+        lib_remote_maxrate;
 
 float   lib_local_per_cpu_util[MAXCPUS];
 int     lib_cpu_map[MAXCPUS];
@@ -783,6 +778,83 @@ random_ip_address(struct addrinfo *res, int mask_len)
   }
 }
 
+#if defined(HAVE_SENDFILE)
+int netperf_sendfile(SOCKET send_socket, struct ring_elt *send_ring) {
+
+  int  len;
+  int  ret = 0;
+
+#if defined(__linux) || defined(__sun)
+  off_t     scratch_offset;   /* the linux sendfile() call will update
+				 the offset variable, which is
+				 something we do _not_ want to happen
+				 to the value in the send_ring! so, we
+				 have to use a scratch variable. */
+#endif /* __linux  || defined(__sun) */
+
+#if defined (__sun)
+   size_t  scratch_len;	/* the sun sendfilev() needs a place to
+			   tell us how many bytes were written,
+			   even though it also returns the value */
+   sendfilevec_t sv;
+#endif /* __sun */
+
+      /* you can look at netlib.h for a description of the fields we
+	 are passing to sendfile(). 08/2000 */
+#if defined(__linux)
+      scratch_offset = send_ring->offset;
+      len=sendfile(send_socket,
+		   send_ring->fildes,
+		   &scratch_offset,   /* modified after the call! */
+		   send_ring->length);
+#elif defined (__sun)
+      /* We must call with SFV_NOWAIT and a large file size (>= 16MB)
+	 to get zero-copy, as well as compiling with
+	 -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 */
+      sv.sfv_fd = send_ring->fildes;
+      sv.sfv_flag = SFV_NOWAIT;
+      sv.sfv_off = send_ring->offset;
+      sv.sfv_len =  send_ring->length;
+      len = sendfilev(send_socket, &sv, 1, &scratch_len);
+#elif defined(__FreeBSD__)
+      /* so close to HP-UX and yet so far away... :) */
+      ret = sendfile(send_ring->fildes,
+		     send_socket,
+		     send_ring->offset,
+		     send_ring->length,
+		     NULL,
+		     (off_t *)&len,
+		     send_ring->flags);
+#elif defined(USE_OSX)
+      len = send_ring->length;
+      ret = sendfile(send_ring->fildes,
+		     send_socket,
+		     send_ring->offset,
+		     (off_t *)&len,
+		     NULL,
+		     send_ring->flags);
+#else /* original sendile HP-UX */
+      len=sendfile(send_socket,
+		   send_ring->fildes,
+		   send_ring->offset,
+		   send_ring->length,
+		   send_ring->hdtrl,
+		   send_ring->flags);
+#endif 
+
+      /* for OSX and FreeBSD, a non-zero ret means something failed.
+	 I would hope that the length fields are set to -1 or the
+	 like, but at the moment I do not know I can count on
+	 that. for other platforms, ret will be set to zero and we can
+	 rely directly on len. raj 2013-05-01 */
+      if (ret != 0)
+	return -1;
+      else
+	return len;
+
+}
+#endif
+
 
 /* one of these days, this should be abstracted-out just like the CPU
    util stuff.  raj 2005-01-27 */
@@ -1318,38 +1390,6 @@ netlib_init_cpu_map() {
 #endif
 }
 
-void
-get_local_system_info()
-{
-#ifdef HAVE_UNAME
-  struct utsname buf;
-  /* the linux manpage for uname says 0 means success, everyone else
-     says non-negative.  at least they all agree that -1 means
-     error */
-  if (uname(&buf) != -1) {
-    local_sysname = strdup(buf.sysname);
-    local_release = strdup(buf.release);
-    local_version = strdup(buf.version);
-    local_machine = strdup(buf.machine);
-  }
-  else {
-    local_sysname = strdup("UnknownSystem");
-    local_release = strdup("UnknownRelease");
-    local_version = strdup("UnknownVersion");
-    local_machine = strdup("UnknownMachine");
-  }
-#else
-#ifdef WIN32
-  local_sysname = strdup("Windows");
-#else
-  local_sysname = strdup("UnknownSystem");
-#endif
-  local_release = strdup("UnknownRelease");
-  local_version = strdup("UnknownVersion");
-  local_machine = strdup("UnknownMachine");
-
-#endif
-}
 
 
 /****************************************************************/
@@ -1374,15 +1414,12 @@ netlib_init()
     lib_local_per_cpu_util[i] = -1.0;
   }
 
-  lib_local_peak_cpu_id = -1;
-  lib_local_peak_cpu_util = -1.0;
-  lib_remote_peak_cpu_id = -1;
-  lib_remote_peak_cpu_util = -1.0;
+  lib_local_cpu_stats.peak_cpu_id = -1;
+  lib_local_cpu_stats.peak_cpu_util = -1.0;
+  lib_remote_cpu_stats.peak_cpu_id = -1;
+  lib_remote_cpu_stats.peak_cpu_util = -1.0;
 
   netperf_version = strdup(NETPERF_VERSION);
-
-  /* retrieve the local system information */
-  get_local_system_info();
 
   /* on those systems where we know that CPU numbers may not start at
      zero and be contiguous, we provide a way to map from a
@@ -1537,7 +1574,7 @@ allocate_buffer_ring(int width, int buffer_size, int alignment, int offset)
       first_link = temp_link;
     }
     temp_link->buffer_base = (char *)malloc(malloc_size);
-    if (temp_link == NULL) {
+    if (temp_link->buffer_base == NULL) {
       fprintf(where,
 	      "malloc(%d) failed!\n",
 	      malloc_size);
@@ -1790,7 +1827,7 @@ allocate_exs_buffer_ring (int width, int buffer_size, int alignment, int offset,
    a tempoarary file and fill it with random data and use that
    instead.  raj 2007-08-09 */
 
-struct sendfile_ring_elt *
+struct ring_elt *
 alloc_sendfile_buf_ring(int width,
                         int buffer_size,
                         int alignment,
@@ -1798,9 +1835,9 @@ alloc_sendfile_buf_ring(int width,
 
 {
 
-  struct sendfile_ring_elt *first_link = NULL;
-  struct sendfile_ring_elt *temp_link  = NULL;
-  struct sendfile_ring_elt *prev_link;
+  struct ring_elt *first_link = NULL;
+  struct ring_elt *temp_link  = NULL;
+  struct ring_elt *prev_link;
 
   int i;
   int fildes;
@@ -1899,12 +1936,12 @@ alloc_sendfile_buf_ring(int width,
        was successful, but for now we'll just let the code bomb
        mysteriously. 08/2000 */
 
-    temp_link = (struct sendfile_ring_elt *)
-      malloc(sizeof(struct sendfile_ring_elt));
+    temp_link = (struct ring_elt *)
+      malloc(sizeof(struct ring_elt));
     if (temp_link == NULL) {
       fprintf(where,
 	      "malloc(%u) failed!\n",
-	      (unsigned int) sizeof(struct sendfile_ring_elt));
+	      (unsigned int) sizeof(struct ring_elt));
       exit(1);
     }
 
@@ -2027,6 +2064,9 @@ format_number(double number)
   static  char    fmtbuf[64];
 
   switch (libfmt) {
+  case 'B':
+    snprintf(fmtbuf, sizeof(fmtbuf),  "%-7.2f" , number);
+    break;
   case 'K':
     snprintf(fmtbuf, sizeof(fmtbuf),  "%-7.2f" , number / 1024.0);
     break;
@@ -2035,6 +2075,9 @@ format_number(double number)
     break;
   case 'G':
     snprintf(fmtbuf, sizeof(fmtbuf),  "%-7.2f", number / 1024.0 / 1024.0 / 1024.0);
+    break;
+  case 'b':
+    snprintf(fmtbuf, sizeof(fmtbuf),  "%-7.2f" , number * 8);
     break;
   case 'k':
     snprintf(fmtbuf, sizeof(fmtbuf),  "%-7.2f", number * 8 / 1000.0);
@@ -2117,6 +2160,9 @@ format_units()
   static        char    unitbuf[64];
 
   switch (libfmt) {
+  case 'B':
+    strcpy(unitbuf, "Bytes");
+    break;
   case 'K':
     strcpy(unitbuf, "KBytes");
     break;
@@ -2125,6 +2171,9 @@ format_units()
     break;
   case 'G':
     strcpy(unitbuf, "GBytes");
+    break;
+  case 'b':
+    strcpy(unitbuf, "10^0bits");
     break;
   case 'k':
     strcpy(unitbuf, "10^3bits");
@@ -2137,6 +2186,9 @@ format_units()
     break;
   case 'x':
     strcpy(unitbuf, "Trans");
+    break;
+  case 'u':
+    strcpy(unitbuf,"Usec");
     break;
 
   default:
@@ -2917,45 +2969,6 @@ recv_response_n(int n)
   recv_response_timed_n(0,n);
 }
 
-void
-get_remote_system_info()
-{
-  char delim[2];
-  char *token;
-
-  netperf_request.content.request_type = DO_SYSINFO;
-  send_request();
-  recv_response_n(0);
-  if (!netperf_response.content.serv_errno) {
-    delim[1] = '\0';
-    delim[0] = *(char *)netperf_response.content.test_specific_data;
-#if 0
-    token = (char *)netperf_response.content.test_specific_data +
-      (sizeof(netperf_response) - 7); /* OBOB? */
-    *token = 0;
-#endif
-
-    token = strtok((char *)netperf_response.content.test_specific_data,delim);
-    if (token) remote_sysname = strdup(token);
-    else remote_sysname = strdup("UnknownRemoteSysname");
-    token = strtok(NULL,delim);
-    if (token) remote_release = strdup(token);
-    else remote_release = strdup("UnknownRemoteRelease");
-    token = strtok(NULL,delim);
-    if (token) remote_machine = strdup(token);
-    else remote_machine = strdup("UnknownRemoteMachine");
-    token = strtok(NULL,delim);
-    if (token) remote_version = strdup(token);
-    else remote_version = strdup("UnknownRemoteVersion");
-  }
-  else {
-    remote_sysname = strdup("UnknownRemoteSysname");
-    remote_release = strdup("UnknownRemoteRelease");
-    remote_machine = strdup("UnknownRemoteMachine");
-    remote_version = strdup("UnknownRemoteVersion");
-  }
-
-}
 
 
 
@@ -3044,6 +3057,7 @@ void
 set_sock_buffer (SOCKET sd, enum sock_buffer which, int requested_size, int *effective_sizep)
 {
 #ifdef SO_SNDBUF
+
   int optname = (which == SEND_BUFFER) ? SO_SNDBUF : SO_RCVBUF;
 
   /* seems that under Windows, setting a value of zero is how one
@@ -3055,9 +3069,10 @@ set_sock_buffer (SOCKET sd, enum sock_buffer which, int requested_size, int *eff
   if (requested_size >= 0) {
     if (setsockopt(sd, SOL_SOCKET, optname,
 		   (char *)&requested_size, sizeof(int)) < 0) {
-      fprintf(where, "netperf: set_sock_buffer: %s option: errno %d\n",
+      fprintf(where, "netperf: set_sock_buffer: %s option: errno %d (%s)\n",
 	      (which == SEND_BUFFER) ? "SO_SNDBUF" : "SO_RCVBUF",
-	      errno);
+	      errno,
+	      strerror(errno));
       fflush(where);
       exit(1);
     }
@@ -3077,7 +3092,7 @@ set_sock_buffer (SOCKET sd, enum sock_buffer which, int requested_size, int *eff
   get_sock_buffer(sd, which, effective_sizep);
 
 #else /* SO_SNDBUF */
-  *effective_size = -1;
+  *effective_sizep = -1;
 #endif /* SO_SNDBUF */
 }
 
@@ -3152,7 +3167,7 @@ resolve_host(char *hostname,
   hints.ai_family = family;
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_protocol = IPPROTO_TCP;
-  hints.ai_flags = AI_CANONNAME|AI_ADDRCONFIG;
+  hints.ai_flags = AI_CANONNAME | AI_ADDRCONFIG;
   count = 0;
   do {
     error = getaddrinfo((char *)hostname,
@@ -3597,8 +3612,16 @@ calc_thruput_interval(double units_received,double elapsed)
     divisor = 1000.0 * 1000.0 * 1000.0 / 8.0;
     break;
   case 'x':
+  case 'b':
+  case 'B':
     divisor = 1.0;
     break;
+  case 'u':
+    /* latency in microseconds a bit squirrely but we don't want to
+       really muck with things for the default return statement.
+       invert transactions per second and multiply to get microseconds
+       per transaction */
+    return (1 / (units_received / elapsed)) * 1000000.0;
 
   default:
     divisor = 1024.0;
@@ -3647,8 +3670,16 @@ calc_thruput_interval_omni(double units_received,double elapsed)
     divisor = 1000.0 * 1000.0 * 1000.0 / 8.0;
     break;
   case 'x':
+  case 'b':
+  case 'B':
     divisor = 1.0;
     break;
+  case 'u':
+    /* latency in microseconds a bit squirrely but we don't want to
+       really muck with things for the default return statement.
+       invert transactions per second and multiply to get microseconds
+       per transaction */
+    return (1 / (units_received / elapsed)) * 1000000.0;
 
   default:
     fprintf(where,
@@ -3682,9 +3713,9 @@ calc_cpu_util(float elapsed_time)
 
   /* now, what was the most utilized CPU and its util? */
   for (i = 0; i < MAXCPUS; i++) {
-    if (lib_local_per_cpu_util[i] > lib_local_peak_cpu_util) {
-      lib_local_peak_cpu_util = lib_local_per_cpu_util[i];
-      lib_local_peak_cpu_id = lib_cpu_map[i];
+    if (lib_local_per_cpu_util[i] > lib_local_cpu_stats.peak_cpu_util) {
+      lib_local_cpu_stats.peak_cpu_util = lib_local_per_cpu_util[i];
+      lib_local_cpu_stats.peak_cpu_id = lib_cpu_map[i];
     }
   }
 
@@ -3722,7 +3753,7 @@ calc_service_demand_internal(double unit_divisor,
     elapsed_time = lib_elapsed;
   }
   if (cpu_utilization == 0.0) {
-    cpu_utilization = lib_local_cpu_util;
+    cpu_utilization = lib_local_cpu_stats.cpu_util;
   }
 
   thruput = (units_sent /
@@ -3940,6 +3971,16 @@ void demo_first_timestamp() {
   HIST_timestamp(demo_one_ptr);
 }
 
+void demo_reset() {
+  if (debug) {
+    fprintf(where,
+	    "Resetting interim results\n");
+    fflush(where);
+  }
+  units_this_tick = 0;
+  demo_first_timestamp();
+}
+
 /* for a _STREAM test, "a" should be lss_size and "b" should be
    rsr_size. for a _MAERTS test, "a" should be lsr_size and "b" should
    be rss_size. raj 2005-04-06 */
@@ -4083,7 +4124,6 @@ void demo_interval_tick(uint32_t units)
 }
 
 void demo_interval_final() {
-
   double actual_interval;
 
   switch (demo_mode) {
@@ -4923,4 +4963,3 @@ display_confidence()
           100.0 * (interval - loc_cpu_confid),
           100.0 * (interval - rem_cpu_confid));
 }
-

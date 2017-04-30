@@ -1,22 +1,27 @@
-# henxiang c00284940
-# chenxiang66@hisilicon.com
+#!/usr/bin/env python
 
 import re
 import pdb
 import string
 
-
 def bw_parser(content, outfp):
     score = 0
     SEARCH_PAT = re.compile(r'bw\s*=\s*(\d+\.*\d*)B')
     pat_search = SEARCH_PAT.search(content)
+    SEARCH_PAT_MB = re.compile(r'bw\s*=\s*(\d+\.*\d*)MB')
+    pat_search_MB = SEARCH_PAT_MB.search(content)
 
     if pat_search:
-        last_search = string.atof(pat_search.group(1)) / 1024.0
+        last_search = str(pat_search.group(1))
+        last_search = string.atof(last_search) / 1024.0
+        score = last_search
+    elif pat_search_MB:
+        last_search = str(pat_search_MB.group(1))
+        last_search = string.atof(last_search) * 1024
+        score = last_search
     else:
         SEARCH_PAT = re.compile(r'bw\s*=\s*(\d+\.*\d*)KB')
         last_search = SEARCH_PAT.search(content)
-    if last_search:
         outfp.write("bw:" + str(last_search.group(1)) + "KB/s\n")
         score = last_search.group(1)
     return score

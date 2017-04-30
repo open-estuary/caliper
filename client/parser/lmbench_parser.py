@@ -99,6 +99,46 @@ bw_ipc_dic = {'bw_pipe': 'Pipe', 'bw_unix': 'AF_Unix', 'bw_tcp_local': 'TCP',
 mem_latency = ['lat_l1', 'lat_l2', 'lat_mem']
 mem_lat_dic = {'lat_l1': 'L1', 'lat_l2': 'L2', 'lat_mem': 'Main_memory'}
 
+local_mem_lat_label = ['lat_0_5KB', 'lat_1KB', 'lat_2KB', 'lat_3KB', 'lat_4KB', 
+			'lat_6KB', 'lat_8KB', 'lat_12KB', 'lat_16KB', 'lat_24KB', 
+			'lat_32KB', 'lat_48KB', 'lat_64KB', 'lat_96KB', 'lat_128KB', 
+			'lat_192KB', 'lat_256KB', 'lat_384KB', 'lat_512KB', 'lat_768KB',
+			'lat_1MB', 'lat_1_5MB', 'lat_2MB', 'lat_3MB', 'lat_4MB', 
+			'lat_6MB', 'lat_8MB', 'lat_12MB', 'lat_16MB', 'lat_24MB', 
+			'lat_32MB']
+
+local_mem_lat_dic = {'lat_0_5KB': 'lb_lat_00_0.5KB',
+                     'lat_1KB': 'lb_lat_01_01KB',
+                     'lat_2KB': 'lb_lat_02_2KB',
+                     'lat_3KB': 'lb_lat_03_3KB',
+                     'lat_4KB': 'lb_lat_04_4KB',
+                     'lat_6KB': 'lb_lat_05_6KB',
+                     'lat_8KB': 'lb_lat_06_8KB',
+                     'lat_12KB': 'lb_lat_07_12KB',
+                     'lat_16KB': 'lb_lat_08_16KB',
+                     'lat_24KB': 'lb_lat_09_24KB',
+                     'lat_32KB': 'lb_lat_10_32KB',
+                     'lat_48KB': 'lb_lat_11_48KB',
+                     'lat_64KB': 'lb_lat_12_64KB',
+                     'lat_96KB': 'lb_lat_13_96KB',
+                     'lat_128KB': 'lb_lat_14_128KB',
+                     'lat_192KB': 'lb_lat_15_192KB',
+                     'lat_256KB': 'lb_lat_16_256KB',
+                     'lat_384KB': 'lb_lat_17_384KB',
+                     'lat_512KB': 'lb_lat_18_512KB',
+                     'lat_768KB': 'lb_lat_19_768KB',
+                     'lat_1MB': 'lb_lat_20_1MB',
+                     'lat_1_5MB': 'lb_lat_21_1.5MB',
+                     'lat_2MB': 'lb_lat_22_2MB',
+                     'lat_3MB': 'lb_lat_23_3MB',
+                     'lat_4MB': 'lb_lat_24_4MB',
+                     'lat_6MB': 'lb_lat_25_6MB',
+                     'lat_8MB': 'lb_lat_26_8MB',
+                     'lat_12MB': 'lb_lat_27_12MB',
+                     'lat_16MB': 'lb_lat_28_16MB',
+                     'lat_24MB': 'lb_lat_29_24MB',
+                     'lat_32MB': 'lb_lat_30_32MB'}
+
 mb = 1000000
 kb = 1000
 
@@ -326,18 +366,17 @@ def lmbench_lat_parser(content, outfp):
                     except Exception:
                         continue
 
-                    if re.search('0.00098', subline):
-                        if (lat_mem_rd_type == 1):
-                            dic_mem_lat[mem_lat_dic['lat_l1']] = save
-                    else:
-                        if re.search('0.12500', subline):
-                            if (lat_mem_rd_type == 1):
-                                dic_mem_lat[mem_lat_dic['lat_l2']] = save
-                if (size < 0.8):
-                    logging.info('$file: No 8MB memory latency,using $size\n')
-
-                if (lat_mem_rd_type == 1):
-                    dic_mem_lat[mem_lat_dic['lat_mem']] = save
+             #       if re.search('0.00098', subline):
+             #           if (lat_mem_rd_type == 1):
+             #               dic_mem_lat[mem_lat_dic['lat_l1']] = save
+             #       else:
+             #           if re.search('0.12500', subline):
+             #               if (lat_mem_rd_type == 1):
+             #                   dic_mem_lat[mem_lat_dic['lat_l2']] = save
+             #   if (size < 0.8):
+             #      logging.info('$file: No 8MB memory latency,using $size\n')
+             #   if (lat_mem_rd_type == 1):
+             #       dic_mem_lat[mem_lat_dic['lat_mem']] = save
 
             # if re.search('^"stride=16', line):
             #    size = 0
@@ -547,6 +586,196 @@ def memory_speed_parser(content, outfp):
     else:
         score = -1
     return score
+
+def lmbench_bandwidth_stream_v1(content, outfp):
+    dic = {}                                    
+    dic['copy'] = {}                     
+    dic['scale'] = {}                     
+    dic['add'] = {}                     
+    dic['triad'] = {}                     
+    score = 0
+
+    for speed in re.findall("STREAM\s+copy\s+bandwidth:\s+(.*?)MB/sec", content):
+        score = string.atof(speed.strip())
+        outfp.write("lmbench_stream_bw_copy: " + str(score) + "\n")
+        dic['copy'] = score 
+    for speed in re.findall("STREAM\s+scale\s+bandwidth:\s+(.*?)MB/sec", content):
+        score = string.atof(speed.strip())
+        outfp.write("lmbench_stream_bw_scale: " + str(score) + "\n")
+        dic['scale'] = score 
+    for speed in re.findall("STREAM\s+add\s+bandwidth:\s+(.*?)MB/sec", content):
+        score = string.atof(speed.strip())
+        outfp.write("lmbench_stream_bw_add: " + str(score) + "\n")
+        dic['add'] = score 
+    for speed in re.findall("STREAM\s+triad\s+bandwidth:\s+(.*?)MB/sec", content):
+        score = string.atof(speed.strip())
+        outfp.write("lmbench_stream_bw_triad: " + str(score) + "\n")
+        dic['triad'] = score
+    return dic 
+
+def lmbench_bandwidth_stream_v2(content, outfp):
+    dic = {}                                    
+    dic['fill'] = {}                     
+    dic['copy'] = {}                     
+    dic['daxpy'] = {}                     
+    dic['sum'] = {}                     
+    score = 0
+
+    for speed in re.findall("STREAM2\s+fill\s+bandwidth:\s+(.*?)MB/sec", content):
+        score = string.atof(speed.strip())
+        outfp.write("lmbench_stream2_bw_fill: " + str(score) + "\n")
+        dic['fill'] = score 
+    for speed in re.findall("STREAM2\s+copy\s+bandwidth:\s+(.*?)MB/sec", content):
+        score = string.atof(speed.strip())
+        outfp.write("lmbench_stream2_bw_copy: " + str(score) + "\n")
+        dic['copy'] = score 
+    for speed in re.findall("STREAM2\s+daxpy\s+bandwidth:\s+(.*?)MB/sec", content):
+        score = string.atof(speed.strip())
+        outfp.write("lmbench_stream2_bw_daxpy: " + str(score) + "\n")
+        dic['daxpy'] = score 
+    for speed in re.findall("STREAM2\s+sum\s+bandwidth:\s+(.*?)MB/sec", content):
+        score = string.atof(speed.strip())
+        outfp.write("lmbench_stream2_bw_sum: " + str(score) + "\n")
+        dic['sum'] = score 
+    return dic 
+
+
+def lmbench_latency_local_mem(content, outfp):
+    dic = {}                                    
+
+    for block in content.split('\n\n'):
+        orig_block = block
+        for line in block.splitlines():
+            if not line:
+                continue
+ 
+            if re.search('^"stride=128', line):
+                size = 0
+                save = 0
+                for subline in orig_block.splitlines():
+                    try:
+                        size = subline.split()[0]
+                        save = subline.split()[1]
+                    except Exception:
+                        continue
+
+                    if re.match('0.00049', subline):
+                        dic[local_mem_lat_dic['lat_0_5KB']] = save
+                    elif re.match('0.00098', subline):
+                        dic[local_mem_lat_dic['lat_1KB']] = save
+                    elif re.match('0.00195', subline):
+                        dic[local_mem_lat_dic['lat_2KB']] = save
+                    elif re.match('0.00293', subline):
+                        dic[local_mem_lat_dic['lat_3KB']] = save
+                    elif re.match('0.00391', subline):
+                        dic[local_mem_lat_dic['lat_4KB']] = save
+                    elif re.match('0.00586', subline):
+                        dic[local_mem_lat_dic['lat_6KB']] = save
+                    elif re.match('0.00781', subline):
+                        dic[local_mem_lat_dic['lat_8KB']] = save
+                    elif re.match('0.01172', subline):
+                        dic[local_mem_lat_dic['lat_12KB']] = save
+                    elif re.match('0.01562', subline):
+                        dic[local_mem_lat_dic['lat_16KB']] = save
+                    elif re.match('0.02344', subline):
+                        dic[local_mem_lat_dic['lat_24KB']] = save
+                    elif re.match('0.03125', subline):
+                        dic[local_mem_lat_dic['lat_32KB']] = save
+                    elif re.match('0.04688', subline):
+                        dic[local_mem_lat_dic['lat_48KB']] = save
+                    elif re.match('0.06250', subline):
+                        dic[local_mem_lat_dic['lat_64KB']] = save
+                    elif re.match('0.09375', subline):
+                        dic[local_mem_lat_dic['lat_96KB']] = save
+                    elif re.match('0.12500', subline):
+                        dic[local_mem_lat_dic['lat_128KB']] = save
+                    elif re.match('0.18750', subline):
+                        dic[local_mem_lat_dic['lat_192KB']] = save
+                    elif re.match('0.25000', subline):
+                        dic[local_mem_lat_dic['lat_256KB']] = save
+                    elif re.match('0.37500', subline):
+                        dic[local_mem_lat_dic['lat_384KB']] = save
+                    elif re.match('0.50000', subline):
+                        dic[local_mem_lat_dic['lat_512KB']] = save
+                    elif re.match('0.75000', subline):
+                        dic[local_mem_lat_dic['lat_768KB']] = save
+                    elif re.match('1.00000', subline):
+                        dic[local_mem_lat_dic['lat_1MB']] = save
+                    elif re.match('1.50000', subline):
+                        dic[local_mem_lat_dic['lat_1_5MB']] = save
+                    elif re.match('2.00000', subline):
+                        dic[local_mem_lat_dic['lat_2MB']] = save
+                    elif re.match('3.00000', subline):
+                        dic[local_mem_lat_dic['lat_3MB']] = save
+                    elif re.match('4.00000', subline):
+                        dic[local_mem_lat_dic['lat_4MB']] = save
+                    elif re.match('6.00000', subline):
+                        dic[local_mem_lat_dic['lat_6MB']] = save
+                    elif re.match('8.00000', subline):
+                        dic[local_mem_lat_dic['lat_8MB']] = save
+                    elif re.match('12.00000', subline):
+                        dic[local_mem_lat_dic['lat_12MB']] = save
+                    elif re.match('16.00000', subline):
+                        dic[local_mem_lat_dic['lat_16MB']] = save
+                    elif re.match('24.00000', subline):
+                        dic[local_mem_lat_dic['lat_24MB']] = save
+                    elif re.match('32.00000', subline):
+                       dic[local_mem_lat_dic['lat_32MB']] = save
+    
+    outfp.write(yaml.dump(dic, default_flow_style=False))
+    return dic          
+
+def lmbench_bandwidth_parser_new(content, outfp):
+    dic = {}
+    dic['read'] = {}
+    dic['fread'] = {}
+    dic['write'] = {}
+    dic['fwrite'] = {}
+    dic['bzero'] = {}
+    dic['readwrite'] = {}
+    dic['copy'] = {}
+    dic['fcopy'] = {}
+    dic['bcopy'] = {}
+
+    count = 0
+    for block in content.split('\n\n'):
+        orig_block = block
+        for line in block.splitlines():
+
+            if not line:
+                continue
+
+            if re.search('32.00', line):
+                count += 1
+                if count == 1:
+                    dic['read'] = line.split()[1]
+                    outfp.write("lmbench_bandwidth_read: " + str(line.split()[1]) + "\n")
+                if count == 2:
+                    dic['fread'] = line.split()[1]
+                    outfp.write("lmbench_bandwidth_fread: " + str(line.split()[1]) + "\n")
+                if count == 3:
+                    dic['write'] = line.split()[1]
+                    outfp.write("lmbench_bandwidth_write: " + str(line.split()[1]) + "\n")
+                if count == 4:
+                    dic['fwrite'] = line.split()[1]
+                    outfp.write("lmbench_bandwidth_fwrite: " + str(line.split()[1]) + "\n")
+                if count == 5:
+                    dic['bzero'] = line.split()[1]
+                    outfp.write("lmbench_bandwidth_bzero: " + str(line.split()[1]) + "\n")
+                if count == 6:
+                    dic['readwrite'] = line.split()[1]
+                    outfp.write("lmbench_bandwidth_readwrite: " + str(line.split()[1]) + "\n")
+                if count == 7:
+                    dic['copy'] = line.split()[1]
+                    outfp.write("lmbench_bandwidth_copy: " + str(line.split()[1]) + "\n")
+                if count == 8:
+                    dic['fcopy'] = line.split()[1]
+                    outfp.write("lmbench_bandwidth_fcopy: " + str(line.split()[1]) + "\n")
+                if count == 9:
+                    dic['bcopy'] = line.split()[1]
+                    outfp.write("lmbench_bandwidth_bcopy: " + str(line.split()[1]) + "\n")
+                    break
+    return dic
 
 if __name__ == "__main__":
     infp = open(sys.argv[1], 'r')

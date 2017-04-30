@@ -52,8 +52,7 @@
     <div><input type="hidden" id="example_tst" value="{{ dic_sum }}"> </div>
 
     <div class="page-header">
-    <h1> Caliper Benchmarking Report </h1> <!--SKD++-->
-    <p><b>Report Version & Date : Version-yyyymmdd</b> </p>
+    <h1> Caliper Benchmarking Report [ version-yyyymmdd ] </h1> <!--SKD++-->
     </div>
     <!-- START Updating data-->
     <p>
@@ -77,47 +76,46 @@
             across all platforms.
         </mark>
 
+	This gives a measure of variability for the samples with respect to the <b>Mean</b> value.
+	Please click here <a href="{% static 'polls/pictures/iterative_execution.html' %}" target="_blank"> <b>Caliper Execution</b></a> for more details</p>
     </p>
 
-<h2> Report presentation </h2>
-	<p>
-	This report present the percentile score based comparison of platforms 
-under each categories and  test scenarios.  Caliper collect the original
- execution results from each test cases  and normalize them. This is 
-consisting of dynamic range compression of measured values and 
-conversion of <b>"Smaller The Better"</b> values to <b>"Higher The Better"</b>. Hence, in this report, all the scores are <b> Higher The Better </b>.These calculated scores are then compared across platforms and then converted them to <b> "Percentiles" </b>.
- This means the highest value in each category will have the value of 
-100 and rest will be relative percentile score to this. If you want to 
-know more details about the scoring process followed in this report, 
-please go to <a href="{% static 'polls/pictures/score_Calculation.html' %}" target="_blank"> <b>Caliper score calculation.</b></a>
-       <br>If you want to know more about caliper, please visit <a href="http://open-estuary.org/caliper-benchmarking/" target="_blank"> <b>Caliper page in Open Estuary Website</b></a></p>
+	<h2> 1. Overall Assessment </h2>
+    <p style="margin-left: 100px"> <!-- First level indentation-->
+    <h3>1.1 Key Observation</h3>
 
-<h3> Data sample collection and variability check </h3>
-	<p>
-	Caliper execute the test suites iteratively to produce multiple samples of the test results. These samples are used to calculate the 
-<b>Coefficient of variation [CV] </b>. <b>CV</b> is defined as the ratio of the <b> Standard Deviation</b> to the <b>Mean</b> represented in percentage. </br>
-This gives a measure of variability for the samples with respect to the <b>Mean</b> value.
-Please click here <a href="{% static 'polls/pictures/iterative_execution.html' %}" target="_blank"> <b>Caliper Execution</b></a> for more details</p>
+    <font size="2" color="purple"> Please click each line below to get further information</font>
 
-    <h2>Tested Platforms: Overview</h2> 
+
+    <ul>
+
+	<li style="color:red;">
+            <a onClick="MyWindow=window.open('./index.html#Performance Score',width=50,height=50); return false;">
+                <font color="red">
+                    Add your observation here one by one. Update the onClick parameter.
+                </font>
+            </a>
+	</li>
+    </ul>
+
+    <h3>1.2 Tested Platforms</h3>
     <div id="platform_configuration" class="sensei-grid"></div> 
     <i><b>Attn: </b>Please <b>scroll to right</b> to see the table completely. Same with other tables in this report</i><br>
-    <i><b>arm_64 Core is ARM-v8, Cortex A57 </b>  </i><br><br>
+    <i><b>arm_64 Core is ARM-v8, Cortex A72 </b>  </i><br><br>
    
-    <mark><b>Notes: <br></b> a) Platform Name = BoardName-OSversion : Ex: RH2285-U15.04= RH2285 server with Ubuntu 15.04; D02-Est2.1-U15.04= D02 board with Est2.1 based on Ubuntu 15.04 distro <br> b) Please click to get the <b>hardware details of each target platform</b>: <a href="static/TargetInfo/D02-EST2.2-U15.04_Info.txt" target="_blank">D02-EST2.2-U15.04</a>, <a href="static/TargetInfo/DELLR7-E5606-U15.04_Info.txt" target="_blank">DELLR7-E5606-U15.0</a>, <a href="static/TargetInfo/MOONSHOT-M400-U14.04_Info.txt" target="_blank">MOONSHOT-M400-U14.04</a>, <a href="static/TargetInfo/MOONSHOT-M710P-U14.04_Info.txt" target="_blank">MOONSHOT-M710P-U14.04</a>, <a href="static/TargetInfo/OVERDRIVE-U15.04_Info.txt" target="_blank">OVERDRIVEU15.04_Info.txt</a>, <a href="static/TargetInfo/PC-I5650-U15.04_Info.txt" target="_blank">PC-I5650-U15.04</a>, <a href="static/TargetInfo/RH2285-E52420V2-U15.04_Info.txt" target="_blank">RH2285-E52420V2-U15.04</a>, <a href="static/TargetInfo/RH2288-E52690V3-U15.04_Info.txt" target="_blank">RH2288-E52690V3-U15.04</a></mark>
+    <ul>
 
-<p> To have a very quick reference of the hardware configurations of platforms evaluated, please refer to <a href="{%static '../static/TargetInfo/Platform_Configuration.xlsx' %}" target ="_blank"> <b>Platform_Configuration.xlsx </b> </a>
- 
-<hr>
-Add the observation here !!!!!!!!
-<hr>
-    <h1>Overall Benchmarking Score Summary</h1>
+        <li><b>Hardware details </b>:</li>
+
+Please give link to hardware_info logs of each platform here
+
+    </ul>
+  <h3> 1.3 Functional Score Summary</h3>
+
     {% if func_summary %}
     <h2>Caliper Functional Test Score</h2>
     
     <p>Caliper does basic functional verification on the target platforms. It also creates the scores based on the pass rate of functional tests on each platform. Currently caliper categorizes the functional tests under <a href="/polls/kernel" target="_blank">KERNEL</a> and <a href="/polls/debug" target="_blank">DEBUG</a>(please click the link for each category details)
-    <!-- More detail information about <a href="/polls/kernel">KERNEL</a>.
-    More detail information about <a href="/polls/peripheral">PERIPHERAL</a>. SKD++ commented-->
     </p>
 
 	<div style="text-align: center;">
@@ -128,10 +126,9 @@ Add the observation here !!!!!!!!
     <div id="sum_func_info" class="sensei-grid"></div>
     {% endif %}
 
-    {% if perf_summary %}
-    <h2>Caliper Performance Test Score</h2>
 
-    <p>Caliper does various performance tests on all the target platforms. It creates consolidated score for each platform on each category of benchmarks. Currently caliper categorizes the performance tests under <a href="/polls/algorithm" target="_blank">ALGORITHM</a>, <a href="/polls/cpu_sincore" target="_blank">CPU_SINCORE</a>,<a href="/polls/cpu_multicore" target="_blank">CPU_MULTICORE</a>, <a href="/polls/storage" target="_blank">STORAGE</a>, <a href="/polls/latency" target="_blank">LATENCY</a>, More detail information about  <a href="/polls/network" target="_blank">NETWORK</a>, <a href="/polls/memory" target="_blank">MEMORY</a>, and <a href="/polls/application" target="_blank"> APPLICATION</a> (please click on each link to get the details for each category)</p>
+    <h3>1.4 Performance Score Summary</h3>
+    {% if perf_summary %}
 
 	<div style="text-align: center;">
         <p> <img src="{% static 'polls/pictures/Performance_Total_Scores.png' %}" height="700"
@@ -144,29 +141,71 @@ Add the observation here !!!!!!!!
      {% endif %}
     </div>
 
-<div style="text-align: left;">
-<h1>The test data </h1>
-<p> The original values of test data can be obtained from the below excels. <br>
-<b> 1.<a href="static/TestInfo/Report-Data/Performance-Tests.xlsx" target="_blank"> <b>Top Dimention - Performance Test Results</b></a></b> <br>
-<b> 2.<a href="static/TestInfo/Report-Data/Functional-Tests.xlsx" target="_blank"> <b>Top Dimention - Functional Test Results </b></a> </b><br>
-</p>
-</div>
+<h2>2. Detailed Assessment </h2>
 
-<div style="text-align: left;">
-<h1>The test tools  </h1>
-<p> Caliper uses industry standard open source test and benchmarking tools for the comparison. <br>
-The tools details and versions of the same can be obtained here, <a href="static/TestInfo/Tool/Tool_details.xlsx" target="_blank"> <b>Tool_details.xlsx </b></a> 
-</p>
-</div>
+<h3>2.1 Performance </h3>
 
-<p><hr>
-<i><b>Caliper Changelog:<br> </b> <b>version-yyyymmdd:</b></i> <br>
-Change logs comes here...
-a)..
-b)....
+<ul>
 
-<i><b>Caliper Disclaimers:<br> </b> a) The actual test results/values are processed using different algorithm to derive the Scores. The Scores are intended only to compare various parameters among the platforms. If you want to see the original test results/values for debugging/analysis, please request for caliper test execution logs. <br> b) Each benchmark execution can depend on system conditions at the time of run. Hence, even if, caliper reboots the platform before each performance tests, the repeated test may not give 'exactly' same results for performance<br> c) There could be variations in the results due to specific peripheral hardwares in each platform(like RAM, HDD models etc).<br> d) These results are not intended for any claim, rather it is intended to use to improve the platforms as needed<br> e) During the initial analysis, we observed certain minor issues which demands score calculations optimization. We have marked as 'FixMe' with details, wherever needed. <br>f) Please provide your comments and feedback to caliper@open-estuary.org. It will help us to improve the report</i>
-<hr></p>
+    <li><b>Test Categories :</b>
+        <i>
+            <a href="polls/latency.html" target="_blank">LATENCY</a>,
+            <a href="polls/memory.html" target="_blank">MEMORY</a>,
+            <a href="polls/application.html" target="_blank"> APPLICATION</a>,
+            <a href="polls/cpu_multicore.html" target="_blank">CPU_MULTICORE</a>,
+            <a href="polls/storage.html" target="_blank">STORAGE</a>,
+            <a href="polls/cpu_sincore.html" target="_blank">CPU_SINCORE</a>,
+            <a href="polls/algorithm.html" target="_blank">ALGORITHM</a> and
+            <a href="polls/network.html" target="_blank">NETWORK</a>
+        </i>
+    </li>
+
+    <li><b>Consolidated Test Results:</b> <a href="static/TestInfo/Report-Data/Performance-Tests.xlsx" target="_blank">
+        <i>Gives the actual test results from each test cases</i></a>
+
+</ul>
+
+
+<h2>3. Documentation:</h2>
+<ul>
+    <li>
+        <a href="https://github.com/open-estuary/caliper/blob/master/doc/Caliper_User_Manual.pdf" > <i>Caliper user manuel</i> </a>
+    </li>
+    <li>
+        <a href="./static/polls/pictures/score_Calculation.html" target="_blank"> <i>Caliper Scoring - HowTo</i></a>
+    </li>
+
+    <li><a href="./static/TestInfo/Tool_details.xlsx" target="_blank"> <i>List of tools</i> </a></li>
+
+
+    <li id="Change log">Changelog [ version-yyyymmdd ]</li>
+
+    <ol type="a">
+        <li>
+            New tools and new test cases has been added as per sailing report:
+            <a href="./static/polls/pictures/Caliper_Test_Cases.html" target="_blank">Caliper Test Cases</a>
+        </li>
+
+        <li>
+            Table alignment has been changed to support nginx and redis test cases.
+        </li>
+
+    </ol>
+
+
+</ul>
+
+
+<h2>4. Disclaimers:</h2>
+<ul>
+    <li>
+        Caliper scores are not actual test results but they are derived from the actual values using some specific
+        algoritms.
+    <li>
+        Caliper benchmark scores can depend on the system conditions and resources at the time of execution. However
+        Caliper execute atleast 5 iterations of each test to ensure the repeatability and authenticity of the scores.
+    </li>
+</ul>
 
 <div style="text-align: center;">
 <dl id="copyright">

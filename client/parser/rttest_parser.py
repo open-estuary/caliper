@@ -1,15 +1,8 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
-#
-#   Author  :   wuyanjun 00291783
-#   E-mail  :   wu.wu@hisilicon.com
-#   Date    :   14/11/29 15:22:25
-#   Desc    :
-#
 
 import re
 import string
-
 
 def get_average_value(content, option):
     score = 0
@@ -28,7 +21,6 @@ def get_average_value(content, option):
         i = i + 1
     score = sum_lat / i
     return score
-
 
 def rttest_parser(content, outfp):
     score = -1

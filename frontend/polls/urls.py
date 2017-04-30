@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-#    E-mail    :    wu.wu@hisilicon.com
-#    Data      :    2015-06-02 17:22:02
-#    Desc      :
+
 from django.conf.urls import url
 from django.conf import settings
 
@@ -13,19 +10,19 @@ urlpatterns = [
         # ex:  /polls/
         url(r'^$', views.index, name='index'),
         # for Performance
-        url(r'algorithm/$', views.algorithm, name='algorithm'),
-        url(r'cpu_sincore/$', views.cpu_sincore, name='cpu_sincore'),
-        url(r'cpu_multicore/$', views.cpu_multicore, name='cpu_multicore'),
-        url(r'storage/$', views.storage, name='storage'),
-        url(r'latency/$', views.latency, name='latency'),
-        url(r'memory/$', views.memory, name='memory'),
-        url(r'network/$', views.network, name='network'),
+        url(r'algorithm.html/$', views.algorithm, name='algorithm'),
+        url(r'cpu_sincore.html/$', views.cpu_sincore, name='cpu_sincore'),
+        url(r'cpu_multicore.html/$', views.cpu_multicore, name='cpu_multicore'),
+        url(r'storage.html/$', views.storage, name='storage'),
+        url(r'latency.html/$', views.latency, name='latency'),
+        url(r'memory.html/$', views.memory, name='memory'),
+        url(r'network.html/$', views.network, name='network'),
         #url(r'io/$', views.io, name='io'),
-        url(r'application/$', views.application, name='application'),
+        url(r'application.html/$', views.application, name='application'),
         # for Functional
-        url(r'kernel/$', views.kernel, name='kernel'),
-        url(r'debug/$', views.debug, name='debug'),
-        url(r'peripheral/$', views.peripheral, name='peripheral'),
+        url(r'kernel.html/$', views.kernel, name='kernel'),
+        url(r'debug.html/$', views.debug, name='debug'),
+        url(r'peripheral.html/$', views.peripheral, name='peripheral'),
         ##
         url(r'static/(?P<path>.*)$', 'django.views.static.serve',
             {'document_root': settings.STATIC_ROOT}, name='static'),

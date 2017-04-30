@@ -49,7 +49,7 @@
     {% endif %}
 
  <!-- link the caliper report css here  -->
- <link rel="stylesheet" type="text/css" href="../static/css/caliper_report.css"/>
+ <link rel="stylesheet" type="text/css" href="{% static 'polls/pictures/caliper_report.css' %}"/>
 
 <!-- To resize the windows while opening int he new window -->
 <script type="text/javascript">
@@ -85,11 +85,10 @@ changeSize(1000,700);
 	The <b>score summary</b> is the percentage of performance of each platform for individual test scenarios. The detailed sections shows the individual test case score(rank) in the same fashion. <br>
 
    <h1><small>Test description </small></h1>
-    <p> Tests under this section captures the performace of the system measuring latencies for various system operations using following tools: </li>
-         <li><b>LMBENCH </b>:This is a series of micro benchmarks intended to measure basic operating system and hardware system metrics. </li>
-	 <li><b>RTTEST</b> : This is a set of programs that test and measure various components of real-time kernel behavior such as timer, signal, and hardware latency.</li>
-	 
-     </p>
+    <p> Tests under this section captures the performace of the system measuring latencies for various system operations using following tools: <br>
+         1. <b>LMBENCH</b>: This is a series of micro benchmarks intended to measure basic operating system and hardware system metrics.<br>
+	 All test cases are executed by lmbench tool.
+   </p>
 	
     </div>
 

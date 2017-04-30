@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
-#
-#   E-mail  :   wu.wu@hisilicon.com
-#   Date    :   15/01/06 10:16:05
-#   Desc    :
-#
+
 from caliper.client.shared import error, settings
 from caliper.server import utils
 from caliper.server.hosts import ssh_host
@@ -12,7 +8,7 @@ from caliper.server.hosts import ssh_host
 
 DEFAULT_FOLLOW_PATH = '/var/log/kern.log'
 DEFAULT_PATTERNS_PATH = 'console_patterns'
-SSH_ENGINE = settings.settings.get_value('SERVER', 'ssh_engine')
+SSH_ENGINE = settings.settings.get_value('TestNode', 'ssh_engine')
 _started_hostnames = set()
 
 

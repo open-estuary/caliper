@@ -1,9 +1,5 @@
 #!/usr/bin/python
 
-# wuyanjun 00291783
-# wu.wu@hisilicon.com
-# Copyright
-
 import os
 import sys
 import logging

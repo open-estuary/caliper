@@ -1,0 +1,17 @@
+body {
+     width: 100%;
+     margin: 25px auto;
+     padding: 10px 20px;
+}
+
+.sensei-grid {
+     width: 100%;
+     margin-bottom: 0px;
+}
+ 
+h1 {
+     font-weight: bold;
+     line-height: normal;
+}
+
+

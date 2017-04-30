@@ -1,16 +1,9 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
-#
-#   Author  :   wuyanjun 00291783
-#   E-mail  :   wu.wu@hisilicon.com
-#   Date    :   15/01/19 16:20:17
-#   Desc    :
-#
 
 import re
 import string
 import pdb
-
 
 def iperf_parser(content, outfp, tag):
     score = -1
@@ -32,18 +25,15 @@ def iperf_parser(content, outfp, tag):
                 for speed in re.findall("[MG]Bytes(.*?)MBytes/sec.*?/.*?", content):
                     score = string.atof(speed.strip())
 
-    outfp.write("speed of %s is %.3f Mbits/sec\n" % (tag, score))
+    outfp.write("speed of %s is %.3f MBytes/sec\n" % (tag, score))
 
     return score * 8
-
 
 def iperf_TCP_parser(content, outfp):
     return iperf_parser(content, outfp, 'iperf TCP')
 
-
 def iperf_UDP_parser(content, outfp):
     return iperf_parser(content, outfp, 'iperf UDP')
-
 
 if __name__ == "__main__":
     infp = open("iperf_output.log", "r")
