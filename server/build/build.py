@@ -659,7 +659,6 @@ def create_folder(folder, mode=0755):
     except OSError:
         os.makedirs(folder, mode)
 
-
 def build_for_target(target,f_option,clear):
     #f_option is set if -f is used
     # Create the temperory build folders
@@ -703,14 +702,6 @@ def build_for_target(target,f_option,clear):
     if not os.path.exists(caliper_path.HTML_DATA_DIR_OUTPUT):
         os.makedirs(caliper_path.HTML_DATA_DIR_OUTPUT)
 
-    if server_utils.get_target_ip(target) in server_utils.get_local_ip():
-        return build_for_local()
-
-    try:
-        host_arch = server_utils.get_local_machine_arch()
-    except Exception, e:
-        logging.debug(" Error in get_local_machine_arch()")
-        raise e
     # This call assign target_arch with target architecture. Call
     # "get_host_arch" looks to be confusing :(
     target_arch = server_utils.get_host_arch(target)
@@ -721,9 +712,18 @@ def build_for_target(target,f_option,clear):
     create_folder(WS_target_arch_dir, 0755)
 
     # Why should we check and remove local architecture folder???
-    #host_arch_dir = os.path.join(GEN_DIR, host_arch)
-    #if os.path.exists(host_arch_dir):
+    # host_arch_dir = os.path.join(GEN_DIR, host_arch)
+    # if os.path.exists(host_arch_dir):
     #    shutil.rmtree(host_arch_dir)
+
+    if server_utils.get_target_ip(target) in server_utils.get_local_ip():
+        return build_for_local()
+
+    try:
+        host_arch = server_utils.get_local_machine_arch()
+    except Exception, e:
+        logging.debug(" Error in get_local_machine_arch()")
+        raise e
 
     logging.info(" ")
     logging.info(" Local Host Arch : %s" % host_arch)
@@ -807,8 +807,8 @@ def build_for_local():
     arch = server_utils.get_local_machine_arch()
     logging.info("arch of the local host is %s" % arch)
     arch_dir = os.path.join(GEN_DIR, arch)
-    if os.path.exists(arch_dir):
-        shutil.rmtree(arch_dir)
+    # if os.path.exists(arch_dir):
+    #     shutil.rmtree(arch_dir)
     try:
         result = build_caliper(arch, flag=0, clear=0)
     except Exception, e:
