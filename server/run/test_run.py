@@ -705,6 +705,40 @@ def run_remote_client_commands(exec_dir, kind_bench, commands, target,
             output = result.stderr
     return [output, returncode]
 
+def run_commands(exec_dir, kind_bench, commands,
+                    stdout_tee=None, stderr_tee=None, target=None):
+    returncode = -1
+    output = ''
+
+    if not os.path.exists(exec_dir):
+        output = exec_dir + ' not exist'
+        return [output, returncode]
+
+    pwd = os.getcwd()
+    os.chdir(exec_dir)
+    try:
+        # the commands is multiple lines, and was included by Quotation
+        actual_commands = get_actual_commands(commands, target)
+        try:
+            logging.debug("the actual commands running in local is: %s"
+                            % actual_commands)
+            result = utils.run(actual_commands, stdout_tee=stdout_tee,
+                                stderr_tee=stderr_tee, verbose=True)
+        except error.CmdError, e:
+            raise error.ServRunError(e.args[0], e.args[1])
+    except Exception, e:
+        logging.debug(e)
+    else:
+        if result.exit_status and result.stderr and not result.stdout:
+            returncode = result.exit_status
+        else:
+            returncode = 0
+        try:
+            output = result.stdout
+        except Exception:
+            output = result.stderr
+    os.chdir(pwd)
+    return [output, returncode]
 
 def run_client_command(cmd_sec_name, tmp_logfile, kind_bench,
                         target, command, bench_name):
