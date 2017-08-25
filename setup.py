@@ -143,6 +143,7 @@ def run():
     os.chmod(caliper_data_dir, stat.S_IRWXO + stat.S_IRWXU)
     setup(
             name='caliper',
+            version=common.VERSION,
             description='A test suite for automatically running on different\
                 devices, and compare the test results',
             package_dir=get_package_dirs(),

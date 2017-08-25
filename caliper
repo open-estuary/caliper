@@ -319,7 +319,7 @@ def check_nginx_tool():
     return flag
 
 if __name__=="__main__":
-    parser = ArgumentParser()
+    parser = ArgumentParser(version=common.VERSION)
     parser.add_argument("-b", "--build", action="store_true",
             dest="build", default=True,help="select to incrementally build the selected test tools")
     parser.add_argument("-B", "--nobuild", action="store_false",
