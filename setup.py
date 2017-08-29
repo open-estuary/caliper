@@ -20,6 +20,7 @@ except ImportError:
 
 import client.setup
 import server.setup
+import upload.setup
 
 CURRENT_PATH = os.path.dirname(sys.modules[__name__].__file__)
 CALIPER_TMP_DIR = os.path.join(os.environ['HOME'], 'caliper_output')
@@ -96,13 +97,14 @@ def _combine_dicts(list_dicts):
 
 
 def get_packages():
-    return (client.setup.get_packages() + server.setup.get_packages())
+    return (client.setup.get_packages() + server.setup.get_packages()+upload.setup.get_packages())
 
 
 def get_package_dirs():
     return _combine_dicts(
             [client.setup.get_package_dirs(),
-            server.setup.get_package_dirs()]
+            server.setup.get_package_dirs(),
+            upload.setup.get_package_dirs()]
             )
 
 

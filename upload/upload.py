@@ -1,13 +1,38 @@
 from poster.encode import multipart_encode
 from poster.streaminghttp import register_openers
+
 import urllib
 import urllib2
 import shutil
 import os,tarfile
+from caliper.client.shared import caliper_path
+import caliper.server.utils as server_utils
 
 def make_targz(output_filename, source_dir):
     with tarfile.open(output_filename, "w:gz") as tar:
         tar.add(source_dir, arcname=os.path.basename(source_dir))
+
+def upload_result(target):
+    '''
+    upload result to server
+    :param target: target machine running test
+    :return: None
+    '''
+    #workspace dir path for the test, for example: /home/fanxh/caliper_output/hansanyang-OptiPlex-3020_WS_17-05-03_11-29-29
+    dirpath = caliper_path.workspace;
+
+    #dir path for score, for example: /home/fanxh/caliper_output/frontend/frontend/data_files/Normalised_Logs
+    dir_score_path = caliper_path.HTML_DATA_DIR_OUTPUT
+
+    target_name = server_utils.get_host_name(target)
+    #score json file name , for example:hansanyang-OptiPlex-3020_score_post.json
+    score_json_file_name = target_name + '_score_post.json'
+
+    #for example, /home/fanxh/caliper_output/frontend/frontend/data_files/Normalised_Logs/hansanyang-OptiPlex-3020_score_post.json
+    score_json_file_fullname = os.path.join(dir_score_path,score_json_file_name)
+
+    upload_and_savedb(dirpath,score_json_file_fullname)
+
 
 def upload_and_savedb(dirpath,json_path_source):
     # tar file      
@@ -33,6 +58,8 @@ def upload_and_savedb(dirpath,json_path_source):
     print db_response.read()
 
 # example
-dirpath = "C:\\Users\\yangtt\\Desktop\\fanxh-OptiPlex-3020_WS_17-08-07_11-03-46" 
-json_path_source="C:\\Users\\yangtt\\Desktop\\Normalised_Logs\\ts-OptiPlex-3020_score_post.json"
+#dirpath = "C:\\Users\\yangtt\\Desktop\\fanxh-OptiPlex-3020_WS_17-08-07_11-03-46"
+dirpath = caliper_path.workspace;
+#json_path_source="C:\\Users\\yangtt\\Desktop\\Normalised_Logs\\ts-OptiPlex-3020_score_post.json"
+json_path_source = caliper_path.HTML_DATA_DIR_OUTPUT
 upload_and_savedb(dirpath,json_path_source)
