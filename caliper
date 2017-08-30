@@ -503,7 +503,9 @@ if __name__=="__main__":
             print e
             sys.exit()
         flag = generate_web_tar()
-        #upload.upload_result(remote_host)
+        # logging.info("upload start")
+        # upload.upload_result(remote_host)
+        # logging.info("upload end")
 
     if args.webpage and args.send_email:
         flag = generate_web_tar()
