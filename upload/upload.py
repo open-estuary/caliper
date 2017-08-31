@@ -48,7 +48,7 @@ def upload_and_savedb(dirpath,json_path_source):
     # upload
     register_openers()
     datagen, headers = multipart_encode({'file':open(output_file, 'rb')})
-    request = urllib2.Request('http://192.168.64.157:8000/test_post', datagen, headers)
+    request = urllib2.Request('http://192.168.1.245:8000/test_post', datagen, headers)
     response = urllib2.urlopen(request)
     save_path = response.read()
 
@@ -57,7 +57,7 @@ def upload_and_savedb(dirpath,json_path_source):
         json_data = json.load(load_f)
     db_values={"save_path":save_path,"json_data":json_data}
     db_data = urllib.urlencode(db_values)
-    db_url = "http://192.168.64.157:8000/save_data"
+    db_url = "http://192.168.1.245:8000/save_data"
     db_request = urllib2.Request(db_url,db_data)
     db_response = urllib2.urlopen(db_request)
     print db_response.read()
