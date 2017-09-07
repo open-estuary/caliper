@@ -106,30 +106,30 @@ else
 fi
 
 # install python-pip
-pip_packages=('Django==1.11.4' 'numpy==1.8.2' 'matplotlib==1.3.1' 'openpyxl==2.3.0' 'psycopg2' 'poster')
+pip_packages=('Django==1.11.4' 'numpy==1.8.2' 'matplotlib==2.0.2' 'openpyxl==2.3.0' 'psycopg2' 'poster')
 
 for i in `seq 0 $((${#pip_packages[@]}-1)) `
 do
     #chcking to see if python packages are installed
-    check=`pip show ${pip_packages[$i]} | grep -c "${pip_packages[$i]}"`
-    if [ $check -eq 0 ]
-    then
-        # if force option is passed thn forcefully run the scripts
+    #check=`pip show ${pip_packages[$i]} | grep -c "${pip_packages[$i]}"`
+    #if [ $check -eq 0 ]
+    #then
+    # if force option is passed thn forcefully run the scripts
 
-        sudo pip install ${pip_packages[$i]}
-        if [ $? -ne 0 ]
-        then
-            echo -e "host $ERROR:${pip_packages[$i]} is not installed properly\n"
-            echo -e "\n\t\t$ERROR:${pip_packages[$i]} is not installed properly" >> $file_present
-            continue
-        else
-            echo "${pip_packages[$i]} is installed" >> $file_present
-            echo "Finished install ${pip_packages[$i]}"
-        fi
+    sudo pip install ${pip_packages[$i]}
+    if [ $? -ne 0 ]
+    then
+        echo -e "host $ERROR:${pip_packages[$i]} is not installed properly\n"
+        echo -e "\n\t\t$ERROR:${pip_packages[$i]} is not installed properly" >> $file_present
+        continue
     else
         echo "${pip_packages[$i]} is installed" >> $file_present
         echo "Finished install ${pip_packages[$i]}"
     fi
+    #else
+        #echo "${pip_packages[$i]} is installed" >> $file_present
+        #echo "Finished install ${pip_packages[$i]}"
+    #fi
 done
 
 check=`sudo find /usr/local/lib -name libpcre.so | grep -c libpcre.so`

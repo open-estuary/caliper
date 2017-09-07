@@ -44,7 +44,7 @@
     {"platform":"lib32stdc++6","install":"yes"},
     {"platform":"bzr","install":"yes"},
     {"platform":"gfortran","install":"yes"},
-    {"platform":"postgresql-9.5","install":"yes"}
+    {"platform":"postgresql","install":"yes"}
 ],
 
 
@@ -92,7 +92,7 @@
     {"platform":"lib32stdc++6","install":"yes"},
     {"platform":"bzr","install":"yes"},
     {"platform":"gfortran","install":"yes"},
-    {"platform":"postgresql-9.5","install":"yes"}
+    {"platform":"postgresql","install":"yes"}
 ],
 
 "centos_x86_packages":[
@@ -124,7 +124,7 @@
     {"platform":"gcc-c++","install":"yes"},
     {"platform":"libaio","install":"yes"},
     {"platform":"zlib.i686","install":"yes"},
-    {"platform":"postgresql-9.5","install":"yes"}
+    {"platform":"postgresql","install":"yes"}
 ],
 
 
@@ -156,6 +156,6 @@
     {"platform":"dstat","install":"yes"},
     {"platform":"gcc-c++","install":"yes"},
     {"platform":"libaio","install":"yes"},
-    {"platform":"postgresql-9.5","install":"yes"}
+    {"platform":"postgresql","install":"yes"}
 ]
 }

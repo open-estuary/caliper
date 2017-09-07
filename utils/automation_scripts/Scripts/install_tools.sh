@@ -21,4 +21,4 @@ cd $install_dependency/caliper/utils/automation_scripts/Scripts
 ./install_dependency.sh
 cd $install_dependency/NewCaliperweb
 sudo su - postgres
-python manage.py runserver 8000
+python manage.py runserver 8001
