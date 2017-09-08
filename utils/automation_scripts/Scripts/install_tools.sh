@@ -1,6 +1,6 @@
 #!/bin/bash
-whoami=`whoami`
-if [ "$whoami" == "root" ]
+Whoami=`whoami`
+if [ "$Whoami" == "root" ]
 then
     echo "Please run this program as normal user."
     exit 0
