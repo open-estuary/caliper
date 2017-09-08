@@ -52,5 +52,6 @@ Comments：
 2.client_config.cfg，需要配置以下内容：
  - Target设备的ip, user, password. 
  - TestNode的ip, user, password。以上2个设备需要完全一致。
- - Caliperweb: server_num, server_ip1, server_ip2...
+ - Caliperweb: 默认情况下只上传数据到本地数据库。如果需要上传到其他服务器，请配置server_num, server_ip1, server_ip2...
   
+

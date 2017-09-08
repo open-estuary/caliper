@@ -106,7 +106,7 @@ else
 fi
 
 # install python-pip
-pip_packages=('Django==1.11.4' 'numpy==1.8.2' 'matplotlib==2.0.2' 'openpyxl==2.3.0' 'psycopg2' 'poster')
+pip_packages=('Django' 'numpy==1.8.2' 'matplotlib==2.0.2' 'openpyxl==2.3.0' 'psycopg2' 'poster')
 
 for i in `seq 0 $((${#pip_packages[@]}-1)) `
 do
@@ -116,7 +116,7 @@ do
     #then
     # if force option is passed thn forcefully run the scripts
 
-    sudo pip install ${pip_packages[$i]}
+    sudo LC_ALL=C sudo pip install ${pip_packages[$i]}
     if [ $? -ne 0 ]
     then
         echo -e "host $ERROR:${pip_packages[$i]} is not installed properly\n"

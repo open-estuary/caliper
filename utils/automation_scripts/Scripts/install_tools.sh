@@ -1,6 +1,6 @@
 #!/bin/bash
 whoami=`whoami`
-if [ $whoami == "root" ]
+if [ "$whoami" == "root" ]
 then
     echo "Please run this program as normal user."
     exit 0
@@ -30,4 +30,5 @@ EOF
 cd $caliper_output_path/NewCaliperweb
 python manage.py makemigrations
 python manage.py migrate
+psql -U caliperuser -h 127.0.0.1 calipernewdb < $caliper_output_path/NewCaliperweb/resources/caliper.psql
 python manage.py runserver 8000
