@@ -136,6 +136,17 @@ def copy_yaml(remote_host):
     except Exception, e:
         logging.info("There is wrong when copy the caliper result")
 
+def get_remote_url():
+    try:
+        server_num = settings.get_value('Caliperweb', 'server_num', type=int)
+    except Exception, e:
+        server_num = 0
+    try:
+        server_ip1 = settings.get_value('Caliperweb', 'server_ip1', type=str)
+    except Exception, e:
+        server_ip1 = ""
+    return server_ip1
+
 def get_remote_host():
     try:
         client_ip = settings.get_value('TARGET', 'ip', type=str)
@@ -519,9 +530,16 @@ if __name__=="__main__":
             print e
             sys.exit()
         flag = generate_web_tar()
-        logging.info("upload start")
-        upload.upload_result(remote_host)
-        logging.info("upload end")
+        local_url = "127.0.0.1:8000"
+        logging.info("local upload start")
+        upload.upload_result(remote_host,local_url)
+        logging.info("local upload end")
+        remote_url = get_remote_url()
+        if remote_url:
+            remote_url += ":8000"
+            logging.info("remote upload start")
+            upload.upload_result(remote_host,remote_url)
+            logging.info("remote upload end")
 
     if args.webpage and args.send_email:
         flag = generate_web_tar()

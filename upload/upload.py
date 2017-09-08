@@ -13,7 +13,7 @@ def make_targz(output_filename, source_dir):
     with tarfile.open(output_filename, "w:gz") as tar:
         tar.add(source_dir, arcname=os.path.basename(source_dir))
 
-def upload_result(target):
+def upload_result(target,server_url):
     '''
     upload result to server
     :param target: target machine running test
@@ -32,10 +32,10 @@ def upload_result(target):
     #for example, /home/fanxh/caliper_output/frontend/frontend/data_files/Normalised_Logs/hansanyang-OptiPlex-3020_score_post.json
     score_json_file_fullname = os.path.join(dir_score_path,score_json_file_name)
 
-    upload_and_savedb(dirpath,score_json_file_fullname)
+    upload_and_savedb(dirpath,score_json_file_fullname,server_url)
 
 
-def upload_and_savedb(dirpath,json_path_source):
+def upload_and_savedb(dirpath,json_path_source,server_url):
     # tar file 
     bin_file = os.path.exists(os.path.join(dirpath,"binary"))
     if bin_file:   
@@ -48,7 +48,7 @@ def upload_and_savedb(dirpath,json_path_source):
     # upload
     register_openers()
     datagen, headers = multipart_encode({'file':open(output_file, 'rb')})
-    request = urllib2.Request('http://192.168.1.245:8000/test_post', datagen, headers)
+    request = urllib2.Request('http://'+server_url+'/test_post', datagen, headers)
     response = urllib2.urlopen(request)
     save_path = response.read()
 
@@ -57,7 +57,7 @@ def upload_and_savedb(dirpath,json_path_source):
         json_data = json.load(load_f)
     db_values={"save_path":save_path,"json_data":json_data}
     db_data = urllib.urlencode(db_values)
-    db_url = "http://192.168.1.245:8000/save_data"
+    db_url = "http://"+server_url+"/save_data"
     db_request = urllib2.Request(db_url,db_data)
     db_response = urllib2.urlopen(db_request)
     print db_response.read()
