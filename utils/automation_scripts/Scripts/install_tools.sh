@@ -19,6 +19,8 @@ cd $caliper
 sudo python setup.py install
 cd $install_dependency/caliper/utils/automation_scripts/Scripts
 ./install_dependency.sh
+sudo su postgres <<EOF
+psql -f caliperweb.sql
+EOF
 cd $install_dependency/NewCaliperweb
-sudo su - postgres
 python manage.py runserver 8001
