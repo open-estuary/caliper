@@ -44,7 +44,9 @@
     {"platform":"lib32stdc++6","install":"yes"},
     {"platform":"bzr","install":"yes"},
     {"platform":"gfortran","install":"yes"},
-    {"platform":"postgresql","install":"yes"}
+    {"platform":"postgresql","install":"yes"},
+    {"platform":"libpng-dev","install":"yes"},
+    {"platform":"libfreetype6-dev","install":"yes"}
 ],
 
 
@@ -92,7 +94,9 @@
     {"platform":"lib32stdc++6","install":"yes"},
     {"platform":"bzr","install":"yes"},
     {"platform":"gfortran","install":"yes"},
-    {"platform":"postgresql","install":"yes"}
+    {"platform":"postgresql","install":"yes"},
+    {"platform":"libpng-dev","install":"yes"},
+    {"platform":"libfreetype6-dev","install":"yes"}
 ],
 
 "centos_x86_packages":[
