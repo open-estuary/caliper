@@ -30,5 +30,9 @@ EOF
 cd $caliper_output_path/NewCaliperweb
 python manage.py makemigrations
 python manage.py migrate
-psql -U caliperuser -h 127.0.0.1 calipernewdb < $caliper_output_path/NewCaliperweb/resources/caliper.psql
+/usr/bin/expect <<EOF
+spawn psql -U caliperuser -h 127.0.0.1 calipernewdb<$caliper_output_path/NewCaliperweb/resources/caliper.psql
+expect "caliperuser"
+send "caliperts\r"
+EOF
 python manage.py runserver 8000
