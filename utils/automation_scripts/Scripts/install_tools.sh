@@ -35,4 +35,4 @@ spawn psql -U caliperuser -h 127.0.0.1 calipernewdb<$caliper_output_path/NewCali
 expect "caliperuser"
 send "caliperts\r"
 EOF
-python manage.py runserver 8000
+python manage.py runserver 0.0.0.0:8000 &
