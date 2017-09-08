@@ -1,26 +1,31 @@
 #!/bin/bash
-
-install_dependency="$HOME/caliper_output"
-if [ ! -d $install_dependency ]
+whoami=`whoami`
+if [ $whoami == "root" ]
 then
-    sudo mkdir -p $install_dependency
+    echo "Please run this program as normal user."
+    exit 0
 fi
-sudo chmod 777 $install_dependency
-cd $install_dependency
+caliper_output_path="$HOME/caliper_output"
+if [ ! -d $caliper_output_path ]
+then
+    sudo mkdir -p $caliper_output_path
+fi
+sudo chmod 777 $caliper_output_path
+cd $caliper_output_path
 
-caliper="caliper"
+caliper="$caliper_output_path/caliper"
 #if [ -d $caliper ]
 #then
 #    rm -rf $caliper
 #fi
-git clone https://github.com/TSestuary/caliper.git
-git clone https://github.com/TSestuary/NewCaliperweb.git
+#git clone https://github.com/TSestuary/caliper.git
+#git clone https://github.com/TSestuary/NewCaliperweb.git
 cd $caliper
 sudo python setup.py install
-cd $install_dependency/caliper/utils/automation_scripts/Scripts
+cd $caliper_output_path/caliper/utils/automation_scripts/Scripts
 ./install_dependency.sh
 sudo su postgres <<EOF
 psql -f caliperweb.sql
 EOF
-cd $install_dependency/NewCaliperweb
+cd $caliper_output_path/NewCaliperweb
 python manage.py runserver 8001

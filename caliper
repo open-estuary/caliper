@@ -348,8 +348,24 @@ if __name__=="__main__":
             default="", help="assign a folder to store the results")
     parser.add_argument("-C", "--config", action="store", dest="config_file",
             default="", help="specify the location of config file")
+    parser.add_argument("-l", "--benchmarklist", action="store_true", dest="benchmarklist", default=False,
+                        help="display support benchmark list")
     args = parser.parse_args()
     start_time = datetime.datetime.now()
+
+    benchmark_list = []
+    pack_file_list = ['common', 'android', 'application', 'arm', 'server']
+    for pack in pack_file_list:
+        common = os.path.join(caliper_path.caliper_test_def, pack)
+        for com in os.listdir(common):
+            benchmark_list.append(com)
+
+    if args.benchmarklist:
+        print 'benchmarklist: '
+        for c in benchmark_list:
+            if c != '':
+                print c
+        sys.exit()
 
     f_option = 0
     if args.folder:
