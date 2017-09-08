@@ -271,7 +271,7 @@ def generate_web_tar():
             subprocess.call( "cd %s; python manage.py migrate --fake; cd -" %
                     caliper_path.FRONT_END_DIR, shell=True )
             return_code = subprocess.call("cd %s; python\
-                    manage.py runserver --noreload 1>/dev/null 2>&1 & " %
+                    manage.py runserver 8001 --noreload 1>/dev/null 2>&1 & " %
                     caliper_path.FRONT_END_DIR, shell=True)
         except Exception as e:
             raise e
@@ -283,7 +283,7 @@ def generate_web_tar():
         try:
             logging.info("Generating the webpages which are test results")
             subprocess.call("wget -r -p -k -np\
-                    http://127.0.0.1:8000 -P %s -q" % RESULT_DIR,
+                    http://127.0.0.1:8001 -P %s -q" % RESULT_DIR,
                     shell=True)
             test_dir = os.path.join(RESULT_DIR, 'test_results')
             if os.path.exists( test_dir ):
@@ -294,7 +294,7 @@ def generate_web_tar():
                     shutil.rmtree(test_dir)
                 except:
                     os.remove(test_dir)
-            subprocess.call("cd %s; mv 127.0.0.1:8000 test_results; tar\
+            subprocess.call("cd %s; mv 127.0.0.1:8001 test_results; tar\
                     czf test_results.tar.gz test_results; rm -fr\
                     test_results" % RESULT_DIR, shell=True)
         except Exception as e:
@@ -430,10 +430,11 @@ if __name__=="__main__":
 
     if args.build or args.run:
 
+
         nginx_clients = None
-        flag = check_nginx_tool()
-        if flag == 1:
-            nginx_clients = get_nginx_clients()
+        # flag = check_nginx_tool()
+        # if flag == 1:
+        #     nginx_clients = get_nginx_clients()
 
     	cfg_files = []
     	cases_tail = "_cases_def.cfg"

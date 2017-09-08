@@ -28,4 +28,6 @@ sudo su postgres <<EOF
 psql -f caliperweb.sql
 EOF
 cd $caliper_output_path/NewCaliperweb
-python manage.py runserver 8001
+python manage.py makemigrations
+python manage.py migrate
+python manage.py runserver 8000
