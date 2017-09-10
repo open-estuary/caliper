@@ -77,7 +77,6 @@
     {"platform":"libc6","install":"yes"},
     {"platform":"libncurses5","install":"yes"},
     {"platform":"libstdc++6","install":"yes"},
-    {"platform":"lib32z1","install":"yes"},
     {"platform":"python-dev","install":"yes"},
     {"platform":"nfs-common","install":"yes"},
     {"platform":"build-essential","install":"yes"},
@@ -93,13 +92,13 @@
     {"platform":"nfs-kernel-server","install":"yes"},
     {"platform":"openjdk-8-jre","install":"yes"},
     {"platform":"openjdk-8-jdk","install":"yes"},
-    {"platform":"lib32stdc++6","install":"yes"},
     {"platform":"bzr","install":"yes"},
     {"platform":"gfortran","install":"yes"},
     {"platform":"postgresql","install":"yes"},
     {"platform":"libpng-dev","install":"yes"},
     {"platform":"libfreetype6-dev","install":"yes"},
     {"platform":"postgresql-server-dev-all","install":"yes"},
+    {"platform":"python-yaml","install":"yes"},
     {"platform":"pkg-config","install":"yes"}
 ],
 

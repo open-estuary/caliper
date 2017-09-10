@@ -30,7 +30,7 @@ architecture=`uname -i`
 Osname_Ubuntu=`cat /etc/*release | grep -c "Ubuntu"`
 if [ ! $Osname_Ubuntu -eq 0 ]
 then
-    if [ ! $architecture == "aarch64" ]
+    if [ ! $architecture = "aarch64" ]
     then
         packages=`echo ${ubuntu_x86_packages[*]} | sed 's/ /, /g'`
         target_packages=`echo $packages | tr ',' ' '`
@@ -45,7 +45,7 @@ then
         if [ $check -eq 0 ]
         then
             sudo dpkg --configure -a
-            if [ $UPDATE=0 ]
+            if [ $UPDATE -eq 0 ]
             then
                 UPDATE=1
                 sudo apt-get update
@@ -67,7 +67,7 @@ then
         fi
     done
 else
-    if [ ! $architecture=="aarch64" ]
+    if [ ! $architecture = "aarch64" ]
     then
         packages=`echo ${centos_x86_packages[*]} | sed 's/ /, /g'`
         target_packages=`echo $packages | tr ',' ' '`
@@ -82,7 +82,7 @@ else
         check=`rpm -qa $pack`
         if [  -z "$check" ]
         then
-            if [ $UPDATE=0 ]
+            if [ $UPDATE -eq 0 ]
             then
                 UPDATE=1
                 sudo yum update &
@@ -106,7 +106,7 @@ else
 fi
 
 # install python-pip
-pip_packages=('Django' 'numpy==1.8.2' 'matplotlib==2.0.2' 'openpyxl==2.3.0' 'psycopg2' 'poster')
+pip_packages=('Django' 'numpy==1.8.2' 'matplotlib==2.0.2' 'openpyxl==2.3.0' 'psycopg2' 'poster' 'matplotlib==1.3.1')
 
 for i in `seq 0 $((${#pip_packages[@]}-1)) `
 do

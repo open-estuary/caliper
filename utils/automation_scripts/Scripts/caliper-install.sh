@@ -6,7 +6,7 @@
 ARCHIVE=`awk '/^__ARCHIVE_BELOW__/ {print NR+1; exit 0}' "$0"`
 #check user
 user=`whoami`
-if [ "$user" == 'root' ]; then
+if [ "$user" = 'root' ]; then
     echo "Please run this program as a normal user!"
     exit 0
 fi
