@@ -1,0 +1,16 @@
+- name: install stressng for redhat
+  yum: name=stress-ng state=present disable_gpg_check=yes
+  when: ansible_os_family == 'RedHat'
+
+- name: install stressng for ubuntu
+  apt: name=stress-ng state=present
+  when: ansible_distribution == 'Ubuntu'
+
+- name: install stress for redhat
+  yum: name=stress state=present disable_gpg_check=yes
+  when: ansible_os_family == 'RedHat'
+
+- name: install stress for ubuntu
+  apt: name=stress state=present
+  when: ansible_distribution == 'Ubuntu'
+

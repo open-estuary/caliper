@@ -1,0 +1,8 @@
+- hosts: Device
+  roles:
+  - base_env
+- hosts: TestNode
+  roles:
+  - base_env
+
+

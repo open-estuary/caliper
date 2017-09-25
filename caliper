@@ -41,6 +41,8 @@ from caliper.server.parser_process import hardware
 from caliper.server.parser_process import performance_functional
 from caliper.client.shared.caliper_path import intermediate
 
+from caliper.upload import upload
+
 logging.basicConfig(level=logging.INFO)
 def build_all_tests(remote_host,f_option,clear):
     try:
@@ -133,6 +135,17 @@ def copy_yaml(remote_host):
         parser_engine.copy_file(remote_host)
     except Exception, e:
         logging.info("There is wrong when copy the caliper result")
+
+def get_remote_url():
+    try:
+        server_num = settings.get_value('Caliperweb', 'server_num', type=int)
+    except Exception, e:
+        server_num = 0
+    try:
+        server_ip1 = settings.get_value('Caliperweb', 'server_ip1', type=str)
+    except Exception, e:
+        server_ip1 = ""
+    return server_ip1
 
 def get_remote_host():
     try:
@@ -258,7 +271,7 @@ def generate_web_tar():
             subprocess.call( "cd %s; python manage.py migrate --fake; cd -" %
                     caliper_path.FRONT_END_DIR, shell=True )
             return_code = subprocess.call("cd %s; python\
-                    manage.py runserver --noreload 1>/dev/null 2>&1 & " %
+                    manage.py runserver 8001 --noreload 1>/dev/null 2>&1 & " %
                     caliper_path.FRONT_END_DIR, shell=True)
         except Exception as e:
             raise e
@@ -270,7 +283,7 @@ def generate_web_tar():
         try:
             logging.info("Generating the webpages which are test results")
             subprocess.call("wget -r -p -k -np\
-                    http://127.0.0.1:8000 -P %s -q" % RESULT_DIR,
+                    http://127.0.0.1:8001 -P %s -q" % RESULT_DIR,
                     shell=True)
             test_dir = os.path.join(RESULT_DIR, 'test_results')
             if os.path.exists( test_dir ):
@@ -281,7 +294,7 @@ def generate_web_tar():
                     shutil.rmtree(test_dir)
                 except:
                     os.remove(test_dir)
-            subprocess.call("cd %s; mv 127.0.0.1:8000 test_results; tar\
+            subprocess.call("cd %s; mv 127.0.0.1:8001 test_results; tar\
                     czf test_results.tar.gz test_results; rm -fr\
                     test_results" % RESULT_DIR, shell=True)
         except Exception as e:
@@ -319,7 +332,7 @@ def check_nginx_tool():
     return flag
 
 if __name__=="__main__":
-    parser = ArgumentParser()
+    parser = ArgumentParser(version=common.VERSION)
     parser.add_argument("-b", "--build", action="store_true",
             dest="build", default=True,help="select to incrementally build the selected test tools")
     parser.add_argument("-B", "--nobuild", action="store_false",
@@ -346,8 +359,24 @@ if __name__=="__main__":
             default="", help="assign a folder to store the results")
     parser.add_argument("-C", "--config", action="store", dest="config_file",
             default="", help="specify the location of config file")
+    parser.add_argument("-l", "--benchmarklist", action="store_true", dest="benchmarklist", default=False,
+                        help="display support benchmark list")
     args = parser.parse_args()
     start_time = datetime.datetime.now()
+
+    benchmark_list = []
+    pack_file_list = ['common', 'android', 'application', 'arm', 'server']
+    for pack in pack_file_list:
+        common = os.path.join(caliper_path.caliper_test_def, pack)
+        for com in os.listdir(common):
+            benchmark_list.append(com)
+
+    if args.benchmarklist:
+        print 'benchmarklist: '
+        for c in benchmark_list:
+            if c != '':
+                print c
+        sys.exit()
 
     f_option = 0
     if args.folder:
@@ -401,10 +430,11 @@ if __name__=="__main__":
 
     if args.build or args.run:
 
+
         nginx_clients = None
-        flag = check_nginx_tool()
-        if flag == 1:
-            nginx_clients = get_nginx_clients()
+        # flag = check_nginx_tool()
+        # if flag == 1:
+        #     nginx_clients = get_nginx_clients()
 
     	cfg_files = []
     	cases_tail = "_cases_def.cfg"
@@ -501,6 +531,16 @@ if __name__=="__main__":
             print e
             sys.exit()
         flag = generate_web_tar()
+        local_url = "127.0.0.1:8000"
+        logging.info("local upload start")
+        upload.upload_result(remote_host,local_url)
+        logging.info("local upload end")
+        remote_url = get_remote_url()
+        if remote_url:
+            remote_url += ":8000"
+            logging.info("remote upload start")
+            upload.upload_result(remote_host,remote_url)
+            logging.info("remote upload end")
 
     if args.webpage and args.send_email:
         flag = generate_web_tar()

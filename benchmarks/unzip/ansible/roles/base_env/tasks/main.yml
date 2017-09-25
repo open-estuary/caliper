@@ -1,0 +1,8 @@
+- name: mkdir -p /tmp/scripts
+  shell: "mkdir -p /tmp/scripts"
+
+- name: download kernel-dev.tar.gz
+  shell: cd /tmp/scripts && wget www.estuarydev.org/caliper/kernel-dev.tar.gz
+
+- name: copy file
+  copy: src=untar.sh dest=/tmp/scripts/untar.sh owner=root group=root mode=0755

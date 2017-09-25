@@ -1,0 +1,11 @@
+#copy qperf
+- name: copy qperf
+  copy: src=qperf-0.4.9.tar.gz dest=/tmp/qperf-0.4.9.tar.gz owner=root group=root mode=0755
+
+- name: install qperf for redhat
+  shell: cd /tmp && tar xvf qperf-0.4.9.tar.gz && rm -rf qperf-0.4.9.tar.gz && cd qperf-0.4.9 && ./configure --build=aarch64-unknown-linux-gnu && make && make install && cd .. && rm -rf qperf-0.4.9 && ldconfig
+  when: ansible_os_family == 'RedHat'
+
+- name: install qperf for Ubuntu
+  shell: cd /tmp && tar xvf qperf-0.4.9.tar.gz && rm -rf qperf-0.4.9.tar.gz && cd qperf-0.4.9 && ./configure --build=x86_64-unknown-linux-gnu && make && make install && cd .. && rm -rf qperf-0.4.9 && ldconfig
+  when: ansible_distribution == 'Ubuntu'

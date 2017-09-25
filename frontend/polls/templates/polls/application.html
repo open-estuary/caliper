@@ -387,3 +387,12 @@ The <b>score summary</b> is the percentage of performance of each platform for i
 
 </body>
 </html>
+<script>
+    $(function(){
+        $('td div').each(function(){
+                var td_value = $(this)[0].innerText;
+                if(td_value && td_value < 95)
+                    $(this).css("color","red");
+            })
+    })
+</script>

@@ -1,0 +1,8 @@
+- name: copy file
+  copy: src=coremark.tar.gz dest=/tmp/coremark.tar.gz owner=root group=root mode=0755
+
+- name: tar file
+  shell: cd /tmp && tar xvf coremark.tar.gz && rm -rf coremark.tar.gz
+
+- name: run install
+  shell: "cd /tmp/coremark && chmod 777 install.sh && ./install.sh && rm -rf /tmp/coremark"

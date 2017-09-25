@@ -1162,24 +1162,25 @@ def caliper_run(target_exec_dir, server, target, nginx_clients=None):
 		# On some platforms, swapoff and swapon command is not able to execute. 
 		# So this function has been commented
                 #system_initialise(target)
-                if classify != "common" and server:
-                    if server_process == "1":
-                    	logging.info("Waiting for server to grant access")
-                    	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-  		    	sock.connect((server_ip,server_port))
-		    	logging.info("%s" % str(sock.recv(1024)))
-		    else:
-                        logging.info("server is not running properly")
-                        continue
+             #    if classify != "common" and server:
+             #        if server_process == "1":
+             #        	logging.info("Waiting for server to grant access")
+             #        	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+  		  #   	sock.connect((server_ip,server_port))
+		    # 	logging.info("%s" % str(sock.recv(1024)))
+		    # else:
+             #            logging.info("server is not running properly")
+             #            # continue
 
                 result = run_all_cases(target_exec_dir, target, bench,
                                         sections[i], run_file, server, nginx_clients)
 
-	        if classify != "common" and server:
-                    sock.send("1")
-		    sock.close()
+            # if classify != "common" and server:
+             #        sock.send("1")
+		    # sock.close()
 
-            except Exception:
+            except Exception, e:
+                logging.info(e)
                 logging.info("Running %s Exception" % sections[i])
                 crash_handle.main()
                 print_format()

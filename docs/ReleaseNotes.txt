@@ -1,0 +1,57 @@
+﻿Caliper Release Notes
+
+
+Caliper V0.0.1 (September 08, 2017)
+=================================
+New Features:
+--------------
+1. 实现在ubuntu ARM64上安装部署caliper
+2. 完成在ubuntu ARM64上，Host和Target合并情形下执行测试
+3. 实现测试结果的上传与下载
+4. 显示支持的benchmark list
+5. 显示软件版本
+6. 在caliper-web页面login、logout功能
+7. 以Table形式展示所有存储的测试记录，排序，模糊搜索，翻页，用户可编辑每页显示的测试记录条数
+8. 在线查看单次测试结果文件
+9. 下载单次测试结果文件
+10. 指定测试记录之后进行横向比较
+
+
+Supported Platform:
+-------------------
+可以支持的硬件平台和操作系统包括：
+D03: Ubuntu16.04
+D05: Ubuntu16.04
+X86: Ubuntu16.04, CentOS 7
+
+Installation:
+--------------
+1 需要测试的硬件设备上首先安装好基本操作系统，并配置好网络，和sudo权限。
+2 执行软件包安装: 
+ - 在Ubuntu上执行 sudo apt update & apt upgrade
+ - 在CentOS上 sudo yum update 
+3 系统中首先要安装好python运行环境
+4 下载caliper.install
+5 修改caliper.install的权限，保证可以执行
+6 使用普通用户执行./caliper-0.0.1.install
+7 脚本执行后打开~/caliper_output/install_dependency_output_summary.txt文件，查看执行结果
+8 如有安装失败的软件包手动安装
+
+Usage:
+--------------
+1. 进入$HOME/caliper_output/configuration/config下，配置client_config.cfg。配置说明见后。
+2. （Optional）如果需要改变执行的Benchmark，进入/home/hansy/caliper_output/configuration/test_cases_cfg下，修改common_cases_def.cfg、server_cases_def.cfg、application_cases_def.cfg，选择要跑的应用。
+3. 执行caliper -w进行测试
+4. 测试结束后进入~/caliper_output/xx/output/results打开test_results.tar.gz查看测试结果
+5. 浏览网站：在浏览器中输入网址[hostip]:8000即可访问
+
+
+Comments：
+--------------
+1.安装过caliper 0.0.1之前的版本需要先执行sudo python pip uninstall caliper,并删除caliper_output下frontend文件夹后安装新的caliper。
+2.client_config.cfg，需要配置以下内容：
+ - Target设备的ip, user, password. 
+ - TestNode的ip, user, password。以上2个设备需要完全一致。
+ - Caliperweb: 默认情况下只上传数据到本地数据库。如果需要上传到其他服务器，请配置server_num, server_ip1, server_ip2...
+  
+

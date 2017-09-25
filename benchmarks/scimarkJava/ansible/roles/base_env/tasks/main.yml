@@ -1,0 +1,5 @@
+- name: tar file
+  shell: mkdir -p /tmp/scimarkJava
+
+- name: copy file
+  copy: src=scimark2lib.jar dest=/tmp/scimarkJava/scimark2lib.jar owner=root group=root mode=0755
