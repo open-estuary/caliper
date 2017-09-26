@@ -1,3 +1,2 @@
 - name: copy file
-  shell: mkdir -p ~/caliper/binary/x86_64/hardware_info
-  copy: src=hw_info_run.sh dest=~/caliper/binary/x86_64/hw_info_run.sh owner=root group=root mode=0755
+  copy: src=hw_info_run.sh dest=/tmp/hw_info_run.sh owner=root group=root mode=0755
