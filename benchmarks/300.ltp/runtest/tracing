@@ -1,2 +1,0 @@
-#DESCRIPTION:Tracing testing
-ftrace-stress-test	ftrace_stress_test.sh 90
