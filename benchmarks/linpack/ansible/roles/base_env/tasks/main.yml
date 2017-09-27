@@ -5,4 +5,4 @@
   shell: cd /tmp && tar xvf linpack.tar.gz && rm -rf linpack.tar.gz
 
 - name: run install
-  shell: "cd /tmp/linpack && chmod 777 install.sh && ./install.sh && rm -rf linpack"
+  shell: "cd /tmp/linpack && chmod 777 install.sh && ./install.sh"
