@@ -1,0 +1,5 @@
+---
+- name: Test in the TestNode
+  hosts: TestNode
+  roles:
+    - test

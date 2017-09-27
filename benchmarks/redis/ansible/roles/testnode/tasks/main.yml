@@ -1,0 +1,6 @@
+
+- name: Install redis for device apt-get
+  apt: name=redis-tools state=present
+  when: ansible_distribution == 'Ubuntu' 
+
+  

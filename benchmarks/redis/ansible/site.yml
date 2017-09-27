@@ -1,0 +1,12 @@
+---
+- name: Install redis for Device
+  hosts: Device
+  roles:
+    - device
+
+- name: Install redis for TestNode
+  hosts: TestNode
+  roles:
+    - testnode
+
+
