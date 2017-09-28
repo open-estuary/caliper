@@ -8,5 +8,5 @@
   when: ansible_distribution == 'Ubuntu' 
 
 - name: Start redis-server in device
-  shell: systemctl start redis-server
+  shell: systemctl start redis-server &
   

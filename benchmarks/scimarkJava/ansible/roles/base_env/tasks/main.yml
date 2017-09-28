@@ -2,4 +2,7 @@
   shell: mkdir -p /tmp/scimarkJava
 
 - name: copy file
-  copy: src=scimark2lib.jar dest=/tmp/scimarkJava/scimark2lib.jar owner=root group=root mode=0755
+  copy: src=scimark2lib.tar.gz dest=/tmp/scimark2lib.tar.gz owner=root group=root mode=0755
+
+- name: tar scimark2lib.tar.gz
+  shell: "cd /tmp && tar -xvf scimark2lib.tar.gz"
