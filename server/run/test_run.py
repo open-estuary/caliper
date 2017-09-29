@@ -1087,52 +1087,6 @@ def caliper_run(target_exec_dir, server, target, nginx_clients=None):
         classify = config_files[i].split("/")[-1].strip().split("_")[0]
         logging.debug(classify)
 
-	if classify != "common" and server and len(sections) > 0:
-            try:
-	    	server_ip = settings.get_value("TestNode","ip",type=str)
-	    	server_port = settings.get_value("TestNode","port",type=int)
-                server_user = settings.get_value("TestNode","user",type=str)
-                logging.info("Please wait while caliper triggers the server.py script in the server")
-                server_pwd = server.run("pwd").stdout
-                server_pwd = server_pwd.split("\n")[0]
-                server_caliper_dir = os.path.join(server_pwd, "caliper_server")
-                read_file = os.path.join(server_caliper_dir,"process_status")
-                read_server_run = os.path.join(server_caliper_dir,"server_run")
-                server_caliper_dir = os.path.join(server_caliper_dir,"server.py")
-                server_user = server_user + '@' + server_ip
-                script = server_caliper_dir + ' ' + str(server_port)
-
-                p1 = subprocess.Popen(['ssh', '%s' % server_user,'ps','-ef'], stdout=subprocess.PIPE)
-                p2 = subprocess.Popen(['grep', '-c','server.py'], stdin=p1.stdout, stdout=subprocess.PIPE)
-                p1.stdout.close()
-                data,err = p2.communicate()
-                data = data.strip()
-
-                if data == "0":
-                    subprocess.Popen(['ssh', '%s' % server_user, 'python %s' % script])
-
-
-                for i in range (0,20):
-                    try:
-                        p1 = subprocess.Popen(['ssh', '%s' % server_user, 'cat %s' % read_file], stdout=subprocess.PIPE)
-                        p2 = subprocess.Popen(['grep','1'], stdin=p1.stdout, stdout=subprocess.PIPE)
-                        p1.stdout.close()
-                        server_process,err = p2.communicate()
-                        server_process = server_process.strip()
-                        if server_process == "1":
-                            break
-                        else:
-                            time.sleep(1)
-                    except Exception as e:
-                        pass
-
-            except Exception as e:
-		logging.info(e)
-		raise AttributeError("Error in establising connection with server")
-
-	    server_ip = settings.get_value("TestNode","ip",type=str)
-	    server_port = settings.get_value("TestNode","port",type=int)
-
         for i in range(0, len(sections)):
             # run for each benchmark
             target_arch = server_utils.get_host_arch(target)
