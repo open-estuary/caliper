@@ -4,7 +4,7 @@
 import os
 import sys
 
-VERSION="0.0.1"
+VERSION="0.0.2"
 try:
     import caliper.client.setup_modules as setup_modules
     dirname = os.path.dirname(setup_modules.__file__)

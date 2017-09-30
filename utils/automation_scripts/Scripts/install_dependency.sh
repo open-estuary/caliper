@@ -106,7 +106,7 @@ else
 fi
 
 # install python-pip
-pip_packages=('Django' 'numpy==1.8.2' 'matplotlib==2.0.2' 'openpyxl==2.3.0' 'psycopg2' 'poster' 'matplotlib==1.3.1')
+pip_packages=('Django' 'numpy==1.8.2' 'matplotlib==2.0.2' 'openpyxl==2.3.0' 'psycopg2' 'poster' 'matplotlib==1.3.1' 'ansible')
 
 for i in `seq 0 $((${#pip_packages[@]}-1)) `
 do
