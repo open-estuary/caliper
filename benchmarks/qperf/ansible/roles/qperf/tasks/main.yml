@@ -1,0 +1,3 @@
+- name: run qperf
+  command: "qperf"
+

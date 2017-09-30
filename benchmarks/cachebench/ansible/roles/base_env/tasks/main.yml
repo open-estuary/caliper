@@ -1,0 +1,8 @@
+- name: copy file
+  copy: src=cachebench.tar.gz dest=/tmp/cachebench.tar.gz owner=root group=root mode=0755
+
+- name: tar file
+  shell: cd /tmp && tar xvf cachebench.tar.gz && rm -rf cachebench.tar.gz
+
+- name: run install
+  shell: "cd /tmp/cachebench && chmod 777 install.sh && ./install.sh"

@@ -1,0 +1,8 @@
+- name: copy file
+  copy: src=scimark.tar.gz dest=/tmp/scimark.tar.gz owner=root group=root mode=0755
+
+- name: tar file
+  shell: cd /tmp && tar xvf scimark.tar.gz && rm -rf scimark.tar.gz
+
+- name: run install
+  shell: "cd /tmp/scimark && chmod 777 install.sh && ./install.sh"

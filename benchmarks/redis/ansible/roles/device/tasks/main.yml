@@ -1,0 +1,12 @@
+
+- name: Install redis for device apt-get
+  apt: name={{ item }} state=present
+  with_items:
+    - redis-tools
+    - redis-sentinel
+    - redis-server
+  when: ansible_distribution == 'Ubuntu' 
+
+- name: Start redis-server in device
+  shell: systemctl start redis-server &
+  

@@ -1,0 +1,8 @@
+- name: copy file
+  copy: src=iozone.tar.gz dest=/tmp/iozone.tar.gz owner=root group=root mode=0755
+
+- name: tar file
+  shell: cd /tmp && mkdir -p /tmp/sdb && tar xvf iozone.tar.gz && rm -rf iozone.tar.gz
+
+- name: run install
+  shell: "cd /tmp/iozone && chmod 777 install.sh && ./install.sh"

@@ -1,0 +1,12 @@
+#install fio
+- name: install fio for redhat
+  shell: mkdir -p /mnt/sdb/ && sudo touch /mnt/sdb/testfio
+
+- name: install fio for redhat
+  yum: name=fio state=present disable_gpg_check=yes
+  when: ansible_os_family == 'RedHat'
+
+- name: install fio for ubuntu
+  apt: name=fio state=present
+  when: ansible_distribution == 'Ubuntu'
+

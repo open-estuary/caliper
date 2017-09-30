@@ -1,0 +1,4 @@
+- name: run iperf3
+  become: true
+  command: iperf3 -s &
+

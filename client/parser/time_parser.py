@@ -10,7 +10,11 @@ def trans_float(minutes, seconds):
 
 def time_parser(content, outfp):
     score = -1
-    real = re.search("real(.*?)m(.*?)s\n", content)
+    real = re.search("real\t(.*?)m(.*?)s\n", content)
+    if real:
+        real = re.search("real\t(.*?)m(.*?)s\n", content)
+    else:
+        real = re.search("real(.*?)m(.*?)s\n", content)
     user = re.search("user(.*?)m(.*?)s\n", content)
     system_time = re.search("sys\s*(\d+)m(.*?)s\n", content)
     if real:

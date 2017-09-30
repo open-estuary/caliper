@@ -1087,51 +1087,51 @@ def caliper_run(target_exec_dir, server, target, nginx_clients=None):
         classify = config_files[i].split("/")[-1].strip().split("_")[0]
         logging.debug(classify)
 
-	if classify != "common" and server and len(sections) > 0:
-            try:
-	    	server_ip = settings.get_value("TestNode","ip",type=str)
-	    	server_port = settings.get_value("TestNode","port",type=int)
-                server_user = settings.get_value("TestNode","user",type=str)
-                logging.info("Please wait while caliper triggers the server.py script in the server")
-                server_pwd = server.run("pwd").stdout
-                server_pwd = server_pwd.split("\n")[0]
-                server_caliper_dir = os.path.join(server_pwd, "caliper_server")
-                read_file = os.path.join(server_caliper_dir,"process_status")
-                read_server_run = os.path.join(server_caliper_dir,"server_run")
-                server_caliper_dir = os.path.join(server_caliper_dir,"server.py")
-                server_user = server_user + '@' + server_ip
-                script = server_caliper_dir + ' ' + str(server_port)
+        # if classify != "common" and server and len(sections) > 0:
+            # try:
+            #     server_ip = settings.get_value("TestNode","ip",type=str)
+            #     server_port = settings.get_value("TestNode","port",type=int)
+            #     server_user = settings.get_value("TestNode","user",type=str)
+                # logging.info("Please wait while caliper triggers the server.py script in the server")
+                # server_pwd = server.run("pwd").stdout
+                # server_pwd = server_pwd.split("\n")[0]
+                # server_caliper_dir = os.path.join(server_pwd, "caliper_server")
+                # read_file = os.path.join(server_caliper_dir,"process_status")
+                # read_server_run = os.path.join(server_caliper_dir,"server_run")
+                # server_caliper_dir = os.path.join(server_caliper_dir,"server.py")
+                # server_user = server_user + '@' + server_ip
+                # script = server_caliper_dir + ' ' + str(server_port)
+                #
+                # p1 = subprocess.Popen(['ssh', '%s' % server_user,'ps','-ef'], stdout=subprocess.PIPE)
+                # p2 = subprocess.Popen(['grep', '-c','server.py'], stdin=p1.stdout, stdout=subprocess.PIPE)
+                # p1.stdout.close()
+                # data,err = p2.communicate()
+                # data = data.strip()
+                #
+                # if data == "0":
+                #     subprocess.Popen(['ssh', '%s' % server_user, 'python %s' % script])
+                #
+                #
+                # for i in range (0,20):
+                #     try:
+                #         p1 = subprocess.Popen(['ssh', '%s' % server_user, 'cat %s' % read_file], stdout=subprocess.PIPE)
+                #         p2 = subprocess.Popen(['grep','1'], stdin=p1.stdout, stdout=subprocess.PIPE)
+                #         p1.stdout.close()
+                #         server_process,err = p2.communicate()
+                #         server_process = server_process.strip()
+                #         if server_process == "1":
+                #             break
+                #         else:
+                #             time.sleep(1)
+                #     except Exception as e:
+                #         pass
 
-                p1 = subprocess.Popen(['ssh', '%s' % server_user,'ps','-ef'], stdout=subprocess.PIPE)
-                p2 = subprocess.Popen(['grep', '-c','server.py'], stdin=p1.stdout, stdout=subprocess.PIPE)
-                p1.stdout.close()
-                data,err = p2.communicate()
-                data = data.strip()
+            # except Exception as e:
+            #     logging.info(e)
+            #     raise AttributeError("Error in establising connection with server")
 
-                if data == "0":
-                    subprocess.Popen(['ssh', '%s' % server_user, 'python %s' % script])
-
-
-                for i in range (0,20):
-                    try:
-                        p1 = subprocess.Popen(['ssh', '%s' % server_user, 'cat %s' % read_file], stdout=subprocess.PIPE)
-                        p2 = subprocess.Popen(['grep','1'], stdin=p1.stdout, stdout=subprocess.PIPE)
-                        p1.stdout.close()
-                        server_process,err = p2.communicate()
-                        server_process = server_process.strip()
-                        if server_process == "1":
-                            break
-                        else:
-                            time.sleep(1)
-                    except Exception as e:
-                        pass
-
-            except Exception as e:
-		logging.info(e)
-		raise AttributeError("Error in establising connection with server")
-
-	    server_ip = settings.get_value("TestNode","ip",type=str)
-	    server_port = settings.get_value("TestNode","port",type=int)
+        # server_ip = settings.get_value("TestNode","ip",type=str)
+        # server_port = settings.get_value("TestNode","port",type=int)
 
         for i in range(0, len(sections)):
             # run for each benchmark
@@ -1140,7 +1140,7 @@ def caliper_run(target_exec_dir, server, target, nginx_clients=None):
             build_name = sections[i]+'_'+target_arch+'.suc'
             build_suc = os.path.join(Folder.build_dir, build_name)
             if not os.path.exists(build_suc):
-	        continue
+                continue
             build_host_name = sections[i] + '_' + \
             server_utils.get_local_machine_arch() + '.fail'
             if os.path.exists(build_host_name):
@@ -1162,24 +1162,25 @@ def caliper_run(target_exec_dir, server, target, nginx_clients=None):
 		# On some platforms, swapoff and swapon command is not able to execute. 
 		# So this function has been commented
                 #system_initialise(target)
-                if classify != "common" and server:
-                    if server_process == "1":
-                    	logging.info("Waiting for server to grant access")
-                    	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-  		    	sock.connect((server_ip,server_port))
-		    	logging.info("%s" % str(sock.recv(1024)))
-		    else:
-                        logging.info("server is not running properly")
-                        continue
+             #    if classify != "common" and server:
+             #        if server_process == "1":
+             #        	logging.info("Waiting for server to grant access")
+             #        	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+  		  #   	sock.connect((server_ip,server_port))
+		    # 	logging.info("%s" % str(sock.recv(1024)))
+		    # else:
+             #            logging.info("server is not running properly")
+             #            # continue
 
                 result = run_all_cases(target_exec_dir, target, bench,
                                         sections[i], run_file, server, nginx_clients)
 
-	        if classify != "common" and server:
-                    sock.send("1")
-		    sock.close()
+            # if classify != "common" and server:
+             #        sock.send("1")
+		    # sock.close()
 
-            except Exception:
+            except Exception, e:
+                logging.info(e)
                 logging.info("Running %s Exception" % sections[i])
                 crash_handle.main()
                 print_format()

@@ -1,0 +1,4 @@
+- name: run netperf
+  become: true
+  command: netserver &
+

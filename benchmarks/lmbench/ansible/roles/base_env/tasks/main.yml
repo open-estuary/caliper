@@ -1,0 +1,8 @@
+- name: copy file
+  copy: src=lmbench.build.tar.gz dest=/tmp/lmbench.build.tar.gz owner=root group=root mode=0755
+
+- name: tar file
+  shell: cd /tmp && tar -xvf lmbench.build.tar.gz && rm -rf lmbench.build.tar.gz
+
+- name: run install
+  shell: "cd /tmp/lmbench.build && chmod 777 install.sh && ./install.sh"

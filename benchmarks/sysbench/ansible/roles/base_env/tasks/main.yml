@@ -1,0 +1,5 @@
+- name: copy sysbench.tar.gz
+  copy: src=sysbench.tar.gz dest=/tmp/sysbench.tar.gz owner=root group=root mode=0755
+
+- name: tar sysbench.tar.gz
+  shell: tar -xvf sysbench.tar.gz && rm sysbench.tar.gz
