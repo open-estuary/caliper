@@ -1,17 +1,8 @@
 - name: mkdir scripts
   shell: "mkdir -p /tmp/scripts"
 
-#- name:  download kernel-dev.tar.gz
-#  hosts: all
-#  tasks:
-#    - command: cd /tmp/scripts && tar xvzf kernel-dev.tar.gz
-#      register: result
-#      ignore_errors: True
-#    - command: wget www.estuarydev.org/caliper/kernel-dev.tar.gz
-#      when: result|failed
-
 - name: download kernel-dev.tar.gz
-  shell: cd /tmp/scripts && wget www.estuarydev.org/caliper/kernel-dev.tar.gz
+  shell: cd /tmp/scripts && rm -rf kernel-dev.tar.g* && wget www.estuarydev.org/caliper/kernel-dev.tar.gz
 
 - name: copy file
   copy: src=compile_test.sh dest=/tmp/scripts/compile_test.sh owner=root group=root mode=0755
