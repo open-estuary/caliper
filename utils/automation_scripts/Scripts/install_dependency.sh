@@ -132,17 +132,17 @@ do
     #fi
 done
 
-check=`sudo find /usr/local/lib -name libpcre.so | grep -c libpcre.so`
-if [ $check -ne 1 ];then
-    wget http://www.estuarydev.org/caliper/pcre-8.39.tar.gz
-    tar -zxvf pcre-8.39.tar.gz
-    sudo chmod 777 pcre-8.39
-    cd pcre-8.39
-    ./configure
-    make -j32
-    sudo make install
-    cd ..
-    sudo rm -rf pcre-8.39
-    sudo rm -rf pcre-8.39.tar.gz
-fi
+#check=`sudo find /usr/local/lib -name libpcre.so | grep -c libpcre.so`
+#if [ $check -ne 1 ];then
+#    wget http://www.estuarydev.org/caliper/pcre-8.39.tar.gz
+#    tar -zxvf pcre-8.39.tar.gz
+#    sudo chmod 777 pcre-8.39
+#    cd pcre-8.39
+#    ./configure
+#    make -j32
+#    sudo make install
+#    cd ..
+#    sudo rm -rf pcre-8.39
+#    sudo rm -rf pcre-8.39.tar.gz
+#fi
 sudo chmod 775 $install_dependency
