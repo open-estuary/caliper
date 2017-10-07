@@ -49,7 +49,8 @@
     {"platform":"libfreetype6-dev","install":"yes"},
     {"platform":"postgresql-server-dev-all","install":"yes"},
     {"platform":"pkg-config","install":"yes"},
-    {"platform":"libpcre++-dev","install":"yes"}
+    {"platform":"libpcre++-dev","install":"yes"},
+    {"platform":"libffi-dev","install":"yes"}
 ],
 
 
@@ -101,7 +102,8 @@
     {"platform":"postgresql-server-dev-all","install":"yes"},
     {"platform":"python-yaml","install":"yes"},
     {"platform":"pkg-config","install":"yes"},
-    {"platform":"libpcre++-dev","install":"yes"}
+    {"platform":"libpcre++-dev","install":"yes"},
+    {"platform":"libffi-dev","install":"yes"}
 ],
 
 "centos_x86_packages":[
