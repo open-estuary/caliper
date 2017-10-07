@@ -163,7 +163,8 @@ def get_remote_host():
     try:
         password = settings.get_value('TARGET', 'password', type=str)
     except Exception, e:
-        raise error.ServRunError(e.args[0], e.args[1])
+        password = ''
+        #raise error.ServRunError(e.args[0], e.args[1])
 
     remote_host = host_factory.create_host(client_ip, user, password, port)
     return remote_host
@@ -182,7 +183,8 @@ def get_server_host():
     try:
         password = settings.get_value('TestNode', 'password', type=str)
     except Exception, e:
-        raise error.ServRunError(e.args[0], e.args[1])
+        password = ''
+        #raise error.ServRunError(e.args[0], e.args[1])
 
     remote_host = host_factory.create_host(client_ip, user, password, port)
     return remote_host

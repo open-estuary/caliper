@@ -768,7 +768,7 @@ def copy_gen_to_target(target, target_arch):
         if not result.exit_status:
             target.run("cd caliper; rm -fr *; cd")
         else:
-            target.run("mkdir caliper")
+            target.run("rm -fr caliper; mkdir caliper")
         target.run("cd caliper;  mkdir -p binary")
         remote_pwd = target.run("pwd").stdout
         remote_pwd = remote_pwd.split("\n")[0]
