@@ -1,8 +1,7 @@
 build_compile() {
     CURDIR=$(cd `dirname $0`; pwd)
-#    pushd ${CURDIR}/benchmarks/compile/ansible > /dev/null
-    ansible-playbook -i "~/caliper_output/configuration/config/hosts" "${CURDIR}/benchmarks/compile/ansible/site.yml"
-#    popd > /dev/null
+    cd ~/caliper_output/configuration/config
+    ansible-playbook -i hosts ${CURDIR}/benchmarks/compile/ansible/site.yml
 }
 
 build_compile

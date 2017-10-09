@@ -1,8 +1,7 @@
 build_cachebench() {
     CURDIR=$(cd `dirname $0`; pwd)
-#    pushd ${CURDIR}/benchmarks/cachebench/ansible > /dev/null
-    ansible-playbook -i "~/caliper_output/configuration/config/hosts" "${CURDIR}/benchmarks/cachebench/ansible/site.yml"
-#    popd > /dev/null
+    cd ~/caliper_output/configuration/config
+    ansible-playbook -i hosts ${CURDIR}/benchmarks/cachebench/ansible/site.yml
 }
 
 build_cachebench
