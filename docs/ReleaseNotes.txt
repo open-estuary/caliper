@@ -1,5 +1,52 @@
 ﻿Caliper Release Notes
 
+Caliper V0.0.2 (September 30, 2017)
+=================================
+New Features:
+--------------
+1. 修改caliper框架，使用ansible部署测试用例
+2. 修改原有的22个测试用例，编写ansible安装的playbook，并进行测试
+3. 完成在web展示单次测试结果
+4. 完成使用固定KPI计算测试结果分数
+
+
+Supported Platform:
+-------------------
+可以支持的硬件平台和操作系统包括：
+D03: Ubuntu16.04
+D05: Ubuntu16.04
+X86: Ubuntu16.04, CentOS 7
+
+Installation:
+--------------
+1 需要测试的硬件设备上首先安装好基本操作系统，并配置好网络，和sudo权限。
+2 执行软件包安装: 
+ - 在Ubuntu上执行 sudo apt update & apt upgrade
+ - 在CentOS上 sudo yum update 
+3 系统中首先要安装好python运行环境
+4 下载caliper.install
+5 修改caliper.install的权限，保证可以执行
+6 使用普通用户执行./caliper-0.0.2.install
+7 脚本执行后打开~/caliper_output/install_dependency_output_summary.txt文件，查看执行结果
+8 如有安装失败的软件包手动安装
+
+Usage:
+--------------
+1. 进入$HOME/caliper_output/configuration/config下，配置client_config.cfg。配置说明见后。
+2. 执行caliper -w进行测试
+3. 浏览网站：在浏览器中输入网址[hostip]:8000即可访问
+
+
+Comments：
+--------------
+1.如果以前安装过caliper，重新安装前需要先执行sudo python pip uninstall caliper,并删除caliper_output下frontend文件夹后安装新的caliper。
+2.client_config.cfg，需要配置以下内容：
+ - Target设备的ip, user, password. 
+ - TestNode的ip, user, password。以上2个设备需要完全一致。
+ - Caliperweb: server_num, server_ip1, server_ip2...
+3.进行双机测试需要修改client_config.cfg和hosts文件,TestNode_ip_10g为server端
+
+
 
 Caliper V0.0.1 (September 08, 2017)
 =================================
@@ -52,6 +99,4 @@ Comments：
 2.client_config.cfg，需要配置以下内容：
  - Target设备的ip, user, password. 
  - TestNode的ip, user, password。以上2个设备需要完全一致。
- - Caliperweb: 默认情况下只上传数据到本地数据库。如果需要上传到其他服务器，请配置server_num, server_ip1, server_ip2...
-  
-
+ - Caliperweb: server_num, server_ip1, server_ip2...
