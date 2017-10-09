@@ -529,18 +529,24 @@ if __name__=="__main__":
             normalize.normalise()
         except Exception as e:
             print e
-            sys.exit()
+            # sys.exit()
         flag = generate_web_tar()
-        local_url = "127.0.0.1:8000"
-        logging.info("local upload start")
-        upload.upload_result(remote_host,local_url)
-        logging.info("local upload end")
-        remote_url = get_remote_url()
-        if remote_url:
-            remote_url += ":8000"
-            logging.info("remote upload start")
-            upload.upload_result(remote_host,remote_url)
-            logging.info("remote upload end")
+        try:
+            local_url = "127.0.0.1:8000"
+            logging.info("local upload start")
+            upload.upload_result(remote_host,local_url)
+            logging.info("local upload end")
+        except:
+            pass
+        try:
+            remote_url = get_remote_url()
+            if remote_url:
+                remote_url += ":8000"
+                logging.info("remote upload start")
+                upload.upload_result(remote_host,remote_url)
+                logging.info("remote upload end")
+        except:
+            pass
 
     if args.webpage and args.send_email:
         flag = generate_web_tar()
