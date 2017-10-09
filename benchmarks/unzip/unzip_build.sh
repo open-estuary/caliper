@@ -1,9 +1,7 @@
 
 build() {
     CURDIR=$(cd `dirname $0`; pwd)
-    pushd ${CURDIR}/benchmarks/unzip/ansible > /dev/null
-    ansible-playbook -i '~/caliper_output/configuration/config/hosts' 'site.yml'
-    popd > /dev/null
+    ansible-playbook -i "~/caliper_output/configuration/config/hosts" "${CURDIR}/benchmarks/unzip/ansible/site.yml"
 }
 
 build

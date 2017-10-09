@@ -1,8 +1,6 @@
 build_OpenBLAS() {
     CURDIR=$(cd `dirname $0`; pwd)
-    pushd ${CURDIR}/benchmarks/openblas/ansible > /dev/null
-    ansible-playbook -i '~/caliper_output/configuration/config/hosts' 'site.yml'
-    popd > /dev/null
+    ansible-playbook -i "~/caliper_output/configuration/config/hosts" "${CURDIR}/benchmarks/openblas/ansible/site.yml"
 }
 
 build_OpenBLAS
