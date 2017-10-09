@@ -547,7 +547,7 @@ def get_actual_commands(commands, target):
     try:
         if re.findall('\$target_user_name', commands):
             try:
-                client_user = settings.get_value('TARGET', user, type=str)
+                client_user = settings.get_value('TARGET', 'user', type=str)
             except:
                 client_user = 'root'
             strinfo = re.compile('\$target_user_name')
