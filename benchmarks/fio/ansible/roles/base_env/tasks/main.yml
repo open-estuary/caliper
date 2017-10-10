@@ -1,6 +1,6 @@
 #install fio
 - name: install fio for redhat
-  shell: mkdir -p /mnt/sdb/ && sudo touch /mnt/sdb/testfio
+  shell: mkdir -p /tmp/sdb/
 
 - name: install fio for redhat
   yum: name=fio state=present disable_gpg_check=yes

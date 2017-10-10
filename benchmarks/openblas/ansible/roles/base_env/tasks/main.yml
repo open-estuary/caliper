@@ -1,8 +1,8 @@
 - name: copy file
-  copy: src=OpenBLAS.tar.gz dest=/tmp/OpenBLAS.tar.gz owner=root group=root mode=0755
+  copy: src=OpenBLAS.tar.gz dest=/tmp/OpenBLAS.tar.gz mode=0777
 
 - name: tar file
   shell: cd /tmp && tar xvf OpenBLAS.tar.gz && rm -rf OpenBLAS.tar.gz
 
 - name: run install
-  shell: "cd /tmp/OpenBLAS && chmod 777 install.sh && ./install.sh"
+  shell: "cd /tmp/OpenBLAS && ./install.sh"

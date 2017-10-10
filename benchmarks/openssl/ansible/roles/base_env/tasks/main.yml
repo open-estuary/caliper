@@ -1,8 +1,8 @@
 - name: copy file
-  copy: src=openssl.tar.gz dest=/tmp/openssl.tar.gz owner=root group=root mode=0755
+  copy: src=openssl.tar.gz dest=/tmp/openssl.tar.gz mode=0777
 
 - name: tar file
   shell: cd /tmp && tar xvf openssl.tar.gz && rm -rf openssl.tar.gz
 
 - name: run install
-  shell: "cd /tmp/openssl && chmod 777 install.sh && ./install.sh"
+  shell: "cd /tmp/openssl && ./install.sh"
