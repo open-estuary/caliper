@@ -6,3 +6,4 @@
 
 - name: run install
   shell: "cd /tmp/netperf && ./install_netperf.sh"
+  ignore_errors: yes
