@@ -8,7 +8,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from pylab import *
-import numpy.numarray as na
+from numpy import numarray as na
+#import numpy.numarray as na
 import re
 
 import radar_caliper as radar

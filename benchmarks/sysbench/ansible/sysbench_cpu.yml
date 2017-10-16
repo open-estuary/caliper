@@ -1,0 +1,21 @@
+
+- hosts: Device
+  tasks:
+    - name: remove latest data
+      file:
+        path: /tmp/sysbench_output.log
+        state: absent
+
+    - name: run sysbench_cpu
+      shell: cd /tmp/sysbench && ./sysbench_cpu.sh
+      register: logdata
+      ignore_errors: yes
+
+    - lineinfile: create=yes  dest=/tmp/sysbench_output.log line="{{ logdata.stdout }}" state=present
+
+
+    - name: fetch result
+      fetch:
+        src: /tmp/sysbench_output.log
+        dest: /tmp/sysbench_output.log
+        flat: yes

@@ -1,6 +1,6 @@
 #/bin/sh
 ## How to build caliper.install:
-# tar cvzf caliper-[ver].tar.gz caliper NewCaliperweb
+# tar cvzf caliper-[ver].tar.gz caliper CaliperWeb
 # cat caliper.install caliper-[ver].tar.gz > caliper-[ver].install
 
 ARCHIVE=`awk '/^__ARCHIVE_BELOW__/ {print NR+1; exit 0}' "$0"`

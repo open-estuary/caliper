@@ -40,11 +40,11 @@ EOF
 sudo su postgres <<EOF
 psql -f caliperweb.sql
 EOF
-cd $caliper_output_path/NewCaliperweb
+cd $caliper_output_path/CaliperWeb
 python manage.py makemigrations
 python manage.py migrate
 /usr/bin/expect <<EOF
-spawn psql -U caliperuser -h 127.0.0.1 -d calipernewdb -f $caliper_output_path/NewCaliperweb/resources/caliper.psql
+spawn psql -U caliperuser -h 127.0.0.1 -d calipernewdb -f $caliper_output_path/CaliperWeb/caliper.sql
 expect "caliperuser"
 send "caliperts\r"
 expect eof

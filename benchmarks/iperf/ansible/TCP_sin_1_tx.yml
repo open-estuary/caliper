@@ -1,0 +1,21 @@
+
+- hosts: Device
+  tasks:
+    - name: remove latest data
+      file:
+        path: /tmp/nbench_output.log
+        state: absent
+
+    - name: run nbench
+      shell: iperf3 -c {{ TestNode }} -f M -i 1 -O 5 -t 100 -w 256k
+      register: logdata
+      ignore_errors: yes
+
+    - lineinfile: create=yes  dest=/tmp/nbench_output.log line="{{ logdata.stdout }}" state=present
+
+
+    - name: fetch result
+      fetch:
+        src: /tmp/nbench_output.log
+        dest: /tmp/nbench_output.log
+        flat: yes

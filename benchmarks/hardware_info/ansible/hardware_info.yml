@@ -1,0 +1,21 @@
+
+- hosts: Device
+  tasks:
+    - name: remove latest data
+      file:
+        path: /tmp/hardware_info_output.log
+        state: absent
+
+    - name: run hardware_info
+      shell: cd /tmp && ./hw_info_run.sh
+      register: logdata
+      ignore_errors: yes
+
+    - lineinfile: create=yes  dest=/tmp/hardware_info_output.log line="{{ logdata.stdout }}" state=present
+
+
+    - name: fetch result
+      fetch:
+        src: /tmp/hardware_info_output.log
+        dest: /tmp/hardware_info_output.log
+        flat: yes

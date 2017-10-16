@@ -1,0 +1,21 @@
+
+- hosts: Device
+  tasks:
+    - name: remove latest data
+      file:
+        path: /tmp/scimark_output.log
+        state: absent
+
+    - name: run scimark
+      shell: cd /tmp/scimark && ./scimark2
+      register: logdata
+      ignore_errors: yes
+
+    - lineinfile: create=yes  dest=/tmp/scimark_output.log line="{{ logdata.stdout }}" state=present
+
+
+    - name: fetch result
+      fetch:
+        src: /tmp/scimark_output.log
+        dest: /tmp/scimark_output.log
+        flat: yes

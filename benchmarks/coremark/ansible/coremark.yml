@@ -1,0 +1,21 @@
+
+- hosts: Device
+  tasks:
+    - name: remove latest data
+      file:
+        path: /tmp/coremark_output.log
+        state: absent
+
+    - name: run coremark
+      shell: cd /tmp/coremark; ./coremark.exe
+      register: logdata
+      ignore_errors: yes
+
+    - lineinfile: create=yes  dest=/tmp/coremark_output.log line="{{ logdata.stdout }}" state=present
+
+
+    - name: fetch result
+      fetch:
+        src: /tmp/coremark_output.log
+        dest: /tmp/coremark_output.log
+        flat: yes

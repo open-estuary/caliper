@@ -145,7 +145,8 @@ def get_target_ip(target):
     try:
         client_ip = settings.get_value('TARGET', 'ip', type=str)
     except Exception:
-        raise
+        client_ip = '127.0.0.1'
+        #raise
     else:
         return client_ip
 

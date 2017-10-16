@@ -1,0 +1,21 @@
+
+- hosts: Device
+  tasks:
+    - name: remove latest data
+      file:
+        path: /tmp/lmbench_output.log
+        state: absent
+
+    - name: run lmbench test_local_bw 32
+      shell: cd /tmp/lmbench && ./test_local_bw.sh 32
+      register: logdata
+      ignore_errors: yes
+
+    - lineinfile: create=yes  dest=/tmp/lmbench_output.log line="{{ logdata.stdout }}" state=present
+
+
+    - name: fetch result
+      fetch:
+        src: /tmp/lmbench_output.log
+        dest: /tmp/lmbench_output.log
+        flat: yes

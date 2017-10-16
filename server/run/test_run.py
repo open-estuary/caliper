@@ -309,8 +309,8 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
     nginx_tmp_log_file = None
 
     if re.search('application', kind_bench) and bench_name == "nginx":
-	nginx_log_file = {}
-	nginx_tmp_log_file = {}
+        nginx_log_file = {}
+        nginx_tmp_log_file = {}
         no_of_clients = len(nginx_clients)
         for i in range(1, no_of_clients+1):
             filename = "weighttp_client_" + str(i)
@@ -338,34 +338,34 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
                                 Folder.caliper_log_file),
                             shell=True)
     bench_test = "ltp"
-    if  bench_name == bench_test:
-        tar_ip = settings.get_value('TARGET', 'ip', type=str)
-        target.run("if [[ ! -e /mnt/caliper_nfs ]]; then mkdir -p /mnt/caliper_nfs; fi")
-# fix me , now that we create the folder, why not we mount it directly here
-        try:
-             tar_mask = ".".join(tar_ip.split(".")[0:3])
-             p1 = subprocess.Popen(["ifconfig"], stdout=subprocess.PIPE)
-             p2 = subprocess.Popen(["grep", tar_mask], stdin=p1.stdout, stdout=subprocess.PIPE)
-             p1.stdout.close()
-             output,err = p2.communicate()
-             output = output.strip()
-             host_ip = output.split("inet addr:")[1].split(" ")[0]
-        except Exception:
-            logging.debug("Unable to get the host_ip" )
-        try:
-            mount_cmd = target.run("mount -t nfs %s:/opt/caliper_nfs /mnt/caliper_nfs" % (host_ip) )
-        except Exception:
-            try:
-                umount_cmd = target.run("umount /mnt/caliper_nfs/")
-                mount_cmd = target.run("mount -t nfs %s:/opt/caliper_nfs /mnt/caliper_nfs" % (host_ip) )
-            except Exception:
-                logging.debug("Unable to mount")
-                return result
-        readme_file=log_bench+"_README"
-        resultltp = subprocess.call("touch %s"
-                             %(readme_file),shell=True)
-        resultltp = subprocess.call("echo 'The categorization of ltp in caliper is\nCATEGORY\t\t\t\t\t\tSCENARIOS OF LTP\n\n[command]\t\t\t\t\t\tcommands\n[cpu]\t\t\t\t\t\tsched,cpuhotplug\n[memory]\t\t\t\t\t\tmm.numa,hugetlb\n[dio]\t\t\t\t\t\tdio,io,dma_thread_diotest,timers\n[filesystem]\t\t\t\t\t\tfilecaps,fs,fs_bind,fs_ext4,fs_perms_simple,fs_readonly\n[kernel/\t\t\t\t\t\tsyscalls,controllers,pty,containers,admin_tools,modules,can\n[proc]\t\t\t\t\t\tipc,hyperthreading,nptl,cap_bounds,connectors,pipes\n\n\nltp_output.log contains the screenshot of complete ltp execution and ltp_parser.log contains the information regarding the number of tests executed and among them which all have passed failed or skipped.\n\nFor more information regarding a particular category please see ltp_<category>_output.log which contains the output screen and parser log for that particular category' >> %s"
-                  %(readme_file),shell=True)
+    # if  bench_name == bench_test:
+    #     tar_ip = settings.get_value('TARGET', 'ip', type=str)
+    #     target.run("if [[ ! -e /mnt/caliper_nfs ]]; then mkdir -p /mnt/caliper_nfs; fi")
+    #     # fix me , now that we create the folder, why not we mount it directly here
+    #     try:
+    #          tar_mask = ".".join(tar_ip.split(".")[0:3])
+    #          p1 = subprocess.Popen(["ifconfig"], stdout=subprocess.PIPE)
+    #          p2 = subprocess.Popen(["grep", tar_mask], stdin=p1.stdout, stdout=subprocess.PIPE)
+    #          p1.stdout.close()
+    #          output,err = p2.communicate()
+    #          output = output.strip()
+    #          host_ip = output.split("inet addr:")[1].split(" ")[0]
+    #     except Exception:
+    #         logging.debug("Unable to get the host_ip" )
+    #     try:
+    #         mount_cmd = target.run("mount -t nfs %s:/opt/caliper_nfs /mnt/caliper_nfs" % (host_ip) )
+    #     except Exception:
+    #         try:
+    #             umount_cmd = target.run("umount /mnt/caliper_nfs/")
+    #             mount_cmd = target.run("mount -t nfs %s:/opt/caliper_nfs /mnt/caliper_nfs" % (host_ip) )
+    #         except Exception:
+    #             logging.debug("Unable to mount")
+    #             return result
+    #     readme_file=log_bench+"_README"
+    #     resultltp = subprocess.call("touch %s"
+    #                          %(readme_file),shell=True)
+    #     resultltp = subprocess.call("echo 'The categorization of ltp in caliper is\nCATEGORY\t\t\t\t\t\tSCENARIOS OF LTP\n\n[command]\t\t\t\t\t\tcommands\n[cpu]\t\t\t\t\t\tsched,cpuhotplug\n[memory]\t\t\t\t\t\tmm.numa,hugetlb\n[dio]\t\t\t\t\t\tdio,io,dma_thread_diotest,timers\n[filesystem]\t\t\t\t\t\tfilecaps,fs,fs_bind,fs_ext4,fs_perms_simple,fs_readonly\n[kernel/\t\t\t\t\t\tsyscalls,controllers,pty,containers,admin_tools,modules,can\n[proc]\t\t\t\t\t\tipc,hyperthreading,nptl,cap_bounds,connectors,pipes\n\n\nltp_output.log contains the screenshot of complete ltp execution and ltp_parser.log contains the information regarding the number of tests executed and among them which all have passed failed or skipped.\n\nFor more information regarding a particular category please see ltp_<category>_output.log which contains the output screen and parser log for that particular category' >> %s"
+    #               %(readme_file),shell=True)
     # for each command in run config file, read the config for the benchmark
     for i in range(0, len(sections_run)):
         flag = 0
@@ -375,14 +375,14 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
         except Exception:
             logging.debug("no value for the %s" % sections_run[i])
             continue
-	if bench_name == bench_test:
-	    subsection = sections_run[i].split(" ")[1]
-	    subsection_file = log_bench + "_" + subsection + "_output.log"
+        if bench_name == bench_test:
+            subsection = sections_run[i].split(" ")[1]
+            subsection_file = log_bench + "_" + subsection + "_output.log"
 
         if os.path.exists(tmp_log_file):
             os.remove(tmp_log_file)
 
-	if re.search('application', kind_bench) and bench_name == "nginx":
+        if re.search('application', kind_bench) and bench_name == "nginx":
             no_of_clients = len(nginx_clients)
             for j in range(1, no_of_clients+1):
                 if os.path.exists(nginx_tmp_log_file[str(j)]):
@@ -391,25 +391,25 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
         server_run_command = get_server_command(kind_bench, sections_run[i])
 
         nginx_clients_count = None
-	client_command_dic = None
-	stop_nginx = 0
+        client_command_dic = None
+        stop_nginx = 0
         if re.search('application', kind_bench) and bench_name == "nginx":
-	    no_of_clients = configRun.get(sections_run[i], 'no_of_clients')
-	    if len(nginx_clients) >= int(no_of_clients):
-	        client_command_dic = {}
-	        for j in range(1, int(no_of_clients)+1):
-		    client_command = "command" + str(j)
-		    client_command_dic[str(j)] = get_nginx_client_command(kind_bench, sections_run[i], client_command)
-		    if client_command_dic[str(j)] == None:
-	        	logging.info("Please specify \"command\" field in the nginx_application_run.cfg file")
-			stop_nginx = 1
-			break
-		if stop_nginx == 1:
-		    continue
-	        nginx_clients_count = int(no_of_clients)
-	    else:
-	        logging.info("Please specify client in the client config file")
-		continue
+            no_of_clients = configRun.get(sections_run[i], 'no_of_clients')
+            if len(nginx_clients) >= int(no_of_clients):
+                client_command_dic = {}
+                for j in range(1, int(no_of_clients)+1):
+                    client_command = "command" + str(j)
+                    client_command_dic[str(j)] = get_nginx_client_command(kind_bench, sections_run[i], client_command)
+                    if client_command_dic[str(j)] == None:
+                        logging.info("Please specify \"command\" field in the nginx_application_run.cfg file")
+                        stop_nginx = 1
+                        break
+                if stop_nginx == 1:
+                    continue
+                nginx_clients_count = int(no_of_clients)
+            else:
+                logging.info("Please specify client in the client config file")
+                continue
       
         logging.debug("Get the server command is: %s" % server_run_command)
         # run the command of the benchmarks
@@ -417,24 +417,25 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
             flag = run_kinds_commands(sections_run[i], server_run_command, 
                                       tmp_log_file, kind_bench, bench_name,
                                       target, command, server, nginx_clients, client_command_dic, nginx_clients_count, nginx_tmp_log_file)
+            #server_utils.file_copy(tmp_log_file, '/tmp/%s_output.log' %bench_name, 'a+')
         except Exception, e:
             logging.info(e)
             crash_handle.main()
             if bench_name == bench_test:
                  move_logs = subprocess.call("cp /opt/caliper_nfs/ltp_log/* %s "
                                 % (Folder.exec_dir), shell=True)
-
+            #server_utils.file_copy(tmp_log_file, '/tmp/%s_output.log' %bench_name, 'a+')
             server_utils.file_copy(logfile, tmp_log_file, 'a+')
             if os.path.exists(tmp_log_file):
                 os.remove(tmp_log_file)
 
-	    if re.search('application', kind_bench) and bench_name == "nginx":
-	    	no_of_clients = configRun.get(sections_run[i], 'no_of_clients')
-            	for j in range(1, int(no_of_clients) + 1):
+            if re.search('application', kind_bench) and bench_name == "nginx":
+                no_of_clients = configRun.get(sections_run[i], 'no_of_clients')
+                for j in range(1, int(no_of_clients) + 1):
                     file_present = os.path.isfile(nginx_tmp_log_file[str(j)])
                     if file_present == True:
-            	        server_utils.file_copy(nginx_log_file[str(j)], nginx_tmp_log_file[str(j)], 'a+')
-            	        if os.path.exists(nginx_tmp_log_file[str(j)]):
+                        server_utils.file_copy(nginx_log_file[str(j)], nginx_tmp_log_file[str(j)], 'a+')
+                        if os.path.exists(nginx_tmp_log_file[str(j)]):
                             os.remove(nginx_tmp_log_file[str(j)])
 
             run_flag = server_utils.get_fault_tolerance_config(
@@ -451,22 +452,22 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
                     server_utils.file_copy(tmp_log_file,subsection_file, 'a+')
             server_utils.file_copy(logfile, tmp_log_file, 'a+')
 
-	    if re.search('application', kind_bench) and bench_name == "nginx":
-	    	no_of_clients = configRun.get(sections_run[i], 'no_of_clients')
-            	for j in range(1, int(no_of_clients) + 1):
-		    file_present = os.path.isfile(nginx_tmp_log_file[str(j)])
-	            if file_present == True:
-            	    	server_utils.file_copy(nginx_log_file[str(j)], nginx_tmp_log_file[str(j)], 'a+')
+            if re.search('application', kind_bench) and bench_name == "nginx":
+                no_of_clients = configRun.get(sections_run[i], 'no_of_clients')
+                for j in range(1, int(no_of_clients) + 1):
+                    file_present = os.path.isfile(nginx_tmp_log_file[str(j)])
+                    if file_present == True:
+                        server_utils.file_copy(nginx_log_file[str(j)], nginx_tmp_log_file[str(j)], 'a+')
 
             if flag != 1:
                 logging.info("There is wrong when running the command \"%s\""
                                 % command)
 
-	    	if re.search('application', kind_bench) and bench_name == "nginx":
-	    	    no_of_clients = configRun.get(sections_run[i], 'no_of_clients')
-            	    for j in range(1, int(no_of_clients) + 1):
-            	        if os.path.exists(nginx_tmp_log_file[str(j)]):
-                	    os.remove(nginx_tmp_log_file[str(j)])
+                if re.search('application', kind_bench) and bench_name == "nginx":
+                    no_of_clients = configRun.get(sections_run[i], 'no_of_clients')
+                    for j in range(1, int(no_of_clients) + 1):
+                        if os.path.exists(nginx_tmp_log_file[str(j)]):
+                            os.remove(nginx_tmp_log_file[str(j)])
 
                 if os.path.exists(tmp_log_file):
                     os.remove(tmp_log_file)
@@ -482,10 +483,10 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
             if os.path.exists(tmp_log_file):
                 os.remove(tmp_log_file)
 
-	    if re.search('application', kind_bench) and bench_name == "nginx":
-	    	no_of_clients = configRun.get(sections_run[i], 'no_of_clients')
-            	for j in range(1, int(no_of_clients) + 1):
-            	    if os.path.exists(nginx_tmp_log_file[str(j)]):
+            if re.search('application', kind_bench) and bench_name == "nginx":
+                no_of_clients = configRun.get(sections_run[i], 'no_of_clients')
+                for j in range(1, int(no_of_clients) + 1):
+                    if os.path.exists(nginx_tmp_log_file[str(j)]):
                         os.remove(nginx_tmp_log_file[str(j)])
 
     endtime = datetime.datetime.now()
@@ -615,14 +616,14 @@ def run_remote_server_commands(commands, server,
     except Exception, e:
         logging.debug(e)
     else:
-        if result.exit_status and result.stderr and not result.stdout:
-            returncode = result.exit_status
+        if result:
+            returncode = result
         else:
             returncode = 0
         try:
-            output = result.stdout
+            output = result
         except Exception:
-            output = result.stderr
+            output = result
     return [output, returncode]
 
 def run_server_command(cmd_sec_name, commands, tmp_logfile, kind_bench, server, timeout=None):
@@ -695,17 +696,17 @@ def run_remote_client_commands(exec_dir, kind_bench, commands, target,
     except Exception, e:
         logging.debug(e)
     else:
-        if result.exit_status and result.stderr and not result.stdout:
-            returncode = result.exit_status
+        if result and result and not result:
+            returncode = result
         else:
             returncode = 0
         try:
-            output = result.stdout
+            output = result
         except Exception:
-            output = result.stderr
+            output = result
     return [output, returncode]
 
-def run_commands(exec_dir, kind_bench, commands,
+def run_commands(exec_dir, bench_name, commands,
                     stdout_tee=None, stderr_tee=None, target=None):
     returncode = -1
     output = ''
@@ -720,23 +721,26 @@ def run_commands(exec_dir, kind_bench, commands,
         # the commands is multiple lines, and was included by Quotation
         actual_commands = get_actual_commands(commands, target)
         try:
+            actual_commands = 'ansible-playbook -i ~/caliper_output/configuration/config/hosts ' \
+                              '~/.caliper/benchmarks/%s/ansible/%s.yml'% (bench_name, actual_commands)
             logging.debug("the actual commands running in local is: %s"
-                            % actual_commands)
-            result = utils.run(actual_commands, stdout_tee=stdout_tee,
-                                stderr_tee=stderr_tee, verbose=True)
+                          % actual_commands)
+            result = os.system(actual_commands)
+            # result = utils.run(actual_commands, stdout_tee=stdout_tee,
+            #                     stderr_tee=stderr_tee, verbose=True)
         except error.CmdError, e:
             raise error.ServRunError(e.args[0], e.args[1])
     except Exception, e:
         logging.debug(e)
     else:
-        if result.exit_status and result.stderr and not result.stdout:
-            returncode = result.exit_status
+        if result and result and not result:
+            returncode = result
         else:
             returncode = 0
         try:
-            output = result.stdout
+            output = result
         except Exception:
-            output = result.stderr
+            output = result
     os.chdir(pwd)
     return [output, returncode]
 
@@ -752,6 +756,7 @@ def run_client_command(cmd_sec_name, tmp_logfile, kind_bench,
         fp.write(tags)
         logs = "log: " + get_actual_commands(command, target) + "\n"
         fp.write(logs)
+        fp.close()
     start = time.time()
     flag = 0
     logging.debug("the client running command is %s" % command)
@@ -773,29 +778,36 @@ def run_client_command(cmd_sec_name, tmp_logfile, kind_bench,
         logging.debug("begining to execute the command of %s on remote host"
                         % command)
         if (is_localhost == 1):
+            fp = open(tmp_logfile, "a+")
             logging.debug("client command in localhost is: %s" % command)
-	    #FIXME: update code for this condition
-            [out, returncode] = run_commands(host_exec_dir, kind_bench,
+            #FIXME: update code for this condition
+            [out, returncode] = run_commands(host_exec_dir, bench_name,
                                                 command, fp, fp)
+            fp.close()
+            server_utils.file_copy(tmp_logfile, '/tmp/%s_output.log' %bench_name, 'a+')
         else:
             logging.debug("client command in remote target is: %s" % command)
             [out, returncode] = run_remote_client_commands(host_exec_dir, kind_bench,
                                                     command, target, fp, fp)
     except error.ServRunError, e:
-	if not re.search('redis', bench_name):
+        fp = open(tmp_logfile, "a+")
+        if not re.search('redis', bench_name):
             fp.write("[status]: FAIL\n")
         sys.stdout.write(e)
         flag = -1
+        fp.close()
     else:
+        fp = open(tmp_logfile, "a+")
         if not returncode:
-	    if not re.search('redis', bench_name):
+            if not re.search('redis', bench_name):
                 fp.write("[status]: PASS\n")
             flag = 1
         else:
-	    if not re.search('redis', bench_name):
+            if not re.search('redis', bench_name):
                 fp.write("[status]: FAIL\n")
             flag = 0
-
+        fp.close()
+    fp = open(tmp_logfile, "a+")
     end = time.time()
     interval = end - start
     fp.write("Time in Seconds: %.3fs\n" % interval)
@@ -887,8 +899,8 @@ def check_ping_response(nginx_clients_count):
     return result
 
 def run_kinds_commands(cmd_sec_name, server_run_command, tmp_logfile,
-                        kind_bench, bench_name, target, command, server, nginx_clients=None, 
-			client_command_dic=None, nginx_clients_count=None, nginx_tmp_log_file=None):
+                        kind_bench, bench_name, target, command, server, nginx_clients=None,
+                       client_command_dic=None, nginx_clients_count=None, nginx_tmp_log_file=None):
     if re.search('server', kind_bench):
         logging.debug("Running the server_command: %s, "
                         "and the client command: %s" %
@@ -900,27 +912,27 @@ def run_kinds_commands(cmd_sec_name, server_run_command, tmp_logfile,
         flag = run_client_command(cmd_sec_name, tmp_logfile, kind_bench,
                                     target, command, bench_name)
     elif re.search('application', kind_bench):
-	if bench_name == "nginx":
+        if bench_name == "nginx":
             result = check_ping_response(nginx_clients_count)
-	    if result != 0:
-		logging.info("PING response is not success for one of clients")
-		return -1
+            if result != 0:
+                logging.info("PING response is not success for one of clients")
+                return -1
 
             stop_nginx_server()
             for i in range(1, nginx_clients_count + 1):
                 weighttp_thread = "thread" + str(i)
-		if client_command_dic[str(i)] != None:
-	            weighttp_thread = myThread(i, cmd_sec_name, client_command_dic[str(i)], nginx_tmp_log_file[str(i)],
+                if client_command_dic[str(i)] != None:
+                    weighttp_thread = myThread(i, cmd_sec_name, client_command_dic[str(i)], nginx_tmp_log_file[str(i)],
                            kind_bench, nginx_clients[str(i)])
-        	    weighttp_thread.start()
+                    weighttp_thread.start()
 
-	    flag = run_client_command(cmd_sec_name, tmp_logfile, kind_bench,
+            flag = run_client_command(cmd_sec_name, tmp_logfile, kind_bench,
                                     target, command, bench_name)
 
-	    # if any weighttp client threads are active, then kill it
+            # if any weighttp client threads are active, then kill it
             stop_weighttp_client(nginx_clients_count)
 
-	else:
+        else:
             flag = run_client_command(cmd_sec_name, tmp_logfile, kind_bench,
                                     target, command, bench_name)
             flag = run_server_command(cmd_sec_name, server_run_command, tmp_logfile,

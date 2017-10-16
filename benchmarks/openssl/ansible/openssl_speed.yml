@@ -1,0 +1,21 @@
+
+- hosts: Device
+  tasks:
+    - name: remove latest data
+      file:
+        path: /tmp/openssl_output.log
+        state: absent
+
+    - name: run openssl speed
+      shell: cd /tmp/build.openssl && openssl speed
+      register: logdata
+      ignore_errors: yes
+
+    - lineinfile: create=yes  dest=/tmp/openssl_output.log line="{{ logdata.stdout }}" state=present
+
+
+    - name: fetch result
+      fetch:
+        src: /tmp/openssl_output.log
+        dest: /tmp/openssl_output.log
+        flat: yes
