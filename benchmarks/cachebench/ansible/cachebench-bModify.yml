@@ -1,0 +1,21 @@
+
+- hosts: Device
+  tasks:
+    - name: remove latest data
+      file:
+        path: /tmp/cachebench_output.log
+        state: absent
+
+    - name: run cachebench
+      shell: cd /tmp/cachebench && ./cachebench -b -x1 -m24 -d5 -e2
+      register: logdata
+      ignore_errors: yes
+
+    - lineinfile: create=yes  dest=/tmp/cachebench_output.log line="{{ logdata.stdout }}" state=present
+
+
+    - name: fetch result
+      fetch:
+        src: /tmp/cachebench_output.log
+        dest: /tmp/cachebench_output.log
+        flat: yes

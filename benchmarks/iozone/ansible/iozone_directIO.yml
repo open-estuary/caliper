@@ -7,7 +7,7 @@
         state: absent
 
     - name: run iozone
-      shell: cd /tmp/iozone && if [ ! -f /tmp/sdb/iozone ] && then cp /tmp/iozone/iozone /tmp/sdb/ && cp /tmp/iozone/fileop /tmp/sdb/ && fi && ./iozone -s1g -r5M -I -f /tmp/sdb/iozone
+      shell: cd /tmp/iozone && ./iozone -s1g -r5M -I -f /tmp/sdb/iozone
       register: logdata
       ignore_errors: yes
 
