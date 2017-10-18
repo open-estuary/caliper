@@ -7,7 +7,7 @@
         state: absent
 
     - name: run openblas_core_32
-      shell: cd /tmp/OpenBLAS/benchmark && export OPENBLAS_NUM_THREADS=32 && taskset -c 0-31 ./sgemm.goto 200 4000 200
+      shell: "cd /tmp/OpenBLAS/benchmark && export OPENBLAS_NUM_THREADS=32 && taskset -c 0-31 ./sgemm.goto 200 4000 200"
       register: logdata
       ignore_errors: yes
 

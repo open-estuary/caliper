@@ -7,7 +7,7 @@
         state: absent
 
     - name: run unzip
-      shell: cd /tmp/scripts && ./untar.sh
+      shell: "cd /tmp/scripts && ./untar.sh"
       register: logdata
       ignore_errors: yes
 

@@ -7,7 +7,7 @@
         state: absent
 
     - name: run lmbench lat 4
-      shell: cd /tmp/lmbench && ./test_lat.sh 4 1
+      shell: "cd /tmp/lmbench && ./test_lat.sh 4 1"
       register: logdata
       ignore_errors: yes
 

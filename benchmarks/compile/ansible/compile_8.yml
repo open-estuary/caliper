@@ -7,7 +7,7 @@
         state: absent
 
     - name: run compile 8
-      shell: cd /tmp/scripts && ./compile_test.sh 8
+      shell: "cd /tmp/scripts && ./compile_test.sh 8"
       register: logdata
       ignore_errors: yes
 

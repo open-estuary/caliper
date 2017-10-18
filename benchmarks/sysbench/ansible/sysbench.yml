@@ -7,7 +7,7 @@
         state: absent
 
     - name: run sysbench
-      shell: cd /tmp/sysbench && ./sysbench.sh root root
+      shell: "cd /tmp/sysbench && ./sysbench.sh root root"
       register: logdata
       ignore_errors: yes
 
