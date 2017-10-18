@@ -7,7 +7,7 @@
         state: absent
 
     - name: run sysbench_cpu
-      shell: cd /tmp/sysbench && ./sysbench_cpu.sh
+      shell: "cd /tmp/sysbench && ./sysbench_cpu.sh"
       register: logdata
       ignore_errors: yes
 

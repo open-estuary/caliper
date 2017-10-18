@@ -7,7 +7,7 @@
         state: absent
 
     - name: run lmbench test_local_bw 64
-      shell: cd /tmp/lmbench && ./test_local_bw.sh 64
+      shell: "cd /tmp/lmbench && ./test_local_bw.sh 64"
       register: logdata
       ignore_errors: yes
 

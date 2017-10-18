@@ -7,7 +7,7 @@
         state: absent
 
     - name: run lmbench bandwidth
-      shell: cd /tmp/lmbench && ./test.sh bandwidth
+      shell: "cd /tmp/lmbench && ./test.sh bandwidth"
       register: logdata
       ignore_errors: yes
 
