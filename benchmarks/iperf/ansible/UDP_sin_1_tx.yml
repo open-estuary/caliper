@@ -6,7 +6,7 @@
         path: /tmp/iperf_output.log
         state: absent
 
-    - name: run iperf3 TCP_sin_1_tx
+    - name: run iperf3 UDP_sin_1_tx
       with_items:
         - "{{ groups['TestNode'] }}"
       shell: iperf3 -c {{ item }} -f M -i 1 -O 5 -t 100 -w 256k

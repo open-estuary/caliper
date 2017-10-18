@@ -6,10 +6,10 @@
         path: /tmp/iperf_output.log
         state: absent
 
-    - name: run iperf3 TCP_sin_1_tx
+    - name: run iperf3 TCP_sin_5_rx
       with_items:
         - "{{ groups['TestNode'] }}"
-      shell: iperf3 -c {{ item }} -f M -i 1 -O 5 -t 100 -w 256k
+      shell: iperf3 -c {{ item }} -f M -i 1 -O 5 -t 100 -P 5 -w 256k -R
       register: logdata
       ignore_errors: yes
 
