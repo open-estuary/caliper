@@ -1,0 +1,20 @@
+
+- hosts: Device
+  tasks:
+    - name: remove latest data
+      file:
+        path: /tmp/netperf_output.log
+        state: absent
+
+    - name: run netperf UDP_RR
+      shell: cd /tmp/netperf/src; ./netperf -t UDP_RR -H {{ groups['TestNode'][0] }} -l 60 -- -r 64, 1024 
+      register: logdata
+      ignore_errors: yes
+
+    - lineinfile: create=yes dest=/tmp/netperf_output.log line="{{ logdata.stdout }}" state=present
+
+    - name: fetch result
+      fetch:
+        src: /tmp/netperf_output.log
+        dest: /tmp/netperf_output.log
+        flat: yes
