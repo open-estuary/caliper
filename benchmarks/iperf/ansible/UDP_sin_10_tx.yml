@@ -7,18 +7,11 @@
         state: absent
 
     - name: run iperf3 UDP_sin_10_tx
-      with_items:
-        - "{{ groups['TestNode'] }}"
-      shell: iperf3 -c {{ item }} -f M -ub 0 -i 1 -t 100 -P 10 -O 5 -w 256k
+      shell: iperf3 -c {{ groups['TestNode'][0] }} -f M -ub 0 -i 1 -t 100 -P 10 -O 5 -w 256k
       register: logdata
       ignore_errors: yes
 
-
-    - lineinfile: create=yes dest=/tmp/iperf_output.log line="{{ item }}.stdout" state=present
-      with_items:
-        - "{{ logdata }}"
-
-
+    - lineinfile: create=yes dest=/tmp/iperf_output.log line="{{ logdata.stdout }}" state=present
 
     - name: fetch result
       fetch:
