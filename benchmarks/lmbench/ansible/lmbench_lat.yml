@@ -7,7 +7,7 @@
         state: absent
 
     - name: run lmbench lat
-      shell: "cd /tmp/lmbench && ./test.sh latency"
+      shell: "cd /tmp/lmbench_test && ./test.sh latency"
       register: logdata
       ignore_errors: yes
 

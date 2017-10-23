@@ -7,7 +7,7 @@
         state: absent
 
     - name: run lmbench stream v1
-      shell: "cd /tmp/lmbench && numactl --cpunodebind=0,1,2,3 --localalloc ./stream -v 1 -M 200M -P 64"
+      shell: "cd /tmp/lmbench_test && numactl --cpunodebind=0,1,2,3 --localalloc ./stream -v 1 -M 200M -P 64"
       register: logdata
       ignore_errors: yes
 

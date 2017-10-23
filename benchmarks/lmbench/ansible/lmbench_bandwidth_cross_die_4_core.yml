@@ -7,7 +7,7 @@
         state: absent
 
     - name: run lmbench cross_die_4_core
-      shell: "cd /tmp/lmbench && ./test_cross_bw.sh 4"
+      shell: "cd /tmp/lmbench_test && ./test_cross_bw.sh 4"
       register: logdata
       ignore_errors: yes
 
