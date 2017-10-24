@@ -417,7 +417,6 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
             flag = run_kinds_commands(sections_run[i], server_run_command, 
                                       tmp_log_file, kind_bench, bench_name,
                                       target, command, server, nginx_clients, client_command_dic, nginx_clients_count, nginx_tmp_log_file)
-            #server_utils.file_copy(tmp_log_file, '/tmp/%s_output.log' %bench_name, 'a+')
         except Exception, e:
             logging.info(e)
             crash_handle.main()
@@ -733,7 +732,7 @@ def run_commands(exec_dir, bench_name, commands,
     except Exception, e:
         logging.debug(e)
     else:
-        if result and result and not result:
+        if result:
             returncode = result
         else:
             returncode = 0
@@ -777,18 +776,18 @@ def run_client_command(cmd_sec_name, tmp_logfile, kind_bench,
     try:
         logging.debug("begining to execute the command of %s on remote host"
                         % command)
-        if (is_localhost == 1):
-            fp = open(tmp_logfile, "a+")
-            logging.debug("client command in localhost is: %s" % command)
-            #FIXME: update code for this condition
-            [out, returncode] = run_commands(host_exec_dir, bench_name,
-                                                command, fp, fp)
-            fp.close()
-            server_utils.file_copy(tmp_logfile, '/tmp/%s_output.log' %bench_name, 'a+')
-        else:
-            logging.debug("client command in remote target is: %s" % command)
-            [out, returncode] = run_remote_client_commands(host_exec_dir, kind_bench,
-                                                    command, target, fp, fp)
+        # if (is_localhost == 1):
+        fp = open(tmp_logfile, "a+")
+        logging.debug("client command in localhost is: %s" % command)
+        #FIXME: update code for this condition
+        [out, returncode] = run_commands(host_exec_dir, bench_name,
+                                            command, fp, fp)
+        fp.close()
+        server_utils.file_copy(tmp_logfile, '/tmp/%s_output.log' %bench_name, 'a+')
+        # else:
+        #     logging.debug("client command in remote target is: %s" % command)
+        #     [out, returncode] = run_remote_client_commands(host_exec_dir, kind_bench,
+        #                                             command, target, fp, fp)
     except error.ServRunError, e:
         fp = open(tmp_logfile, "a+")
         if not re.search('redis', bench_name):
@@ -901,47 +900,47 @@ def check_ping_response(nginx_clients_count):
 def run_kinds_commands(cmd_sec_name, server_run_command, tmp_logfile,
                         kind_bench, bench_name, target, command, server, nginx_clients=None,
                        client_command_dic=None, nginx_clients_count=None, nginx_tmp_log_file=None):
-    if re.search('server', kind_bench):
-        logging.debug("Running the server_command: %s, "
-                        "and the client command: %s" %
-                        (server_run_command, command))
-        flag = run_server_command(cmd_sec_name, server_run_command, tmp_logfile,
-                       kind_bench, server)
-        logging.debug("only running the command %s in the remote host"
-                        % command)
-        flag = run_client_command(cmd_sec_name, tmp_logfile, kind_bench,
-                                    target, command, bench_name)
-    elif re.search('application', kind_bench):
-        if bench_name == "nginx":
-            result = check_ping_response(nginx_clients_count)
-            if result != 0:
-                logging.info("PING response is not success for one of clients")
-                return -1
-
-            stop_nginx_server()
-            for i in range(1, nginx_clients_count + 1):
-                weighttp_thread = "thread" + str(i)
-                if client_command_dic[str(i)] != None:
-                    weighttp_thread = myThread(i, cmd_sec_name, client_command_dic[str(i)], nginx_tmp_log_file[str(i)],
-                           kind_bench, nginx_clients[str(i)])
-                    weighttp_thread.start()
-
-            flag = run_client_command(cmd_sec_name, tmp_logfile, kind_bench,
-                                    target, command, bench_name)
-
-            # if any weighttp client threads are active, then kill it
-            stop_weighttp_client(nginx_clients_count)
-
-        else:
-            flag = run_client_command(cmd_sec_name, tmp_logfile, kind_bench,
-                                    target, command, bench_name)
-            flag = run_server_command(cmd_sec_name, server_run_command, tmp_logfile,
-                       kind_bench, server)
-    else:
-        logging.debug("only running the command %s in the remote host"
-                      % command)
-        flag = run_client_command(cmd_sec_name, tmp_logfile, kind_bench,
-                                  target, command, bench_name)
+    # if re.search('server', kind_bench):
+    #     logging.debug("Running the server_command: %s, "
+    #                     "and the client command: %s" %
+    #                     (server_run_command, command))
+    #     flag = run_server_command(cmd_sec_name, server_run_command, tmp_logfile,
+    #                    kind_bench, server)
+    #     logging.debug("only running the command %s in the remote host"
+    #                     % command)
+    #     flag = run_client_command(cmd_sec_name, tmp_logfile, kind_bench,
+    #                                 target, command, bench_name)
+    # elif re.search('application', kind_bench):
+    #     if bench_name == "nginx":
+    #         result = check_ping_response(nginx_clients_count)
+    #         if result != 0:
+    #             logging.info("PING response is not success for one of clients")
+    #             return -1
+    #
+    #         stop_nginx_server()
+    #         for i in range(1, nginx_clients_count + 1):
+    #             weighttp_thread = "thread" + str(i)
+    #             if client_command_dic[str(i)] != None:
+    #                 weighttp_thread = myThread(i, cmd_sec_name, client_command_dic[str(i)], nginx_tmp_log_file[str(i)],
+    #                        kind_bench, nginx_clients[str(i)])
+    #                 weighttp_thread.start()
+    #
+    #         flag = run_client_command(cmd_sec_name, tmp_logfile, kind_bench,
+    #                                 target, command, bench_name)
+    #
+    #         # if any weighttp client threads are active, then kill it
+    #         stop_weighttp_client(nginx_clients_count)
+    #
+    #     else:
+    #         flag = run_client_command(cmd_sec_name, tmp_logfile, kind_bench,
+    #                                 target, command, bench_name)
+    #         flag = run_server_command(cmd_sec_name, server_run_command, tmp_logfile,
+    #                    kind_bench, server)
+    # else:
+    logging.debug("only running the command %s in the remote host"
+                  % command)
+    flag = run_client_command(cmd_sec_name, tmp_logfile, kind_bench,
+                              target, command, bench_name)
     return flag
 
 def parser_case(kind_bench, bench_name, parser_file, parser, infile, outfile):
@@ -1196,28 +1195,6 @@ def caliper_run(target_exec_dir, server, target, nginx_clients=None):
                 logging.info("Running %s Exception" % sections[i])
                 crash_handle.main()
                 print_format()
-
-            if sections[i]== "ltp":
-                try:
-                    unmount = target.run("if  df -h |grep caliper_nfs  ; then umount /mnt/caliper_nfs/; fi")
-                except Exception:
-                    unmount = target.run("if  df -h |grep caliper_nfs  ; then fuser -km /mnt/caliper_nfs ;fi")
-                    unmount = target.run("if  df -h |grep caliper_nfs  ; then umount /mnt/caliper_nfs/ ;fi")
-                run_flag = server_utils.get_fault_tolerance_config(
-                                'fault_tolerance', 'run_error_continue')
-                if run_flag == 1:
-                    continue
-                else:
-                    return result
-            else:
-                logging.info("Running %s Finished" % sections[i])
-                if sections[i] == "ltp":
-                    try:
-                         unmount = target.run("if  df -h |grep caliper_nfs  ; then umount /mnt/caliper_nfs/ ;fi")
-                    except Exception:
-                         unmount = target.run("if  df -h |grep caliper_nfs  ; then fuser -km /mnt/caliper_nfs/ ;fi")
-                         unmount = target.run("if  df -h |grep caliper_nfs  ; then umount /mnt/caliper_nfs/ ;fi")
-                    print_format()
     return 0
 
 def parsing_run(target_exec_dir, target):
