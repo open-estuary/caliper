@@ -7,11 +7,11 @@
         state: absent
 
     - name: run nbench
-      shell: pushd /tmp/nbench && ./nbench && popd
+      shell: cd /tmp/nbench && ./nbench
       register: logdata
       ignore_errors: yes
 
-    - lineinfile: create=yes  dest=/tmp/nbench_output.log line="{{ logdata.stdout }}" state=present
+    - lineinfile: create=yes  dest=/tmp/nbench_output.log line="{{ logdata.stdout+logdata.stderr }}" state=present
 
 
     - name: fetch result

@@ -11,7 +11,7 @@
       register: logdata
       ignore_errors: yes
 
-    - lineinfile: create=yes  dest=/tmp/compile_output.log line="{{ logdata.stdout }}" state=present
+    - lineinfile: create=yes  dest=/tmp/compile_output.log line="{{ logdata.stdout+logdata.stderr }}" state=present
 
 
     - name: fetch result
