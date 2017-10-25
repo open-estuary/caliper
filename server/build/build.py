@@ -577,10 +577,9 @@ def build_each_tool(dirname, section_name, des_build_file, arch='x86_86'):
                                         shell=True)
         if dirname == 'server':
             ansible_path = os.path.join(caliper_path.BENCHS_DIR, section_name)
-            logging.info("dirname %s" % ansible_path)
             try:
                 os.chdir(ansible_path)
-                subprocess.Popen('ansible-playbook -i %s/ansible/hosts %s/ansible/runserver.yml'%(ansible_path, ansible_path), stdout=subprocess.PIPE, shell=True)
+                subprocess.Popen('ansible-playbook -i %s/ansible/hosts %s/ansible/runserver.yml -u root'%(ansible_path, ansible_path), stdout=subprocess.PIPE, shell=True)
             except:
                 pass
             # os.popen('ansible-playbook -i %s/ansible/hosts %s/ansible/runserver.yml'%(ansible_path, ansible_path))
