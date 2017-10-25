@@ -7,7 +7,7 @@
         state: absent
 
     - name: run netperf TCP_CRR
-      shell: cd /tmp/netperf/src; ./netperf -t TCP_CRR -H {{ groups['TestNode'][0] }} -l 60 -- -r 64, 1024 
+      shell: "cd /tmp/netperf/src && ./netperf -t TCP_CRR -H {{ groups['TestNode'][0] }} -l 60 -- -r 64, 1024"
       register: logdata
       ignore_errors: yes
 
