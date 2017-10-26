@@ -6,3 +6,8 @@
 
 - name: run install
   shell: "cd /tmp/qperf-0.4.9 && ./install.sh"
+  ignore_errors: yes
+
+- name: copy qperf to /usr/bin
+  shell: "cp /tmp/build.qperf/src/qperf /usr/bin"
+  ignore_errors: yes
