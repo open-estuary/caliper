@@ -721,12 +721,10 @@ def run_commands(exec_dir, bench_name, commands,
         actual_commands = get_actual_commands(commands, target)
         try:
             actual_commands = 'ansible-playbook -i ~/caliper_output/configuration/config/hosts ' \
-                              '~/.caliper/benchmarks/%s/ansible/%s.yml'% (bench_name, actual_commands)
+                              '~/.caliper/benchmarks/%s/ansible/%s.yml' % (bench_name, actual_commands)
             logging.debug("the actual commands running in local is: %s"
                           % actual_commands)
             result = os.system(actual_commands)
-            # result = utils.run(actual_commands, stdout_tee=stdout_tee,
-            #                     stderr_tee=stderr_tee, verbose=True)
         except error.CmdError, e:
             raise error.ServRunError(e.args[0], e.args[1])
     except Exception, e:
