@@ -348,8 +348,8 @@ def build_caliper(target_arch, flag=0,clear=0):
                 if dic[sections[i]]['ProcessID'] not in currentProcess:
                     # We shall continue to build the next tools and we'll copy these binaries later
                     logging.info("=" * 55)
-                    logging.info("%s is being built by someother process, we'll build the remaining tools" % sections[i])
-                    continue
+                    # logging.info("%s is being built by someother process, we'll build the remaining tools" % sections[i])
+                    # continue
             except Exception as e:
                 logging.debug(e)
                 sys.exit(1)
