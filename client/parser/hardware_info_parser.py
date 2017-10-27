@@ -19,22 +19,10 @@ lscpu_list = ['Architecture','Socket\(s\)','Cpu_Type','Core\(s\) per socket','Th
 lsb_release_list = ['Distributor ID','Description','Release','Codename']
 lspci_list = ['Ethernet controller [0200]']
 def get_remote_host():
-    try:
-        client_ip = settings.get_value('TARGET', 'ip', type=str)
-    except Exception, e:
-        client_ip = '127.0.0.1'
-    try:
-        port = settings.get_value('TARGET', 'port', type=int)
-    except Exception, e:
-        port = 22
-    try:
-        user = settings.get_value('TARGET', 'user', type=str)
-    except Exception, e:
-        user = os.getlogin()
-    try:
-        password = settings.get_value('TARGET', 'password', type=str)
-    except Exception, e:
-        raise error.ServRunError(e.args[0], e.args[1])
+    client_ip = '127.0.0.1'
+    port = 22
+    user = os.getlogin()
+    password = ''
 
     remote_host = host_factory.create_host(client_ip, user, password, port)
     return remote_host
