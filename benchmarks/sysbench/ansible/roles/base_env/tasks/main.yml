@@ -2,4 +2,4 @@
   copy: src=sysbench.tar.gz dest=/tmp/sysbench.tar.gz mode=0777
 
 - name: tar sysbench.tar.gz
-  shell: tar -xvf sysbench.tar.gz && rm sysbench.tar.gz
+  shell: cd /tmp && tar -xvf sysbench.tar.gz && rm sysbench.tar.gz

@@ -48,9 +48,18 @@ def ConfigValue(path=None,section=None,key=None,action='get',value=None):
     else:
         return config.set(section,key,value)
 
-client_ip = ConfigValue(path=os.path.join(caliper_output,'config','client_config.cfg'), section='TARGET', key='ip',action='get')
-client_user = ConfigValue(path=os.path.join(caliper_output,'config','client_config.cfg'), section='TARGET', key='user',action='get')
-platForm_name = ConfigValue(path=os.path.join(caliper_output,'config','client_config.cfg'), section='TARGET', key='Platform_name',action='get')
+try:
+    client_ip = ConfigValue(path=os.path.join(caliper_output,'config','client_config.cfg'), section='TARGET', key='ip',action='get')
+except:
+    client_ip = '127.0.0.1'
+try:
+    client_user = ConfigValue(path=os.path.join(caliper_output,'config','client_config.cfg'), section='TARGET', key='user',action='get')
+except:
+    client_user = os.getlogin()
+try:
+    platForm_name = ConfigValue(path=os.path.join(caliper_output,'config','client_config.cfg'), section='TARGET', key='Platform_name',action='get')
+except:
+    platForm_name = None
 
 if not platForm_name:
     # Redirecting the ssh warning to the standard "stderr" File

@@ -1,2 +1,4 @@
-[device]
+[Device]
+127.0.0.1
+[TestNode]
 127.0.0.1
