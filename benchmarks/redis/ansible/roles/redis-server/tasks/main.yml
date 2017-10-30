@@ -1,0 +1,6 @@
+---
+- name: start redis-server on server
+  command: sh {{ home }}/caliper_output/caliper/benchmarks/redis/run_server.sh
+  become: true
+  become_method: sudo
+  become_user: root

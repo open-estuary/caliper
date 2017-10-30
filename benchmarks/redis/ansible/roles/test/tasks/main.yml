@@ -1,6 +1,0 @@
-
-- name: Test in the TestNode
-#  command: redis-benchmark -h 192.168.65.249 -n 100000
-  command: redis-benchmark -h {{ Device }} -n 100000
-  
-  

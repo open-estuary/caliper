@@ -1,3 +1,2 @@
 ---
-Device: 192.168.65.249
-TestNode: 192.168.64.56
+home: /home/ts
