@@ -8,7 +8,7 @@ nginx V0.0.1 (October 30, 2017)
 --------------
 1. 修改ansible/hosts文件ip以及sudo 密码
 2. 修改ansible/group_vars/all中全局变量home(目前服务端和客户端用户名相同)
-3. 在增加客户端ip的前提下，增加设备参数作为测试命令(ansible/roles/start-client/tasks/main/yml)
+3. 在增加客户端ip的前提下，增加设备参数作为测试命令(ansible/roles/start-client/tasks/main.yml)
 
 例如:
 - name: diff nginx
