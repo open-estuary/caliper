@@ -1,0 +1,4 @@
+- hosts: TestNode
+  roles:
+  - start-client
+

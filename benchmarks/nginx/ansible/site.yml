@@ -1,6 +1,12 @@
-- hosts: Device
-  roles:
-  - base_env
+---
 - hosts: TestNode
   roles:
-  - base_env
+  - build-client
+
+- hosts: Device
+  roles:
+  - build-server
+  - start-server
+
+
+
