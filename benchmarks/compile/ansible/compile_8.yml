@@ -1,0 +1,21 @@
+
+- hosts: Device
+  tasks:
+    - name: remove latest data
+      file:
+        path: /tmp/compile_output.log
+        state: absent
+
+    - name: run compile 8
+      shell: "cd /tmp/scripts && ./compile_test.sh 8"
+      register: logdata
+      ignore_errors: yes
+
+    - lineinfile: create=yes  dest=/tmp/compile_output.log line="{{ logdata.stdout+logdata.stderr }}" state=present
+
+
+    - name: fetch result
+      fetch:
+        src: /tmp/compile_output.log
+        dest: /tmp/compile_output.log
+        flat: yes

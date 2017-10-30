@@ -1,0 +1,20 @@
+
+- hosts: Device
+  tasks:
+    - name: remove latest data
+      file:
+        path: /tmp/qperf_output.log
+        state: absent
+
+    - name: run qperf tcp_lat
+      shell: "qperf -oo msg_size:1:64K:*2 {{ groups['TestNode'][0] }} tcp_lat"
+      register: logdata
+      ignore_errors: yes
+
+    - lineinfile: create=yes dest=/tmp/qperf_output.log line="{{ logdata.stdout+logdata.stderr }}" state=present
+
+    - name: fetch result
+      fetch:
+        src: /tmp/qperf_output.log
+        dest: /tmp/qperf_output.log
+        flat: yes

@@ -1,0 +1,21 @@
+
+- hosts: Device
+  tasks:
+    - name: remove latest data
+      file:
+        path: /tmp/unixbench_output.log
+        state: absent
+
+    - name: run unixbench
+      shell: "cd /tmp/unixbench && ./Run -c 1 -c `grep 'processor' /proc/cpuinfo |sort |uniq |wc -l`"
+      register: logdata
+      async: 0
+      ignore_errors: True
+
+    - lineinfile: create=yes  dest=/tmp/unixbench_output.log line="{{ logdata.stdout+logdata.stderr }}" state=present
+
+    - name: fetch result
+      fetch:
+        src: /tmp/unixbench_output.log
+        dest: /tmp/unixbench_output.log
+        flat: yes

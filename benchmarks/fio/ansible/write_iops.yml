@@ -1,0 +1,21 @@
+
+- hosts: Device
+  tasks:
+    - name: remove latest data
+      file:
+        path: /tmp/fio_output.log
+        state: absent
+
+    - name: run fio write iops
+      shell: fio -filename=/tmp/testfio -iodepth=64 -direct=1 -rw=write -bs=16k -size=5g -numjobs=4 -runtime=200 -group_reporting -name=test_write
+      register: logdata
+      ignore_errors: yes
+
+    - lineinfile: create=yes  dest=/tmp/fio_output.log line="{{ logdata.stdout }}" state=present
+
+
+    - name: fetch result
+      fetch:
+        src: /tmp/fio_output.log
+        dest: /tmp/fio_output.log
+        flat: yes

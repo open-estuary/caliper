@@ -1,4 +1,3 @@
 - name: run netperf
-  become: true
-  command: cd /tmp/netperf/src && ./netserver &
+  shell: "cd /tmp/netperf/src && ./netserver &"
 

@@ -1,0 +1,21 @@
+
+- hosts: Device
+  tasks:
+    - name: remove latest data
+      file:
+        path: /tmp/iozone_output.log
+        state: absent
+
+    - name: run iozone
+      shell: cd /tmp/iozone && ./iozone -s1g -r5M -I -f /tmp/sdb/iozone
+      register: logdata
+      ignore_errors: yes
+
+    - lineinfile: create=yes  dest=/tmp/iozone_output.log line="{{ logdata.stdout }}" state=present
+
+
+    - name: fetch result
+      fetch:
+        src: /tmp/iozone_output.log
+        dest: /tmp/iozone_output.log
+        flat: yes

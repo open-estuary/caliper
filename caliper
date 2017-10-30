@@ -148,44 +148,51 @@ def get_remote_url():
     return server_ip1
 
 def get_remote_host():
-    try:
-        client_ip = settings.get_value('TARGET', 'ip', type=str)
-    except Exception, e:
-        client_ip = '127.0.0.1'
-    try:
-        port = settings.get_value('TARGET', 'port', type=int)
-    except Exception, e:
-        port = 22
-    try:
-        user = settings.get_value('TARGET', 'user', type=str)
-    except Exception, e:
-        user = os.getlogin()
-    try:
-        password = settings.get_value('TARGET', 'password', type=str)
-    except Exception, e:
-        password = ''
+    # try:
+    #     client_ip = settings.get_value('TARGET', 'ip', type=str)
+    # except Exception, e:
+    #     client_ip = '127.0.0.1'
+    # try:
+    #     port = settings.get_value('TARGET', 'port', type=int)
+    # except Exception, e:
+    #     port = 22
+    # try:
+    #     user = settings.get_value('TARGET', 'user', type=str)
+    # except Exception, e:
+    #     user = os.getlogin()
+    # try:
+    #     password = settings.get_value('TARGET', 'password', type=str)
+    # except Exception, e:
+    #     password = ''
         #raise error.ServRunError(e.args[0], e.args[1])
+    client_ip = '127.0.0.1'
+    port = 22
+    user = os.getlogin()
+    password = ''
 
     remote_host = host_factory.create_host(client_ip, user, password, port)
     return remote_host
 
 def get_server_host():
-    try:
-        client_ip = settings.get_value('TestNode', 'ip', type=str)
-    except Exception, e:
-        client_ip = '127.0.0.1'
-
-    port = 22
-    try:
-        user = settings.get_value('TestNode', 'user', type=str)
-    except Exception, e:
-        user = os.getlogin()
-    try:
-        password = settings.get_value('TestNode', 'password', type=str)
-    except Exception, e:
-        password = ''
+    # try:
+    #     client_ip = settings.get_value('TestNode', 'ip', type=str)
+    # except Exception, e:
+    #     client_ip = '127.0.0.1'
+    #
+    # port = 22
+    # try:
+    #     user = settings.get_value('TestNode', 'user', type=str)
+    # except Exception, e:
+    #     user = os.getlogin()
+    # try:
+    #     password = settings.get_value('TestNode', 'password', type=str)
+    # except Exception, e:
+    #     password = ''
         #raise error.ServRunError(e.args[0], e.args[1])
-
+    client_ip = '127.0.0.1'
+    port = 22
+    user = os.getlogin()
+    password = ''
     remote_host = host_factory.create_host(client_ip, user, password, port)
     return remote_host
 
@@ -438,16 +445,16 @@ if __name__=="__main__":
         # if flag == 1:
         #     nginx_clients = get_nginx_clients()
 
-    	cfg_files = []
-    	cases_tail = "_cases_def.cfg"
+        cfg_files = []
+        cases_tail = "_cases_def.cfg"
 
-	# check for "server" category tools
+        # check for "server" category tools
         server_cfg = "server" + cases_tail
-    	server_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir,
+        server_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir,
                                         server_cfg)
-    	cfg_files.append(server_cfg_path)
+        cfg_files.append(server_cfg_path)
 
-	# check for "application" category tools
+        # check for "application" category tools
         application_cfg = "application" + cases_tail
         application_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir,
                                         application_cfg)
@@ -460,13 +467,13 @@ if __name__=="__main__":
 
         server_host=None
 
-	# copy server.py script only for server category tools and redis tool
-        if nTitleSect>0:
-            server_host = get_server_host()
-            try:
-                build.copy_gen_to_server(server_host,caliper_path.SERVER_SYNC_FILE_SRC)
-            except Exception as e:
-                logging.warn("put %s %s" % (caliper_path.SERVER_SYNC_FILE_SRC,e))
+        # copy server.py script only for server category tools and redis tool
+        # if nTitleSect>0:
+        #     server_host = get_server_host()
+        #     try:
+        #         build.copy_gen_to_server(server_host,caliper_path.SERVER_SYNC_FILE_SRC)
+        #     except Exception as e:
+        #         logging.warn("put %s %s" % (caliper_path.SERVER_SYNC_FILE_SRC,e))
 
         if args.build:
             try:
@@ -478,7 +485,6 @@ if __name__=="__main__":
                     sys.exit()
             except Exception, e:
                 raise
-                sys.exit()
 
         if args.run:
             try:
@@ -488,7 +494,6 @@ if __name__=="__main__":
 
             except Exception:
                 raise
-                sys.exit()
 
             end_time = datetime.datetime.now()
             interval = end_time - start_time
@@ -505,7 +510,6 @@ if __name__=="__main__":
             result2 = test_run.compute_caliper_logs(remote_host,1)
         except Exception:
             raise
-            sys.exit()
     if args.score:
         try:
             result2 = test_run.compute_caliper_logs(remote_host,2)
@@ -521,13 +525,13 @@ if __name__=="__main__":
         try:
             populate_excels()
 
-	    # filter all the test cases to get only the common test cases passed in all the plaforms. other test cases marked as INVALID.
+            # filter all the test cases to get only the common test cases passed in all the plaforms. other test cases marked as INVALID.
             flag = normalize_scores()
 
-	    # Reads one value from all the plaforms and then compares this values with each other to rank them. This is done for all the values in the yaml files. These new values are writed to _score_post.yaml. 
+            # Reads one value from all the plaforms and then compares this values with each other to rank them. This is done for all the values in the yaml files. These new values are writed to _score_post.yaml.
             write_results.normalize_caliper()
 
-	    # computes the score i.e TOTAL_SCORE in the form of 100% for each section in the newly generated _post.yaml and _post.json files. _post.yaml file is to be used for image creation and _post.json file is to be used for table creation in HTML report.
+            # computes the score i.e TOTAL_SCORE in the form of 100% for each section in the newly generated _post.yaml and _post.json files. _post.yaml file is to be used for image creation and _post.json file is to be used for table creation in HTML report.
             normalize.normalise()
         except Exception as e:
             print e

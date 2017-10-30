@@ -1,0 +1,21 @@
+
+- hosts: Device
+  tasks:
+    - name: remove latest data
+      file:
+        path: /tmp/linpack_output.log
+        state: absent
+
+    - name: run linpack sb
+      shell: cd /tmp/linpack && ./linpack_sp && exit $[ $? - 1 ]
+      register: logdata
+      ignore_errors: yes
+
+    - lineinfile: create=yes  dest=/tmp/linpack_output.log line="{{ logdata.stdout }}" state=present
+
+
+    - name: fetch result
+      fetch:
+        src: /tmp/linpack_output.log
+        dest: /tmp/linpack_output.log
+        flat: yes

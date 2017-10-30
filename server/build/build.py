@@ -348,8 +348,8 @@ def build_caliper(target_arch, flag=0,clear=0):
                 if dic[sections[i]]['ProcessID'] not in currentProcess:
                     # We shall continue to build the next tools and we'll copy these binaries later
                     logging.info("=" * 55)
-                    logging.info("%s is being built by someother process, we'll build the remaining tools" % sections[i])
-                    continue
+                    # logging.info("%s is being built by someother process, we'll build the remaining tools" % sections[i])
+                    # continue
             except Exception as e:
                 logging.debug(e)
                 sys.exit(1)
@@ -576,11 +576,9 @@ def build_each_tool(dirname, section_name, des_build_file, arch='x86_86'):
                                         CALIPER_DIR, TMP_DIR, "/".join(WS_GEN_DIR.split('/')[-2:]), log_file),
                                         shell=True)
         if dirname == 'server':
-            ansible_path = os.path.join(caliper_path.BENCHS_DIR, section_name)
-            logging.info("dirname %s" % ansible_path)
             try:
-                os.chdir(ansible_path)
-                subprocess.Popen('ansible-playbook -i %s/ansible/hosts %s/ansible/runserver.yml'%(ansible_path, ansible_path), stdout=subprocess.PIPE, shell=True)
+                os.chdir('%s/.caliper/benchmarks/%s/ansible/' %(os.environ['HOME'], section_name))
+                subprocess.Popen('ansible-playbook -i %s/caliper_output/configuration/config/hosts runserver.yml -u root'%(os.environ['HOME']), stdout=subprocess.PIPE, shell=True)
             except:
                 pass
             # os.popen('ansible-playbook -i %s/ansible/hosts %s/ansible/runserver.yml'%(ansible_path, ansible_path))

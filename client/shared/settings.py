@@ -87,7 +87,7 @@ class Settings(object):
             return self._handle_no_value(section, key, default)
 
         if not val.strip() and not allow_blank:
-            return self._handle_no_values(section, key, default)
+            return self._handle_no_value(section, key, default)
 
         return self._convert_value(key, section, val, type)
 
