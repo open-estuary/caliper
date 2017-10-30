@@ -37,16 +37,16 @@ sudo su<<EOF
     cat /home/$Whoami/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys
 EOF
 
-sudo su postgres <<EOF
-psql -f caliperweb.sql
-EOF
-cd $caliper_output_path/CaliperWeb
-python manage.py makemigrations
-python manage.py migrate
-/usr/bin/expect <<EOF
-spawn psql -U caliperuser -h 127.0.0.1 -d calipernewdb -f $caliper_output_path/CaliperWeb/caliper.sql
-expect "caliperuser"
-send "caliperts\r"
-expect eof
-EOF
-python manage.py runserver 0.0.0.0:8000 &
+#sudo su postgres <<EOF
+#psql -f caliperweb.sql
+#EOF
+#cd $caliper_output_path/CaliperWeb
+#python manage.py makemigrations
+#python manage.py migrate
+#/usr/bin/expect <<EOF
+#spawn psql -U caliperuser -h 127.0.0.1 -d calipernewdb -f $caliper_output_path/CaliperWeb/caliper.sql
+#expect "caliperuser"
+#send "caliperts\r"
+#expect eof
+#EOF
+#python manage.py runserver 0.0.0.0:8000 &
