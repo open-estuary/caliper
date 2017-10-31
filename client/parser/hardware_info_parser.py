@@ -8,6 +8,7 @@ import re
 import pdb
 import subprocess
 import time
+import getpass
 import caliper.server.utils as server_utils
 from caliper.server.hosts import host_factory
 from caliper.client.shared import error
@@ -21,7 +22,7 @@ lspci_list = ['Ethernet controller [0200]']
 def get_remote_host():
     client_ip = '127.0.0.1'
     port = 22
-    user = os.getlogin()
+    user = getpass.getuser()
     password = ''
 
     remote_host = host_factory.create_host(client_ip, user, password, port)

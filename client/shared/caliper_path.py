@@ -9,7 +9,7 @@ import datetime
 import shutil
 import ConfigParser
 import logging
-
+import getpass
 
 def judge_caliper_installed():
     try:
@@ -55,7 +55,7 @@ except:
 try:
     client_user = ConfigValue(path=os.path.join(caliper_output,'config','client_config.cfg'), section='TARGET', key='user',action='get')
 except:
-    client_user = os.getlogin()
+    client_user = getpass.getuser()
 try:
     platForm_name = ConfigValue(path=os.path.join(caliper_output,'config','client_config.cfg'), section='TARGET', key='Platform_name',action='get')
 except:
