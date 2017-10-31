@@ -1,4 +1,4 @@
-- hosts: TestNode
+- hosts: multiclient
   roles:
   - start-client
 

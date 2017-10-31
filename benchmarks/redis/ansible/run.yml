@@ -1,5 +1,5 @@
 ---
-- hosts: TestNode
+- hosts: multiclient
   tasks:
     - name: remove latest data
       file:
