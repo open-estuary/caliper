@@ -1,12 +1,16 @@
 ---
-- name: Install redis for Device
-  hosts: Device
+- name: install redis on server
+  hosts: multiserver
   roles:
-    - device
+    - redis
 
-- name: Install redis for TestNode
-  hosts: TestNode
+- name: start redis on server
+  hosts: multiserver
   roles:
-    - testnode
+    - redis-server
 
+- name: install redis on client
+  hosts: multiclient
+  roles:
+    - redis
 

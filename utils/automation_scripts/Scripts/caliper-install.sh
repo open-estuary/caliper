@@ -21,8 +21,19 @@ fi
 #un-tar the caliper sourcecode tree
 tail -n+$ARCHIVE "$0" | tar xzm -C $caliper_output_path
 
+#mkdir $caliper_output_path/CaliperWeb/resources/upload/logs
+if [ ! -d "$caliper_output_path/CaliperWeb/CaliperWeb/resources/upload" ]; then
+    mkdir $caliper_output_path/CaliperWeb/CaliperWeb/resources/upload
+    mkdir $caliper_output_path/CaliperWeb/CaliperWeb/resources/upload/logs
+    chmod -R 777  $caliper_output_path/CaliperWeb/CaliperWeb/resources/upload
+fi
+
 #run installation script
 sh $caliper_output_path/caliper/utils/automation_scripts/Scripts/install_tools.sh
+
+#mv Caliperweb to /opt and run CaliperWeb script
+sudo mv $caliper_output_path/CaliperWeb/ /opt/
+sh /opt/CaliperWeb/script/CaliperWeb_install.sh
 
 exit 0
 #this line must be the last line!!!

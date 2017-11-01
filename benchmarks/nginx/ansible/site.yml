@@ -1,6 +1,9 @@
-- hosts: Device
+---
+- hosts: multiclient
   roles:
-  - base_env
-- hosts: TestNode
+  - build-client
+
+- hosts: multiserver
   roles:
-  - base_env
+  - build-server
+  - start-server
