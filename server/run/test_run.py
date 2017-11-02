@@ -732,11 +732,13 @@ def run_commands(exec_dir, bench_name, commands,
         # the commands is multiple lines, and was included by Quotation
         actual_commands = get_actual_commands(commands, target)
         try:
-            actual_commands = 'ansible-playbook -i ~/caliper_output/configuration/config/hosts ' \
-                              '~/.caliper/benchmarks/%s/ansible/%s.yml' % (bench_name, actual_commands)
             logging.debug("the actual commands running in local is: %s"
                           % actual_commands)
-            result = os.system(actual_commands)
+            os.chdir('%s/.caliper/benchmarks/%s/ansible/' % (os.environ['HOME'], bench_name))
+            result = subprocess.call(
+                'ansible-playbook -i %s/caliper_output/configuration/config/hosts %s.yml -u root' % (
+                os.environ['HOME'], actual_commands), stdout=subprocess.PIPE, shell=True)
+            # result = os.system(actual_commands)
         except error.CmdError, e:
             raise error.ServRunError(e.args[0], e.args[1])
     except Exception, e:
