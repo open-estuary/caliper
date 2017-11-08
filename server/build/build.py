@@ -31,6 +31,7 @@ CALIPER_DIR = caliper_path.CALIPER_DIR
 GEN_DIR = caliper_path.GEN_DIR
 WS_GEN_DIR = os.path.join(FOLDER.workspace,'binary')
 TEST_CFG_DIR = caliper_path.config_files.tests_cfg_dir
+TEST_CASE_DIR = caliper_path.config_files.config_dir
 BUILD_MAPPING_DIR = os.path.join(GEN_DIR,'build_mapping')
 BUILD_MAPPING_FILE = BUILD_MAPPING_DIR
 # SPV A unique folder name based on the date and time is created in /tmp so
@@ -166,7 +167,7 @@ def find_benchmark(filename, version, dir_name, build_file):
     return [bench_dir, flag]
 
 
-def generate_build(config, section_name, dir_name, build_file, flag=0):
+def generate_build(section_name, build_file, flag=0):
     """
     generate the final build.sh for each section in common_cases_def
     :param config: the config file for selecting which test case will be run
@@ -175,14 +176,6 @@ def generate_build(config, section_name, dir_name, build_file, flag=0):
                         others
     param: build_file: means the final build.sh
     """
-    try:
-        version = config.get(section_name, 'version')
-    except BaseException:
-        version = ""
-    if version:
-        filename = section_name + '_' + version
-    else:
-        filename = section_name
     """
     we think that if we store the benchmarks in the directory of benchmarks,
     we need not download the benchmark. if the benchmarks are in the root
@@ -191,34 +184,15 @@ def generate_build(config, section_name, dir_name, build_file, flag=0):
     """
 
     try:
-        tmp_build = config.get(section_name, 'build')
+        tmp_build = section_name + '_build.sh'
     except BaseException:
         tmp_build = ""
-
-    ben_dir, exist = find_benchmark(filename, version, dir_name, tmp_build)
-
-    """how to use the ben_dir to build the benchmark"""
-    if not exist:
-        try:
-            download_url = config.get(section_name, 'download_cmd')
-        except BaseException:
-            logging.info("We don't have the benchmarks, you should provide a"
-                            "link to git clone")
-            raise
-        else:
-            url_list = download_url.split()
-            # need to expand here
-            exit = git(url_list[1], url_list[2])
-            if (exit != 0):
-                logging.info("Download the benchmark of %s failed" % filename)
-                return -2
 
     """add the build file to the build.sh;  if the build option in it,
     we add it; else we give up the build of it."""
     location = -2
     if tmp_build:
-        build_command = os.path.join(TEST_CFG_DIR, dir_name,
-                                        section_name, tmp_build)
+        build_command = os.path.join(TEST_CASE_DIR, section_name, tmp_build)
         file_path = "source " + build_command + "\n"
         insert_content_to_file(build_file, location, file_path)
     else:
@@ -265,8 +239,9 @@ def build_caliper(target_arch, flag=0,clear=0):
     else:
         arch = 'x86_64'
     # get the files list of 'cfg'
-    files_list = server_utils.get_cases_def_files(arch)
-    logging.debug("config files are %s" % files_list)
+    case_file = os.path.join(TEST_CASE_DIR, 'cases_config.yaml')
+    fp = open(case_file, 'r')
+    build_list = yaml.load(fp.read())
     BUILD_MAPPING_DIR = os.path.join(BUILD_MAPPING_DIR,arch)
     if not os.path.exists(BUILD_MAPPING_DIR):
         try:
@@ -282,167 +257,97 @@ def build_caliper(target_arch, flag=0,clear=0):
     if clear:
         logging.info("=" * 55)
         logging.info("WARNING: Please wait, dont run any other instance of caliper")
-        for i in range(0, len(files_list)):
-            # get the directory, such as 'common','server' and so on
-            dir_name = files_list[i].strip().split("/")[-1].split("_")[0]
-            config = ConfigParser.ConfigParser()
-            config.read(files_list[i])
-            sections = config.sections()
-            for i in range(0, len(sections)):
-                BUILD_MAPPING_FILE = os.path.join(BUILD_MAPPING_DIR, sections[i] + '.yaml')
-                with client_utils.SimpleFlock(BUILD_MAPPING_FILE, 60):
-                    fp = open(BUILD_MAPPING_FILE)
-                    dic = yaml.load(fp)
-                    fp.close()
-                    if type(dic) != dict:
-                        dic = {}
-                    if sections[i] in dic.keys():
-                        for file in dic[sections[i]]['binaries']:
-                            try:
-                                shutil.rmtree(file)
-                            except:
-                                pass
-                        dic[sections[i]]['binaries'] = []
-                        dic[sections[i]]['ProcessID'] = 0
-                    fp = open(BUILD_MAPPING_FILE, 'w')
-                    fp.write(yaml.dump(dic, default_flow_style=False))
-                    fp.close()
-        logging.info("It is safe to run caliper now")
-        logging.info("=" * 55)
-
-    #STARING THE BUILD
-    for i in range(0, len(files_list)):
-        # get the directory, such as 'common','server' and so on
-        dir_name = files_list[i].strip().split("/")[-1].split("_")[0]
-        config = ConfigParser.ConfigParser()
-        config.read(files_list[i])
-        sections = config.sections()
-
-        for i in range(0, len(sections)):
-            BUILD = 0
-            BUILD_MAPPING_FILE = os.path.join(BUILD_MAPPING_DIR, sections[i] + '.yaml')
-            reset_binary_mapping()
-
-            try:
-                #Lock the file and modify it if this is the first process which is building the tool
-                with client_utils.SimpleFlock(BUILD_MAPPING_FILE, 60):
-                    fp = open(BUILD_MAPPING_FILE)
-                    dic = yaml.load(fp)
-                    if type(dic) != dict:
-                        dic = {}
-                    fp.close()
-                    if sections[i] not in dic.keys():
-                        dic[sections[i]] = {}
-                        dic[sections[i]]['binaries'] = []
-                        dic[sections[i]]['ProcessID'] = os.getpid()
-                        BUILD = 1
-                    fp = open(BUILD_MAPPING_FILE, 'w')
-                    fp.write(yaml.dump(dic, default_flow_style=False))
-                    fp.close()
-
-                #checking if binary field is empty, empty means that the previous build is a failure
-                if not dic[sections[i]]['binaries']:
-                    BUILD = 1
-
-                # Checking if the tool if already built or is in the process of being built by another process
-                if dic[sections[i]]['ProcessID'] not in currentProcess:
-                    # We shall continue to build the next tools and we'll copy these binaries later
-                    logging.info("=" * 55)
-                    # logging.info("%s is being built by someother process, we'll build the remaining tools" % sections[i])
-                    # continue
-            except Exception as e:
-                logging.debug(e)
-                sys.exit(1)
-
-
-            if BUILD == 0:
-                #Collecting the build files in the Workspace binary dir and main binary dir
-                WS_prev_build_files = getAllFilesRecursive(WS_GEN_DIR)
-                prev_build_files = getAllFilesRecursive(GEN_DIR)
-
-                #checking if the required binaries are present or not in the main binary dir
-                for j in dic[sections[i]]['binaries']:
-                    if j not in prev_build_files:
-                        if j != BUILD_MAPPING_FILE:
-                            #the binaries are not present we have to build it
-                            BUILD = 1
-
-            BUILD = 1
-            if BUILD == 1:
-                if os.path.exists(des_build_file):
-                    os.remove(des_build_file)
-                shutil.copyfile(os.path.abspath(source_build_file), des_build_file)
-
-                try:
-                    result = generate_build(config, sections[i],
-                                            dir_name, des_build_file)
-                except Exception, e:
-                    logging.info(e)
-                else:
-                    if result:
-                        return result
-
-                result = build_each_tool(dir_name, sections[i],
-                                         des_build_file, target_arch)
-                if result:
-                    build_flag = server_utils.get_fault_tolerance_config("fault_tolerance",
-                                 "build_error_continue")
-                    with client_utils.SimpleFlock(BUILD_MAPPING_FILE, 60):
-                         dic[sections[i]]['ProcessID'] = 0
-                         dic[sections[i]]['binaries'] = []
-                         fp = open(BUILD_MAPPING_FILE, 'w')
-                         fp.write(yaml.dump(dic, default_flow_style=False))
-                         fp.close()
-                    if build_flag == 1:
-                        #Build has failed so delete the section entry in the build_mapping.yaml
-                        continue
-                    else:
-                        return result
-
-                if os.path.exists(des_build_file):
-                    os.remove(des_build_file)
-            else:
-                #Copy the generated binaries to the Workspace binaries
-                for j in dic[sections[i]]['binaries']:
-                    if j not in WS_prev_build_files:
-                        if j != BUILD_MAPPING_FILE:
-                            WS_Dir = os.path.join(WS_GEN_DIR,'/'.join(j.split('/')[5:-1]))
-                            try:
-                                os.makedirs(WS_Dir)
-                            except:
-                                pass
-                            shutil.copy(j, WS_Dir)
-                logging.info("=" * 55)
-                logging.info("%s is already build", sections[i])
-
-            #get the binary present in the WS binary dir
-            #WS_prev_build_dir - WS_current_build_dir = "TOOL CHAIN RELATED BINARIES"
-            #Copy the ToolChainRelated binaries to the main binary folder
-            WS_current_build_files = getAllFilesRecursive(WS_GEN_DIR)
-            for files in WS_current_build_files:
-                if files not in WS_prev_build_files:
-                    deflocation = os.path.join(str(GEN_DIR) , '/'.join(files.split('/')[6:]))
-                    try:
-                        os.makedirs('/'.join(deflocation.split('/')[:-1]))
-                    except:
-                        pass
-                    if not os.path.exists(deflocation):
-                        shutil.copy(files, deflocation)
-                    (dic[sections[i]]['binaries']).append(str(deflocation))
-            dic[sections[i]]['ProcessID'] = 0
+        for section in build_list:
+            BUILD_MAPPING_FILE = os.path.join(BUILD_MAPPING_DIR, section + '.yaml')
             with client_utils.SimpleFlock(BUILD_MAPPING_FILE, 60):
                 fp = open(BUILD_MAPPING_FILE)
-                temp = yaml.load(fp)
-                if type(temp) != dict:
-                    temp = {}
+                dic = yaml.load(fp)
                 fp.close()
-                copy_dic(temp,dic,sections[i])
+                if type(dic) != dict:
+                    dic = {}
+                if section in dic.keys():
+                    for file in dic[section]['binaries']:
+                        try:
+                            shutil.rmtree(file)
+                        except:
+                            pass
+                    dic[section]['binaries'] = []
+                    dic[section]['ProcessID'] = 0
                 fp = open(BUILD_MAPPING_FILE, 'w')
                 fp.write(yaml.dump(dic, default_flow_style=False))
                 fp.close()
-    logging.info("=" * 55)
-    # copy_build_caliper(target_arch, flag=0)
-    logging.info("=" * 55)
+        logging.info("It is safe to run caliper now")
+        logging.info("=" * 55)
+
+    for section in build_list:
+        BUILD = 0
+        BUILD_MAPPING_FILE = os.path.join(BUILD_MAPPING_DIR, section + '.yaml')
+        reset_binary_mapping()
+
+        try:
+            #Lock the file and modify it if this is the first process which is building the tool
+            with client_utils.SimpleFlock(BUILD_MAPPING_FILE, 60):
+                fp = open(BUILD_MAPPING_FILE)
+                dic = yaml.load(fp)
+                if type(dic) != dict:
+                    dic = {}
+                fp.close()
+                if section not in dic.keys():
+                    dic[section] = {}
+                    dic[section]['binaries'] = []
+                    dic[section]['ProcessID'] = os.getpid()
+                    BUILD = 1
+                fp = open(BUILD_MAPPING_FILE, 'w')
+                fp.write(yaml.dump(dic, default_flow_style=False))
+                fp.close()
+
+            #checking if binary field is empty, empty means that the previous build is a failure
+            if not dic[section]['binaries']:
+                BUILD = 1
+
+            # Checking if the tool if already built or is in the process of being built by another process
+            if dic[section]['ProcessID'] not in currentProcess:
+                # We shall continue to build the next tools and we'll copy these binaries later
+                logging.info("=" * 55)
+                # logging.info("%s is being built by someother process, we'll build the remaining tools" % sections[i])
+                # continue
+        except Exception as e:
+            logging.debug(e)
+            sys.exit(1)
+
+        BUILD = 1
+        if BUILD == 1:
+            if os.path.exists(des_build_file):
+                os.remove(des_build_file)
+            shutil.copyfile(os.path.abspath(source_build_file), des_build_file)
+
+            try:
+                result = generate_build(section, des_build_file)
+            except Exception, e:
+                logging.info(e)
+            else:
+                if result:
+                    return result
+
+            logging.info("=" * 55)
+            logging.info("Building %s" % section)
+            build_dir = os.path.join(caliper_path.BENCHS_DIR, section, 'ansible')
+            log_name = "%s.log" % section
+            log_file = os.path.join('/tmp', log_name)
+            os.chdir(build_dir)
+            try:
+                result = subprocess.call('ansible-playbook -i %s/hosts site.yml -u root>> %s 2>&1' %(TEST_CASE_DIR, log_file), stdout=subprocess.PIPE, shell=True)
+            except Exception as e:
+                result = e
+            if result:
+                logging.info("Building Failed")
+                logging.info("=" * 55)
+                record_log(log_file, arch, 0)
+            else:
+                logging.info("Building Successful")
+                logging.info("=" * 55)
+                record_log(log_file, arch, 1)
+
     reset_signals()
     return 0
 

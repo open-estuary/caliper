@@ -1,0 +1,494 @@
+cachebench:
+  cachebench Modify:
+    category: 'Performance memory bandwidth cachebench_read'
+    scores_way: 'compute_speed_score 3'
+    command: 'cachebench-read'
+    parser: 'cachebench_read_parser'
+  cachebench read:
+    category: 'Performance memory bandwidth cachebench_write'
+    scores_way: 'compute_speed_score 3'
+    command: 'cachebench-write'
+    parser: 'cachebench_write_parser'
+  cachebench write:
+    category: 'Performance memory bandwidth cachebench_rmw'
+    scores_way: 'compute_speed_score 3'
+    command: 'cachebench-bModify'
+    parser: 'cachebench_modify_parser'
+
+compile:
+  compile 1:
+    category: 'Performance application compile kernel-dev_01'
+    scores_way: 'exp_score_compute 5 -0.5'
+    command: 'compile_1'
+    parser: 'compile_parser'
+  compile 16:
+    category: 'Performance application compile kernel-dev_16'
+    scores_way: 'exp_score_compute 5 -0.5'
+    command: 'compile_16'
+    parser: 'compile_parser'
+  compile 2:
+    category: 'Performance application compile kernel-dev_02'
+    scores_way: 'exp_score_compute 5 -0.5'
+    command: 'compile_2'
+    parser: 'compile_parser'
+  compile 32:
+    category: 'Performance application compile kernel-dev_32'
+    scores_way: 'exp_score_compute 5 -0.5'
+    command: 'compile_32'
+    parser: 'compile_parser'
+  compile 4:
+    category: 'Performance application compile kernel-dev_04'
+    scores_way: 'exp_score_compute 5 -0.5'
+    command: 'compile_4'
+    parser: 'compile_parser'
+  compile 64:
+    category: 'Performance application compile kernel-dev_64'
+    scores_way: 'exp_score_compute 5 -0.5'
+    command: 'compile_64'
+    parser: 'compile_parser'
+  compile 72:
+    category: 'Performance application compile kernel-dev_72'
+    scores_way: 'exp_score_compute 5 -0.5'
+    command: 'compile_72'
+    parser: 'compile_parser'
+  compile 8:
+    category: 'Performance application compile kernel-dev_08'
+    scores_way: 'exp_score_compute 5 -0.5'
+    command: 'compile_8'
+    parser: 'compile_parser'
+
+coremark:
+  coremark:
+    category: 'Performance cpu_sincore sincore_int coremark'
+    scores_way: 'compute_speed_score 2'
+    command: 'coremark'
+    parser: 'coremark_parser'
+
+dhrystone:
+  dhrystone gcc_dhry2:
+    category: 'Performance cpu_sincore sincore_int dhry2'
+    scores_way: 'compute_speed_score 4'
+    command: 'gcc_dhry2'
+    parser: 'dhry2_parser'
+
+fio:
+  fio randread bw:
+    category: 'Performance storage bandwidth fio_randread'
+    scores_way: compute_speed_score 1.5'
+    command: 'randread_bw'
+    parser: 'bw_parser'
+  fio randread iops:
+    category: 'Performance storage iops fio_randread'
+    scores_way: 'compute_speed_score 1.5'
+    command: 'randread_iops'
+    parser: 'iops_parser'
+  fio randwrite bw:
+    category: 'Performance storage bandwidth fio_randwrite'
+    scores_way: 'compute_speed_score 1.5'
+    command: 'randwrite_bw'
+    parser: 'bw_parser'
+  fio randwrite iops:
+    category: 'Performance storage iops fio_randwrite'
+    scores_way: 'compute_speed_score 1.5'
+    command: 'randwrite_iops'
+    parser: 'iops_parser'
+  fio read bw:
+    category: 'Performance storage bandwidth fio_read'
+    scores_way: 'compute_speed_score 1.5'
+    command: 'read_bw'
+    parser: 'bw_parser'
+  fio read iops:
+    category: 'Performance storage iops fio_read'
+    scores_way: 'compute_speed_score 1.5'
+    command: 'read_iops'
+    parser: 'iops_parser'
+  fio write bw:
+    category: 'Performance storage bandwidth fio_write'
+    scores_way: 'compute_speed_score 1.5'
+    command: 'write_bw'
+    parser: 'bw_parser'
+  fio write iops:
+    category: 'Performance storage iops fio_write'
+    scores_way: 'compute_speed_score 1.5'
+    command: 'write_iops'
+    parser: 'iops_parser'
+
+#hadoop:
+#  hadoop:
+#    category: 'Performance application hadoop'
+#    scores_way: 'compute_speed_score 6'
+    # Usage : The number of command line arguments for hadoop.sh  should be 2 ,mount disk and mount point
+    #
+    #          hadoop.sh <disk> <mount_point>
+    #         The command "if [ -f hadoop_tar.gz ]; then tar -xvf hadoop_tar.gz; rm hadoop_tar.gz; fi; pushd hadoop; ./hadoop.sh ; popd "
+    #
+    #           is checking whether hadoop binary tar available then untars it. remove hadoop binary tar. then changes to hadoop directory
+    #           executes hadoop.sh script
+    #
+    #          Add the arguments in configuration/test_cases_cfg/common/hadoop/hadoop_run.cfg in command section as below
+    #          command = if [ -f hadoop_tar.gz ]; then tar -xvf hadoop_tar.gz; rm hadoop_tar.gz; fi; pushd hadoop; ./hadoop.sh <disk> <mount_point>; popd
+    #          example:
+    #          command = if [ -f hadoop_tar.gz ]; then tar -xvf hadoop_tar.gz; rm hadoop_tar.gz; fi; pushd hadoop; ./hadoop.sh /dev/sda /mnt/hadoop ; popd
+#    command: 'if [ -f hadoop_tar.gz ]; then tar -xvf hadoop_tar.gz; rm hadoop_tar.gz; fi; pushd hadoop; ./hadoop.sh; popd'
+#    parser: 'hadoop_parser'
+
+hardware_info:
+  hardware_info:
+    category: 'Hardware_info'
+    scores_way: 'compute_speed_score 3'
+    command: 'hardware_info'
+    parser: 'hardware_info_parser'
+
+iozone:
+  iozone_Cached:
+    category: 'Performance storage Iozone-Cached'
+    scores_way: 'compute_speed_score 5'
+    command: 'iozone_Cached'
+    parser: 'iozone_parser'
+  iozone_directIO:
+    category: 'Performance storage Iozone-DirectIO'
+    scores_way: 'compute_speed_score 5'
+    command: 'iozone_directIO'
+    parser: 'iozone_parser'
+
+iperf:
+  iperf TCP_sin_10_rx:
+    category: 'Performance network bandwidth TCP_s10_RX'
+    scores_way: 'compute_speed_score 1'
+    command: 'TCP_sin_10_rx'
+    parser: 'iperf_TCP_parser'
+  iperf TCP_sin_10_tx:
+    category: 'Performance network bandwidth TCP_s10_TX'
+    scores_way: 'compute_speed_score 1'
+    command: 'TCP_sin_10_tx'
+    parser: 'iperf_TCP_parser'
+  iperf TCP_sin_1_rx:
+    category: 'Performance network bandwidth TCP_s01_RX'
+    scores_way: 'compute_speed_score 1'
+    command: 'TCP_sin_1_rx'
+    parser: 'iperf_TCP_parser'
+  iperf TCP_sin_1_tx:
+    category: 'Performance network bandwidth TCP_s01_TX'
+    scores_way: 'compute_speed_score 1'
+    command: 'TCP_sin_1_tx'
+    parser: 'iperf_TCP_parser'
+  iperf TCP_sin_3_rx:
+    category: 'Performance network bandwidth TCP_s03_RX'
+    scores_way: 'compute_speed_score 1'
+    command: 'TCP_sin_3_rx'
+    parser: 'iperf_TCP_parser'
+  iperf TCP_sin_3_tx:
+    category: 'Performance network bandwidth TCP_s03_TX'
+    scores_way: 'compute_speed_score 1'
+    command: 'TCP_sin_3_tx'
+    parser: 'iperf_TCP_parser'
+  iperf TCP_sin_4_rx:
+    category: 'Performance network bandwidth TCP_s04_RX'
+    scores_way: 'compute_speed_score 1'
+    command: 'TCP_sin_4_rx'
+    parser: 'iperf_TCP_parser'
+  iperf TCP_sin_4_tx:
+    category: 'Performance network bandwidth TCP_s04_TX'
+    scores_way: 'compute_speed_score 1'
+    command: 'TCP_sin_4_tx'
+    parser: 'iperf_TCP_parser'
+  iperf TCP_sin_5_rx:
+    category: 'Performance network bandwidth TCP_s05_RX'
+    scores_way: 'compute_speed_score 1'
+    command: 'TCP_sin_5_rx'
+    parser: 'iperf_TCP_parser'
+  iperf TCP_sin_5_tx:
+    category: 'Performance network bandwidth TCP_s05_TX'
+    scores_way: 'compute_speed_score 1'
+    command: 'TCP_sin_5_tx'
+    parser: 'iperf_TCP_parser'
+  iperf UDP_sin_10_rx:
+    category: 'Performance network bandwidth UDP_s10_RX'
+    scores_way: 'compute_speed_score 1'
+    command: 'UDP_sin_10_rx'
+    parser: 'iperf_UDP_parser'
+  iperf UDP_sin_10_tx:
+    category: 'Performance network bandwidth UDP_s10_TX'
+    scores_way: 'compute_speed_score 1'
+    command: 'UDP_sin_10_tx'
+    parser: 'iperf_UDP_parser'
+  iperf UDP_sin_1_rx:
+    category: 'Performance network bandwidth UDP_s01_RX'
+    scores_way: 'compute_speed_score 1'
+    command: 'UDP_sin_1_rx'
+    parser: 'iperf_UDP_parser'
+  iperf UDP_sin_1_tx:
+    category: 'Performance network bandwidth UDP_s01_TX'
+    scores_way: 'compute_speed_score 1'
+    command: 'UDP_sin_1_tx'
+    parser: 'iperf_UDP_parser'
+  iperf UDP_sin_3_rx:
+    category: 'Performance network bandwidth UDP_s03_RX'
+    scores_way: 'compute_speed_score 1'
+    command: 'UDP_sin_3_rx'
+    parser: 'iperf_UDP_parser'
+  iperf UDP_sin_3_tx:
+    category: 'Performance network bandwidth UDP_s03_TX'
+    scores_way: 'compute_speed_score 1'
+    command: 'UDP_sin_3_tx'
+    parser: 'iperf_UDP_parser'
+  iperf UDP_sin_5_rx:
+    category: 'Performance network bandwidth UDP_s05_RX'
+    scores_way: 'compute_speed_score 1'
+    command: 'UDP_sin_5_rx'
+    parser: 'iperf_UDP_parser'
+  iperf UDP_sin_5_tx:
+    category: 'Performance network bandwidth UDP_s05_TX'
+    scores_way: 'compute_speed_score 1'
+    command: 'UDP_sin_5_tx'
+    parser: 'iperf_UDP_parser'
+
+linpack:
+  linpack_dp:
+    category: 'Performance cpu_sincore sincore_double linpack_dp'
+    scores_way: 'compute_speed_score 4'
+    command: 'linpack_dp'
+    parser: 'linpack_dp_parser'
+  linpack_sp:
+    category: 'Performance cpu_sincore sincore_float linpack_sp'
+    scores_way: 'compute_speed_score 4'
+    command: 'linpack_sp'
+    parser: 'linpack_sp_parser'
+
+lmbench:
+  lmbench bandwidth:
+    category: 'Performance'
+    scores_way: 'compute_speed_score 3'
+    command: 'lmbench_bandwidth'
+    parser: 'lmbench_bandwidth_parser'
+  lmbench bandwidth cross_die_16_core:
+    category: 'Performance memory lb_bw_cross_16_core'
+    scores_way: 'compute_speed_score 3'
+    command: 'lmbench_bandwidth_cross_die_16_core'
+    parser: 'lmbench_bandwidth_parser_new'
+  lmbench bandwidth cross_die_1_core:
+    category: 'Performance memory lb_bw_cross_01_core'
+    scores_way: 'compute_speed_score 3'
+    command: 'lmbench_bandwidth_cross_die_1_core'
+    parser: 'lmbench_bandwidth_parser_new'
+  lmbench bandwidth cross_die_4_core:
+    category: 'Performance memory lb_bw_cross_04_core'
+    scores_way: 'compute_speed_score 3'
+    command: 'lmbench_bandwidth_cross_die_4_core'
+    parser: 'lmbench_bandwidth_parser_new'
+  lmbench bandwidth local_die_16_core:
+    category: 'Performance memory lb_bw_local_16_core'
+    scores_way: 'compute_speed_score 3'
+    command: 'lmbench_bandwidth_local_die_16_core'
+    parser: 'lmbench_bandwidth_parser_new'
+  lmbench bandwidth local_die_1_core:
+    category: 'Performance memory lb_bw_local_01_core'
+    scores_way: 'compute_speed_score 3'
+    command: 'lmbench_bandwidth_local_die_1_core'
+    parser: 'lmbench_bandwidth_parser_new'
+  lmbench bandwidth local_die_32_core:
+    category: 'Performance memory lb_bw_local_32_core'
+    scores_way: 'compute_speed_score 3'
+    command: 'lmbench_bandwidth_local_die_32_core'
+    parser: 'lmbench_bandwidth_parser_new'
+  lmbench bandwidth local_die_4_core:
+    category: 'Performance memory lb_bw_local_04_core'
+    scores_way: 'compute_speed_score 3'
+    command: 'lmbench_bandwidth_local_die_4_core'
+    parser: 'lmbench_bandwidth_parser_new'
+  lmbench bandwidth local_die_64_core:
+    category: 'Performance memory lb_bw_local_64_core'
+    scores_way: 'compute_speed_score 3'
+    command: 'lmbench_bandwidth_local_die_64_core'
+    parser: 'lmbench_bandwidth_parser_new'
+  lmbench bandwidth stream v1:
+    category: 'Performance memory lb_bw_stream_v1'
+    scores_way: 'compute_speed_score 3'
+    command: 'lmbench_bandwidth_stream_v1'
+    parser: 'lmbench_bandwidth_stream_v1'
+  lmbench bandwidth stream v2:
+    category: 'Performance memory lb_bw_stream_v2'
+    scores_way: 'compute_speed_score 3'
+    command: 'lmbench_bandwidth_stream_v2'
+    parser: 'lmbench_bandwidth_stream_v2'
+  lmbench lat:
+    category: 'Performance'
+    scores_way: 'exp_score_compute 1 -0.5'
+    command: 'lmbench_lat'
+    parser: 'lmbench_lat_parser'
+  lmbench latency cross_die_16_core:
+    category: 'Performance memory lb_lat_cross_16_core'
+    scores_way: 'exp_score_compute 1 -0.5'
+    command: 'lmbench_latency_cross_die_16_core'
+    parser: 'lmbench_latency_local_mem'
+  lmbench latency cross_die_1_core:
+    category: 'Performance memory lb_lat_cross_01_core'
+    scores_way: 'exp_score_compute 1 -0.5'
+    command: 'lmbench_latency_cross_die_1_core'
+    parser: 'lmbench_latency_local_mem'
+  lmbench latency cross_die_4_core:
+    category: 'Performance memory lb_lat_cross_04_core'
+    scores_way: 'exp_score_compute 1 -0.5'
+    command: 'lmbench_latency_cross_die_4_core'
+    parser: 'lmbench_latency_local_mem'
+  lmbench latency local_die_16_core:
+    category: 'Performance memory lb_lat_local_16_core'
+    scores_way: 'exp_score_compute 1 -0.5'
+    command: 'lmbench_latency_local_die_16_core'
+    parser: 'lmbench_latency_local_mem'
+  lmbench latency local_die_1_core:
+    category: 'Performance memory lb_lat_local_01_core'
+    scores_way: 'exp_score_compute 1 -0.5'
+    command: 'lmbench_latency_local_die_1_core'
+    parser: 'lmbench_latency_local_mem'
+  lmbench latency local_die_32_core:
+    category: 'Performance memory lb_lat_local_32_core'
+    scores_way: 'exp_score_compute 1 -0.5'
+    command: 'lmbench_latency_local_die_32_core'
+    parser: 'lmbench_latency_local_mem'
+  lmbench latency local_die_4_core:
+    category: 'Performance memory lb_lat_local_04_core'
+    scores_way: 'exp_score_compute 1 -0.5'
+    command: 'lmbench_latency_local_die_4_core'
+    parser: 'lmbench_latency_local_mem'
+
+nbench:
+  nbench:
+    category: 'Performance cpu_sincore'
+    scores_way: 'compute_speed_score 1'
+    command: 'nbench'
+    parser: 'nbench_parser'
+
+netperf:
+  netperf TCP_CRR:
+    category: 'Performance network bandwidth TCP_CRR'
+    scores_way: 'compute_speed_score 4'
+    command: 'TCP_CRR'
+    parser: 'frequent_parser'
+  netperf TCP_RR:
+    category: 'Performance network bandwidth TCP_RR'
+    scores_way: 'compute_speed_score 4'
+    command: 'TCP_RR'
+    parser: 'frequent_parser'
+  netperf TCP_STREAM:
+    category: 'Performance network bandwidth TCP_stream'
+    scores_way: 'compute_speed_score 2'
+    command: 'TCP_STREAM'
+    parser: 'throughput_parser'
+  netperf TCP_STREAM_R:
+    category: 'Performance network bandwidth TCP_stream_r'
+    scores_way: 'compute_speed_score 2'
+    command: 'TCP_STREAM_R'
+    parser: 'throughput_parser'
+  netperf UDP_RR:
+    category: 'Performance network bandwidth UDP_RR'
+    scores_way: 'compute_speed_score 4'
+    command: 'UDP_RR'
+    parser: 'frequent_parser'
+
+nginx:
+  nginx_32_core_cross_wrps:
+    category: 'Performance application nginx_32_core_local_wrps'
+    scores_way: 'compute_speed_score 1'
+    command: 'run'
+    parser: 'nginx_parser'
+
+openblas:
+  openblas_core_1:
+    category: 'Performance cpu_sincore'
+    scores_way: 'compute_speed_score 2'
+    command: 'openblas_core_1'
+    parser: 'openblas_parser'
+  openblas_core_10:
+    category: 'Performance cpu_multicore'
+    scores_way: 'compute_speed_score 2'
+    command: 'openblas_core_10'
+    parser: 'openblas_parser_10'
+  openblas_core_32:
+    category: 'Performance cpu_multicore'
+    scores_way: 'compute_speed_score 2'
+    command: 'openblas_core_32'
+    parser: 'openblas_parser_32'
+  openblas_core_64:
+    category: 'Performance cpu_multicore'
+    scores_way: 'compute_speed_score 2'
+    command: 'openblas_core_64'
+    parser: 'openblas_parser_64'
+
+openssl:
+  openssl_speed:
+    category: 'Performance algorithm'
+    scores_way: 'compute_speed_score 2'
+    command: 'openssl_speed'
+    parser: 'get_openssl_dic'
+
+qperf:
+  qperf tcp_bw:
+    category: 'Performance network bandwidth'
+    scores_way: 'compute_speed_score 1'
+    command: 'tcp_bw'
+    parser: 'qperf_parser'
+  qperf tcp_lat:
+    category: 'Performance network local_lat'
+    scores_way: 'exp_score_compute 1 -0.5'
+    command: 'tcp_lat'
+    parser: 'qperf_parser'
+
+scimark:
+  scimark:
+    category: 'Performance cpu_sincore sincore_float scimark'
+    scores_way: 'compute_speed_score 1'
+    command: 'scimark'
+    parser: 'scimark_parser'
+
+scimarkJava:
+  scimark java:
+    category: 'Performance application jdk scimark'
+    scores_way: 'compute_speed_score 0'
+    command: 'scimark_java'
+    parser: 'scimark_parser'
+
+stressng:
+  stress_ng_multi:
+    category: 'Performance cpu_multicore multicore_misc stress_ng'
+    scores_way: 'exp_score_compute 4 -0.5'
+    command: 'stress_ng_multi'
+    parser: 'stress_ng_parser'
+  stress_ng_single:
+    category: 'Performance cpu_sincore sincore_misc stress_ng'
+    scores_way: 'exp_score_compute 4 -0.5'
+    command: 'stress_ng_single'
+    parser: 'stress_ng_parser'
+
+sysbench:
+  sysbench:
+    category: 'Performance application sysbench'
+    scores_way: 'exp_score_compute 4 -0.5'
+    command: 'sysbench'
+    parser: 'sysbench_parser'
+  sysbench_cpu:
+    category: 'Performance'
+    scores_way: 'exp_score_compute 4 -0.5'
+    command: 'sysbench_cpu'
+    parser: 'sysbench_parser'
+
+tinymembench:
+  tinymembench:
+    category: 'Performance memory'
+    scores_way: 'compute_speed_score 2'
+    command: 'tinymembench'
+    parser: 'tinymembench_parser'
+
+unixbench:
+  unixbench:
+    category: 'Performance'
+    scores_way: 'compute_speed_score 0'
+    command: 'unixbench'
+    parser: 'unixbench_parser'
+
+unzip:
+  compile 1:
+    category: 'Performance algorithm unzip tar'
+    scores_way: 'exp_score_compute 5 -0.5'
+    command: 'compile_1'
+    parser: 'unzip_parser'

@@ -1215,6 +1215,8 @@ def caliper_run(target_exec_dir, server, target, nginx_clients=None):
                 logging.info("Running %s Exception" % sections[i])
                 crash_handle.main()
                 print_format()
+            else:
+                logging.info("Running %s Finished" % sections[i])
     return 0
 
 
