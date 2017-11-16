@@ -332,6 +332,11 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
                                 str(starttime)[:19],
                                 Folder.caliper_log_file),
                              shell=True)
+    subprocess.call("echo '$$ %s RUN START: %s' >> %s"
+                    % (bench_name,
+                       str(starttime)[:19],
+                       Folder.caliper_run_log_file),
+                    shell=True)
     # for each command in run config file, read the config for the benchmark
     for i in range(0, len(sections_run)):
         flag = 0
@@ -396,6 +401,15 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
                              % (sections_run[i],
                                 (endtime - starttime).seconds,
                                 Folder.caliper_log_file), shell=True)
+
+    result = subprocess.call("echo '$$ %s RUN STOP: %s' >> %s"
+                             % (sections_run[i], str(endtime)[:19],
+                                Folder.caliper_run_log_file), shell=True)
+    result = subprocess.call("echo '$$ %s RUN DURATION %s Seconds'>>%s"
+                             % (sections_run[i],
+                                (endtime - starttime).seconds,
+                                Folder.caliper_run_log_file), shell=True)
+    result = subprocess.call("echo '======================================================'>>%s"% (Folder.caliper_run_log_file), shell=True)
 
 
 # normalize the commands
@@ -621,7 +635,7 @@ def run_commands(exec_dir, bench_name, commands,
 
     pwd = os.getcwd()
     os.chdir(exec_dir)
-
+    TEST_CASE_DIR = caliper_path.config_files.config_dir
     try:
         # the commands is multiple lines, and was included by Quotation
         actual_commands = get_actual_commands(commands, target)
@@ -630,8 +644,8 @@ def run_commands(exec_dir, bench_name, commands,
                           % actual_commands)
             os.chdir('%s/.caliper/benchmarks/%s/ansible/' % (os.environ['HOME'], bench_name))
             result = subprocess.call(
-                'ansible-playbook -i %s/caliper_output/configuration/config/hosts %s.yml -u root>> %s 2>&1' % (
-                os.environ['HOME'], actual_commands, Folder.caliper_run_log_file), stdout=subprocess.PIPE, shell=True)
+                'ansible-playbook -i %s/hosts %s.yml -u root>> %s 2>&1' % (
+                    TEST_CASE_DIR, actual_commands, Folder.caliper_run_log_file), stdout=subprocess.PIPE, shell=True)
             # result = os.system(actual_commands)
         except error.CmdError, e:
             raise error.ServRunError(e.args[0], e.args[1])
