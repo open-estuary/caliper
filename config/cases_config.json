@@ -134,7 +134,7 @@
       },
 
       {
-        "stress-ng":
+        "stressng":
           {"stress_ng_single":["enable" ,"1" ]}
       },
 
@@ -155,7 +155,7 @@
       },
 
       {
-        "stress-ng":
+        "stressng":
           {"stress_ng_multi":["enable" ,"1" ]}
       }  
   ],
@@ -186,7 +186,7 @@
 
   "algorithm": [
     {
-      "openssl_speed":
+      "openssl":
         {"openssl_speed":["enable" ,"1" ]}
     },
 

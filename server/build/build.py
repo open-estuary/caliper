@@ -255,19 +255,20 @@ def build_caliper(target_arch, flag=0,clear=0):
     logging.info("destination file of building is %s" % des_build_file)
     set_signals()
 
+    # {"dimension":[{"tool":[{"case1":["enable","1"]}, {"case2":["enable","1"]},]}]}
+    for dimension in case_list:
+        for i in range(len(case_list[dimension])):
+            for tool in case_list[dimension][i]:
+                for case in case_list[dimension][i][tool]:
+                    if case_list[dimension][i][tool][case][0] == 'enable':
+                        build_list.append(tool)
+    build_list = list(set(build_list))
+    logging.info(build_list)
+
     # check and delete those binaries if it is already built if -c is used
     if clear:
         logging.info("=" * 55)
         logging.info("WARNING: Please wait, dont run any other instance of caliper")
-        # {"dimension":[{"tool":[{"case1":["enable","1"]}, {"case2":["enable","1"]},]}]}
-        for dimension in case_list:
-            for i in range(len(case_list[dimension])):
-                for tool in case_list[dimension][i]:
-                    for case in case_list[dimension][i][tool]:
-                        if case_list[dimension][i][tool][case][0] == 'enable':
-                            build_list.append(tool)
-        build_list = list(set(build_list))
-        print build_list
         for section in build_list:
             BUILD_MAPPING_FILE = os.path.join(BUILD_MAPPING_DIR, section + '.yaml')
             with client_utils.SimpleFlock(BUILD_MAPPING_FILE, 60):
@@ -332,13 +333,13 @@ def build_caliper(target_arch, flag=0,clear=0):
                 os.remove(des_build_file)
             shutil.copyfile(os.path.abspath(source_build_file), des_build_file)
 
-            try:
-                result = generate_build(section, des_build_file)
-            except Exception, e:
-                logging.info(e)
-            else:
-                if result:
-                    return result
+            # try:
+            #     result = generate_build(section, des_build_file)
+            # except Exception, e:
+            #     logging.info(e)
+            # else:
+            #     if result:
+            #         return result
 
             logging.info("=" * 55)
             logging.info("Building %s" % section)
@@ -347,8 +348,8 @@ def build_caliper(target_arch, flag=0,clear=0):
             log_file = os.path.join('/tmp', log_name)
             os.chdir(build_dir)
             try:
-                result = os.popen('ansible-playbook -i %s/hosts site.yml -u root>> %s 2>&1' % (TEST_CASE_DIR, log_file))
-                # result = subprocess.call('ansible-playbook -i %s/hosts site.yml -u root>> %s 2>&1' %(TEST_CASE_DIR, log_file), stdout=subprocess.PIPE, shell=True)
+                # result = os.popen('ansible-playbook -i %s/hosts site.yml -u root>> %s 2>&1' % (TEST_CASE_DIR, log_file))
+                result = subprocess.call('ansible-playbook -i %s/hosts site.yml -u root>> %s 2>&1' %(TEST_CASE_DIR, log_file), stdout=subprocess.PIPE, shell=True)
             except Exception as e:
                 result = e
             for k in range(len(case_list['network'])):
