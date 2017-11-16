@@ -263,7 +263,6 @@ def build_caliper(target_arch, flag=0,clear=0):
                     if case_list[dimension][i][tool][case][0] == 'enable':
                         build_list.append(tool)
     build_list = list(set(build_list))
-    logging.info(build_list)
 
     # check and delete those binaries if it is already built if -c is used
     if clear:
@@ -332,14 +331,6 @@ def build_caliper(target_arch, flag=0,clear=0):
             if os.path.exists(des_build_file):
                 os.remove(des_build_file)
             shutil.copyfile(os.path.abspath(source_build_file), des_build_file)
-
-            # try:
-            #     result = generate_build(section, des_build_file)
-            # except Exception, e:
-            #     logging.info(e)
-            # else:
-            #     if result:
-            #         return result
 
             logging.info("=" * 55)
             logging.info("Building %s" % section)

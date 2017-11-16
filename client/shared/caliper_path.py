@@ -208,6 +208,8 @@ class Folder(Singleton):
                                             'results')
         self.caliper_log_file = os.path.join(self.workspace, self.name,
                                             'caliper_exe.log')
+        self.caliper_run_log_file = os.path.join(self.workspace, self.name,
+                                             'caliper_run.log')
         self.summary_file = os.path.join(self.workspace, self.name,
                                             'results_summary.log')
         self.final_parser = os.path.join(self.workspace, self.name,'final_parsing_logs.yaml')
