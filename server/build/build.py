@@ -15,6 +15,7 @@ import time
 import glob
 from pwd import getpwnam
 import datetime
+import json
 
 try:
     import caliper.common as common
@@ -239,9 +240,10 @@ def build_caliper(target_arch, flag=0,clear=0):
     else:
         arch = 'x86_64'
     # get the files list of 'cfg'
-    case_file = os.path.join(TEST_CASE_DIR, 'cases_config.yaml')
+    case_file = os.path.join(TEST_CASE_DIR, 'cases_config.json')
     fp = open(case_file, 'r')
-    build_list = yaml.load(fp.read())
+    build_list = []
+    case_list = json.load(fp)
     BUILD_MAPPING_DIR = os.path.join(BUILD_MAPPING_DIR,arch)
     if not os.path.exists(BUILD_MAPPING_DIR):
         try:
@@ -257,6 +259,15 @@ def build_caliper(target_arch, flag=0,clear=0):
     if clear:
         logging.info("=" * 55)
         logging.info("WARNING: Please wait, dont run any other instance of caliper")
+        # {"dimension":[{"tool":[{"case1":["enable","1"]}, {"case2":["enable","1"]},]}]}
+        for dimension in case_list:
+            for i in range(len(case_list[dimension])):
+                for tool in case_list[dimension][i]:
+                    for case in case_list[dimension][i][tool]:
+                        if case_list[dimension][i][tool][case][0] == 'enable':
+                            build_list.append(tool)
+        build_list = list(set(build_list))
+        print build_list
         for section in build_list:
             BUILD_MAPPING_FILE = os.path.join(BUILD_MAPPING_DIR, section + '.yaml')
             with client_utils.SimpleFlock(BUILD_MAPPING_FILE, 60):
@@ -336,9 +347,17 @@ def build_caliper(target_arch, flag=0,clear=0):
             log_file = os.path.join('/tmp', log_name)
             os.chdir(build_dir)
             try:
-                result = subprocess.call('ansible-playbook -i %s/hosts site.yml -u root>> %s 2>&1' %(TEST_CASE_DIR, log_file), stdout=subprocess.PIPE, shell=True)
+                result = os.popen('ansible-playbook -i %s/hosts site.yml -u root>> %s 2>&1' % (TEST_CASE_DIR, log_file))
+                # result = subprocess.call('ansible-playbook -i %s/hosts site.yml -u root>> %s 2>&1' %(TEST_CASE_DIR, log_file), stdout=subprocess.PIPE, shell=True)
             except Exception as e:
                 result = e
+            for k in range(len(case_list['network'])):
+                if section in case_list['network'][k]:
+                    try:
+                        subprocess.Popen(
+                            'ansible-playbook -i %s/hosts runserver.yml -u root' % (TEST_CASE_DIR), stdout=subprocess.PIPE, shell=True)
+                    except:
+                        pass
             if result:
                 logging.info("Building Failed")
                 logging.info("=" * 55)
