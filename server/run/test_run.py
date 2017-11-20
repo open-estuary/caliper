@@ -208,78 +208,89 @@ def parse_all_cases(target_exec_dir, target, kind_bench, bench_name,
 def compute_caliper_logs(target_exec_dir, flag=1):
     # according the method in the config file, compute the score
     dic = yaml.load(open(caliper_path.folder_ope.final_parser, 'r'))
-    config_files = server_utils.get_cases_def_files(target_exec_dir)
-    for i in range(0, len(config_files)):
-        config_file = os.path.join(config_files[i])
-        config, sections = server_utils.read_config_file(config_file)
-        classify = config_files[i].split("/")[-1].strip().split("_")[0]
-        for j in range(0, len(sections)):
+    # config_files = server_utils.get_cases_def_files(target_exec_dir)
+    config_files = os.path.join(caliper_path.config_files.config_dir, 'cases_config.json')
+    fp = open(config_files, 'r')
+    tool_list = []
+    case_list = json.load(fp)
+    for dimension in case_list:
+        for i in range(len(case_list[dimension])):
+            for tool in case_list[dimension][i]:
+                for case in case_list[dimension][i][tool]:
+                    if case_list[dimension][i][tool][case][0] == 'enable':
+                        tool_list.append(tool)
+    sections = list(set(tool_list))
+    # for i in range(0, len(config_files)):
+    #     config_file = os.path.join(config_files[i])
+    #     config, sections = server_utils.read_config_file(config_file)
+    #     classify = config_files[i].split("/")[-1].strip().split("_")[0]
+    for j in range(0, len(sections)):
+        try:
+            run_file = sections[i] + '_run.cfg'
+            parser = sections[i] + '_parser.py'
+        except Exception:
+            raise AttributeError("The is no option value of Computing")
+
+        print_format()
+        if flag == 1:
+            logging.info("Generation raw yaml for %s" % sections[j])
+        else:
+            logging.info("Computing Score for %s" % sections[j])
+            bench = os.path.join(caliper_path.BENCHS_DIR, sections[i], 'ansible')
+        try:
+            # get the abspath, which is filename of run config for the benchmark
+            bench_conf_file = os.path.join(
+                caliper_path.config_files.tests_cfg_dir,
+                bench, run_file)
+            # get the config sections for the benchmrk
+            configRun, sections_run = server_utils.read_config_file(
+                bench_conf_file)
+        except AttributeError as e:
+            raise AttributeError
+        except Exception:
+            raise
+        for k in range(0, len(sections_run)):
             try:
-                run_file = config.get(sections[j], 'run')
-                parser = config.get(sections[j], 'parser')
+                category = configRun.get(sections_run[k], 'category')
+                scores_way = configRun.get(sections_run[k], 'scores_way')
+                command = configRun.get(sections_run[k], 'command')
             except Exception:
-                raise AttributeError("The is no option value of Computing")
+                logging.debug("no value for the %s" % sections_run[k])
+                logging.info(e)
+                continue
+            scores_way1 = None
 
-            print_format()
-            if flag == 1:
-                logging.info("Generation raw yaml for %s" % sections[j])
-            else:
-                logging.info("Computing Score for %s" % sections[j])
-            bench = os.path.join(classify, sections[j])
             try:
-                # get the abspath, which is filename of run config for the benchmark
-                bench_conf_file = os.path.join(
-                    caliper_path.config_files.tests_cfg_dir,
-                    bench, run_file)
-                # get the config sections for the benchmrk
-                configRun, sections_run = server_utils.read_config_file(
-                    bench_conf_file)
-            except AttributeError as e:
-                raise AttributeError
-            except Exception:
-                raise
-            for k in range(0, len(sections_run)):
-                try:
-                    category = configRun.get(sections_run[k], 'category')
-                    scores_way = configRun.get(sections_run[k], 'scores_way')
-                    command = configRun.get(sections_run[k], 'command')
-                except Exception:
-                    logging.debug("no value for the %s" % sections_run[k])
-                    logging.info(e)
-                    continue
-                scores_way1 = None
+                scores_way1 = configRun.get(sections_run[k], 'scores_way1')
+            except Exception, e:
+                logging.debug(e)
+                pass
 
-                try:
-                    scores_way1 = configRun.get(sections_run[k], 'scores_way1')
-                except Exception, e:
-                    logging.debug(e)
-                    pass
-
-                try:
-                    logging.debug("Computing the score of the result of command: %s"
-                                  % command)
-                    if scores_way1 == None:
-                        flag_compute = compute_case_score(dic[sections[j]][sections_run[k]]["value"], category,
-                                                          scores_way, target_exec_dir, flag)
-                    else:
-                        # if scores_way1 is defined, it menas the test case contains both types of test results:
-                        # higher the better and lower the better
-                        dic_name = sections_run[k] + "_latency"
-                        flag_compute = compute_case_score(dic[sections[j]][sections_run[k]]["value"][dic_name],
-                                                          category,
-                                                          scores_way, target_exec_dir, flag)
-                        dic_name = sections_run[k] + "_bandwidth"
-                        flag_compute = compute_case_score(dic[sections[j]][sections_run[k]]["value"][dic_name],
-                                                          category,
-                                                          scores_way1, target_exec_dir, flag)
-                except Exception, e:
-                    logging.info("Error while computing the result of \"%s\"" % sections_run[k])
-                    logging.info(e)
-                    continue
+            try:
+                logging.debug("Computing the score of the result of command: %s"
+                              % command)
+                if scores_way1 == None:
+                    flag_compute = compute_case_score(dic[sections[j]][sections_run[k]]["value"], category,
+                                                      scores_way, target_exec_dir, flag)
                 else:
-                    if not flag_compute and dic[bench][sections_run[k]["value"]]:
-                        logging.info("Error while computing the result\
-                                        of \"%s\"" % command)
+                    # if scores_way1 is defined, it menas the test case contains both types of test results:
+                    # higher the better and lower the better
+                    dic_name = sections_run[k] + "_latency"
+                    flag_compute = compute_case_score(dic[sections[j]][sections_run[k]]["value"][dic_name],
+                                                      category,
+                                                      scores_way, target_exec_dir, flag)
+                    dic_name = sections_run[k] + "_bandwidth"
+                    flag_compute = compute_case_score(dic[sections[j]][sections_run[k]]["value"][dic_name],
+                                                      category,
+                                                      scores_way1, target_exec_dir, flag)
+            except Exception, e:
+                logging.info("Error while computing the result of \"%s\"" % sections_run[k])
+                logging.info(e)
+                continue
+            else:
+                if not flag_compute and dic[bench][sections_run[k]["value"]]:
+                    logging.info("Error while computing the result\
+                                    of \"%s\"" % command)
     logging.info("=" * 55)
     if not os.path.exists(caliper_path.HTML_DATA_DIR_INPUT):
         os.makedirs(caliper_path.HTML_DATA_DIR_INPUT)
@@ -1013,8 +1024,8 @@ def system_initialise(target):
 
 def caliper_run(target_exec_dir, server, target, nginx_clients=None):
     # get the test cases defined files
-    config_files = server_utils.get_cases_def_files(target_exec_dir)
-    logging.debug("the selected configuration are %s" % config_files)
+    # config_files = server_utils.get_cases_def_files(target_exec_dir)
+    # logging.debug("the selected configuration are %s" % config_files)
     config_files = os.path.join(caliper_path.config_files.config_dir, 'cases_config.json')
     fp = open(config_files, 'r')
     tool_list = []
@@ -1026,17 +1037,6 @@ def caliper_run(target_exec_dir, server, target, nginx_clients=None):
                     if case_list[dimension][i][tool][case][0] == 'enable':
                         tool_list.append(tool)
     sections = list(set(tool_list))
-    # for i in range(0, len(config_files)):
-    #     # run benchmarks selected in each configuration file
-    #     # config_file = os.path.join(caliper_path.CALIPER_PRE, config_files[i])
-    #     config_file = os.path.join(config_files[i])
-    #     config, sections = server_utils.read_config_file(config_file)
-    #     logging.debug(sections)
-    #
-    #     # get if it is the 'common' or 'arm' or 'android'
-    #     classify = config_files[i].split("/")[-1].strip().split("_")[0]
-    #     logging.debug(classify)
-
 
     for i in range(0, len(sections)):
         # run for each benchmark
@@ -1081,49 +1081,60 @@ def caliper_run(target_exec_dir, server, target, nginx_clients=None):
 
 def parsing_run(target_exec_dir, target):
     # get the test cases defined files
-    config_files = server_utils.get_cases_def_files(target_exec_dir)
-    logging.debug("the selected configuration are %s" % config_files)
+    # config_files = server_utils.get_cases_def_files(target_exec_dir)
+    # logging.debug("the selected configuration are %s" % config_files)
+    config_files = os.path.join(caliper_path.config_files.config_dir, 'cases_config.json')
+    fp = open(config_files, 'r')
+    tool_list = []
+    case_list = json.load(fp)
+    for dimension in case_list:
+        for i in range(len(case_list[dimension])):
+            for tool in case_list[dimension][i]:
+                for case in case_list[dimension][i][tool]:
+                    if case_list[dimension][i][tool][case][0] == 'enable':
+                        tool_list.append(tool)
+    sections = list(set(tool_list))
     dic = {}
-    for i in range(0, len(config_files)):
-        # run benchmarks selected in each configuration file
-        # config_file = os.path.join(caliper_path.CALIPER_PRE, config_files[i])
-        config_file = os.path.join(config_files[i])
-        config, sections = server_utils.read_config_file(config_file)
-        logging.debug(sections)
+    # for i in range(0, len(config_files)):
+    #     # run benchmarks selected in each configuration file
+    #     # config_file = os.path.join(caliper_path.CALIPER_PRE, config_files[i])
+    #     config_file = os.path.join(config_files[i])
+    #     config, sections = server_utils.read_config_file(config_file)
+    #     logging.debug(sections)
+    #
+    #     # get if it is the 'common' or 'arm' or 'android'
+    #     classify = config_files[i].split("/")[-1].strip().split("_")[0]
+    #     logging.debug(classify)
 
-        # get if it is the 'common' or 'arm' or 'android'
-        classify = config_files[i].split("/")[-1].strip().split("_")[0]
-        logging.debug(classify)
+    for i in range(0, len(sections)):
+        dic[sections[i]] = {}
+        # try to resolve the configuration of the configuration file
+        try:
+            run_file = sections[i] + '_run.cfg'
+            parser = sections[i] + '_parser.py'
+        except Exception:
+            raise AttributeError("The is no option value of parser")
 
-        for i in range(0, len(sections)):
-            dic[sections[i]] = {}
-            # try to resolve the configuration of the configuration file
-            try:
-                run_file = config.get(sections[i], 'run')
-                parser = config.get(sections[i], 'parser')
-            except Exception:
-                raise AttributeError("The is no option value of parser")
+        print_format()
+        logging.info("Parsing %s" % sections[i])
+        bench = os.path.join(caliper_path.BENCHS_DIR, sections[i], 'ansible')
 
+        try:
+            result = parse_all_cases(target_exec_dir, target, bench,
+                                     sections[i], run_file, parser, dic)
+        except Exception:
+            logging.info("Parsing %s Exception" % sections[i])
+            crash_handle.main()
             print_format()
-            logging.info("Parsing %s" % sections[i])
-            bench = os.path.join(classify, sections[i])
-
-            try:
-                result = parse_all_cases(target_exec_dir, target, bench,
-                                         sections[i], run_file, parser, dic)
-            except Exception:
-                logging.info("Parsing %s Exception" % sections[i])
-                crash_handle.main()
-                print_format()
-                run_flag = server_utils.get_fault_tolerance_config(
-                    'fault_tolerance', 'run_error_continue')
-                if run_flag == 1:
-                    continue
-                else:
-                    return result
+            run_flag = server_utils.get_fault_tolerance_config(
+                'fault_tolerance', 'run_error_continue')
+            if run_flag == 1:
+                continue
             else:
-                logging.info("Parsing %s Finished" % sections[i])
-                print_format()
+                return result
+        else:
+            logging.info("Parsing %s Finished" % sections[i])
+            print_format()
     outfp = open(os.path.join(caliper_path.folder_ope.workspace,
                               caliper_path.folder_ope.name.strip()
                               + "/final_parsing_logs.yaml"), 'w')
