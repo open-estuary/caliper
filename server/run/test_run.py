@@ -15,7 +15,7 @@ import subprocess
 import socket
 import yaml
 import threading
-
+import json
 try:
     import caliper.common as common
 except ImportError:
@@ -1015,116 +1015,67 @@ def caliper_run(target_exec_dir, server, target, nginx_clients=None):
     # get the test cases defined files
     config_files = server_utils.get_cases_def_files(target_exec_dir)
     logging.debug("the selected configuration are %s" % config_files)
+    config_files = os.path.join(caliper_path.config_files.config_dir, 'cases_config.json')
+    fp = open(config_files, 'r')
+    tool_list = []
+    case_list = json.load(fp)
+    for dimension in case_list:
+        for i in range(len(case_list[dimension])):
+            for tool in case_list[dimension][i]:
+                for case in case_list[dimension][i][tool]:
+                    if case_list[dimension][i][tool][case][0] == 'enable':
+                        tool_list.append(tool)
+    sections = list(set(tool_list))
+    # for i in range(0, len(config_files)):
+    #     # run benchmarks selected in each configuration file
+    #     # config_file = os.path.join(caliper_path.CALIPER_PRE, config_files[i])
+    #     config_file = os.path.join(config_files[i])
+    #     config, sections = server_utils.read_config_file(config_file)
+    #     logging.debug(sections)
+    #
+    #     # get if it is the 'common' or 'arm' or 'android'
+    #     classify = config_files[i].split("/")[-1].strip().split("_")[0]
+    #     logging.debug(classify)
 
-    for i in range(0, len(config_files)):
-        # run benchmarks selected in each configuration file
-        # config_file = os.path.join(caliper_path.CALIPER_PRE, config_files[i])
-        config_file = os.path.join(config_files[i])
-        config, sections = server_utils.read_config_file(config_file)
-        logging.debug(sections)
 
-        # get if it is the 'common' or 'arm' or 'android'
-        classify = config_files[i].split("/")[-1].strip().split("_")[0]
-        logging.debug(classify)
+    for i in range(0, len(sections)):
+        # run for each benchmark
+        target_arch = server_utils.get_host_arch(target)
+        # server_arch = server_utils.get_host_arch(server)
+        build_name = sections[i] + '_' + target_arch + '.suc'
+        build_suc = os.path.join(Folder.build_dir, build_name)
+        if not os.path.exists(build_suc):
+            continue
+        build_host_name = sections[i] + '_' + \
+                          server_utils.get_local_machine_arch() + '.fail'
+        if os.path.exists(build_host_name):
+            continue
 
-        # if classify != "common" and server and len(sections) > 0:
-        # try:
-        #     server_ip = settings.get_value("TestNode","ip",type=str)
-        #     server_port = settings.get_value("TestNode","port",type=int)
-        #     server_user = settings.get_value("TestNode","user",type=str)
-        # logging.info("Please wait while caliper triggers the server.py script in the server")
-        # server_pwd = server.run("pwd").stdout
-        # server_pwd = server_pwd.split("\n")[0]
-        # server_caliper_dir = os.path.join(server_pwd, "caliper_server")
-        # read_file = os.path.join(server_caliper_dir,"process_status")
-        # read_server_run = os.path.join(server_caliper_dir,"server_run")
-        # server_caliper_dir = os.path.join(server_caliper_dir,"server.py")
-        # server_user = server_user + '@' + server_ip
-        # script = server_caliper_dir + ' ' + str(server_port)
-        #
-        # p1 = subprocess.Popen(['ssh', '%s' % server_user,'ps','-ef'], stdout=subprocess.PIPE)
-        # p2 = subprocess.Popen(['grep', '-c','server.py'], stdin=p1.stdout, stdout=subprocess.PIPE)
-        # p1.stdout.close()
-        # data,err = p2.communicate()
-        # data = data.strip()
-        #
-        # if data == "0":
-        #     subprocess.Popen(['ssh', '%s' % server_user, 'python %s' % script])
-        #
-        #
-        # for i in range (0,20):
-        #     try:
-        #         p1 = subprocess.Popen(['ssh', '%s' % server_user, 'cat %s' % read_file], stdout=subprocess.PIPE)
-        #         p2 = subprocess.Popen(['grep','1'], stdin=p1.stdout, stdout=subprocess.PIPE)
-        #         p1.stdout.close()
-        #         server_process,err = p2.communicate()
-        #         server_process = server_process.strip()
-        #         if server_process == "1":
-        #             break
-        #         else:
-        #             time.sleep(1)
-        #     except Exception as e:
-        #         pass
+        # try to resolve the configuration of the configuration file
+        try:
+            run_file = sections[i]+ '_run.cfg'
+            parser = sections[i]+ '_parser.py'
+        except Exception:
+            raise AttributeError("The is no option value of parser")
 
-        # except Exception as e:
-        #     logging.info(e)
-        #     raise AttributeError("Error in establising connection with server")
+        print_format()
 
-        # server_ip = settings.get_value("TestNode","ip",type=str)
-        # server_port = settings.get_value("TestNode","port",type=int)
+        logging.info("Running %s" % sections[i])
+        bench = os.path.join(caliper_path.BENCHS_DIR, sections[i], 'ansible')
+        try:
+            # On some platforms, swapoff and swapon command is not able to execute.
+            # So this function has been commented
 
-        for i in range(0, len(sections)):
-            # run for each benchmark
-            target_arch = server_utils.get_host_arch(target)
-            # server_arch = server_utils.get_host_arch(server)
-            build_name = sections[i] + '_' + target_arch + '.suc'
-            build_suc = os.path.join(Folder.build_dir, build_name)
-            if not os.path.exists(build_suc):
-                continue
-            build_host_name = sections[i] + '_' + \
-                              server_utils.get_local_machine_arch() + '.fail'
-            if os.path.exists(build_host_name):
-                continue
+            result = run_all_cases(target_exec_dir, target, bench,
+                                   sections[i], run_file, server, nginx_clients)
 
-            # try to resolve the configuration of the configuration file
-            try:
-                run_file = config.get(sections[i], 'run')
-                parser = config.get(sections[i], 'parser')
-            except Exception:
-                raise AttributeError("The is no option value of parser")
-
+        except Exception, e:
+            logging.info(e)
+            logging.info("Running %s Exception" % sections[i])
+            crash_handle.main()
             print_format()
-
-            logging.info("Running %s" % sections[i])
-            bench = os.path.join(classify, sections[i])
-            try:
-                # On some platforms, swapoff and swapon command is not able to execute.
-                # So this function has been commented
-                # system_initialise(target)
-                #    if classify != "common" and server:
-                #        if server_process == "1":
-                #        	logging.info("Waiting for server to grant access")
-                #        	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                #   	sock.connect((server_ip,server_port))
-                # 	logging.info("%s" % str(sock.recv(1024)))
-                # else:
-                #            logging.info("server is not running properly")
-                #            # continue
-
-                result = run_all_cases(target_exec_dir, target, bench,
-                                       sections[i], run_file, server, nginx_clients)
-
-                # if classify != "common" and server:
-                #        sock.send("1")
-                # sock.close()
-
-            except Exception, e:
-                logging.info(e)
-                logging.info("Running %s Exception" % sections[i])
-                crash_handle.main()
-                print_format()
-            else:
-                logging.info("Running %s Finished" % sections[i])
+        else:
+            logging.info("Running %s Finished" % sections[i])
     return 0
 
 
