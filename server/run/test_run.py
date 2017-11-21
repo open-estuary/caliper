@@ -255,7 +255,7 @@ def compute_caliper_logs(target_exec_dir, flag=1):
                 category = configRun.get(sections_run[k], 'category')
                 scores_way = configRun.get(sections_run[k], 'scores_way')
                 command = configRun.get(sections_run[k], 'command')
-            except Exception:
+            except Exception, e:
                 logging.debug("no value for the %s" % sections_run[k])
                 logging.info(e)
                 continue
@@ -286,6 +286,7 @@ def compute_caliper_logs(target_exec_dir, flag=1):
                                                       scores_way1, target_exec_dir, flag)
             except Exception, e:
                 logging.info("Error while computing the result of \"%s\"" % sections_run[k])
+                logging.info("*************************************************")
                 logging.info(e)
                 continue
             else:
@@ -300,8 +301,7 @@ def compute_caliper_logs(target_exec_dir, flag=1):
         os.makedirs(caliper_path.HTML_DATA_DIR_OUTPUT)
 
 
-def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
-                  run_file, server, nginx_clients=None):
+def run_all_cases(target, kind_bench, bench_name, run_file):
     """
     function: run one benchmark which was selected in the configuration files
     """
@@ -362,17 +362,14 @@ def run_all_cases(target_exec_dir, target, kind_bench, bench_name,
         if os.path.exists(tmp_log_file):
             os.remove(tmp_log_file)
 
-        server_run_command = get_server_command(kind_bench, sections_run[i])
-
-        nginx_clients_count = None
-        client_command_dic = None
-        logging.debug("Get the server command is: %s" % server_run_command)
+        # server_run_command = get_server_command(kind_bench, sections_run[i])
+        #
+        # nginx_clients_count = None
+        # client_command_dic = None
+        # logging.debug("Get the server command is: %s" % server_run_command)
         # run the command of the benchmarks
         try:
-            flag = run_kinds_commands(sections_run[i], server_run_command,
-                                      tmp_log_file, kind_bench, bench_name,
-                                      target, command, server, nginx_clients, client_command_dic, nginx_clients_count,
-                                      nginx_tmp_log_file)
+            flag = run_kinds_commands(sections_run[i], tmp_log_file, kind_bench, bench_name, target, command)
         except Exception, e:
             logging.info(e)
             crash_handle.main()
@@ -836,48 +833,7 @@ def check_ping_response(nginx_clients_count):
     return result
 
 
-def run_kinds_commands(cmd_sec_name, server_run_command, tmp_logfile,
-                       kind_bench, bench_name, target, command, server, nginx_clients=None,
-                       client_command_dic=None, nginx_clients_count=None, nginx_tmp_log_file=None):
-    # if re.search('server', kind_bench):
-    #     logging.debug("Running the server_command: %s, "
-    #                     "and the client command: %s" %
-    #                     (server_run_command, command))
-    #     flag = run_server_command(cmd_sec_name, server_run_command, tmp_logfile,
-    #                    kind_bench, server)
-    #     logging.debug("only running the command %s in the remote host"
-    #                     % command)
-    #     flag = run_client_command(cmd_sec_name, tmp_logfile, kind_bench,
-    #                                 target, command, bench_name)
-    # elif re.search('application', kind_bench):
-    #     if bench_name == "nginx":
-    #         result = check_ping_response(nginx_clients_count)
-    #         if result != 0:
-    #             logging.info("PING response is not success for one of clients")
-    #             return -1
-    #
-    #         stop_nginx_server()
-    #         for i in range(1, nginx_clients_count + 1):
-    #             weighttp_thread = "thread" + str(i)
-    #             if client_command_dic[str(i)] != None:
-    #                 weighttp_thread = myThread(i, cmd_sec_name, client_command_dic[str(i)], nginx_tmp_log_file[str(i)],
-    #                        kind_bench, nginx_clients[str(i)])
-    #                 weighttp_thread.start()
-    #
-    #         flag = run_client_command(cmd_sec_name, tmp_logfile, kind_bench,
-    #                                 target, command, bench_name)
-    #
-    #         # if any weighttp client threads are active, then kill it
-    #         stop_weighttp_client(nginx_clients_count)
-    #
-    #     else:
-    #         flag = run_client_command(cmd_sec_name, tmp_logfile, kind_bench,
-    #                                 target, command, bench_name)
-    #         flag = run_server_command(cmd_sec_name, server_run_command, tmp_logfile,
-    #                    kind_bench, server)
-    # else:
-    logging.debug("only running the command %s in the remote host"
-                  % command)
+def run_kinds_commands(cmd_sec_name, tmp_logfile, kind_bench, bench_name, target, command):
     flag = run_client_command(cmd_sec_name, tmp_logfile, kind_bench,
                               target, command, bench_name)
     return flag
@@ -1023,7 +979,7 @@ def system_initialise(target):
     target.run(" sync; echo 3 > /proc/sys/vm/drop_caches; swapoff -a && swapon -a ")
 
 
-def caliper_run(target_exec_dir, server, target, nginx_clients=None):
+def caliper_run(target):
     # get the test cases defined files
     # config_files = server_utils.get_cases_def_files(target_exec_dir)
     # logging.debug("the selected configuration are %s" % config_files)
@@ -1066,10 +1022,7 @@ def caliper_run(target_exec_dir, server, target, nginx_clients=None):
         try:
             # On some platforms, swapoff and swapon command is not able to execute.
             # So this function has been commented
-
-            result = run_all_cases(target_exec_dir, target, bench,
-                                   sections[i], run_file, server, nginx_clients)
-
+            result = run_all_cases(target, bench,sections[i], run_file)
         except Exception, e:
             logging.info(e)
             logging.info("Running %s Exception" % sections[i])
@@ -1148,7 +1101,7 @@ def print_format():
     logging.info("=" * 55)
 
 
-def run_caliper_tests(target, server, f_option, nginx_clients=None):
+def run_caliper_tests(target, f_option):
     # f_option =1 if -f is used
     if f_option == 1:
         if not os.path.exists(Folder.exec_dir):
@@ -1170,7 +1123,7 @@ def run_caliper_tests(target, server, f_option, nginx_clients=None):
         flag = 1
     try:
         logging.debug("beginnig to run the test cases")
-        test_result = caliper_run(target_execution_dir, server, target, nginx_clients)
+        test_result = caliper_run(target)
         if intermediate == 1:
             target_name = server_utils.get_host_name(target)
             yaml_dir = os.path.join(Folder.results_dir, 'yaml')

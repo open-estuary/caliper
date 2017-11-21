@@ -95,10 +95,10 @@ def populate_excels():
     except Exception as e:
        logging.info(e)
 
-def run_caliper(remote_host, server_host, f_option, nginx_clients=None):
+def run_caliper(remote_host, f_option):
     try:
         logging.debug("begining to run Caliper")
-        result = test_run.run_caliper_tests(remote_host, server_host, f_option, nginx_clients)
+        result = test_run.run_caliper_tests(remote_host, f_option)
     except Exception, e:
         print e
         logging.info("There is wrong when running Caliper")
@@ -489,7 +489,7 @@ if __name__=="__main__":
 
         if args.run:
             try:
-                result2 = run_caliper(remote_host, server_host, f_option, nginx_clients)
+                result2 = run_caliper(remote_host, f_option)
                 if result2:
                     sys.exit()
 
