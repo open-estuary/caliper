@@ -234,6 +234,7 @@ def compute_caliper_logs(target_exec_dir, flag=1):
         print_format()
         if flag == 1:
             logging.info("Generation raw yaml for %s" % sections[j])
+            bench = os.path.join(caliper_path.BENCHS_DIR, sections[i], 'ansible')
         else:
             logging.info("Computing Score for %s" % sections[j])
             bench = os.path.join(caliper_path.BENCHS_DIR, sections[i], 'ansible')
