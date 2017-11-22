@@ -348,7 +348,7 @@ def build_caliper(target_arch, flag=0,clear=0):
                     try:
                         subprocess.Popen(
                             'ansible-playbook -i %s/hosts runserver.yml -u root' % (TEST_CASE_DIR), stdout=subprocess.PIPE, shell=True)
-                    except:
+                    except Exception as e:
                         pass
             if result:
                 logging.info("Building Failed")

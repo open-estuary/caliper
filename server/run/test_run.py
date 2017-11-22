@@ -212,7 +212,7 @@ def compute_caliper_logs(target_exec_dir, flag=1):
     config_files = os.path.join(caliper_path.config_files.config_dir, 'cases_config.json')
     fp = open(config_files, 'r')
     tool_list = []
-    case_list = json.load(fp)
+    case_list = yaml.load(fp.read())
     for dimension in case_list:
         for i in range(len(case_list[dimension])):
             for tool in case_list[dimension][i]:
@@ -286,7 +286,6 @@ def compute_caliper_logs(target_exec_dir, flag=1):
                                                       scores_way1, target_exec_dir, flag)
             except Exception, e:
                 logging.info("Error while computing the result of \"%s\"" % sections_run[k])
-                logging.info("*************************************************")
                 logging.info(e)
                 continue
             else:
@@ -986,7 +985,7 @@ def caliper_run(target):
     config_files = os.path.join(caliper_path.config_files.config_dir, 'cases_config.json')
     fp = open(config_files, 'r')
     tool_list = []
-    case_list = json.load(fp)
+    case_list = yaml.load(fp.read())
     for dimension in case_list:
         for i in range(len(case_list[dimension])):
             for tool in case_list[dimension][i]:
@@ -1040,7 +1039,7 @@ def parsing_run(target_exec_dir, target):
     config_files = os.path.join(caliper_path.config_files.config_dir, 'cases_config.json')
     fp = open(config_files, 'r')
     tool_list = []
-    case_list = json.load(fp)
+    case_list = yaml.load(fp.read())
     for dimension in case_list:
         for i in range(len(case_list[dimension])):
             for tool in case_list[dimension][i]:
