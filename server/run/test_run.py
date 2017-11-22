@@ -226,18 +226,18 @@ def compute_caliper_logs(target_exec_dir, flag=1):
     #     classify = config_files[i].split("/")[-1].strip().split("_")[0]
     for j in range(0, len(sections)):
         try:
-            run_file = sections[i] + '_run.cfg'
-            parser = sections[i] + '_parser.py'
+            run_file = sections[j] + '_run.cfg'
+            parser = sections[j] + '_parser.py'
         except Exception:
             raise AttributeError("The is no option value of Computing")
 
         print_format()
         if flag == 1:
             logging.info("Generation raw yaml for %s" % sections[j])
-            bench = os.path.join(caliper_path.BENCHS_DIR, sections[i], 'ansible')
+            bench = os.path.join(caliper_path.BENCHS_DIR, sections[j], 'ansible')
         else:
             logging.info("Computing Score for %s" % sections[j])
-            bench = os.path.join(caliper_path.BENCHS_DIR, sections[i], 'ansible')
+            bench = os.path.join(caliper_path.BENCHS_DIR, sections[j], 'ansible')
         try:
             # get the abspath, which is filename of run config for the benchmark
             bench_conf_file = os.path.join(
