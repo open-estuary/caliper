@@ -15,6 +15,7 @@ import subprocess
 import glob
 import ConfigParser
 import getpass
+import yaml
 
 from argparse import ArgumentParser
 
@@ -374,18 +375,22 @@ if __name__=="__main__":
     args = parser.parse_args()
     start_time = datetime.datetime.now()
 
-    benchmark_list = []
-    pack_file_list = ['common', 'android', 'application', 'arm', 'server']
-    for pack in pack_file_list:
-        common = os.path.join(caliper_path.caliper_test_def, pack)
-        for com in os.listdir(common):
-            benchmark_list.append(com)
+    config_files = os.path.join(caliper_path.config_files.config_dir, 'cases_config.json')
+    fp = open(config_files, 'r')
+    tool_list = []
+    case_list = yaml.load(fp.read())
+    dimension_list = {}
+    for dimension in case_list:
+        dimension_list[dimension]=[]
+        for i in range(len(case_list[dimension])):
+            for tool in case_list[dimension][i]:
+                dimension_list[dimension].append(tool)
 
     if args.benchmarklist:
-        print 'benchmarklist: '
-        for c in benchmark_list:
-            if c != '':
-                print c
+        for dimen in dimension_list:
+            print dimen + ':'
+            for tool in dimension_list[dimen]:
+                print '    '+tool
         sys.exit()
 
     f_option = 0
