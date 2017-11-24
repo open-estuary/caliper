@@ -1,0 +1,4 @@
+- hosts: TestNode
+  tasks:
+    - name: run iperf3
+      command: iperf3 -s &

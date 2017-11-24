@@ -1,3 +1,0 @@
-- name: run netperf
-  shell: "cd /tmp/netperf/src && ./netserver &"
-

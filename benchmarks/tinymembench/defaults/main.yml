@@ -1,0 +1,6 @@
+tinymembench:
+  tinymembench:
+    category: 'Performance memory'
+    scores_way: 'compute_speed_score 2'
+    command: 'tinymembench'
+    parser: 'tinymembench_parser'

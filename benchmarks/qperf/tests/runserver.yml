@@ -1,0 +1,4 @@
+- hosts: TestNode
+  tasks:
+    - name: run qperf
+      command: "qperf"

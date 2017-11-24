@@ -1,3 +1,0 @@
-- hosts: Device
-  roles:
-  - base_env

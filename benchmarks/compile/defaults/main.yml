@@ -1,0 +1,41 @@
+compile:
+  compile 1:
+    category: 'Performance application compile kernel-dev_01'
+    scores_way: 'exp_score_compute 5 -0.5'
+    command: 'compile_1'
+    parser: 'compile_parser'
+  compile 16:
+    category: 'Performance application compile kernel-dev_16'
+    scores_way: 'exp_score_compute 5 -0.5'
+    command: 'compile_16'
+    parser: 'compile_parser'
+  compile 2:
+    category: 'Performance application compile kernel-dev_02'
+    scores_way: 'exp_score_compute 5 -0.5'
+    command: 'compile_2'
+    parser: 'compile_parser'
+  compile 32:
+    category: 'Performance application compile kernel-dev_32'
+    scores_way: 'exp_score_compute 5 -0.5'
+    command: 'compile_32'
+    parser: 'compile_parser'
+  compile 4:
+    category: 'Performance application compile kernel-dev_04'
+    scores_way: 'exp_score_compute 5 -0.5'
+    command: 'compile_4'
+    parser: 'compile_parser'
+  compile 64:
+    category: 'Performance application compile kernel-dev_64'
+    scores_way: 'exp_score_compute 5 -0.5'
+    command: 'compile_64'
+    parser: 'compile_parser'
+  compile 72:
+    category: 'Performance application compile kernel-dev_72'
+    scores_way: 'exp_score_compute 5 -0.5'
+    command: 'compile_72'
+    parser: 'compile_parser'
+  compile 8:
+    category: 'Performance application compile kernel-dev_08'
+    scores_way: 'exp_score_compute 5 -0.5'
+    command: 'compile_8'
+    parser: 'compile_parser'

@@ -1,0 +1,6 @@
+nginx:
+  nginx_32_core_cross_wrps:
+    category: 'Performance application nginx_32_core_local_wrps'
+    scores_way: 'compute_speed_score 1'
+    command: 'run'
+    parser: 'nginx_parser'

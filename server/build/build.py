@@ -334,7 +334,7 @@ def build_caliper(target_arch, flag=0,clear=0):
 
             logging.info("=" * 55)
             logging.info("Building %s" % section)
-            build_dir = os.path.join(caliper_path.BENCHS_DIR, section, 'ansible')
+            build_dir = os.path.join(caliper_path.BENCHS_DIR, section, 'tests')
             log_name = "%s.log" % section
             log_file = os.path.join('/tmp', log_name)
             os.chdir(build_dir)

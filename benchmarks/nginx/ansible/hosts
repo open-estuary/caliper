@@ -1,8 +1,0 @@
-[Device]
-127.0.0.1
-[TestNode]
-127.0.0.1
-[multiserver]
-127.0.0.1 ansible_sudo_pass='123'
-[multiclient]
-127.0.0.1 ansible_sudo_pass='123'

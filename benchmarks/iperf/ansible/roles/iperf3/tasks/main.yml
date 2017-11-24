@@ -1,2 +1,0 @@
-- name: run iperf3
-  command: iperf3 -s &
