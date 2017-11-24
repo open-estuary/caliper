@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 TOPDIR=`pwd`
 
@@ -34,13 +34,13 @@ if $(which apt >/dev/null 2>&1); then
 	apt-get install -y libssl-dev
 fi
 
-#pushd build/$NGINX_DIR
+pushd build/$NGINX_DIR
 cd  $TOPDIR/build/$NGINX_DIR
 ./configure  --with-http_ssl_module --prefix=$TOPDIR/install
 make && make install
-#popd
+popd
 
-#touch $TOPDIR/scripts/profile
+cp /dev/null $TOPDIR/scripts/profile
 
 if nginx_is_install; then
 	if [ ! $(grep -q "NGINX_PATH" $TOPDIR/scripts/profile) ]; then

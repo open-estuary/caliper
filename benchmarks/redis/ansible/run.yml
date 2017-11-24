@@ -23,16 +23,19 @@
       shell: "echo {{ groups['TestNode'][0] }} >> /tmp/redis_output.log"
       
     - name: test redis benchmark on client
-      command: "sh {{ home }}/caliper_output/caliper/benchmarks/redis/run_client.sh {{ groups['multiserver'][0] }}"                       
+      shell: "{{ home }}/caliper_output/caliper/benchmarks/redis/run_client.sh {{ groups['multiserver'][0] }}"                        
       become: true
       become_method: sudo
-      become_user: root
+#      become_user: root
 
     - name: fetch result
       fetch:
         src: /tmp/redis_output.log
         dest: /tmp/redis_output.log 
         flat: yes
+      become: true
+      become_method: sudo
+      become_user: root
 
     - name: del redis on client
       shell: "rm -rf {{ home}}/caliper_output"

@@ -52,7 +52,8 @@ if [ "$1" == "init" ] ; then
 
     python generate_inputdata.py ${REDIS_TEST_DIR}/input_data ${data_num} ${data_size}
    
-　　redis_inst_num=`expr $redis_inst_num - 1`
+# redis_inst_num=`expr $redis_inst_num - 1`
+    let "redis_inst_num--"
     for index in $(seq 0 ${redis_inst_num})
     do
         echo "call redis-cli to initialize data for redis-${index}"
@@ -64,18 +65,19 @@ if [ "$1" == "init" ] ; then
 elif [ "$1" == "test" ] ; then
     rm ${REDIS_TEST_DIR}/redis_benchmark_log*
 
-    redis_inst_num=`expr $redis_inst_num - 1`
+#    redis_inst_num=`expr $redis_inst_num - 1`
+    let "redis_inst_num--"
     for index in $(seq 0 ${redis_inst_num})
     do
         port=`expr ${base_port_num} + ${index} + ${start_cpu_num}`
-        taskindex=`expr 17 + ${index}`
+        taskindex=`expr 1 + ${index}`
         #taskend=`expr 6 + ${taskindex}`
         echo "call redis-benchmark to test redis-${index}"
         
         #if testing perfrmance of twemproxy+redis cluster,you should uncomment next line#
         #port=22121
 
-        redis-benchmark -h ${ip_addr} -p ${port} -c 50 -n ${data_num} -d ${data_size} -k ${keep_alive} -r ${key_space_len} -P ${pipeline} -t get > ${REDIS_TEST_DIR}/redis_benchmark_log_${port} & 
+        taskset -c ${taskindex} redis-benchmark -h ${ip_addr} -p ${port} -c 50 -n ${data_num} -d ${data_size} -k ${keep_alive} -r ${key_space_len} -P ${pipeline} -t get > ${REDIS_TEST_DIR}/redis_benchmark_log_${port} & 
         #${REDIS_CMD_DIR}/redis-benchmark -h ${ip_addr} -p ${port} -c 50 -n ${data_num} -d ${data_size} -k ${keep_alive} -r ${key_space_len} -P ${pipeline} -t get > redis_benchmark_log_${port} &
     done
 

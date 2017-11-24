@@ -30,7 +30,7 @@ check_redis_benchmark() {
     do
         is_running=$(ps -aux | grep redis-benchmark | grep -v grep)
         if [ -z "${is_running}" ] ; then
-            return
+            return 
         else
             echo "Wait for redis-benchmark done......"
             sleep 60
@@ -48,11 +48,11 @@ start_cpu_num=1
 inst_num=${cur_inst}
 echo "Initialize database......"
 scripts/init_test.sh init ${ip} ${start_cpu_num} ${inst_num} 
-mkdir -p log/${cur_inst}/
+#mkdir -p log/${cur_inst}/
 
 echo "Short case" 
 scripts/init_test.sh test ${ip} ${start_cpu_num} ${inst_num} 0 1
-check_redis_benchmark
+check_redis_benchmark 
 #scripts/analysis_qps_lat.py ${test_log_dir} ${inst_num} >> redis_log_${cur_inst}
 scripts/analysis_qps_lat.py ${test_log_dir} ${inst_num} >> /tmp/redis_output.log
 
