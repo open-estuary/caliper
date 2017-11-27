@@ -43,16 +43,16 @@ class myThread(threading.Thread):
 
 
 class run_case_thread(threading.Thread):
-    def __init__(self, bench_name, commands):
+    def __init__(self, bench_name, commands, host):
         threading.Thread.__init__(self)
         self.bench_name = bench_name
         self.commands = commands
+        self.host = host
 
     def run(self):
         returncode = -1
         output = ''
         pwd = os.getcwd()
-        TEST_CASE_DIR = caliper_path.config_files.config_dir
         try:
             # the commands is multiple lines, and was included by Quotation
             actual_commands = get_actual_commands(self.commands)
@@ -62,9 +62,8 @@ class run_case_thread(threading.Thread):
                 test_case_dir = os.path.join(caliper_path.BENCHS_DIR, self.bench_name, 'tests')
                 os.chdir(test_case_dir)
                 result = subprocess.call(
-                    'ansible-playbook -i %s/hosts %s.yml -u root>> %s 2>&1' % (
-                        TEST_CASE_DIR, actual_commands, Folder.caliper_run_log_file), stdout=subprocess.PIPE,
-                    shell=True)
+                    'ansible-playbook %s.yml --extra-vars "hosts=%s" -u root>> %s 2>&1' %
+                    (actual_commands, self.host, Folder.caliper_run_log_file), stdout=subprocess.PIPE, shell=True)
             except error.CmdError, e:
                 raise error.ServRunError(e.args[0], e.args[1])
         except Exception, e:
@@ -122,7 +121,23 @@ def get_nginx_client_command(kind_bench, section_name, command_field):
         return None
 
 
-def parse_all_cases(kind_bench, bench_name, parser_file, dic):
+def read_config():
+    config_files = os.path.join(caliper_path.config_files.config_dir, 'cases_config.json')
+    fp = open(config_files, 'r')
+    tool_list = []
+    run_case_list = []
+    case_list = yaml.load(fp.read())
+    for dimension in case_list:
+        for i in range(len(case_list[dimension])):
+            for tool in case_list[dimension][i]:
+                for case in case_list[dimension][i][tool]:
+                    if case_list[dimension][i][tool][case][0] == 'enable':
+                        tool_list.append(tool)
+                        run_case_list.append(case)
+    sections = list(set(tool_list))
+    return sections, run_case_list
+
+def parse_all_cases(kind_bench, bench_name, parser_file, dic, run_case_list):
     """
     function: parse one benchmark which was selected in the configuration files
     """
@@ -138,94 +153,70 @@ def parse_all_cases(kind_bench, bench_name, parser_file, dic):
         raise AttributeError
     except Exception:
         raise
-    bench_test = "ltp"
     logging.debug("the sections to run are: %s" % sections_run)
     if not os.path.exists(Folder.exec_dir):
         os.mkdir(Folder.exec_dir)
     log_bench = os.path.join(Folder.exec_dir, bench_name)
     logfile = log_bench + "_output.log"
-    if bench_name != bench_test:
-        if not os.path.exists(logfile):
-            return -1
     tmp_log_file = log_bench + "_output_tmp.log"
     parser_result_file = log_bench + "_parser.log"
     tmp_parser_file = log_bench + "_parser_tmp.log"
     if os.path.exists(parser_result_file):
         os.remove(parser_result_file)
-    # output_logs_names = glob.glob(Folder.exec_dir+"/*output.log")
-
     # for each command in run config file, read the config for the benchmark
-    for i in range(0, len(sections_run)):
-        dic[bench_name][sections_run[i]] = {}
-
-        flag = 0
-        try:
-            parser = values[bench_name][sections_run[i]]['parser']
-            command = values[bench_name][sections_run[i]]['command']
-        except Exception:
-            logging.debug("no value for the %s" % sections_run[i])
-            continue
-        if bench_name == bench_test:
-            subsection = sections_run[i].split(" ")[1]
-            subsection_file = log_bench + "_" + subsection + "_output.log"
-            if not os.path.exists(subsection_file):
+    i = 0
+    for section in sections_run:
+        if section in run_case_list:
+            dic[bench_name][section] = {}
+            flag = 0
+            try:
+                parser = values[bench_name][section]['parser']
+                command = values[bench_name][section]['command']
+            except Exception:
+                logging.debug("no value for the %s" % section)
                 continue
-        if os.path.exists(tmp_parser_file):
-            os.remove(tmp_parser_file)
-        # parser the result in the tmp_log_file, the result is the output of
-        # running the command
-
-        try:
-            logging.debug("Parsering the result of command: %s" % command)
-            outfp = open(logfile, 'r')
-            infp = open(tmp_log_file, 'w')
-            infp.write(re.findall("test start\s+%+(.*?)%+\s+test_end", outfp.read(), re.DOTALL)[i])
-            infp.close()
-            outfp.close()
-            parser_result = parser_case(bench_name, parser_file,
-                                        parser, tmp_log_file,
-                                        tmp_parser_file)
-            dic[bench_name][sections_run[i]]["type"] = type(parser_result)
-            dic[bench_name][sections_run[i]]["value"] = parser_result
-        except Exception, e:
-            logging.info("Error while parsing the result of \" %s \""
-                         % sections_run[i])
-            logging.info(e)
             if os.path.exists(tmp_parser_file):
                 os.remove(tmp_parser_file)
-            if os.path.exists(tmp_log_file):
-                os.remove(tmp_log_file)
+            # parser the result in the tmp_log_file, the result is the output of
+            # running the command
+            try:
+                logging.debug("Parsering the result of command: %s" % command)
+                outfp = open(logfile, 'r')
+                infp = open(tmp_log_file, 'w')
+                infp.write(re.findall("test start\s+%+(.*?)%+\s+test_end", outfp.read(), re.DOTALL)[sections_run.index(section) - i])
+                infp.close()
+                outfp.close()
+                parser_result = parser_case(bench_name, parser_file,
+                                            parser, tmp_log_file,
+                                            tmp_parser_file)
+                dic[bench_name][section]["type"] = type(parser_result)
+                dic[bench_name][section]["value"] = parser_result
+            except Exception, e:
+                logging.info("Error while parsing the result of \" %s \""
+                             % section)
+                logging.info(e)
+                if os.path.exists(tmp_parser_file):
+                    os.remove(tmp_parser_file)
+                if os.path.exists(tmp_log_file):
+                    os.remove(tmp_log_file)
+            else:
+                server_utils.file_copy(parser_result_file, tmp_parser_file, "a+")
+                if os.path.exists(tmp_parser_file):
+                    os.remove(tmp_parser_file)
+                if os.path.exists(tmp_log_file):
+                    os.remove(tmp_log_file)
+                if (parser_result <= 0):
+                    continue
         else:
-            server_utils.file_copy(parser_result_file, tmp_parser_file, "a+")
-            if os.path.exists(tmp_parser_file):
-                os.remove(tmp_parser_file)
-            if os.path.exists(tmp_log_file):
-                os.remove(tmp_log_file)
-            if (parser_result <= 0):
-                continue
+            i += 1
+            continue
 
 
 def compute_caliper_logs(target_exec_dir, flag=1):
     # according the method in the config file, compute the score
     dic = yaml.load(open(caliper_path.folder_ope.final_parser, 'r'))
-    config_files = os.path.join(caliper_path.config_files.config_dir, 'cases_config.json')
-    fp = open(config_files, 'r')
-    tool_list = []
-    case_list = yaml.load(fp.read())
-    for dimension in case_list:
-        for i in range(len(case_list[dimension])):
-            for tool in case_list[dimension][i]:
-                for case in case_list[dimension][i][tool]:
-                    if case_list[dimension][i][tool][case][0] == 'enable':
-                        tool_list.append(tool)
-    sections = list(set(tool_list))
+    sections, run_case_list = read_config()
     for j in range(0, len(sections)):
-        try:
-            run_file = sections[j] + '_run.cfg'
-            parser = sections[j] + '_parser.py'
-        except Exception:
-            raise AttributeError("The is no option value of Computing")
-
         print_format()
         if flag == 1:
             logging.info("Generation raw yaml for %s" % sections[j])
@@ -244,28 +235,31 @@ def compute_caliper_logs(target_exec_dir, flag=1):
             raise AttributeError
         except Exception:
             raise
-        for k in range(0, len(sections_run)):
-            try:
-                category = values[sections[j]][sections_run[k]]['category']
-                scores_way = values[sections[j]][sections_run[k]]['scores_way']
-                command = values[sections[j]][sections_run[k]]['command']
-            except Exception, e:
-                logging.debug("no value for the %s" % sections_run[k])
-                logging.info(e)
-                continue
-            try:
-                logging.debug("Computing the score of the result of command: %s"
-                              % command)
-                flag_compute = compute_case_score(dic[sections[j]][sections_run[k]]["value"], category,
-                                                  scores_way, target_exec_dir, flag)
-            except Exception, e:
-                logging.info("Error while computing the result of \"%s\"" % sections_run[k])
-                logging.info(e)
-                continue
+        for section in sections_run:
+            if section in run_case_list:
+                try:
+                    category = values[sections[j]][section]['category']
+                    scores_way = values[sections[j]][section]['scores_way']
+                    command = values[sections[j]][section]['command']
+                except Exception, e:
+                    logging.debug("no value for the %s" % section)
+                    logging.info(e)
+                    continue
+                try:
+                    logging.debug("Computing the score of the result of command: %s"
+                                  % command)
+                    flag_compute = compute_case_score(dic[sections[j]][section]["value"], category,
+                                                      scores_way, target_exec_dir, flag)
+                except Exception, e:
+                    logging.info("Error while computing the result of \"%s\"" % section)
+                    logging.info(e)
+                    continue
+                else:
+                    if not flag_compute and dic[bench][section["value"]]:
+                        logging.info("Error while computing the result\
+                                        of \"%s\"" % command)
             else:
-                if not flag_compute and dic[bench][sections_run[k]["value"]]:
-                    logging.info("Error while computing the result\
-                                    of \"%s\"" % command)
+                continue
     logging.info("=" * 55)
     if not os.path.exists(caliper_path.HTML_DATA_DIR_INPUT):
         os.makedirs(caliper_path.HTML_DATA_DIR_INPUT)
@@ -298,8 +292,6 @@ def run_all_cases(kind_bench, bench_name, run_case_list):
     if os.path.exists(logfile):
         os.remove(logfile)
 
-    nginx_tmp_log_file = None
-
     starttime = datetime.datetime.now()
     if os.path.exists(Folder.caliper_log_file):
         sections = bench_name + " EXECUTION"
@@ -322,21 +314,20 @@ def run_all_cases(kind_bench, bench_name, run_case_list):
                        Folder.caliper_run_log_file),
                     shell=True)
     # for each command in run config file, read the config for the benchmark
-    for i in range(0, len(sections_run)):
-        flag = 0
-        try:
-            command = values[bench_name][sections_run[i]]['command']
-        except Exception:
-            logging.debug("no value for the %s" % sections_run[i])
-            continue
-
-        if os.path.exists(tmp_log_file):
-            os.remove(tmp_log_file)
-
-        # run the command of the benchmarks
-        if sections_run[i] in run_case_list:
+    for section in sections_run:
+        if section in run_case_list:
+            flag = 0
             try:
-                flag = run_client_command(sections_run[i], tmp_log_file, command, bench_name)
+                command = values[bench_name][section]['command']
+            except Exception:
+                logging.debug("no value for the %s" % section)
+                continue
+
+            if os.path.exists(tmp_log_file):
+                os.remove(tmp_log_file)
+            # run the command of the benchmarks
+            try:
+                flag = run_client_command(section, tmp_log_file, command, bench_name)
             except Exception, e:
                 logging.info(e)
                 crash_handle.main()
@@ -369,23 +360,23 @@ def run_all_cases(kind_bench, bench_name, run_case_list):
         else:
             continue
 
-    endtime = datetime.datetime.now()
-    subprocess.call("echo '$$ %s EXECUTION STOP: %s' >> %s"
-                             % (sections_run[i], str(endtime)[:19],
-                                Folder.caliper_log_file), shell=True)
-    subprocess.call("echo '$$ %s EXECUTION DURATION %s Seconds'>>%s"
-                             % (sections_run[i],
-                                (endtime - starttime).seconds,
-                                Folder.caliper_log_file), shell=True)
+        endtime = datetime.datetime.now()
+        subprocess.call("echo '$$ %s EXECUTION STOP: %s' >> %s"
+                                 % (section, str(endtime)[:19],
+                                    Folder.caliper_log_file), shell=True)
+        subprocess.call("echo '$$ %s EXECUTION DURATION %s Seconds'>>%s"
+                                 % (section,
+                                    (endtime - starttime).seconds,
+                                    Folder.caliper_log_file), shell=True)
 
-    subprocess.call("echo '$$ %s RUN STOP: %s' >> %s"
-                             % (sections_run[i], str(endtime)[:19],
-                                Folder.caliper_run_log_file), shell=True)
-    subprocess.call("echo '$$ %s RUN DURATION %s Seconds'>>%s"
-                             % (sections_run[i],
-                                (endtime - starttime).seconds,
-                                Folder.caliper_run_log_file), shell=True)
-    subprocess.call("echo '======================================================'>>%s"% (Folder.caliper_run_log_file), shell=True)
+        subprocess.call("echo '$$ %s RUN STOP: %s' >> %s"
+                                 % (section, str(endtime)[:19],
+                                    Folder.caliper_run_log_file), shell=True)
+        subprocess.call("echo '$$ %s RUN DURATION %s Seconds'>>%s"
+                                 % (section,
+                                    (endtime - starttime).seconds,
+                                    Folder.caliper_run_log_file), shell=True)
+        subprocess.call("echo '======================================================'>>%s"% (Folder.caliper_run_log_file), shell=True)
 
 
 # normalize the commands
@@ -644,27 +635,15 @@ def parser_case(bench_name, parser_file, parser, infile, outfile):
             infp = open(infile, "r")
             outfp = open(outfile, 'a+')
             contents = infp.read()
-
-            if bench_name == "ltp":
-                result = methodToCall(contents, outfp)
-            elif bench_name == "nginx":
+            for content in re.findall("BEGIN TEST(.*?)\[status\]", contents,
+                                      re.DOTALL):
                 try:
                     # call the parser function to filter the output
                     logging.debug("Begining to parser the result of the case")
-                    result = methodToCall(contents, outfp)
+                    result = methodToCall(content, outfp)
                 except Exception, e:
                     logging.info(e)
                     return -5
-            else:
-                for content in re.findall("BEGIN TEST(.*?)\[status\]", contents,
-                                          re.DOTALL):
-                    try:
-                        # call the parser function to filter the output
-                        logging.debug("Begining to parser the result of the case")
-                        result = methodToCall(content, outfp)
-                    except Exception, e:
-                        logging.info(e)
-                        return -5
             outfp.close()
             infp.close()
     fp.close()
@@ -751,22 +730,7 @@ def system_initialise(target):
 
 def caliper_run():
     # get the test cases defined files
-    # config_files = server_utils.get_cases_def_files(target_exec_dir)
-    # logging.debug("the selected configuration are %s" % config_files)
-    config_files = os.path.join(caliper_path.config_files.config_dir, 'cases_config.json')
-    fp = open(config_files, 'r')
-    tool_list = []
-    case_list = yaml.load(fp.read())
-    run_case_list = []
-    for dimension in case_list:
-        for i in range(len(case_list[dimension])):
-            for tool in case_list[dimension][i]:
-                for case in case_list[dimension][i][tool]:
-                    if case_list[dimension][i][tool][case][0] == 'enable':
-                        tool_list.append(tool)
-                        run_case_list.append(case)
-    sections = list(set(tool_list))
-
+    sections, run_case_list = read_config()
     for i in range(0, len(sections)):
         # try to resolve the configuration of the configuration file
         try:
@@ -795,19 +759,8 @@ def caliper_run():
 
 def parsing_run():
     # get the test cases defined files
-    config_files = os.path.join(caliper_path.config_files.config_dir, 'cases_config.json')
-    fp = open(config_files, 'r')
-    tool_list = []
-    case_list = yaml.load(fp.read())
-    for dimension in case_list:
-        for i in range(len(case_list[dimension])):
-            for tool in case_list[dimension][i]:
-                for case in case_list[dimension][i][tool]:
-                    if case_list[dimension][i][tool][case][0] == 'enable':
-                        tool_list.append(tool)
-    sections = list(set(tool_list))
+    sections, run_case_list = read_config()
     dic = {}
-
     for i in range(0, len(sections)):
         dic[sections[i]] = {}
         # try to resolve the configuration of the configuration file
@@ -822,7 +775,7 @@ def parsing_run():
         bench = os.path.join(caliper_path.BENCHS_DIR, sections[i], 'defaults')
 
         try:
-            result = parse_all_cases(bench,sections[i], parser, dic)
+            result = parse_all_cases(bench,sections[i], parser, dic, run_case_list)
         except Exception:
             logging.info("Parsing %s Exception" % sections[i])
             crash_handle.main()
