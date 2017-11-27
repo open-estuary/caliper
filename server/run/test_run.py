@@ -12,28 +12,18 @@ import logging
 import datetime
 import subprocess
 
-import socket
 import yaml
 import threading
-import json
 try:
     import caliper.common as common
 except ImportError:
     import common
-# for ltp
-from caliper.server.hosts import abstract_ssh
-# import caliper.server.utils as server_utils
-# for ltp
-from caliper.server.parser_process import test_perf_tranver as traverse
 from caliper.server import crash_handle
 from caliper.client.shared import error
 from caliper.server import utils as server_utils
-from caliper.client.shared import utils
 from caliper.client.shared import caliper_path
-from caliper.client.shared.settings import settings
 from caliper.server.run import write_results
 from caliper.client.shared.caliper_path import folder_ope as Folder
-from caliper.client.shared.caliper_path import intermediate
 
 
 class myThread(threading.Thread):
@@ -50,6 +40,46 @@ class myThread(threading.Thread):
     def run(self):
         client_thread_func(self.cmd_sec_name, self.server_run_command, self.tmp_logfile,
                            self.kind_bench, self.server)
+
+
+class run_case_thread(threading.Thread):
+    def __init__(self, bench_name, commands):
+        threading.Thread.__init__(self)
+        self.bench_name = bench_name
+        self.commands = commands
+
+    def run(self):
+        returncode = -1
+        output = ''
+        pwd = os.getcwd()
+        TEST_CASE_DIR = caliper_path.config_files.config_dir
+        try:
+            # the commands is multiple lines, and was included by Quotation
+            actual_commands = get_actual_commands(self.commands)
+            try:
+                logging.debug("the actual commands running in local is: %s"
+                              % actual_commands)
+                test_case_dir = os.path.join(caliper_path.BENCHS_DIR, self.bench_name, 'tests')
+                os.chdir(test_case_dir)
+                result = subprocess.call(
+                    'ansible-playbook -i %s/hosts %s.yml -u root>> %s 2>&1' % (
+                        TEST_CASE_DIR, actual_commands, Folder.caliper_run_log_file), stdout=subprocess.PIPE,
+                    shell=True)
+            except error.CmdError, e:
+                raise error.ServRunError(e.args[0], e.args[1])
+        except Exception, e:
+            logging.debug(e)
+        else:
+            if result:
+                returncode = result
+            else:
+                returncode = 0
+            try:
+                output = result
+            except Exception:
+                output = result
+        os.chdir(pwd)
+        return [output, returncode]
 
 
 def get_server_command(kind_bench, section_name):
@@ -244,7 +274,7 @@ def compute_caliper_logs(target_exec_dir, flag=1):
         os.makedirs(caliper_path.HTML_DATA_DIR_OUTPUT)
 
 
-def run_all_cases(kind_bench, bench_name):
+def run_all_cases(kind_bench, bench_name, run_case_list):
     """
     function: run one benchmark which was selected in the configuration files
     """
@@ -304,39 +334,40 @@ def run_all_cases(kind_bench, bench_name):
             os.remove(tmp_log_file)
 
         # run the command of the benchmarks
-        try:
-            flag = run_client_command(sections_run[i], tmp_log_file, command, bench_name)
-        except Exception, e:
-            logging.info(e)
-            crash_handle.main()
-            server_utils.file_copy(logfile, tmp_log_file, 'a+')
-            if os.path.exists(tmp_log_file):
-                os.remove(tmp_log_file)
-
-            run_flag = server_utils.get_fault_tolerance_config(
-                'fault_tolerance', 'run_error_continue')
-            if run_flag == 1:
-                continue
-            else:
-                return result
-        else:
-            server_utils.file_copy(logfile, tmp_log_file, 'a+')
-
-
-            if flag != 1:
-                logging.info("There is wrong when running the command \"%s\""
-                             % command)
-
+        if sections_run[i] in run_case_list:
+            try:
+                flag = run_client_command(sections_run[i], tmp_log_file, command, bench_name)
+            except Exception, e:
+                logging.info(e)
+                crash_handle.main()
+                server_utils.file_copy(logfile, tmp_log_file, 'a+')
                 if os.path.exists(tmp_log_file):
                     os.remove(tmp_log_file)
-                crash_handle.main()
 
                 run_flag = server_utils.get_fault_tolerance_config(
                     'fault_tolerance', 'run_error_continue')
                 if run_flag == 1:
+                    continue
+                else:
                     return result
-            if os.path.exists(tmp_log_file):
-                os.remove(tmp_log_file)
+            else:
+                server_utils.file_copy(logfile, tmp_log_file, 'a+')
+                if flag != 1:
+                    logging.info("There is wrong when running the command \"%s\""
+                                 % command)
+
+                    if os.path.exists(tmp_log_file):
+                        os.remove(tmp_log_file)
+                    crash_handle.main()
+
+                    run_flag = server_utils.get_fault_tolerance_config(
+                        'fault_tolerance', 'run_error_continue')
+                    if run_flag == 1:
+                        return result
+                if os.path.exists(tmp_log_file):
+                    os.remove(tmp_log_file)
+        else:
+            continue
 
     endtime = datetime.datetime.now()
     subprocess.call("echo '$$ %s EXECUTION STOP: %s' >> %s"
@@ -499,7 +530,6 @@ def run_commands(bench_name, commands):
             result = subprocess.call(
                 'ansible-playbook -i %s/hosts %s.yml -u root>> %s 2>&1' % (
                     TEST_CASE_DIR, actual_commands, Folder.caliper_run_log_file), stdout=subprocess.PIPE, shell=True)
-            # result = os.system(actual_commands)
         except error.CmdError, e:
             raise error.ServRunError(e.args[0], e.args[1])
     except Exception, e:
@@ -727,12 +757,14 @@ def caliper_run():
     fp = open(config_files, 'r')
     tool_list = []
     case_list = yaml.load(fp.read())
+    run_case_list = []
     for dimension in case_list:
         for i in range(len(case_list[dimension])):
             for tool in case_list[dimension][i]:
                 for case in case_list[dimension][i][tool]:
                     if case_list[dimension][i][tool][case][0] == 'enable':
                         tool_list.append(tool)
+                        run_case_list.append(case)
     sections = list(set(tool_list))
 
     for i in range(0, len(sections)):
@@ -750,7 +782,7 @@ def caliper_run():
         try:
             # On some platforms, swapoff and swapon command is not able to execute.
             # So this function has been commented
-            result = run_all_cases(bench, sections[i])
+            result = run_all_cases(bench, sections[i], run_case_list)
         except Exception, e:
             logging.info(e)
             logging.info("Running %s Exception" % sections[i])
