@@ -2,3 +2,7 @@
   roles:
   - start-client
 
+- hosts: multiserver
+  roles:
+  - end-server
+

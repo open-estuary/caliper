@@ -1,8 +1,0 @@
-- name: copy file
-  copy: src=nginx_src.tar.gz dest=/tmp/nginx_src.tar.gz owner=root group=root mode=0755
-
-- name: tar file
-  shell: cd /tmp && tar xvf nginx_src.tar.gz && rm -rf nginx_src.tar.gz
-
-- name: run install
-  shell: "cd /tmp/nginx_src && chmod 777 install.sh && ./install.sh"

@@ -1,6 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 
 TOPDIR=`pwd`
+echo "$TOPDIR XINGKAI"
 
 LIBEV=libev.tar.gz
 LIBEV_DIR=libev
@@ -22,7 +23,8 @@ mkdir -p build
 
 if [ ! -d build/$LIBEV_DIR ]; then
 	if [ ! -f pkg/$LIBEV ]; then
-		git clone $LIBEV_URL build/$LIBEV_DIR
+#		git clone $LIBEV_URL build/$LIBEV_DIR
+                echo
 	else
 		tar xf pkg/$LIBEV -C build
 	fi
@@ -32,6 +34,8 @@ pushd build/$LIBEV_DIR
 ./configure --prefix=$LIBEV_PATH
 make && make install
 popd
+
+cp /dev/null scripts/profile
 
 if libev_is_install; then
 	echo "export LIBEV_PATH=$LIBEV_PATH" >> scripts/profile
