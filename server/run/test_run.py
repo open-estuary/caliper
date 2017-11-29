@@ -80,47 +80,6 @@ class run_case_thread(threading.Thread):
         os.chdir(pwd)
         return [output, returncode]
 
-
-def get_server_command(kind_bench, section_name):
-    server_config_file = ''
-
-    server_config_file = server_utils.get_server_cfg_path(kind_bench)
-    if server_config_file != '':
-        server_config, server_sections = \
-            server_utils.read_config_file(server_config_file)
-        if section_name in server_sections:
-            try:
-                command = server_config.get(section_name, 'command')
-                logging.debug("command is %s" % command)
-                return command
-            except:
-                return None
-        else:
-            return None
-    else:
-        return None
-
-
-def get_nginx_client_command(kind_bench, section_name, command_field):
-    application_config_file = ''
-
-    application_config_file = server_utils.get_application_cfg_path(kind_bench)
-    if application_config_file != '':
-        server_config, server_sections = \
-            server_utils.read_config_file(application_config_file)
-        if section_name in server_sections:
-            try:
-                command = server_config.get(section_name, command_field)
-                logging.debug("command is %s" % command)
-                return command
-            except:
-                return None
-        else:
-            return None
-    else:
-        return None
-
-
 def read_config():
     config_files = os.path.join(caliper_path.config_files.config_dir, 'cases_config.json')
     fp = open(config_files, 'r')

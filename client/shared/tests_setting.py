@@ -19,34 +19,6 @@ class CfgsSelector(object):
     def __int__(self, arch):
         self.arch = arch
 
-    """ For 'android', we need to read the 'common_cases_def.cfg' and
-        'android_case_def.cfg';
-        For 'arm', need to read the 'common_case_def.cfg' and
-        'arm_cases_def.cfg';
-        For 'x86', need to read the 'common_case_def.cfg' and
-        'server_cases_def.cfg'.
-    """
-    def get_cases_def_files(self):
-        cfg_files = []
-        cases_tail = "_cases_def.cfg"
-        common_cfg = "common" + cases_tail
-        common_cfg_path = os.path.join(
-                                caliper_path.config_files.tests_cfg_dir,
-                                common_cfg)
-        cfg_files.append(common_cfg_path)
-        if (self.arch == 'arm_32'):
-            other_cfg = "arm" + cases_tail
-        elif (self.arch == 'android'):
-            other_cfg = "android" + cases_tail
-        elif (self.arch == 'arm_64'):
-            other_cfg = "server" + cases_tail
-        else:
-            other_cfg = 'server' + cases_tail
-        other_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir,
-                                        other_cfg)
-        cfg_files.append(other_cfg_path)
-        return cfg_files
-
 class BaseCfg(object):
     def __init__(self, config_file):
         self.config_file = config_file
@@ -110,21 +82,3 @@ def get_real_files(location, filename):
     else:
         return last_name
 
-
-def get_bench_info(config_file, bench_name):
-    baseCfg = BaseCfg(config_file)
-    try:
-        build_file = baseCfg.get_value(bench_name, 'build')
-        run_config = baseCfg.get_value(bench_name, 'run')
-        parser_file = baseCfg.get_value(bench_name, 'parser')
-        location = baseCfg.config_file.strip().split("/")[-1].split["_"][0]
-    except Exception:
-        logging.debug("There is error with the config file: %s" % config_file)
-        raise
-    else:
-        location = os.path.join(caliper_path.config_files.tests_cfg_dir,
-                                    location)
-        build_file = get_real_files(location, build_file)
-        run_config = get_real_files(location, run_config)
-        parser_file = get_real_files(location, parser_file)
-    return build_file, run_config, parser_file

@@ -34,7 +34,6 @@ SERVER_SYNC_FILE_SRC=os.path.join(CALIPER_DIR,'client','server.py')
 
 caliper_output = os.path.join(os.environ['HOME'], 'caliper_output', 'configuration')
 caliper_config_file = os.path.join(caliper_output,'config')
-caliper_test_def = os.path.join(caliper_output,'test_cases_cfg')
 TIMP_STAMP = datetime.datetime.now().strftime("%y-%m-%d_%H-%M-%S")
 
 
@@ -237,7 +236,6 @@ class ConfigFile(Singleton):
                 self.name = CALIPER_DIR
 
     def setup_path(self):
-        self.tests_cfg_dir = os.path.join(self.name, 'test_cases_cfg')
         self.config_dir = os.path.join(self.name, 'config')
 
 config_files = ConfigFile()

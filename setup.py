@@ -130,7 +130,6 @@ def run():
     caliper_output = os.path.join(os.environ['HOME'], 'caliper_output')
     caliper_configuration = os.path.join(caliper_output,'configuration')
     caliper_config_file = os.path.join(caliper_configuration,'config')
-    caliper_test_def = os.path.join(caliper_configuration,'test_cases_def')
     if os.path.exists(caliper_tmp_dir):
         shutil.rmtree(caliper_tmp_dir)
 

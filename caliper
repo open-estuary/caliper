@@ -219,25 +219,6 @@ def normalize_scores():
     write_results.yaml_filter(caliper_path.HTML_DATA_DIR_INPUT)
     return
 
-def check_nginx_tool():
-    flag = -1
-    cfg_files = []
-    cases_tail = "_cases_def.cfg"
-
-    application_cfg = "application" + cases_tail
-    application_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir,
-                                    application_cfg)
-    cfg_files.append(application_cfg_path)
-    config = ConfigParser.ConfigParser()
-    config.read(cfg_files)
-    sections = config.sections()
-
-    for i in range(0, len(sections)):
-        if sections[i] == 'nginx':
-            flag = 1
-            return flag
-                                                                                        
-    return flag
 
 if __name__=="__main__":
     parser = ArgumentParser(version=common.VERSION)
@@ -311,12 +292,6 @@ if __name__=="__main__":
     if args.config_file:
         caliper_path.config_files.name = args.config_file
         caliper_path.config_files.setup_path()
-        if not os.path.exists(caliper_path.config_files.tests_cfg_dir):
-            logging.info("The tests_cfg_dir does not exists.")
-            sys.exit()
-        if not os.path.exists(caliper_path.config_files.config_dir):
-            logging.info("The config_dir does not exists.")
-            sys.exit()
         settings.set_config_files(os.path.join(
                                 caliper_path.config_files.config_dir,
                                 'client_config.cfg'
@@ -324,9 +299,6 @@ if __name__=="__main__":
     else:
         caliper_path.config_files.name = caliper_path.folder_ope.workspace
         caliper_path.config_files.setup_path()
-        if not os.path.exists(caliper_path.folder_ope.workspace +"/test_cases_cfg"):
-            shutil.copytree(caliper_path.caliper_test_def, caliper_path.folder_ope.workspace + "/test_cases_cfg")
-
         if not os.path.exists(caliper_path.folder_ope.workspace + "/config"):
             shutil.copytree(caliper_path.caliper_config_file, caliper_path.folder_ope.workspace + "/config")
 
@@ -341,25 +313,6 @@ if __name__=="__main__":
     remote_host = get_remote_host()
 
     if args.build or args.run:
-        cfg_files = []
-        cases_tail = "_cases_def.cfg"
-
-        # check for "server" category tools
-        server_cfg = "server" + cases_tail
-        server_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir,
-                                        server_cfg)
-        cfg_files.append(server_cfg_path)
-
-        # check for "application" category tools
-        application_cfg = "application" + cases_tail
-        application_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir,
-                                        application_cfg)
-        cfg_files.append(application_cfg_path)
-        config = ConfigParser.ConfigParser()
-        config.read(cfg_files)
-        sections = config.sections()
-        nTitleSect = len(sections)
-
         if args.build:
             try:
                 clear = 0

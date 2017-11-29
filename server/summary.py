@@ -31,15 +31,18 @@ def write_file(filename, content):
     fp.close()
 
 
-def get_selected_tools(summary_file, target):
-    selected_tools = []
-    config_files = server_utils.get_cases_def_files(target)
-
-    for i in range(0, len(config_files)):
-        config_file = os.path.join(config_files[i])
-        config, sections = server_utils.read_config_file(config_file)
-        if len(sections):
-            selected_tools.extend(sections)
+def get_selected_tools():
+    config_files = os.path.join(caliper_path.config_files.config_dir, 'cases_config.json')
+    fp = open(config_files, 'r')
+    tool_list = []
+    case_list = yaml.load(fp.read())
+    for dimension in case_list:
+        for i in range(len(case_list[dimension])):
+            for tool in case_list[dimension][i]:
+                for case in case_list[dimension][i][tool]:
+                    if case_list[dimension][i][tool][case][0] == 'enable':
+                        tool_list.append(tool)
+    selected_tools = list(set(tool_list))
     return selected_tools
 
 
@@ -107,7 +110,7 @@ def get_exec_tools(selected_tools):
 
 
 def write_summary_tools(summary_file, target):
-    selected_tools = get_selected_tools(summary_file, target)
+    selected_tools = get_selected_tools()
     if len(selected_tools):
         selected_num = "\nNum of tools selected: %s" % len(selected_tools)
         write_file(summary_file, selected_num)
@@ -141,7 +144,7 @@ def write_info_for_tools(filename, target):
     exec_partial_info = "Tool %s : Execution Partial PASS\n"
     exec_fail_info = "Tool %s : Execution Fail\n"
 
-    selected_tools = get_selected_tools(filename, target)
+    selected_tools = get_selected_tools()
     if not len(selected_tools):
         return
     [build_suc_tools, build_fail_tools] = get_builded_tools()
