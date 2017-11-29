@@ -1,7 +1,7 @@
 fio:
   fio randread bw:
     category: 'Performance storage bandwidth fio_randread'
-    scores_way: compute_speed_score 1.5'
+    scores_way: 'compute_speed_score 1.5'
     command: 'randread_bw'
     parser: 'bw_parser'
   fio randread iops:
