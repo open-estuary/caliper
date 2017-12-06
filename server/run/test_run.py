@@ -275,6 +275,16 @@ def run_all_cases(kind_bench, bench_name, run_case_list):
     # for each command in run config file, read the config for the benchmark
     for section in sections_run:
         if section in run_case_list:
+            num = 1
+            config_files = os.path.join(caliper_path.config_files.config_dir, 'cases_config.json')
+            fp = open(config_files, 'r')
+            case_list = yaml.load(fp.read())
+            for dimension in case_list:
+                for i in range(len(case_list[dimension])):
+                    for tool in case_list[dimension][i]:
+                        for case in case_list[dimension][i][tool]:
+                            if case == section:
+                                num = case_list[dimension][i][tool][case][-1]
             flag = 0
             try:
                 command = values[bench_name][section]['command']
@@ -285,8 +295,11 @@ def run_all_cases(kind_bench, bench_name, run_case_list):
             if os.path.exists(tmp_log_file):
                 os.remove(tmp_log_file)
             # run the command of the benchmarks
+
             try:
-                flag = run_client_command(section, tmp_log_file, command, bench_name)
+                for j in range(int(num)):
+                    subprocess.call("echo 'the %s time'>>%s" % (j, Folder.caliper_run_log_file), shell=True)
+                    flag = run_client_command(section, tmp_log_file, command, bench_name)
             except Exception, e:
                 logging.info(e)
                 crash_handle.main()

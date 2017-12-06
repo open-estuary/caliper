@@ -118,7 +118,6 @@ def create_dir():
     if not os.path.exists(TEMPLATE_DATA_DIR):
         create_folder(TEMPLATE_DATA_DIR)
 
-
 if not judge_caliper_installed():
     # This means caliper is not installed and execution will be local.
     # Output folders are created with in the local directory structure.
@@ -214,8 +213,6 @@ class Folder(Singleton):
         self.final_parser = os.path.join(self.workspace, self.name,'final_parsing_logs.yaml')
         self.yaml_dir = os.path.join(self.results_dir, 'yaml')
         self.html_dir = os.path.join(self.results_dir, 'html')
-
-
 
 folder_ope = Folder()
 folder_ope.set_up_path()
