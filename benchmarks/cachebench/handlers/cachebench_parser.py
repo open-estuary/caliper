@@ -44,7 +44,7 @@ def cachebench_write_parser(content, outfp):
 
 def cachebench_modify_parser(content, outfp):
     score = -1
-    score = get_average_value(content, outfp, "cachebench(.*)-b")
+    score = get_average_value(content, outfp, "cachebench(.*)-M")
     outfp.write("read/mdify/write bandwidth: " + str(score) + '\n')
     return score
 
