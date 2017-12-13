@@ -1,0 +1,8 @@
+- name: copy file
+  copy: src=unixbench.tar.gz dest=/tmp/unixbench.tar.gz mode=0777
+
+- name: tar file
+  shell: cd /tmp && tar xvf unixbench.tar.gz && rm -rf unixbench.tar.gz
+
+- name: run install
+  shell: "cd /tmp/unixbench && ./install.sh"

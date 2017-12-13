@@ -1,0 +1,13 @@
+- name: copy file
+  copy: src=qperf-0.4.9.tar.gz dest=/tmp/qperf-0.4.9.tar.gz mode=0777
+
+- name: tar file
+  shell: cd /tmp && tar xvf qperf-0.4.9.tar.gz && rm -rf qperf-0.4.9.tar.gz
+
+- name: run install
+  shell: "cd /tmp/qperf-0.4.9 && ./install.sh"
+  ignore_errors: yes
+
+- name: copy qperf to /usr/bin
+  shell: "cp /tmp/build.qperf/src/qperf /usr/bin"
+  ignore_errors: yes

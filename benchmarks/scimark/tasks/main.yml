@@ -1,0 +1,8 @@
+- name: copy file
+  copy: src=scimark.tar.gz dest=/tmp/scimark.tar.gz mode=0777
+
+- name: tar file
+  shell: cd /tmp && tar xvf scimark.tar.gz && rm -rf scimark.tar.gz
+
+- name: run install
+  shell: "cd /tmp/scimark && ./install.sh"

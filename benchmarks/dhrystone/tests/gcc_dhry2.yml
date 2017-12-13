@@ -1,0 +1,21 @@
+
+- hosts: Device
+  tasks:
+    - name: remove latest data
+      file:
+        path: /tmp/dhrystone_output.log
+        state: absent
+
+    - name: run dhrystone
+      shell: cd /tmp/dhrystone && ./gcc_dry2 1000000000
+      register: logdata
+      ignore_errors: yes
+
+    - lineinfile: create=yes  dest=/tmp/dhrystone_output.log line="{{ logdata.stdout }}" state=present
+
+
+    - name: fetch result
+      fetch:
+        src: /tmp/dhrystone_output.log
+        dest: /tmp/dhrystone_output.log
+        flat: yes

@@ -1,0 +1,7 @@
+- hosts: Device
+  roles:
+  - ../../netperf
+
+- hosts: TestNode
+  roles:
+  - ../../netperf

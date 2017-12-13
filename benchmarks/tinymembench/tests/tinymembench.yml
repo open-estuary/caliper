@@ -1,0 +1,21 @@
+
+- hosts: Device
+  tasks:
+    - name: remove latest data
+      file:
+        path: /tmp/tinymembench_output.log
+        state: absent
+
+    - name: run tinymembench
+      shell: cd /tmp/tinymembench && ./tinymembench
+      register: logdata
+      ignore_errors: yes
+
+    - lineinfile: create=yes  dest=/tmp/tinymembench_output.log line="{{ logdata.stdout }}" state=present
+
+
+    - name: fetch result
+      fetch:
+        src: /tmp/tinymembench_output.log
+        dest: /tmp/tinymembench_output.log
+        flat: yes

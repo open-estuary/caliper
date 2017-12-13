@@ -1,0 +1,21 @@
+
+- hosts: Device
+  tasks:
+    - name: remove latest data
+      file:
+        path: /tmp/openblas_output.log
+        state: absent
+
+    - name: run openblas_core_64
+      shell: "cd /tmp/OpenBLAS/benchmark && export OPENBLAS_NUM_THREADS=64 && taskset -c 0-63 ./sgemm.goto 200 4000 200"
+      register: logdata
+      ignore_errors: yes
+
+    - lineinfile: create=yes  dest=/tmp/openblas_output.log line="{{ logdata.stdout+logdata.stderr }}" state=present
+
+
+    - name: fetch result
+      fetch:
+        src: /tmp/openblas_output.log
+        dest: /tmp/openblas_output.log
+        flat: yes

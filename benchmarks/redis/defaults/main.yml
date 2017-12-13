@@ -1,0 +1,9 @@
+---
+# defaults file for redis
+redis:
+  Instance_1:
+    category: 'Performance application redis_Instance_01'
+    scores_way: 'exp_score_compute 5 -0.5'
+    scores_way1: 'compute_speed_score 3'
+    command: 'run'
+    parser: 'redis_parser'

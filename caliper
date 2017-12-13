@@ -14,6 +14,8 @@ import commands
 import subprocess
 import glob
 import ConfigParser
+import getpass
+import yaml
 
 from argparse import ArgumentParser
 
@@ -41,8 +43,9 @@ from caliper.server.parser_process import hardware
 from caliper.server.parser_process import performance_functional
 from caliper.client.shared.caliper_path import intermediate
 
+from caliper.upload import upload
 
-logging.basicConfig(level=logging.INFO)
+
 def build_all_tests(remote_host,f_option,clear):
     try:
         logging.info("Begining to build Caliper for the remote host")
@@ -93,10 +96,10 @@ def populate_excels():
     except Exception as e:
        logging.info(e)
 
-def run_caliper(remote_host, server_host, f_option, nginx_clients=None):
+def run_caliper(f_option):
     try:
         logging.debug("begining to run Caliper")
-        result = test_run.run_caliper_tests(remote_host, server_host, f_option, nginx_clients)
+        result = test_run.run_caliper_tests(f_option)
     except Exception, e:
         print e
         logging.info("There is wrong when running Caliper")
@@ -104,10 +107,10 @@ def run_caliper(remote_host, server_host, f_option, nginx_clients=None):
     else:
         return result
 
-def parser_caliper_logs(remote_host,f_option):
+def parser_caliper_logs(f_option):
     try:
         logging.debug("begining to Parse Caliper Logs")
-        result = test_run.parser_caliper_tests(remote_host,f_option)
+        result = test_run.parser_caliper_tests(f_option)
     except Exception, e:
         print e
         logging.info("There is wrong when parsing Caliper")
@@ -121,110 +124,39 @@ def parser_caliper(remote_host):
         parser_engine.parser_caliper(remote_host)
     except Exception, e:
         logging.info("There is wrong when parsering the caliper result")
-        raise 
+        raise
+
+def copy_yaml(remote_host):
+    '''
+    copy yaml to corresponding dirs under caliper_output
+    :param remote_host: target machine
+    :return: None
+    '''
+    try:
+        logging.debug("begining to copy the result of caliper")
+        parser_engine.copy_file(remote_host)
+    except Exception, e:
+        logging.info("There is wrong when copy the caliper result")
+
+def get_remote_url():
+    try:
+        server_num = settings.get_value('Caliperweb', 'server_num', type=int)
+    except Exception, e:
+        server_num = 0
+    try:
+        server_ip1 = settings.get_value('Caliperweb', 'server_ip1', type=str)
+    except Exception, e:
+        server_ip1 = ""
+    return server_ip1
 
 def get_remote_host():
-    try:
-        client_ip = settings.get_value('TARGET', 'ip', type=str)
-    except Exception, e:
-        client_ip = '127.0.0.1'
-    try:
-        port = settings.get_value('TARGET', 'port', type=int)
-    except Exception, e:
-        port = 22
-    try:
-        user = settings.get_value('TARGET', 'user', type=str)
-    except Exception, e:
-        user = os.getlogin()
-    try:
-        password = settings.get_value('TARGET', 'password', type=str)
-    except Exception, e:
-        raise error.ServRunError(e.args[0], e.args[1])
-
-    remote_host = host_factory.create_host(client_ip, user, password, port)
-    return remote_host
-
-def get_server_host():
-    try:
-        client_ip = settings.get_value('TestNode', 'ip', type=str)
-    except Exception, e:
-        client_ip = '127.0.0.1'
-
+    client_ip = '127.0.0.1'
     port = 22
-    try:
-        user = settings.get_value('TestNode', 'user', type=str)
-    except Exception, e:
-        user = os.getlogin()
-    try:
-        password = settings.get_value('TestNode', 'password', type=str)
-    except Exception, e:
-        raise error.ServRunError(e.args[0], e.args[1])
+    user = getpass.getuser()
+    password = ''
 
     remote_host = host_factory.create_host(client_ip, user, password, port)
     return remote_host
-
-
-def get_nginx_clients():
-    dic = {}
-
-    try:
-        no_of_clients = settings.get_value('nginx', 'no_of_clients', type=str)
-    except Exception, e:
-        logging.info("give clients in nginx")
-
-    filename = caliper_path.folder_ope.workspace + "/config" + "/client_config.cfg"
-
-    fp = open(filename,"r")
-    content = fp.read()
-
-    for i in range(1, int(no_of_clients)+1):
-        try:
-            temp_ip = re.findall("(client\_%d\_ip):.*?" % i, content)
-        except Exception, e:
-            logging.info("Please give client %d ip field in client_config.cfg file" %i)
-            sys.exit(1)
-
-        ip = temp_ip[0]
-
-        try:
-            client_ip = settings.get_value('nginx', ip , type=str)
-            logging.debug("client %d ip = %s" % (i, client_ip))
-        except Exception, e:
-            client_ip = '127.0.0.1'
-
-        port = 22
-    
-        try:
-            temp_user = re.findall("(client\_%d\_user):.*?" % i, content)
-        except Exception, e:
-            logging.info("Please give client %d user field in client_config.cfg file" %i)
-            sys.exit(1)
-
-	user = temp_user[0]
-
-        try:
-            client_user = settings.get_value('nginx', user, type=str)
-        except Exception, e:
-            client_user = os.getlogin()
-
-        try:
-            temp_password = re.findall("(client\_%d\_password):.*?" % i, content)
-        except Exception, e:
-            logging.info("Please give client %d password field in client_config.cfg file" %i)
-            sys.exit(1)
-
-	password = temp_password[0]
-
-        try:
-            client_password = settings.get_value('nginx', password, type=str)
-        except Exception, e:
-            raise error.ServRunError(e.args[0], e.args[1])
-
-        dic[str(i)] = host_factory.create_host(client_ip, client_user, client_password, port)
-
-    fp.close()
-
-    return dic
 
 def kill_django(pid):
     children = commands.getoutput("ps --ppid=%d -o pid=" % pid).split()
@@ -247,7 +179,7 @@ def generate_web_tar():
             subprocess.call( "cd %s; python manage.py migrate --fake; cd -" %
                     caliper_path.FRONT_END_DIR, shell=True )
             return_code = subprocess.call("cd %s; python\
-                    manage.py runserver --noreload 1>/dev/null 2>&1 & " %
+                    manage.py runserver 8001 --noreload 1>/dev/null 2>&1 & " %
                     caliper_path.FRONT_END_DIR, shell=True)
         except Exception as e:
             raise e
@@ -259,7 +191,7 @@ def generate_web_tar():
         try:
             logging.info("Generating the webpages which are test results")
             subprocess.call("wget -r -p -k -np\
-                    http://127.0.0.1:8000 -P %s -q" % RESULT_DIR,
+                    http://127.0.0.1:8001 -P %s -q" % RESULT_DIR,
                     shell=True)
             test_dir = os.path.join(RESULT_DIR, 'test_results')
             if os.path.exists( test_dir ):
@@ -270,7 +202,7 @@ def generate_web_tar():
                     shutil.rmtree(test_dir)
                 except:
                     os.remove(test_dir)
-            subprocess.call("cd %s; mv 127.0.0.1:8000 test_results; tar\
+            subprocess.call("cd %s; mv 127.0.0.1:8001 test_results; tar\
                     czf test_results.tar.gz test_results; rm -fr\
                     test_results" % RESULT_DIR, shell=True)
         except Exception as e:
@@ -287,28 +219,24 @@ def normalize_scores():
     write_results.yaml_filter(caliper_path.HTML_DATA_DIR_INPUT)
     return
 
-def check_nginx_tool():
-    flag = -1
-    cfg_files = []
-    cases_tail = "_cases_def.cfg"
-
-    application_cfg = "application" + cases_tail
-    application_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir,
-                                    application_cfg)
-    cfg_files.append(application_cfg_path)
-    config = ConfigParser.ConfigParser()
-    config.read(cfg_files)
-    sections = config.sections()
-
-    for i in range(0, len(sections)):
-        if sections[i] == 'nginx':
-            flag = 1
-            return flag
-                                                                                        
-    return flag
+def read_config():
+    config_files = os.path.join(caliper_path.config_files.config_dir, 'cases_config.json')
+    fp = open(config_files, 'r')
+    tool_list = []
+    run_case_list = []
+    case_list = yaml.load(fp.read())
+    for dimension in case_list:
+        for i in range(len(case_list[dimension])):
+            for tool in case_list[dimension][i]:
+                for case in case_list[dimension][i][tool]:
+                    if case_list[dimension][i][tool][case][0] == 'enable':
+                        tool_list.append(tool)
+                        run_case_list.append(case)
+    sections = list(set(tool_list))
+    return sections, run_case_list
 
 if __name__=="__main__":
-    parser = ArgumentParser()
+    parser = ArgumentParser(version=common.VERSION)
     parser.add_argument("-b", "--build", action="store_true",
             dest="build", default=True,help="select to incrementally build the selected test tools")
     parser.add_argument("-B", "--nobuild", action="store_false",
@@ -335,8 +263,34 @@ if __name__=="__main__":
             default="", help="assign a folder to store the results")
     parser.add_argument("-C", "--config", action="store", dest="config_file",
             default="", help="specify the location of config file")
+    parser.add_argument("-l", "--benchmarklist", action="store_true", dest="benchmarklist", default=False,
+                        help="display support benchmark list")
+    parser.add_argument("-d", "--debug", action="store_true", dest="debug", default=False,help="debug mode")
+
     args = parser.parse_args()
     start_time = datetime.datetime.now()
+
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
+
+    config_files = os.path.join(caliper_path.config_files.config_dir, 'cases_config.json')
+    fp = open(config_files, 'r')
+    tool_list = []
+    case_list = yaml.load(fp.read())
+    dimension_list = {}
+    for dimension in case_list:
+        dimension_list[dimension] = []
+        for i in range(len(case_list[dimension])):
+            for tool in case_list[dimension][i]:
+                dimension_list[dimension].append(tool)
+    if args.benchmarklist:
+        for dimen in dimension_list:
+            print dimen + ':'
+            for tool in dimension_list[dimen]:
+                print '    '+tool
+        sys.exit()
 
     f_option = 0
     if args.folder:
@@ -359,12 +313,6 @@ if __name__=="__main__":
     if args.config_file:
         caliper_path.config_files.name = args.config_file
         caliper_path.config_files.setup_path()
-        if not os.path.exists(caliper_path.config_files.tests_cfg_dir):
-            logging.info("The tests_cfg_dir does not exists.")
-            sys.exit()
-        if not os.path.exists(caliper_path.config_files.config_dir):
-            logging.info("The config_dir does not exists.")
-            sys.exit()
         settings.set_config_files(os.path.join(
                                 caliper_path.config_files.config_dir,
                                 'client_config.cfg'
@@ -372,9 +320,6 @@ if __name__=="__main__":
     else:
         caliper_path.config_files.name = caliper_path.folder_ope.workspace
         caliper_path.config_files.setup_path()
-        if not os.path.exists(caliper_path.folder_ope.workspace +"/test_cases_cfg"):
-            shutil.copytree(caliper_path.caliper_test_def, caliper_path.folder_ope.workspace + "/test_cases_cfg")
-
         if not os.path.exists(caliper_path.folder_ope.workspace + "/config"):
             shutil.copytree(caliper_path.caliper_config_file, caliper_path.folder_ope.workspace + "/config")
 
@@ -385,46 +330,10 @@ if __name__=="__main__":
 
     caliper_path.create_dir()
 
-    if args.webpage != True:
-        remote_host = get_remote_host()
+    # if args.webpage != True:
+    remote_host = get_remote_host()
 
     if args.build or args.run:
-
-        nginx_clients = None
-        flag = check_nginx_tool()
-        if flag == 1:
-            nginx_clients = get_nginx_clients()
-
-    	cfg_files = []
-    	cases_tail = "_cases_def.cfg"
-
-	# check for "server" category tools
-        server_cfg = "server" + cases_tail
-    	server_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir,
-                                        server_cfg)
-    	cfg_files.append(server_cfg_path)
-
-	# check for "application" category tools
-        application_cfg = "application" + cases_tail
-        application_cfg_path = os.path.join(caliper_path.config_files.tests_cfg_dir,
-                                        application_cfg)
-        cfg_files.append(application_cfg_path)
-
-        config = ConfigParser.ConfigParser()
-        config.read(cfg_files)
-        sections = config.sections()
-        nTitleSect = len(sections)
-
-        server_host=None
-
-	# copy server.py script only for server category tools and redis tool
-        if nTitleSect>0:
-            server_host = get_server_host()
-            try:
-                build.copy_gen_to_server(server_host,caliper_path.SERVER_SYNC_FILE_SRC)
-            except Exception as e:
-                logging.warn("put %s %s" % (caliper_path.SERVER_SYNC_FILE_SRC,e))
-
         if args.build:
             try:
                 clear = 0
@@ -435,17 +344,15 @@ if __name__=="__main__":
                     sys.exit()
             except Exception, e:
                 raise
-                sys.exit()
 
-        if args.run: 
+        if args.run:
             try:
-                result2 = run_caliper(remote_host, server_host, f_option, nginx_clients)
+                result2 = run_caliper(f_option)
                 if result2:
                     sys.exit()
 
             except Exception:
                 raise
-                sys.exit()
 
             end_time = datetime.datetime.now()
             interval = end_time - start_time
@@ -456,19 +363,19 @@ if __name__=="__main__":
 
     if args.parse:
         try:
-            result2 = parser_caliper_logs(remote_host, f_option)
+            result2 = parser_caliper_logs(f_option)
             if result2:
                sys.exit()
             result2 = test_run.compute_caliper_logs(remote_host,1)
         except Exception:
             raise
-            sys.exit()
-
     if args.score:
         try:
             result2 = test_run.compute_caliper_logs(remote_host,2)
             if intermediate:
                 parser_caliper(remote_host)
+            # copy yaml to corresponding dirs under caliper_out
+            copy_yaml(remote_host)
         except Exception as e:
             print e
             pass
@@ -477,21 +384,37 @@ if __name__=="__main__":
         try:
             populate_excels()
 
-	    # filter all the test cases to get only the common test cases passed in all the plaforms. other test cases marked as INVALID.
+            # filter all the test cases to get only the common test cases passed in all the plaforms. other test cases marked as INVALID.
             flag = normalize_scores()
 
-	    # Reads one value from all the plaforms and then compares this values with each other to rank them. This is done for all the values in the yaml files. These new values are writed to _score_post.yaml. 
+            # Reads one value from all the plaforms and then compares this values with each other to rank them. This is done for all the values in the yaml files. These new values are writed to _score_post.yaml.
             write_results.normalize_caliper()
 
-	    # computes the score i.e TOTAL_SCORE in the form of 100% for each section in the newly generated _post.yaml and _post.json files. _post.yaml file is to be used for image creation and _post.json file is to be used for table creation in HTML report.
+            # computes the score i.e TOTAL_SCORE in the form of 100% for each section in the newly generated _post.yaml and _post.json files. _post.yaml file is to be used for image creation and _post.json file is to be used for table creation in HTML report.
             normalize.normalise()
         except Exception as e:
             print e
-            sys.exit()
-        flag = generate_web_tar()
+            # sys.exit()
+        # flag = generate_web_tar()
+        try:
+            local_url = "127.0.0.1:8000"
+            logging.info("local upload start")
+            upload.upload_result(remote_host,local_url)
+            logging.info("local upload end")
+        except:
+            pass
+        try:
+            remote_url = get_remote_url()
+            if remote_url:
+                remote_url += ":8000"
+                logging.info("remote upload start")
+                upload.upload_result(remote_host,remote_url)
+                logging.info("remote upload end")
+        except:
+            pass
 
     if args.webpage and args.send_email:
-        flag = generate_web_tar()
+        # flag = generate_web_tar()
         result_path = os.path.join(caliper_path.folder_ope.results_dir,
                 'test_results.tar.gz')
         if os.path.exists(result_path):

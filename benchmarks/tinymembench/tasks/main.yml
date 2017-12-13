@@ -1,0 +1,8 @@
+- name: copy file
+  copy: src=tinymembench.tar.gz dest=/tmp/tinymembench.tar.gz mode=0777
+
+- name: tar file
+  shell: cd /tmp && tar xvf tinymembench.tar.gz && rm -rf tinymembench.tar.gz
+
+- name: run install
+  shell: "cd /tmp/tinymembench && ./install.sh"

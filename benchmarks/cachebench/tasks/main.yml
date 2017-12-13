@@ -1,0 +1,8 @@
+- name: copy file
+  copy: src=cachebench.tar.gz dest=/tmp/cachebench.tar.gz mode=0777
+
+- name: tar file
+  shell: cd /tmp && tar xvf cachebench.tar.gz && rm -rf cachebench.tar.gz
+
+- name: run install
+  shell: "cd /tmp/cachebench && ./install.sh"

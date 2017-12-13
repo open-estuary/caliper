@@ -1,0 +1,28 @@
+---
+- name: remove latest data
+  file:
+    path: /tmp/nginx_output.log
+    state: absent
+
+- name: diff nginx
+  shell: "echo {{ groups['TestNode'][0] }} >> /tmp/nginx_output.log"
+
+- name: run nginx
+  shell: "~/caliper_output/caliper/benchmarks/nginx/install/bin/httpress -n 10000 -c 100 -t 4 http://{{ groups['Device'][0] }}/index.html >> /tmp/nginx_output.log"
+
+- name: fetch result
+  fetch:
+    src: /tmp/nginx_output.log
+    dest: /tmp/nginx_output.log
+    flat: yes
+
+- name: del nginx on client
+  shell: "rm -rf {{ home}}/caliper_output"
+  become: true
+  become_method: sudo
+  become_user: root
+
+
+
+
+

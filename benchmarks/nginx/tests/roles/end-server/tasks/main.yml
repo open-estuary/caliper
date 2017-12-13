@@ -1,0 +1,24 @@
+---
+- name: del nginx build on server
+  shell: "rm -rf {{ home}}/caliper_output/caliper/benchmarks/nginx/build"
+  become: true
+  become_method: sudo
+  become_user: root
+
+- name: del nginx install on server
+  shell: "rm -rf {{ home}}/caliper_output/caliper/benchmarks/nginx/install"
+  become: true
+  become_method: sudo
+  become_user: root
+
+
+- name: del nginx profile on server
+  shell: "rm -rf {{ home}}/caliper_output/caliper/benchmarks/nginx/scripts/profile"
+  become: true
+  become_method: sudo
+  become_user: root
+
+
+
+
+

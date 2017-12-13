@@ -1,0 +1,22 @@
+---
+- name: start nginx-server on server 
+  command: sh {{ home }}/caliper_output/caliper/benchmarks/nginx/start-server.sh
+  become: true
+  become_method: sudo
+  become_user: root
+
+#- name: start nginx-server on server 2
+#  command: "/home/ts/caliper_output/caliper/benchmarks/nginx/install/sbin/nginx -s stop"
+#  become: true
+#  become_method: sudo
+#  become_user: root
+
+#- name: start nginx-server on server 3
+#  command: "{{ home }}/caliper_output/caliper/benchmarks/nginx/install/sbin/nginx -c {{ home }}/caliper_output/caliper/benchmarks/nginx/install/conf/#nginx.conf.webserver"
+#  become: true
+#  become_method: sudo
+#  become_user: root
+
+
+
+

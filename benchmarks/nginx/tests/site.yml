@@ -1,0 +1,13 @@
+---
+- hosts: multiclient
+  roles:
+  - build-client
+
+- hosts: multiserver
+  roles:
+  - build-server
+  - start-server
+
+
+
+

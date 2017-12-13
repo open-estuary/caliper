@@ -4,10 +4,12 @@
 import os
 import sys
 
+VERSION="0.0.2"
 try:
     import caliper.client.setup_modules as setup_modules
     dirname = os.path.dirname(setup_modules.__file__)
     caliper_dir = os.path.join(dirname, "..")
+
 except ImportError:
     dirname = os.path.dirname(sys.modules[__name__].__file__)
     caliper_dir = os.path.abspath(dirname)

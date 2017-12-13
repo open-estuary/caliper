@@ -1,0 +1,20 @@
+
+- hosts: Device
+  tasks:
+    - name: remove latest data
+      file:
+        path: /tmp/iperf_output.log
+        state: absent
+
+    - name: run iperf3 UDP_sin_10_rx
+      shell: iperf3 -c {{ groups['TestNode'][0] }} -f M -ub 0 -i 1 -t 100 -P 10 -O 5 -R -w 256k
+      register: logdata
+      ignore_errors: yes
+
+    - lineinfile: create=yes dest=/tmp/iperf_output.log line="{{ logdata.stdout }}" state=present
+
+    - name: fetch result
+      fetch:
+        src: /tmp/iperf_output.log
+        dest: /tmp/iperf_output.log
+        flat: yes

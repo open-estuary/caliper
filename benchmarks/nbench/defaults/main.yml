@@ -1,0 +1,6 @@
+nbench:
+  nbench:
+    category: 'Performance cpu_sincore'
+    scores_way: 'compute_speed_score 1'
+    command: 'nbench'
+    parser: 'nbench_parser'

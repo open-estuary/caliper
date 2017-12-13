@@ -1,0 +1,8 @@
+- name: copy file
+  copy: src=lmbench.build.tar.gz dest=/tmp/lmbench.build.tar.gz mode=0777
+
+- name: tar file
+  shell: cd /tmp && tar -xvf lmbench.build.tar.gz && rm -rf lmbench.build.tar.gz
+
+- name: run install
+  shell: "cd /tmp/lmbench.build && ./install.sh"

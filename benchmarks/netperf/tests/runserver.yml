@@ -1,0 +1,4 @@
+- hosts: TestNode
+  tasks:
+    - name: run netperf
+      shell: "cd /tmp/netperf/src && ./netserver &"

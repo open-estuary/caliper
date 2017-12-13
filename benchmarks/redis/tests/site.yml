@@ -1,0 +1,25 @@
+---
+- name: install redis on server
+  hosts: multiserver
+  roles:
+    - redis
+  become: true
+  become_method: sudo
+  become_user: root
+
+- name: start redis on server
+  hosts: multiserver
+  roles:
+    - redis-server
+  become: true
+  become_method: sudo
+  become_user: root
+
+- name: install redis on client
+  hosts: multiclient
+  roles:
+    - redis
+  become: true
+  become_method: sudo
+  become_user: root
+

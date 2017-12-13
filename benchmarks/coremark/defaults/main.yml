@@ -1,0 +1,6 @@
+coremark:
+  coremark:
+    category: 'Performance cpu_sincore sincore_int coremark'
+    scores_way: 'compute_speed_score 2'
+    command: 'coremark'
+    parser: 'coremark_parser'

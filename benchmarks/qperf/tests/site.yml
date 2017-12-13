@@ -1,0 +1,8 @@
+- hosts: Device
+  roles:
+  - ../../qperf
+- hosts: TestNode
+  roles:
+  - ../../qperf
+
+

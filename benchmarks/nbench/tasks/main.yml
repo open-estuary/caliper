@@ -1,0 +1,8 @@
+- name: copy file
+  copy: src=nbench.tar.gz dest=/tmp/nbench.tar.gz mode=0777
+
+- name: tar file
+  shell: cd /tmp && tar xvf nbench.tar.gz && rm -rf nbench.tar.gz
+
+- name: run install
+  shell: "cd /tmp/nbench && ./install.sh"

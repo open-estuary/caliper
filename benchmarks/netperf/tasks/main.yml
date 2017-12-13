@@ -1,0 +1,9 @@
+- name: copy file
+  copy: src=netperf.tar.gz dest=/tmp/netperf.tar.gz mode=0777
+
+- name: tar file
+  shell: cd /tmp && tar xvf netperf.tar.gz && rm -rf netperf.tar.gz
+
+- name: run install
+  shell: "cd /tmp/netperf && ./install_netperf.sh"
+  ignore_errors: yes

@@ -69,3 +69,26 @@ def parser_caliper(host):
     if json_files:
         for json_file in json_files:
             shutil.copy(json_file, caliper_path.HTML_DATA_DIR_INPUT)
+
+
+def copy_file(host):
+    '''
+    copy result yaml file to caliper_output/frontend/frontend/data_files/Input_Logs
+    :param host: target machine 
+    :return: None
+    '''
+    YAML_DIR = os.path.join(caliper_path.folder_ope.results_dir, 'yaml')
+    host_name = server_utils.get_host_name(host)
+    host_yaml_name = host_name + '.yaml'
+    hw_yaml_name = host_name + '_hw_info.yaml'
+    score_yaml_name = host_name + '_score.yaml'
+    host_yaml_file = os.path.join(YAML_DIR, host_yaml_name)
+    hw_yaml_file = os.path.join(YAML_DIR, hw_yaml_name)
+    score_yaml_file = os.path.join(YAML_DIR, score_yaml_name)
+    if os.path.exists(hw_yaml_file):
+        shutil.copy(hw_yaml_file, caliper_path.HW_DATA_DIR_INPUT)
+    if os.path.exists(score_yaml_file):
+        shutil.copy(score_yaml_file, caliper_path.HTML_DATA_DIR_INPUT)
+    if os.path.exists(host_yaml_file):
+        shutil.copy(host_yaml_file, caliper_path.CONSOLIDATED_DATA_DIR_INPUT)
+

@@ -1,0 +1,6 @@
+- hosts: Device
+  roles:
+  - ../../iperf
+- hosts: TestNode
+  roles:
+  - ../../iperf

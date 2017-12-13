@@ -1,0 +1,91 @@
+iperf:
+  iperf TCP_sin_10_rx:
+    category: 'Performance network bandwidth TCP_s10_RX'
+    scores_way: 'compute_speed_score 1'
+    command: 'TCP_sin_10_rx'
+    parser: 'iperf_TCP_parser'
+  iperf TCP_sin_10_tx:
+    category: 'Performance network bandwidth TCP_s10_TX'
+    scores_way: 'compute_speed_score 1'
+    command: 'TCP_sin_10_tx'
+    parser: 'iperf_TCP_parser'
+  iperf TCP_sin_1_rx:
+    category: 'Performance network bandwidth TCP_s01_RX'
+    scores_way: 'compute_speed_score 1'
+    command: 'TCP_sin_1_rx'
+    parser: 'iperf_TCP_parser'
+  iperf TCP_sin_1_tx:
+    category: 'Performance network bandwidth TCP_s01_TX'
+    scores_way: 'compute_speed_score 1'
+    command: 'TCP_sin_1_tx'
+    parser: 'iperf_TCP_parser'
+  iperf TCP_sin_3_rx:
+    category: 'Performance network bandwidth TCP_s03_RX'
+    scores_way: 'compute_speed_score 1'
+    command: 'TCP_sin_3_rx'
+    parser: 'iperf_TCP_parser'
+  iperf TCP_sin_3_tx:
+    category: 'Performance network bandwidth TCP_s03_TX'
+    scores_way: 'compute_speed_score 1'
+    command: 'TCP_sin_3_tx'
+    parser: 'iperf_TCP_parser'
+  iperf TCP_sin_4_rx:
+    category: 'Performance network bandwidth TCP_s04_RX'
+    scores_way: 'compute_speed_score 1'
+    command: 'TCP_sin_4_rx'
+    parser: 'iperf_TCP_parser'
+  iperf TCP_sin_4_tx:
+    category: 'Performance network bandwidth TCP_s04_TX'
+    scores_way: 'compute_speed_score 1'
+    command: 'TCP_sin_4_tx'
+    parser: 'iperf_TCP_parser'
+  iperf TCP_sin_5_rx:
+    category: 'Performance network bandwidth TCP_s05_RX'
+    scores_way: 'compute_speed_score 1'
+    command: 'TCP_sin_5_rx'
+    parser: 'iperf_TCP_parser'
+  iperf TCP_sin_5_tx:
+    category: 'Performance network bandwidth TCP_s05_TX'
+    scores_way: 'compute_speed_score 1'
+    command: 'TCP_sin_5_tx'
+    parser: 'iperf_TCP_parser'
+  iperf UDP_sin_10_rx:
+    category: 'Performance network bandwidth UDP_s10_RX'
+    scores_way: 'compute_speed_score 1'
+    command: 'UDP_sin_10_rx'
+    parser: 'iperf_UDP_parser'
+  iperf UDP_sin_10_tx:
+    category: 'Performance network bandwidth UDP_s10_TX'
+    scores_way: 'compute_speed_score 1'
+    command: 'UDP_sin_10_tx'
+    parser: 'iperf_UDP_parser'
+  iperf UDP_sin_1_rx:
+    category: 'Performance network bandwidth UDP_s01_RX'
+    scores_way: 'compute_speed_score 1'
+    command: 'UDP_sin_1_rx'
+    parser: 'iperf_UDP_parser'
+  iperf UDP_sin_1_tx:
+    category: 'Performance network bandwidth UDP_s01_TX'
+    scores_way: 'compute_speed_score 1'
+    command: 'UDP_sin_1_tx'
+    parser: 'iperf_UDP_parser'
+  iperf UDP_sin_3_rx:
+    category: 'Performance network bandwidth UDP_s03_RX'
+    scores_way: 'compute_speed_score 1'
+    command: 'UDP_sin_3_rx'
+    parser: 'iperf_UDP_parser'
+  iperf UDP_sin_3_tx:
+    category: 'Performance network bandwidth UDP_s03_TX'
+    scores_way: 'compute_speed_score 1'
+    command: 'UDP_sin_3_tx'
+    parser: 'iperf_UDP_parser'
+  iperf UDP_sin_5_rx:
+    category: 'Performance network bandwidth UDP_s05_RX'
+    scores_way: 'compute_speed_score 1'
+    command: 'UDP_sin_5_rx'
+    parser: 'iperf_UDP_parser'
+  iperf UDP_sin_5_tx:
+    category: 'Performance network bandwidth UDP_s05_TX'
+    scores_way: 'compute_speed_score 1'
+    command: 'UDP_sin_5_tx'
+    parser: 'iperf_UDP_parser'

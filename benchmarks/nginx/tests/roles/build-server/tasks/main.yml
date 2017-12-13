@@ -1,0 +1,23 @@
+---
+#- name: install nginx for redhat
+#  yum: name=nginx state=present disable_gpg_check=yes
+#  when: ansible_os_family == 'RedHat'
+
+#- name: install redis for Ubuntu
+#  apt: name=nginx state=present
+#  when: ansible_distribution == "Ubuntu" 
+- name: create ~/caliper_output/caliper/benchmarks/nginx
+  file: path=~/caliper_output/caliper/benchmarks/nginx state="directory"
+
+- name: copy nginx test
+  copy:
+    src: ~/caliper_output/caliper/benchmarks/nginx/
+    dest: ~/caliper_output/caliper/benchmarks/nginx/
+    mode: 0755
+    backup: yes
+
+- name: build nginx-server on server
+  command: sh {{ home }}/caliper_output/caliper/benchmarks/nginx/build-server.sh
+  become: true
+  become_method: sudo
+  become_user: root

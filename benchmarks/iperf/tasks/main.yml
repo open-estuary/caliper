@@ -1,0 +1,9 @@
+#install iperf
+- name: install iperf for redhat
+  yum: name=iperf3 state=present disable_gpg_check=yes
+  when: ansible_os_family == 'RedHat'
+
+- name: install iperf for ubuntu
+  apt: name=iperf3 state=present
+  when: ansible_distribution == 'Ubuntu'
+

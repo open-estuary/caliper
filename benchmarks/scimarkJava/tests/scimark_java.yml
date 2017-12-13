@@ -1,0 +1,21 @@
+
+- hosts: Device
+  tasks:
+    - name: remove latest data
+      file:
+        path: /tmp/scimarkJava_output.log
+        state: absent
+
+    - name: run scimarkJava
+      shell: cd /tmp/scimark2lib && java jnt.scimark2.commandline
+      register: logdata
+      ignore_errors: yes
+
+    - lineinfile: create=yes  dest=/tmp/scimarkJava_output.log line="{{ logdata.stdout }}" state=present
+
+
+    - name: fetch result
+      fetch:
+        src: /tmp/scimarkJava_output.log
+        dest: /tmp/scimarkJava_output.log
+        flat: yes

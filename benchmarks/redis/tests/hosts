@@ -1,0 +1,5 @@
+[multiserver]
+192.168.65.197 ansible_sudo_pass='123'
+[multiclient]
+192.168.66.122 ansible_sudo_pass='123'
+

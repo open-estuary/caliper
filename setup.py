@@ -20,6 +20,7 @@ except ImportError:
 
 import client.setup
 import server.setup
+import upload.setup
 
 CURRENT_PATH = os.path.dirname(sys.modules[__name__].__file__)
 CALIPER_TMP_DIR = os.path.join(os.environ['HOME'], 'caliper_output')
@@ -96,13 +97,14 @@ def _combine_dicts(list_dicts):
 
 
 def get_packages():
-    return (client.setup.get_packages() + server.setup.get_packages())
+    return (client.setup.get_packages() + server.setup.get_packages()+upload.setup.get_packages())
 
 
 def get_package_dirs():
     return _combine_dicts(
             [client.setup.get_package_dirs(),
-            server.setup.get_package_dirs()]
+            server.setup.get_package_dirs(),
+            upload.setup.get_package_dirs()]
             )
 
 
@@ -128,7 +130,6 @@ def run():
     caliper_output = os.path.join(os.environ['HOME'], 'caliper_output')
     caliper_configuration = os.path.join(caliper_output,'configuration')
     caliper_config_file = os.path.join(caliper_configuration,'config')
-    caliper_test_def = os.path.join(caliper_configuration,'test_cases_def')
     if os.path.exists(caliper_tmp_dir):
         shutil.rmtree(caliper_tmp_dir)
 
@@ -143,6 +144,7 @@ def run():
     os.chmod(caliper_data_dir, stat.S_IRWXO + stat.S_IRWXU)
     setup(
             name='caliper',
+            version=common.VERSION,
             description='A test suite for automatically running on different\
                 devices, and compare the test results',
             package_dir=get_package_dirs(),

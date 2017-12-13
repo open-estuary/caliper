@@ -52,6 +52,7 @@ def get_packages():
             'caliper.server.hosts',
             'caliper.server.parser_process',
             'caliper.server.run',
+            'caliper.server.shared',
             'caliper.server',
             'caliper']
 
@@ -80,10 +81,7 @@ def get_scripts():
 def get_data_files():
     config_filelist = []
     config_filelist.extend(_get_files(os.path.join(caliper_dir, 'config')))
-    test_cfg_lists = []
-    test_cfg_lists = _get_data_files(
-            os.path.join(caliper_dir, 'test_cases_cfg'))
-    return [((os.path.join(os.environ['HOME'], 'caliper_output/configuration/config')), config_filelist)] + test_cfg_lists
+    return [((os.path.join(os.environ['HOME'], 'caliper_output/configuration/config')), config_filelist)]
 
 
 params = dict(name='caliper',

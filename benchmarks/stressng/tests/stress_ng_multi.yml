@@ -1,0 +1,21 @@
+
+- hosts: Device
+  tasks:
+    - name: remove latest data
+      file:
+        path: /tmp/stressng_output.log
+        state: absent
+
+    - name: run stress_ng_multi
+      shell: stress-ng --cpu `grep 'processor' /proc/cpuinfo |sort |uniq |wc -l`  --cpu-ops 100000 --cpu-method all --metrics-brief
+      register: logdata
+      ignore_errors: yes
+
+    - lineinfile: create=yes  dest=/tmp/stressng_output.log line="{{ logdata.stdout }}" state=present
+
+
+    - name: fetch result
+      fetch:
+        src: /tmp/stressng_output.log
+        dest: /tmp/stressng_output.log
+        flat: yes

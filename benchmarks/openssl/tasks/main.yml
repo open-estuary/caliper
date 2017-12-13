@@ -1,0 +1,8 @@
+- name: copy file
+  copy: src=openssl.tar.gz dest=/tmp/openssl.tar.gz mode=0777
+
+- name: tar file
+  shell: cd /tmp && tar xvf openssl.tar.gz && rm -rf openssl.tar.gz
+
+- name: run install
+  shell: "cd /tmp/openssl && ./install.sh"

@@ -1,0 +1,47 @@
+---
+- hosts: multiclient
+  tasks:
+    - name: remove latest data
+      file:
+        path: /tmp/redis_output.log
+        state: absent
+      become: true
+      become_method: sudo
+      become_user: root
+    
+    - name: create {{ home }}/caliper_output/caliper/benchmarks/redis/
+      file: path={{ home }}/caliper_output/caliper/benchmarks/redis/  state="directory"
+
+    - name: copy redis
+      copy:
+        src: "{{ home }}/caliper_output/caliper/benchmarks/redis/"
+        dest: "{{ home }}/caliper_output/caliper/benchmarks/redis/"
+        mode: 0755
+        backup: yes
+
+    - name: diff redis
+      shell: "echo {{ groups['TestNode'][0] }} >> /tmp/redis_output.log"
+      
+    - name: test redis benchmark on client
+      shell: "{{ home }}/caliper_output/caliper/benchmarks/redis/run_client.sh {{ groups['multiserver'][0] }}"                        
+      become: true
+      become_method: sudo
+#      become_user: root
+
+    - name: fetch result
+      fetch:
+        src: /tmp/redis_output.log
+        dest: /tmp/redis_output.log 
+        flat: yes
+      become: true
+      become_method: sudo
+      become_user: root
+
+    - name: del redis on client
+      shell: "rm -rf {{ home}}/caliper_output"
+      become: true
+      become_method: sudo
+      become_user: root
+
+
+
