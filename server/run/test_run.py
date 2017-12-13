@@ -142,7 +142,8 @@ def parse_all_cases(kind_bench, bench_name, parser_file, dic, run_case_list):
                 logging.debug("Parsering the result of command: %s" % command)
                 outfp = open(logfile, 'r')
                 infp = open(tmp_log_file, 'w')
-                infp.write(re.findall("test start\s+%+(.*?)%+\s+test_end", outfp.read(), re.DOTALL)[sections_run.index(section) - i])
+                # infp.write(re.findall("test start\s+%+(.*?)%+\s+test_end", outfp.read(), re.DOTALL)[sections_run.index(section) - i])
+                infp.write(re.findall(section + "\s+test start\s+%+(.*?)%+\s+test_end", outfp.read(), re.DOTALL)[-1])
                 infp.close()
                 outfp.close()
                 parser_result = parser_case(bench_name, parser_file,
